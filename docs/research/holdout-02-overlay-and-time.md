@@ -79,3 +79,15 @@ the literal check caught it.
   applies everywhere as an exposed assumption.
 - What remains is the ratio family (7 of 50) and value grounding, which this
   batch does not exercise.
+
+## Batch 1
+
+`evals/cases/tier0/pos_real_batch1.yaml` holds the 50 as a regression set:
+40 answered cases whose reference SQL is the run-4 SQL the owner judged
+correct with the bound values inlined (a guard, not an independent truth),
+10 refusal cases accepting any typed refusal, q29/q44 replaced by the
+value-grounded q29b/q44b (q29b accepts `clarify` until server-side value
+grounding exists). `pos-real-batch1-01.json`: 50/50, 9 verified. The
+runner's evaluation row bound was raised from 200 to 1000 for this: two
+answers have 591 and 304 rows and a truncated result cannot equal a full
+reference; the served contract keeps its own 200-row bound.

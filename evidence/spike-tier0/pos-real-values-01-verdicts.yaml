@@ -16,6 +16,5 @@ verdicts:
 - case_id: q44b
   question: 中華電信舊號續約SIM卡在1月銷售總額是多少？
   status: answered
-  verdict: unsure
-  note: answered with an exact product-name match; number not yet confirmed by the
-    owner
+  verdict: correct
+  note: answered with an exact product-name match; number confirmed by the owner 2026-09-09

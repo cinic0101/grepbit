@@ -43,12 +43,17 @@ cases:
 | `pos_multilingual.yaml` | English and Japanese variants of POS questions | 32 |
 | `pos_overlay.yaml` | before/after set for the overlay | 14 |
 | `pos_features.yaml` | competitor feature probes and follow-ups | 32 |
-| `pos_real_smoke.yaml` | compatibility check on the owner's real POS test database (enum column, joins); run with `--enum-distinct-limit 0 --redact-rows` | 7 |
+| `pos_real_smoke.yaml` | compatibility check on the owner's real POS test database (enum column, joins); run with `--enum-distinct-limit 0 --redact-rows --overlay overlays/pos_real.json` | 7 |
+| `pos_real_holdout.yaml` | the owner's 50 real questions as received, judged mode (no expectations); the record behind `docs/research/holdout-*.md`, not rerun | 50 |
+| `pos_real_batch1.yaml` | the same 50 settled as a regression set: references are the run-4 SQL the owner judged correct with bound values inlined, refusals accept any typed refusal; q29/q44 replaced by the value-grounded q29b/q44b | 50 |
+| `pos_real_values_01.yaml` | the first value-grounded questions (a store name, a product name), judged mode | 2 |
 
-All of these were written by the agent that built the system, after looking
-at the data. They are smoke signals and regression guards. The first
-generalization measurement is a holdout of real questions nobody on the build
-side has seen (`../plan/next-phase.md`).
+The sets above the `pos_real_*` rows were written by the agent that built the
+system, after looking at the data. They are smoke signals and regression
+guards. The owner's 50 questions were the first real set; they were pasted
+into the build conversation, so they are a dev set now, not a holdout. The
+next generalization measurement is the owner's next batch, which the build
+side does not open (`../plan/next-phase.md`).
 
 ## Runner (`evals/spike_tier0.py`)
 

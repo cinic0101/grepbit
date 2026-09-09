@@ -483,10 +483,13 @@ def main(argv: list[str] | None = None) -> int:
                         if misses:
                             execution = None
                         else:
+                            # Evaluation fetches up to 1000 rows so a reference
+                            # comparison is not cut short; the served contract
+                            # keeps its own bound (200 rows, truncated flag).
                             execution = executor.execute(
                                 compiled.compiled,
-                                max_rows=200,
-                                preview_rows=200,
+                                max_rows=1000,
+                                preview_rows=1000,
                                 statement_timeout_seconds=10,
                                 run_id=f"spike-{case['case_id']}",
                             )

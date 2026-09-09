@@ -68,7 +68,7 @@ def test_default_pack_is_valid_and_covers_the_case_sets_refusal_probes() -> None
                 accepted = case.get("accept_statuses") or [case["expected"]["status"]]
                 assert "unsupported" in accepted, (path, case["case_id"])
                 hits.append(case["case_id"])
-    assert len(hits) == 4, hits
+    assert len(hits) >= 4, hits  # 4 author probes plus the real-database batch
 
 
 def _schema_with_enum():
