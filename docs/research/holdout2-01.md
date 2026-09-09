@@ -58,3 +58,29 @@ Zero model failures; 31 filter literals checked, 14 matched no row.
   0 wrong numbers from them.
 - The model's inconsistency on unseen values (filter and let the server
   check, or refuse) disappears once grounding runs before the model call.
+
+## Second run, after `having` (prompt v8)
+
+`.artifacts/holdout2/run-02.json`, verdicts and tally
+`evidence/spike-tier0/pos-real-holdout2-02-tally.json` (SHA-256 recorded).
+Author sets, batch 1 and smoke unchanged except batch 1 q06 (the recurring
+訂單狀態 wobble, deferred by the owner to the next phase).
+
+| Number | Run 1 | Run 2 |
+|---|---|---|
+| Judged correct | 26/30 | 30/30 (7 answers, 23 accepted refusals) |
+| Wrong numbers without an exposed assumption | 4 | 0 |
+| Clarify rate / refusal rate | 47% / 73% | 53% / 77% |
+
+The five HAVING questions: q26, q29, q30 now carry their threshold and the
+owner confirmed the numbers; q27 chose `category` as base with an average
+over `product` (a child table) and was refused as `grain_conflict`, a
+wrong-base error to re-verify after grounding; q28's value literal is absent
+as written, so the literal check answered `clarify` before execution. q03 and
+q16 moved from a model refusal to a literal-check `clarify`: the model now
+filters on a value it cannot see and the server catches it, the behaviour
+grounding will make uniform.
+
+What "HAVING is solved" rests on: three real questions plus unit tests. No
+author set contains an aggregate-threshold question yet; a handful should be
+added to the fixture sets so the shape stays guarded in regression.

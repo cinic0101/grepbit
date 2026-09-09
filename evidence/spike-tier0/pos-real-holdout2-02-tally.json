@@ -3,9 +3,9 @@
   "datasource_id": "pos_real",
   "prompt_revision": "plan-classify-json-v8",
   "cases": 30,
-  "judged": 26,
-  "unsure": 4,
-  "correct": 26,
+  "judged": 30,
+  "unsure": 0,
+  "correct": 30,
   "correctness": 1.0,
   "wrong_numbers_without_exposed_assumption": 0,
   "wrong_numbers_with_exposed_assumption": 0,
@@ -20,15 +20,15 @@
     "unsupported": 6
   },
   "verdict_counts": {
-    "correct": 3,
+    "correct": 7,
     "wrong_exposed": 0,
     "wrong_silent": 0,
     "refusal_ok": 23,
     "refusal_bad": 0,
-    "unsure": 4
+    "unsure": 0
   },
   "p50_seconds": 5.139,
   "p95_seconds": 6.742,
   "report_sha256": "e7141d2b80b6a7ce7a9332ea457650ee93897d5c4b7ac1a8dcd3b6d20ba975c8",
-  "verdicts_sha256": "c090a745af2e80f53fbabb60d629da49eb4aca53e6d984ccb969ff3e0b443557"
+  "verdicts_sha256": "dde37c75117d5116c122a45f03b51e34917c57f9c4869a881df96ba1487f28e5"
 }
