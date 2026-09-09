@@ -1,0 +1,11 @@
+# First value-grounded questions on the real POS test database: the owner's
+# rewrites of q29 and q44 from pos_real_holdout.yaml (2026-09-09), each
+# naming a stored value (a store name, a product name). Judged mode, same
+# as_of as the 50, run with --enum-distinct-limit 0 --redact-rows and the
+# real-database overlay. The literal check decides what happens when the
+# spelling does not match a stored value.
+datasource_id: pos_real
+as_of: "2026-02-04T18:00:00+08:00"
+cases:
+  - {case_id: q29b, replaces: q29, question: "特約永和中正在這禮拜的銷售總額是多少？"}
+  - {case_id: q44b, replaces: q44, question: "中華電信舊號續約SIM卡在1月銷售總額是多少？"}
