@@ -1,0 +1,189 @@
+{
+  "datasource_id": "pos_real",
+  "proposer": "policy-proposer-v1",
+  "note": "draft; copy approved entries into the datasource overlay",
+  "column_policies": [
+    {
+      "column": {
+        "table": "category",
+        "column": "category_id"
+      },
+      "sensitivity": "public",
+      "ground": false
+    },
+    {
+      "column": {
+        "table": "category",
+        "column": "category_name"
+      },
+      "sensitivity": "public",
+      "ground": true
+    },
+    {
+      "column": {
+        "table": "pos_payment",
+        "column": "transaction_no"
+      },
+      "sensitivity": "public",
+      "ground": false
+    },
+    {
+      "column": {
+        "table": "pos_payment",
+        "column": "payment_method"
+      },
+      "sensitivity": "public",
+      "ground": true
+    },
+    {
+      "column": {
+        "table": "pos_sale",
+        "column": "transaction_no"
+      },
+      "sensitivity": "public",
+      "ground": false
+    },
+    {
+      "column": {
+        "table": "pos_sale",
+        "column": "store_id"
+      },
+      "sensitivity": "public",
+      "ground": false
+    },
+    {
+      "column": {
+        "table": "pos_sale",
+        "column": "receipt_no"
+      },
+      "sensitivity": "public",
+      "ground": true
+    },
+    {
+      "column": {
+        "table": "pos_sale",
+        "column": "sales_id"
+      },
+      "sensitivity": "public",
+      "ground": false
+    },
+    {
+      "column": {
+        "table": "pos_sale",
+        "column": "origin_transaction_no"
+      },
+      "sensitivity": "public",
+      "ground": true
+    },
+    {
+      "column": {
+        "table": "pos_sale",
+        "column": "member_id"
+      },
+      "sensitivity": "personal"
+    },
+    {
+      "column": {
+        "table": "pos_sale",
+        "column": "transfer_no"
+      },
+      "sensitivity": "public",
+      "ground": false
+    },
+    {
+      "column": {
+        "table": "pos_saleitem",
+        "column": "transaction_no"
+      },
+      "sensitivity": "public",
+      "ground": false
+    },
+    {
+      "column": {
+        "table": "pos_saleitem",
+        "column": "product_id"
+      },
+      "sensitivity": "public",
+      "ground": false
+    },
+    {
+      "column": {
+        "table": "product",
+        "column": "product_id"
+      },
+      "sensitivity": "public",
+      "ground": false
+    },
+    {
+      "column": {
+        "table": "product",
+        "column": "product_name"
+      },
+      "sensitivity": "public",
+      "ground": true
+    },
+    {
+      "column": {
+        "table": "product",
+        "column": "category_id"
+      },
+      "sensitivity": "public",
+      "ground": false
+    },
+    {
+      "column": {
+        "table": "salesperson",
+        "column": "sales_id"
+      },
+      "sensitivity": "public",
+      "ground": false
+    },
+    {
+      "column": {
+        "table": "salesperson",
+        "column": "sales_name"
+      },
+      "sensitivity": "personal"
+    },
+    {
+      "column": {
+        "table": "store",
+        "column": "store_id"
+      },
+      "sensitivity": "public",
+      "ground": false
+    },
+    {
+      "column": {
+        "table": "store",
+        "column": "store_name"
+      },
+      "sensitivity": "public",
+      "ground": true
+    },
+    {
+      "column": {
+        "table": "transfer",
+        "column": "transfer_no"
+      },
+      "sensitivity": "public",
+      "ground": false
+    },
+    {
+      "column": {
+        "table": "transfer_status",
+        "column": "transfer_no"
+      },
+      "sensitivity": "public",
+      "ground": false
+    },
+    {
+      "column": {
+        "table": "transfer_status",
+        "column": "status"
+      },
+      "sensitivity": "public",
+      "ground": true
+    }
+  ]
+}

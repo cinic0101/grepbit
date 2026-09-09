@@ -1,6 +1,6 @@
 {
   "datasource_id": "pos_real",
-  "revision": "pos-real-overlay-v4",
+  "revision": "pos-real-overlay-v5",
   "metrics": [
     {
       "id": "return_amount",
@@ -503,6 +503,57 @@
       },
       "default_exclude": true,
       "note": "transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09"
+    }
+  ],
+  "column_policies": [
+    {
+      "column": {
+        "table": "category",
+        "column": "category_name"
+      },
+      "sensitivity": "public"
+    },
+    {
+      "column": {
+        "table": "pos_payment",
+        "column": "payment_method"
+      },
+      "sensitivity": "public"
+    },
+    {
+      "column": {
+        "table": "pos_sale",
+        "column": "member_id"
+      },
+      "sensitivity": "personal"
+    },
+    {
+      "column": {
+        "table": "product",
+        "column": "product_name"
+      },
+      "sensitivity": "public"
+    },
+    {
+      "column": {
+        "table": "salesperson",
+        "column": "sales_name"
+      },
+      "sensitivity": "personal"
+    },
+    {
+      "column": {
+        "table": "store",
+        "column": "store_name"
+      },
+      "sensitivity": "public"
+    },
+    {
+      "column": {
+        "table": "transfer_status",
+        "column": "status"
+      },
+      "sensitivity": "public"
     }
   ]
 }
