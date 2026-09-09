@@ -1,0 +1,21 @@
+report: evidence/spike-tier0/pos-real-values-01.json
+verdict_values:
+- correct
+- wrong_exposed
+- wrong_silent
+- refusal_ok
+- refusal_bad
+- unsure
+verdicts:
+- case_id: q29b
+  question: 特約永和中正在這禮拜的銷售總額是多少？
+  status: clarify
+  verdict: refusal_ok
+  note: clarify after the literal check; the model cut the store name at 中正在; no wrong
+    number
+- case_id: q44b
+  question: 中華電信舊號續約SIM卡在1月銷售總額是多少？
+  status: answered
+  verdict: unsure
+  note: answered with an exact product-name match; number not yet confirmed by the
+    owner

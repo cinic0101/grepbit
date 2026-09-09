@@ -1,0 +1,303 @@
+report: evidence/spike-tier0/pos-real-holdout-04-v6.json
+verdict_values:
+- correct
+- wrong_exposed
+- wrong_silent
+- refusal_ok
+- refusal_bad
+- unsure
+verdicts:
+- case_id: q01
+  question: 銷售交易總共有幾筆？
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q02
+  question: 所有銷售交易的總金額是多少？
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q03
+  question: 已付款訂單的總金額是多少？
+  status: answered
+  verdict: correct
+  note: run1 answered judged correct -> now answered; rows=1; returns excluded; build
+    side's expected verdict, confirmed by the owner 2026-09-09
+- case_id: q04
+  question: 取消的訂單有幾筆？
+  status: semantic_gap
+  verdict: refusal_ok
+  note: carried from run 1 (same status and plan)
+- case_id: q05
+  question: 各訂單狀態的交易筆數是多少？
+  status: semantic_gap
+  verdict: refusal_ok
+  note: carried from run 1 (same status and plan)
+- case_id: q06
+  question: 訂單筆數最多的狀態是哪一種？若同數，請依狀態名稱由小到大取第一個。
+  status: semantic_gap
+  verdict: refusal_ok
+  note: run1 answered judged wrong_exposed -> now semantic_gap (semantic_gap); build
+    side's expected verdict, confirmed by the owner 2026-09-09
+- case_id: q07
+  question: 每筆訂單的平均金額是多少？
+  status: answered
+  verdict: correct
+  note: run1 answered judged correct -> now answered; rows=1; returns excluded; build
+    side's expected verdict, confirmed by the owner 2026-09-09
+- case_id: q08
+  question: 各付款方式的付款總額是多少？請依付款方式名稱由小到大排列。
+  status: answered
+  verdict: correct
+  note: run1 answered judged correct -> now answered; rows=12; returns excluded; build
+    side's expected verdict, confirmed by the owner 2026-09-09
+- case_id: q09
+  question: 各付款方式的交易筆數是多少？
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q10
+  question: 各付款方式的付款金額占同期總付款金額的比例是多少？
+  status: unsupported
+  verdict: refusal_ok
+  note: carried from run 1 (same status and plan)
+- case_id: q11
+  question: 各門市的銷售總額是多少？請依銷售總額由高到低排列；若同額，依門市名稱由小到大排列。
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q12
+  question: 各門市的銷售交易筆數是多少？
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q13
+  question: 各門市的平均客單價是多少？
+  status: answered
+  verdict: correct
+  note: run1 answered judged correct -> now answered; rows=5; returns excluded; build
+    side's expected verdict, confirmed by the owner 2026-09-09
+- case_id: q14
+  question: 各門市的最低單筆交易金額是多少？
+  status: answered
+  verdict: correct
+  note: run1 answered judged wrong_silent -> now answered; rows=5; returns excluded;
+    build side's expected verdict, confirmed by the owner 2026-09-09
+- case_id: q15
+  question: 各門市的最高單筆交易金額是多少？
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q16
+  question: 銷售總額最高的門市是哪一間？若同額，請依門市名稱由小到大取第一間。
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q17
+  question: 各門市的銷售額占同期全部銷售額的比例是多少？
+  status: unsupported
+  verdict: refusal_ok
+  note: carried from run 1 (same status and plan)
+- case_id: q18
+  question: 各銷售員的銷售總額是多少？
+  status: answered
+  verdict: correct
+  note: run1 answered judged correct -> now answered; rows=25; returns excluded; build
+    side's expected verdict, confirmed by the owner 2026-09-09
+- case_id: q19
+  question: 各銷售員的交易筆數是多少？
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q20
+  question: 銷售額最高的前 3 位銷售員是誰？若同額，請依銷售員名稱由小到大排列。
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q21
+  question: 各銷售員的銷售額占同期全部銷售額的比例是多少？
+  status: unsupported
+  verdict: refusal_ok
+  note: carried from run 1 (same status and plan)
+- case_id: q22
+  question: 每天的銷售總額是多少？
+  status: answered
+  verdict: correct
+  note: run1 answered judged wrong_exposed -> now answered; time=null grain=day; rows=56;
+    returns excluded; build side's expected verdict, confirmed by the owner 2026-09-09
+- case_id: q23
+  question: 每天的銷售交易筆數是多少？
+  status: answered
+  verdict: correct
+  note: run1 answered judged wrong_exposed -> now answered; time=null grain=day; rows=56;
+    returns excluded; build side's expected verdict, confirmed by the owner 2026-09-09
+- case_id: q24
+  question: 每天的平均客單價是多少？
+  status: answered
+  verdict: correct
+  note: run1 answered judged wrong_exposed -> now answered; time=null grain=day; rows=56;
+    returns excluded; build side's expected verdict, confirmed by the owner 2026-09-09
+- case_id: q25
+  question: 2026 年 1 月的銷售總額是多少？
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q26
+  question: 2026 年 1 月 5 日至 1 月 6 日（含首尾兩天）的銷售交易筆數是多少？
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q27
+  question: 各月份的銷售總額是多少？
+  status: answered
+  verdict: correct
+  note: run1 answered judged wrong_exposed -> now answered; time=null grain=month;
+    rows=3; returns excluded; build side's expected verdict, confirmed by the owner
+    2026-09-09
+- case_id: q28
+  question: 2026 年 1 月各門市的銷售總額是多少？
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q29
+  question: 指定門市在指定日期區間內的銷售總額是多少？
+  status: failed
+  verdict: unsure
+  note: template question without values; failed because the model wrote YYYY-MM-DD;
+    superseded by q29b in pos_real_values_01.yaml (owner's rewrite)
+- case_id: q30
+  question: 前天到今天（含首尾兩天）的銷售總額是多少？
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q31
+  question: 上週（週一至週日）每天的銷售交易筆數是多少？
+  status: answered
+  verdict: correct
+  note: 'run1 answered judged wrong_exposed -> now answered; time={"kind": "relative",
+    "unit": "week", "offset": -1, "length": 1, "to_date": false} grain=day; rows=7;
+    returns excluded; build side''s expected verdict, confirmed by the owner 2026-09-09'
+- case_id: q32
+  question: 上週（週一至週日）各門市的銷售總額是多少？
+  status: answered
+  verdict: correct
+  note: 'run1 answered judged wrong_exposed -> now answered; time={"kind": "relative",
+    "unit": "week", "offset": -1, "length": 1, "to_date": false} grain=None; rows=5;
+    returns excluded; build side''s expected verdict, confirmed by the owner 2026-09-09'
+- case_id: q33
+  question: 本月截至今天的銷售總額是多少？
+  status: answered
+  verdict: correct
+  note: 'run1 answered judged correct -> now answered; time={"kind": "relative", "unit":
+    "month", "offset": 0, "length": 1, "to_date": true} grain=None; rows=1; returns
+    excluded; build side''s expected verdict, confirmed by the owner 2026-09-09'
+- case_id: q34
+  question: 最近 30 天的退貨金額占同期銷售總額的比例是多少？
+  status: unsupported
+  verdict: refusal_ok
+  note: carried from run 1 (same status and plan)
+- case_id: q35
+  question: 單價高於 1000 元的商品有幾項？
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan)
+- case_id: q36
+  question: 各商品分類有幾項商品？
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan)
+- case_id: q37
+  question: 各商品分類的銷售總額是多少？
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q38
+  question: 各商品分類的最低商品單價是多少？
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan)
+- case_id: q39
+  question: 各商品分類的最高商品單價是多少？
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan)
+- case_id: q40
+  question: 各商品的銷售數量是多少？
+  status: answered
+  verdict: correct
+  note: run1 answered judged correct -> now answered; rows=591; returns excluded;
+    build side's expected verdict, confirmed by the owner 2026-09-09
+- case_id: q41
+  question: 各商品分類的銷售額占同期全部銷售額的比例是多少？
+  status: unsupported
+  verdict: refusal_ok
+  note: carried from run 1 (same status and plan)
+- case_id: q42
+  question: 銷售金額最高的前 10 項商品有哪些？若同額，請依商品名稱由小到大排列。
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q43
+  question: 銷售數量最高的前 10 項商品有哪些？若同數，請依商品名稱由小到大排列。
+  status: answered
+  verdict: correct
+  note: carried from run 1 (same status and plan); values now exclude returns per
+    the confirmed rule
+- case_id: q44
+  question: 指定商品分類在指定日期區間內的銷售總額是多少？
+  status: failed
+  verdict: unsure
+  note: template question without values; failed because the model wrote YYYY-MM-DD;
+    superseded by q44b in pos_real_values_01.yaml (owner's rewrite)
+- case_id: q45
+  question: 退貨交易總共有幾筆？
+  status: answered
+  verdict: correct
+  note: run1 semantic_gap judged refusal_ok -> now answered; rows=1; build side's
+    expected verdict, confirmed by the owner 2026-09-09
+- case_id: q46
+  question: 各門市的退貨總金額是多少？
+  status: answered
+  verdict: correct
+  note: run1 semantic_gap judged refusal_ok -> now answered; rows=5; build side's
+    expected verdict, confirmed by the owner 2026-09-09
+- case_id: q47
+  question: 每日的退貨筆數是多少？
+  status: answered
+  verdict: correct
+  note: run1 semantic_gap judged refusal_ok -> now answered; time=null grain=day;
+    rows=55; build side's expected verdict, confirmed by the owner 2026-09-09
+- case_id: q48
+  question: 各商品的退貨數量是多少？
+  status: answered
+  verdict: correct
+  note: run1 semantic_gap judged refusal_ok -> now answered; rows=304; build side's
+    expected verdict, confirmed by the owner 2026-09-09
+- case_id: q49
+  question: 以退貨數量除以銷售數量計算，哪些商品的退貨率最高？若同率，請依商品名稱由小到大排列。
+  status: semantic_gap
+  verdict: refusal_ok
+  note: carried from run 1 (same status and plan)
+- case_id: q50
+  question: 退貨金額占同期銷售總額的比例是多少？
+  status: unsupported
+  verdict: refusal_ok
+  note: carried from run 1 (same status and plan)
+judge: pre-filled by the build side from run 1 where status and plan are unchanged;
+  null entries await the owner; owner confirmed the build side's expected verdicts
+  for the 19 open cases; q29/q44 unsure (superseded)

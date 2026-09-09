@@ -1,0 +1,32 @@
+{
+  "report": "evals/cases/tier0/pos_real_holdout.yaml",
+  "datasource_id": "pos_real",
+  "prompt_revision": "plan-classify-json-v7",
+  "cases": 50,
+  "judged": 48,
+  "unsure": 2,
+  "correct": 48,
+  "correctness": 1.0,
+  "wrong_numbers_without_exposed_assumption": 0,
+  "wrong_numbers_with_exposed_assumption": 0,
+  "refusals_that_should_have_answered": 0,
+  "clarify_count": 0,
+  "clarify_rate": 0.0,
+  "refusal_rate": 0.24,
+  "status_counts": {
+    "answered": 38,
+    "failed": 2,
+    "semantic_gap": 4,
+    "unsupported": 6
+  },
+  "verdict_counts": {
+    "correct": 38,
+    "wrong_exposed": 0,
+    "wrong_silent": 0,
+    "refusal_ok": 10,
+    "refusal_bad": 0,
+    "unsure": 2
+  },
+  "p50_seconds": 4.466,
+  "p95_seconds": 6.052
+}

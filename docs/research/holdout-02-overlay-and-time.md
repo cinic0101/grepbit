@@ -45,9 +45,28 @@ were rewritten for the confirmed return rule). Artifacts `*-09`/`*-10`,
 | shares and ratios | q10, q17, q21, q34, q41, q49, q50 | refused | unchanged, next phase |
 | templates without values | q29, q44 | refused | `failed`: the model filled the range with the literal `YYYY-MM-DD`, which fails validation. Known model-failure class on placeholder questions; the owner is rewriting both with values |
 
-The owner judges run 4 from `.artifacts/holdout-04/review.md`; the verdict
-file is pre-filled for the 29 cases whose status and plan are unchanged since
-run 1 (their values now exclude returns) and left open for 21.
+## Run 4 judged (owner, 2026-09-09)
+
+`pos-real-holdout-04-verdicts.yaml`, `pos-real-holdout-04-tally.json`: 29
+verdicts carried from run 1 (same status and plan, values now exclude
+returns), 19 confirmed by the owner from the build side's expected list, q29
+and q44 `unsure` (template questions, superseded by `pos_real_values_01.yaml`).
+
+| Number | Run 1 | Run 4 |
+|---|---|---|
+| Correct over judged | 42/50 (84%) | 48/48 (100%; 38 answers, 10 accepted refusals) |
+| Wrong numbers, no exposed assumption | 1 | 0 |
+| Wrong numbers, exposed | 7 | 0 |
+| Refusal rate | 30% | 24% (6 shape gate, 4 semantic gaps) |
+| Verified answers | 0 | 9 |
+| P95 | 4.7 s | 6.1 s |
+
+The 100% is over questions the build side had seen and after four rounds of
+changes measured on them: it says the 50 are settled as a regression batch,
+not that the system generalizes. The two value-grounded rewrites
+(`pos-real-values-01.json`): q44b answered on an exact product-name match;
+q29b `clarify` because the model segmented 特約永和中正在 as 特約永和中 and
+the literal check caught it.
 
 ## What this says
 
