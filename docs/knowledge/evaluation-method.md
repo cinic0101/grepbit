@@ -29,6 +29,9 @@ cases:
 - A refusal case is correct when the status is in `accept_statuses`.
 - `follow_up_of` hands the earlier case's question and plan to the planner as
   the previous turn.
+- A case with no `expected` block is judged by a human (real questions have
+  no reference SQL). The runner records `correct: null` for it and leaves it
+  out of every correctness count; see "Judged runs" below.
 
 ## Sets that exist
 
@@ -52,7 +55,8 @@ side has seen (`../plan/next-phase.md`).
 .venv/bin/python evals/spike_tier0.py --dsn-env <ENV_VAR_WITH_DSN> \
   --datasource-id <id> --cases <file.yaml> --output <dir>/<name>.json \
   --live [--infer-joins] [--overlay <overlay.json>] [--verify-coverage] \
-  [--enum-distinct-limit N]
+  [--enum-distinct-limit N] [--redact-rows] \
+  [--review-sheet <dir>/<name>.md] [--verdicts <dir>/<name>.yaml]
 ```
 
 `--enum-distinct-limit` (default 20) bounds the distinct values sampled per
@@ -66,6 +70,35 @@ answers on refusal cases, model failures, P50 and P95, schema size, inferred
 joins, verification counts, shape repairs) and one row per case with status,
 plan, SQL with placeholders, lineage, assumptions, interpretation, first rows,
 whether rows matched a reference, and latency. No credentials, no bindings.
+
+`--redact-rows` drops result rows and reference rows from the report (row
+counts, SQL, lineage and assumptions stay), so an artifact taken on a real
+database can be committed under `evidence/`. The summary records
+`rows_redacted`, the case file, the prompt revision and `as_of`.
+
+## Judged runs (real questions)
+
+Real questions carry no reference SQL, so a run over them produces three
+files: the JSON report (with `--redact-rows`), a review sheet
+(`--review-sheet`, one readable page per case with question, status,
+interpretation, assumptions, SQL and the first rows; it holds data, keep it
+under the ignored `.artifacts/`), and a verdict skeleton (`--verdicts`). The
+judge fills one verdict per case: `correct`, `wrong_exposed` (wrong number,
+but an assumption states the choice that made it wrong), `wrong_silent`
+(wrong number, nothing exposed it), `refusal_ok`, `refusal_bad` (should have
+answered), `unsure`. Then
+
+```sh
+.venv/bin/python evals/tally_verdicts.py --report <run.json> \
+  --verdicts <filled.yaml> --output <dir>/<name>-tally.json
+```
+
+checks every case has a verdict consistent with its status and writes the
+stage-2 numbers: correctness over judged cases, wrong numbers without an
+exposed assumption, clarify rate, refusal rate, P50 and P95. The tally holds
+counts only and belongs under `evidence/`. The build side never opens the
+question file before the run, never changes prompts between runs of the same
+holdout, and reports which run was the first (blind) one.
 
 Other runners: `spike_parent_agent.py` (relay experiment) and
 `spike_suggest.py` (suggested questions written as a case file).

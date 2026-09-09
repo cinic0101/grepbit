@@ -12,6 +12,13 @@ classifier for a plan per question, compiles and executes it through the SQL
 policy and the read-only executor, and compares the rows with the reference
 SQL. Reports carry statuses, lineage, latencies, and mismatch categories; no
 credentials.
+
+A case without ``expected`` is judged by a human instead of a reference: the
+runner marks it ``correct: null``, ``--review-sheet`` writes one readable page
+per case (with rows) for the judge, ``--verdicts`` writes the skeleton the
+judge fills, and ``evals/tally_verdicts.py`` turns the filled skeleton into
+the four stage-2 numbers. ``--redact-rows`` keeps result rows out of the JSON
+report so an artifact of a real database can be kept under version control.
 """
 
 from __future__ import annotations
@@ -32,7 +39,10 @@ import yaml
 
 from grepbit.adapters.litellm.coverage_client import ChatCompletionsCoverageClient
 from grepbit.adapters.litellm.grounding_client import GroundingModelSettings
-from grepbit.adapters.litellm.plan_client import ChatCompletionsPlanClient
+from grepbit.adapters.litellm.plan_client import (
+    PLAN_PROMPT_REVISION,
+    ChatCompletionsPlanClient,
+)
 from grepbit.adapters.overlay_store import load_semantic_overlay
 from grepbit.adapters.postgres.executor import PsycopgQueryExecutor
 from grepbit.adapters.postgres.introspect import infer_foreign_keys, introspect_schema
@@ -101,6 +111,100 @@ def normalize_rows(rows: list[dict[str, Any]] | list[tuple]) -> list[tuple[str, 
     return sorted(normalized)
 
 
+_ROW_FIELDS = ("rows", "reference_rows")
+VERDICTS = (
+    "correct",
+    "wrong_exposed",
+    "wrong_silent",
+    "refusal_ok",
+    "refusal_bad",
+    "unsure",
+)
+
+
+def redact_rows(result: dict[str, Any]) -> dict[str, Any]:
+    """Drop every cell value from a result row; counts and SQL stay."""
+
+    return {k: v for k, v in result.items() if k not in _ROW_FIELDS}
+
+
+def review_sheet(summary: dict[str, Any], results: list[dict[str, Any]]) -> str:
+    """One readable page per case for a human judge. Holds rows: keep out of git."""
+
+    lines = [
+        f"# Review sheet: {summary['datasource_id']}",
+        "",
+        f"- cases: `{summary['cases_file']}`, as_of {summary['as_of']}, "
+        f"prompt {summary['prompt_revision']}",
+        f"- {summary['cases']} cases, statuses {summary['status_counts']}, "
+        f"P50 {summary['p50_seconds']} s, P95 {summary['p95_seconds']} s",
+        "- verdicts: " + ", ".join(VERDICTS),
+        "",
+    ]
+    for index, r in enumerate(results, 1):
+        lines += [
+            f"## {index}. {r['case_id']}",
+            "",
+            f"**Question**: {r['question']}",
+            "",
+        ]
+        if r.get("follow_up_of"):
+            lines += [f"**Follow-up of**: {r['follow_up_of']}", ""]
+        verification = f" ({r['verification']})" if r.get("verification") else ""
+        lines += [
+            f"**Status**: {r['status']}{verification}, {r['elapsed_seconds']} s",
+            "",
+        ]
+        if r.get("reason"):
+            lines += [f"**Reason**: {r['reason']}", ""]
+        if r.get("clarification"):
+            lines += [f"**Clarification**: {r['clarification']}", ""]
+        if r.get("interpretation"):
+            lines += [f"**Interpretation**: {r['interpretation']}", ""]
+        if r.get("assumptions"):
+            lines += ["**Assumptions**:", *(f"- {a}" for a in r["assumptions"]), ""]
+        if r.get("sql"):
+            lines += ["**SQL**:", "", "```sql", r["sql"], "```", ""]
+        if r.get("rows") is not None:
+            rows = r["rows"]
+            lines.append(
+                f"**Rows** ({len(rows)} shown of {r.get('row_count', len(rows))}):"
+            )
+            lines.append("")
+            if rows:
+                columns = list(rows[0].keys())
+                lines.append("| " + " | ".join(columns) + " |")
+                lines.append("|" + "---|" * len(columns))
+                lines += [
+                    "| " + " | ".join(str(row.get(c, "")) for c in columns) + " |"
+                    for row in rows
+                ]
+            else:
+                lines.append("(no rows)")
+            lines.append("")
+    return "\n".join(lines)
+
+
+def verdict_skeleton(report: Path, results: list[dict[str, Any]]) -> str:
+    """YAML the judge fills: one verdict per case, read back by tally_verdicts.py."""
+
+    document = {
+        "report": str(report),
+        "verdict_values": list(VERDICTS),
+        "verdicts": [
+            {
+                "case_id": r["case_id"],
+                "question": r["question"],
+                "status": r["status"],
+                "verdict": None,
+                "note": "",
+            }
+            for r in results
+        ],
+    }
+    return yaml.safe_dump(document, allow_unicode=True, sort_keys=False)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dsn-env", required=True)
@@ -116,6 +220,21 @@ def main(argv: list[str] | None = None) -> int:
         type=int,
         default=20,
         help="distinct values sampled per non-key text column; 0 disables sampling",
+    )
+    parser.add_argument(
+        "--redact-rows",
+        action="store_true",
+        help="keep result and reference rows out of the JSON report (real data)",
+    )
+    parser.add_argument(
+        "--review-sheet",
+        type=Path,
+        help="write a readable page per case, rows included, for a human judge",
+    )
+    parser.add_argument(
+        "--verdicts",
+        type=Path,
+        help="write the verdict skeleton (YAML) the judge fills in",
     )
     arguments = parser.parse_args(argv)
 
@@ -189,10 +308,12 @@ def main(argv: list[str] | None = None) -> int:
         if case.get("follow_up_of") in answered_plans:
             prior_question, prior_plan = answered_plans[case["follow_up_of"]]
             previous = PreviousTurn(question=prior_question, plan=prior_plan)
-        expected = case["expected"]["status"]
-        accepted = set(case.get("accept_statuses", [expected]))
+        # No expected status: a human judges the case from the review sheet.
+        expected = (case.get("expected") or {}).get("status")
+        accepted = set(case.get("accept_statuses", [expected] if expected else []))
         row: dict[str, Any] = {
             "case_id": case["case_id"],
+            "question": question,
             "expected_status": expected,
             "accepted_statuses": sorted(accepted),
             "follow_up_of": case.get("follow_up_of"),
@@ -279,6 +400,8 @@ def main(argv: list[str] | None = None) -> int:
                             status, detail["reason"] = "failed", execution.error_code
                         else:
                             status = "answered"
+                            detail["row_count"] = execution.row_count
+                            detail["rows_truncated"] = execution.truncated
                             detail["rows"] = [
                                 {
                                     k: (str(v) if not isinstance(v, (int, str)) else v)
@@ -317,22 +440,27 @@ def main(argv: list[str] | None = None) -> int:
         elif status == "answered":
             detail.setdefault("verification", "unverified_semantics")
         elapsed = round(time.monotonic() - started, 3)
-        correct = status in accepted and (
-            status != "answered" or detail.get("rows_match_reference", True)
-        )
+        correct: bool | None
+        if expected is None:
+            correct = None
+        else:
+            correct = status in accepted and (
+                status != "answered" or detail.get("rows_match_reference", True)
+            )
         row.update(
             {"status": status, "correct": correct, "elapsed_seconds": elapsed, **detail}
         )
         results.append(row)
-        marker = "OK " if correct else "XX "
+        marker = "?? " if correct is None else ("OK " if correct else "XX ")
         reason = detail.get("reason") or ""
         print(
-            f"{marker}{case['case_id']:36} {expected:12}->{status:12} "
+            f"{marker}{case['case_id']:36} {expected or '(judge)':12}->{status:12} "
             f"{elapsed:5.1f}s {reason}"
         )
 
-    answerable = [r for r in results if r["expected_status"] == "answered"]
-    refusals = [r for r in results if r["expected_status"] != "answered"]
+    judged = [r for r in results if r["expected_status"] is not None]
+    answerable = [r for r in judged if r["expected_status"] == "answered"]
+    refusals = [r for r in judged if r["expected_status"] != "answered"]
     latencies = sorted(
         r["elapsed_seconds"]
         for r in results
@@ -340,8 +468,13 @@ def main(argv: list[str] | None = None) -> int:
     ) or [0.0]
     summary = {
         "datasource_id": arguments.datasource_id,
+        "cases_file": str(arguments.cases),
+        "prompt_revision": PLAN_PROMPT_REVISION if arguments.live else None,
+        "as_of": as_of.isoformat(),
         "cases": len(results),
-        "correct": sum(r["correct"] for r in results),
+        "judged": len(judged),
+        "unjudged": len(results) - len(judged),
+        "correct": sum(1 for r in judged if r["correct"]),
         "answerable_correct": sum(r["correct"] for r in answerable),
         "answerable_total": len(answerable),
         "answered_but_wrong_rows": sum(
@@ -349,7 +482,7 @@ def main(argv: list[str] | None = None) -> int:
             for r in answerable
             if r["status"] == "answered" and not r.get("rows_match_reference", True)
         ),
-        "refusals_correct": sum(r["correct"] for r in refusals),
+        "refusals_correct": sum(1 for r in refusals if r["correct"]),
         "refusals_total": len(refusals),
         "false_answers_on_refusal_cases": sum(
             1 for r in refusals if r["status"] == "answered"
@@ -370,7 +503,12 @@ def main(argv: list[str] | None = None) -> int:
                 1 for t in schema.tables for c in t.columns if c.sample_values
             ),
         },
-        "incorrect_case_ids": [r["case_id"] for r in results if not r["correct"]],
+        "status_counts": {
+            name: sum(1 for r in results if r["status"] == name)
+            for name in sorted({r["status"] for r in results})
+        },
+        "rows_redacted": arguments.redact_rows,
+        "incorrect_case_ids": [r["case_id"] for r in judged if not r["correct"]],
         "verification_counts": {
             level: sum(1 for r in results if r.get("verification") == level)
             for level in ("verified", "partially_verified", "unverified_semantics")
@@ -418,9 +556,10 @@ def main(argv: list[str] | None = None) -> int:
             )[-1],
         }
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
+    reported = [redact_rows(r) for r in results] if arguments.redact_rows else results
     arguments.output.write_text(
         json.dumps(
-            {"summary": summary, "results": results},
+            {"summary": summary, "results": reported},
             indent=2,
             ensure_ascii=False,
             default=str,
@@ -428,6 +567,16 @@ def main(argv: list[str] | None = None) -> int:
         + "\n",
         encoding="utf-8",
     )
+    if arguments.review_sheet is not None:
+        arguments.review_sheet.parent.mkdir(parents=True, exist_ok=True)
+        arguments.review_sheet.write_text(
+            review_sheet(summary, results), encoding="utf-8"
+        )
+    if arguments.verdicts is not None:
+        arguments.verdicts.parent.mkdir(parents=True, exist_ok=True)
+        arguments.verdicts.write_text(
+            verdict_skeleton(arguments.output, results), encoding="utf-8"
+        )
     print(json.dumps(summary, indent=2, ensure_ascii=False))
     return 0
 
