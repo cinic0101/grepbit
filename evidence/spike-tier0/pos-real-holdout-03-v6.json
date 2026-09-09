@@ -1,0 +1,2662 @@
+{
+  "summary": {
+    "datasource_id": "pos_real",
+    "cases_file": "evals/cases/tier0/pos_real_holdout.yaml",
+    "prompt_revision": "plan-classify-json-v6",
+    "as_of": "2026-02-04T18:00:00+08:00",
+    "cases": 50,
+    "judged": 0,
+    "unjudged": 50,
+    "correct": 0,
+    "answerable_correct": 0,
+    "answerable_total": 0,
+    "answered_but_wrong_rows": 0,
+    "refusals_correct": 0,
+    "refusals_total": 0,
+    "false_answers_on_refusal_cases": 0,
+    "model_failures": 1,
+    "p50_seconds": 4.245,
+    "p95_seconds": 5.748,
+    "introspection_seconds": 0.048,
+    "schema": {
+      "tables": 9,
+      "columns": 33,
+      "foreign_keys": 8,
+      "inferred_foreign_keys": [],
+      "enum_distinct_limit": 0,
+      "sampled_columns": 0,
+      "enum_columns": 1
+    },
+    "status_counts": {
+      "answered": 34,
+      "clarify": 3,
+      "failed": 1,
+      "semantic_gap": 6,
+      "unsupported": 6
+    },
+    "rows_redacted": true,
+    "incorrect_case_ids": [],
+    "verification_counts": {
+      "verified": 5,
+      "partially_verified": 0,
+      "unverified_semantics": 29
+    },
+    "shape_repairs": 0,
+    "zero_call_refusals": 8,
+    "shape_gate_refusals": 6,
+    "per_period_clarifies": 3,
+    "literal_checks": 0,
+    "literal_misses": 0,
+    "empty_result_warnings": 0,
+    "segment_exclusions": 27
+  },
+  "results": [
+    {
+      "case_id": "q01",
+      "question": "銷售交易總共有幾筆？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 3.551,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT COUNT(*) AS row_count FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "row_count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "count(*) over pos_sale",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q02",
+      "question": "所有銷售交易的總金額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 3.758,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            }
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "sum_total_amount = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT SUM(pos_sale.total_amount) AS sum_total_amount FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "sum_total_amount = sum(pos_sale.total_amount)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "sum(pos_sale.total_amount) over pos_sale",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q03",
+      "question": "已付款訂單的總金額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 3.083,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "metric": "paid_amount"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_payment rows are joined to pos_sale through pos_payment.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "paid_amount = Sum of pos_payment.payment_amount. Payments carry no status: every pos_payment row is a completed payment, so 'paid' means every payment. Time is the sale_date of the paid transaction. Signed by the owner on 2026-09-09.",
+        "No row filter was applied beyond the time window; every pos_payment row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count."
+      ],
+      "verification": "verified",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT SUM(pos_payment.payment_amount) AS paid_amount FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_payment.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "paid_amount = sum(pos_payment.payment_amount) [paid_amount]"
+        ],
+        "dimensions": [],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "metric paid_amount over pos_payment",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q04",
+      "question": "取消的訂單有幾筆？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": null,
+      "elapsed_seconds": 0.0,
+      "reason": "absent_concept",
+      "clarification": "Cancellations are not recorded; only returns (origin_transaction_no set) exist.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "q05",
+      "question": "各訂單狀態的交易筆數是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": null,
+      "elapsed_seconds": 0.0,
+      "reason": "absent_concept",
+      "clarification": "This datasource records no order status: a pos_sale row is either a normal sale or a return (origin_transaction_no set). transfer_status.status is the status of a stock transfer order, not of a sale.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "q06",
+      "question": "訂單筆數最多的狀態是哪一種？若同數，請依狀態名稱由小到大取第一個。",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": null,
+      "elapsed_seconds": 4.245,
+      "reason": "semantic_gap",
+      "clarification": "The question asks for the status of 'orders' (訂單), but the only status column available in the schema is for 'stock transfers' (transfer_status.status). There is no status column associated with the sales/orders table (pos_sale).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "q07",
+      "question": "每筆訂單的平均金額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 3.623,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "avg",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            }
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "avg_total_amount = AVG of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT AVG(pos_sale.total_amount) AS avg_total_amount FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "avg_total_amount = avg(pos_sale.total_amount)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "avg(pos_sale.total_amount) over pos_sale",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q08",
+      "question": "各付款方式的付款總額是多少？請依付款方式名稱由小到大排列。",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 4.205,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "metric": "paid_amount"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "pos_payment",
+            "column": "payment_method"
+          }
+        ],
+        "filters": [],
+        "order": [
+          {
+            "field": "payment_method",
+            "direction": "asc"
+          }
+        ]
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_payment rows are joined to pos_sale through pos_payment.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "paid_amount = Sum of pos_payment.payment_amount. Payments carry no status: every pos_payment row is a completed payment, so 'paid' means every payment. Time is the sale_date of the paid transaction. Signed by the owner on 2026-09-09.",
+        "No row filter was applied beyond the time window; every pos_payment row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count."
+      ],
+      "verification": "verified",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT pos_payment.payment_method AS payment_method, SUM(pos_payment.payment_amount) AS paid_amount FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL GROUP BY pos_payment.payment_method ORDER BY payment_method NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_payment.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "paid_amount = sum(pos_payment.payment_amount) [paid_amount]"
+        ],
+        "dimensions": [
+          "pos_payment.payment_method"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "metric paid_amount over pos_payment; by pos_payment.payment_method",
+      "literal_checks": 0,
+      "row_count": 12,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q09",
+      "question": "各付款方式的交易筆數是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 4.007,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "transaction_count"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "pos_payment",
+            "column": "payment_method"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_payment rows are joined to pos_sale through pos_payment.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "No row filter was applied beyond the time window; every pos_payment row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT pos_payment.payment_method AS payment_method, COUNT(*) AS transaction_count FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL GROUP BY pos_payment.payment_method ORDER BY payment_method NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_payment.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "transaction_count = count(*)"
+        ],
+        "dimensions": [
+          "pos_payment.payment_method"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "count(*) over pos_payment; by pos_payment.payment_method",
+      "literal_checks": 0,
+      "row_count": 12,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q10",
+      "question": "各付款方式的付款金額占同期總付款金額的比例是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "unsupported",
+      "correct": null,
+      "elapsed_seconds": 0.0,
+      "reason": "unsupported_shape:share_of_total",
+      "matched_name": "比例",
+      "clarification": "Shares, ratios and percentages are not supported yet: the service returns one aggregate query without derived arithmetic. Ask for the underlying amounts or counts (for example the amount per group and the total) and compute the share from them.",
+      "status_without_coverage": "unsupported"
+    },
+    {
+      "case_id": "q11",
+      "question": "各門市的銷售總額是多少？請依銷售總額由高到低排列；若同額，依門市名稱由小到大排列。",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 5.325,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            },
+            "alias": "total_sales"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "order": [
+          {
+            "field": "total_sales",
+            "direction": "desc"
+          },
+          {
+            "field": "store_name",
+            "direction": "asc"
+          }
+        ]
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "total_sales = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS total_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY store.store_name ORDER BY total_sales DESC NULLS LAST, store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "total_sales = sum(pos_sale.total_amount)"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "sum(pos_sale.total_amount) over pos_sale; by store.store_name",
+      "literal_checks": 0,
+      "row_count": 5,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q12",
+      "question": "各門市的銷售交易筆數是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 3.923,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "transaction_count"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT store.store_name AS store_name, COUNT(*) AS transaction_count FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY store.store_name ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "transaction_count = count(*)"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "count(*) over pos_sale; by store.store_name",
+      "literal_checks": 0,
+      "row_count": 5,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q13",
+      "question": "各門市的平均客單價是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 4.482,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "avg",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            },
+            "alias": "avg_order_value"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "avg_order_value = AVG of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT store.store_name AS store_name, AVG(pos_sale.total_amount) AS avg_order_value FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY store.store_name ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "avg_order_value = avg(pos_sale.total_amount)"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "avg(pos_sale.total_amount) over pos_sale; by store.store_name",
+      "literal_checks": 0,
+      "row_count": 5,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q14",
+      "question": "各門市的最低單筆交易金額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 4.08,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "min",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            }
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "min_total_amount = MIN of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT store.store_name AS store_name, MIN(pos_sale.total_amount) AS min_total_amount FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY store.store_name ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "min_total_amount = min(pos_sale.total_amount)"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "min(pos_sale.total_amount) over pos_sale; by store.store_name",
+      "literal_checks": 0,
+      "row_count": 5,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q15",
+      "question": "各門市的最高單筆交易金額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 4.523,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "max",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            },
+            "alias": "max_transaction_amount"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "max_transaction_amount = MAX of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT store.store_name AS store_name, MAX(pos_sale.total_amount) AS max_transaction_amount FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY store.store_name ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "max_transaction_amount = max(pos_sale.total_amount)"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "max(pos_sale.total_amount) over pos_sale; by store.store_name",
+      "literal_checks": 0,
+      "row_count": 5,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q16",
+      "question": "銷售總額最高的門市是哪一間？若同額，請依門市名稱由小到大取第一間。",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 5.776,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            },
+            "alias": "total_sales"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "order": [
+          {
+            "field": "total_sales",
+            "direction": "desc"
+          },
+          {
+            "field": "store_name",
+            "direction": "asc"
+          }
+        ],
+        "limit": 1
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "total_sales = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS total_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY store.store_name ORDER BY total_sales DESC NULLS LAST, store_name NULLS FIRST LIMIT %(limit_0)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "total_sales = sum(pos_sale.total_amount)"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "sum(pos_sale.total_amount) over pos_sale; by store.store_name; limit 1",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q17",
+      "question": "各門市的銷售額占同期全部銷售額的比例是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "unsupported",
+      "correct": null,
+      "elapsed_seconds": 0.0,
+      "reason": "unsupported_shape:share_of_total",
+      "matched_name": "比例",
+      "clarification": "Shares, ratios and percentages are not supported yet: the service returns one aggregate query without derived arithmetic. Ask for the underlying amounts or counts (for example the amount per group and the total) and compute the share from them.",
+      "status_without_coverage": "unsupported"
+    },
+    {
+      "case_id": "q18",
+      "question": "各銷售員的銷售總額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 4.319,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            },
+            "alias": "total_sales"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "salesperson",
+            "column": "sales_name"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_sale rows are joined to salesperson through pos_sale.sales_id; rows without a matching salesperson row keep NULL there.",
+        "total_sales = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT salesperson.sales_name AS sales_name, SUM(pos_sale.total_amount) AS total_sales FROM public.pos_sale LEFT JOIN public.salesperson ON pos_sale.sales_id = salesperson.sales_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY salesperson.sales_name ORDER BY sales_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "salesperson"
+        ],
+        "joins": [
+          "pos_sale.sales_id -> salesperson.sales_id"
+        ],
+        "measures": [
+          "total_sales = sum(pos_sale.total_amount)"
+        ],
+        "dimensions": [
+          "salesperson.sales_name"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "sum(pos_sale.total_amount) over pos_sale; by salesperson.sales_name",
+      "literal_checks": 0,
+      "row_count": 25,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q19",
+      "question": "各銷售員的交易筆數是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 3.833,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "transaction_count"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "salesperson",
+            "column": "sales_name"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_sale rows are joined to salesperson through pos_sale.sales_id; rows without a matching salesperson row keep NULL there.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT salesperson.sales_name AS sales_name, COUNT(*) AS transaction_count FROM public.pos_sale LEFT JOIN public.salesperson ON pos_sale.sales_id = salesperson.sales_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY salesperson.sales_name ORDER BY sales_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "salesperson"
+        ],
+        "joins": [
+          "pos_sale.sales_id -> salesperson.sales_id"
+        ],
+        "measures": [
+          "transaction_count = count(*)"
+        ],
+        "dimensions": [
+          "salesperson.sales_name"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "count(*) over pos_sale; by salesperson.sales_name",
+      "literal_checks": 0,
+      "row_count": 25,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q20",
+      "question": "銷售額最高的前 3 位銷售員是誰？若同額，請依銷售員名稱由小到大排列。",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 5.484,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            },
+            "alias": "total_sales"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "salesperson",
+            "column": "sales_name"
+          }
+        ],
+        "filters": [],
+        "order": [
+          {
+            "field": "total_sales",
+            "direction": "desc"
+          },
+          {
+            "field": "sales_name",
+            "direction": "asc"
+          }
+        ],
+        "limit": 3
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_sale rows are joined to salesperson through pos_sale.sales_id; rows without a matching salesperson row keep NULL there.",
+        "total_sales = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT salesperson.sales_name AS sales_name, SUM(pos_sale.total_amount) AS total_sales FROM public.pos_sale LEFT JOIN public.salesperson ON pos_sale.sales_id = salesperson.sales_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY salesperson.sales_name ORDER BY total_sales DESC NULLS LAST, sales_name NULLS FIRST LIMIT %(limit_0)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "salesperson"
+        ],
+        "joins": [
+          "pos_sale.sales_id -> salesperson.sales_id"
+        ],
+        "measures": [
+          "total_sales = sum(pos_sale.total_amount)"
+        ],
+        "dimensions": [
+          "salesperson.sales_name"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "sum(pos_sale.total_amount) over pos_sale; by salesperson.sales_name; limit 3",
+      "literal_checks": 0,
+      "row_count": 3,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q21",
+      "question": "各銷售員的銷售額占同期全部銷售額的比例是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "unsupported",
+      "correct": null,
+      "elapsed_seconds": 0.0,
+      "reason": "unsupported_shape:share_of_total",
+      "matched_name": "比例",
+      "clarification": "Shares, ratios and percentages are not supported yet: the service returns one aggregate query without derived arithmetic. Ask for the underlying amounts or counts (for example the amount per group and the total) and compute the share from them.",
+      "status_without_coverage": "unsupported"
+    },
+    {
+      "case_id": "q22",
+      "question": "每天的銷售總額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "clarify",
+      "correct": null,
+      "elapsed_seconds": 5.244,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            },
+            "alias": "total_sales"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "day",
+            "offset": 0,
+            "length": 1,
+            "to_date": false
+          },
+          "grain": "day"
+        },
+        "order": []
+      },
+      "reason": "per_period_single_window",
+      "matched_name": "每天",
+      "clarification": "The question asks for one value per period, but the plan covered only the current period. Say which range to break down (for example every day of last month), or ask for today alone.",
+      "status_without_coverage": "clarify"
+    },
+    {
+      "case_id": "q23",
+      "question": "每天的銷售交易筆數是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "clarify",
+      "correct": null,
+      "elapsed_seconds": 4.951,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "transaction_count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "day",
+            "offset": 0,
+            "length": 1,
+            "to_date": false
+          },
+          "grain": "day"
+        },
+        "order": []
+      },
+      "reason": "per_period_single_window",
+      "matched_name": "每天",
+      "clarification": "The question asks for one value per period, but the plan covered only the current period. Say which range to break down (for example every day of last month), or ask for today alone.",
+      "status_without_coverage": "clarify"
+    },
+    {
+      "case_id": "q24",
+      "question": "每天的平均客單價是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": null,
+      "elapsed_seconds": 4.122,
+      "reason": "semantic_gap",
+      "clarification": "客單價 (Average Order Value) 通常定義為 銷售總額 / 交易筆數。由於此需求涉及兩個不同聚合指標的除法運算，無法透過單一聚合查詢 (aggregate query) 完成。",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "q25",
+      "question": "2026 年 1 月的銷售總額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 5.277,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            }
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-01"
+          }
+        },
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "sum_total_amount = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2026-01 is [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT SUM(pos_sale.total_amount) AS sum_total_amount FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s)",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "sum_total_amount = sum(pos_sale.total_amount)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(pos_sale.total_amount) over pos_sale; for 2026-01",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q26",
+      "question": "2026 年 1 月 5 日至 1 月 6 日（含首尾兩天）的銷售交易筆數是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 5.103,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "transaction_count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "range",
+            "start": "2026-01-05",
+            "end_exclusive": "2026-01-07"
+          }
+        },
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2026-01-05..2026-01-07 is [2026-01-05T00:00:00+08:00, 2026-01-07T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT COUNT(*) AS transaction_count FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s)",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "transaction_count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-05T00:00:00+08:00, 2026-01-07T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "count(*) over pos_sale; for 2026-01-05..2026-01-07",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q27",
+      "question": "各月份的銷售總額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 5.748,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            },
+            "alias": "total_sales"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "year",
+            "offset": 0,
+            "length": 1,
+            "to_date": true
+          },
+          "grain": "month"
+        },
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "total_sales = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "Relative period resolved from as_of 2026-02-04T18:00:00+08:00: 2026 to 2026-02-04 is [2026-01-01T00:00:00+08:00, 2026-02-05T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT DATE_TRUNC('MONTH', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') AS period_start, SUM(pos_sale.total_amount) AS total_sales FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s) GROUP BY DATE_TRUNC('MONTH', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') ORDER BY period_start NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "total_sales = sum(pos_sale.total_amount)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-01T00:00:00+08:00, 2026-02-05T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(pos_sale.total_amount) over pos_sale; per month; for 2026 to 2026-02-04",
+      "literal_checks": 0,
+      "row_count": 2,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q28",
+      "question": "2026 年 1 月各門市的銷售總額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 5.565,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            },
+            "alias": "total_sales"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-01"
+          }
+        },
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "total_sales = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2026-01 is [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS total_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s) GROUP BY store.store_name ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "total_sales = sum(pos_sale.total_amount)"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(pos_sale.total_amount) over pos_sale; by store.store_name; for 2026-01",
+      "literal_checks": 0,
+      "row_count": 5,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q29",
+      "question": "指定門市在指定日期區間內的銷售總額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": null,
+      "elapsed_seconds": 5.066,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "q30",
+      "question": "前天到今天（含首尾兩天）的銷售總額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 4.959,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            }
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "day",
+            "offset": -2,
+            "length": 3,
+            "to_date": false
+          }
+        },
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "sum_total_amount = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "Relative period resolved from as_of 2026-02-04T18:00:00+08:00: 2026-02-02..2026-02-05 is [2026-02-02T00:00:00+08:00, 2026-02-05T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT SUM(pos_sale.total_amount) AS sum_total_amount FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s)",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "sum_total_amount = sum(pos_sale.total_amount)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [2026-02-02T00:00:00+08:00, 2026-02-05T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(pos_sale.total_amount) over pos_sale; for 2026-02-02..2026-02-05",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q31",
+      "question": "上週（週一至週日）每天的銷售交易筆數是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 4.974,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "transaction_count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "week",
+            "offset": -1,
+            "length": 1,
+            "to_date": false
+          },
+          "grain": "day"
+        },
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "Relative period resolved from as_of 2026-02-04T18:00:00+08:00: 2026-01-26 is [2026-01-26T00:00:00+08:00, 2026-02-02T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT DATE_TRUNC('DAY', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') AS period_start, COUNT(*) AS transaction_count FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s) GROUP BY DATE_TRUNC('DAY', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') ORDER BY period_start NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "transaction_count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-26T00:00:00+08:00, 2026-02-02T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "count(*) over pos_sale; per day; for 2026-01-26",
+      "literal_checks": 0,
+      "row_count": 7,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q32",
+      "question": "上週（週一至週日）各門市的銷售總額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 5.806,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            },
+            "alias": "total_sales"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "week",
+            "offset": -1,
+            "length": 1,
+            "to_date": false
+          }
+        },
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "total_sales = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "Relative period resolved from as_of 2026-02-04T18:00:00+08:00: 2026-01-26 is [2026-01-26T00:00:00+08:00, 2026-02-02T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS total_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s) GROUP BY store.store_name ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "total_sales = sum(pos_sale.total_amount)"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-26T00:00:00+08:00, 2026-02-02T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(pos_sale.total_amount) over pos_sale; by store.store_name; for 2026-01-26",
+      "literal_checks": 0,
+      "row_count": 5,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q33",
+      "question": "本月截至今天的銷售總額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 5.039,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            }
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "month",
+            "offset": 0,
+            "length": 1,
+            "to_date": true
+          }
+        },
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "sum_total_amount = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "Relative period resolved from as_of 2026-02-04T18:00:00+08:00: 2026-02 to 2026-02-04 is [2026-02-01T00:00:00+08:00, 2026-02-05T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT SUM(pos_sale.total_amount) AS sum_total_amount FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s)",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "sum_total_amount = sum(pos_sale.total_amount)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [2026-02-01T00:00:00+08:00, 2026-02-05T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(pos_sale.total_amount) over pos_sale; for 2026-02 to 2026-02-04",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q34",
+      "question": "最近 30 天的退貨金額占同期銷售總額的比例是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "unsupported",
+      "correct": null,
+      "elapsed_seconds": 0.0,
+      "reason": "unsupported_shape:share_of_total",
+      "matched_name": "比例",
+      "clarification": "Shares, ratios and percentages are not supported yet: the service returns one aggregate query without derived arithmetic. Ask for the underlying amounts or counts (for example the amount per group and the total) and compute the share from them.",
+      "status_without_coverage": "unsupported"
+    },
+    {
+      "case_id": "q35",
+      "question": "單價高於 1000 元的商品有幾項？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 4.075,
+      "plan": {
+        "base_table": "product",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "product",
+              "column": "price"
+            },
+            "op": "gt",
+            "values": [
+              1000
+            ]
+          }
+        ],
+        "order": []
+      },
+      "assumptions": [
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT COUNT(*) AS count FROM public.product WHERE product.price > %(f_0)s",
+      "lineage": {
+        "base_table": "product",
+        "tables": [
+          "product"
+        ],
+        "joins": [],
+        "measures": [
+          "count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "product.price gt 1000"
+        ],
+        "time_window": []
+      },
+      "interpretation": "count(*) over product; where product.price gt 1000",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q36",
+      "question": "各商品分類有幾項商品？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 3.649,
+      "plan": {
+        "base_table": "product",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "product_count"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "category",
+            "column": "category_name"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "product rows are joined to category through product.category_id; rows without a matching category row keep NULL there.",
+        "No row filter was applied beyond the time window; every product row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT category.category_name AS category_name, COUNT(*) AS product_count FROM public.product LEFT JOIN public.category ON product.category_id = category.category_id GROUP BY category.category_name ORDER BY category_name NULLS FIRST",
+      "lineage": {
+        "base_table": "product",
+        "tables": [
+          "product",
+          "category"
+        ],
+        "joins": [
+          "product.category_id -> category.category_id"
+        ],
+        "measures": [
+          "product_count = count(*)"
+        ],
+        "dimensions": [
+          "category.category_name"
+        ],
+        "filters": [],
+        "time_window": []
+      },
+      "interpretation": "count(*) over product; by category.category_name",
+      "literal_checks": 0,
+      "row_count": 14,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q37",
+      "question": "各商品分類的銷售總額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 4.469,
+      "plan": {
+        "base_table": "pos_saleitem",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_saleitem",
+              "column": "amount"
+            },
+            "alias": "total_sales"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "category",
+            "column": "category_name"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_saleitem rows are joined to product through pos_saleitem.product_id; rows without a matching product row keep NULL there.",
+        "pos_saleitem rows are joined to category through product.category_id; rows without a matching category row keep NULL there.",
+        "pos_saleitem rows are joined to pos_sale through pos_saleitem.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "total_sales = SUM of pos_saleitem.amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_saleitem row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT category.category_name AS category_name, SUM(pos_saleitem.amount) AS total_sales FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id LEFT JOIN public.category ON product.category_id = category.category_id LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL GROUP BY category.category_name ORDER BY category_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_saleitem",
+        "tables": [
+          "pos_saleitem",
+          "product",
+          "category",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_saleitem.product_id -> product.product_id",
+          "product.category_id -> category.category_id",
+          "pos_saleitem.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "total_sales = sum(pos_saleitem.amount)"
+        ],
+        "dimensions": [
+          "category.category_name"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "sum(pos_saleitem.amount) over pos_saleitem; by category.category_name",
+      "literal_checks": 0,
+      "row_count": 14,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q38",
+      "question": "各商品分類的最低商品單價是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 4.258,
+      "plan": {
+        "base_table": "product",
+        "measures": [
+          {
+            "aggregate": "min",
+            "column": {
+              "table": "product",
+              "column": "price"
+            },
+            "alias": "min_price"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "category",
+            "column": "category_name"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "product rows are joined to category through product.category_id; rows without a matching category row keep NULL there.",
+        "min_price = MIN of product.price; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every product row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT category.category_name AS category_name, MIN(product.price) AS min_price FROM public.product LEFT JOIN public.category ON product.category_id = category.category_id GROUP BY category.category_name ORDER BY category_name NULLS FIRST",
+      "lineage": {
+        "base_table": "product",
+        "tables": [
+          "product",
+          "category"
+        ],
+        "joins": [
+          "product.category_id -> category.category_id"
+        ],
+        "measures": [
+          "min_price = min(product.price)"
+        ],
+        "dimensions": [
+          "category.category_name"
+        ],
+        "filters": [],
+        "time_window": []
+      },
+      "interpretation": "min(product.price) over product; by category.category_name",
+      "literal_checks": 0,
+      "row_count": 14,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q39",
+      "question": "各商品分類的最高商品單價是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 4.151,
+      "plan": {
+        "base_table": "product",
+        "measures": [
+          {
+            "aggregate": "max",
+            "column": {
+              "table": "product",
+              "column": "price"
+            },
+            "alias": "max_unit_price"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "category",
+            "column": "category_name"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "product rows are joined to category through product.category_id; rows without a matching category row keep NULL there.",
+        "max_unit_price = MAX of product.price; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every product row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT category.category_name AS category_name, MAX(product.price) AS max_unit_price FROM public.product LEFT JOIN public.category ON product.category_id = category.category_id GROUP BY category.category_name ORDER BY category_name NULLS FIRST",
+      "lineage": {
+        "base_table": "product",
+        "tables": [
+          "product",
+          "category"
+        ],
+        "joins": [
+          "product.category_id -> category.category_id"
+        ],
+        "measures": [
+          "max_unit_price = max(product.price)"
+        ],
+        "dimensions": [
+          "category.category_name"
+        ],
+        "filters": [],
+        "time_window": []
+      },
+      "interpretation": "max(product.price) over product; by category.category_name",
+      "literal_checks": 0,
+      "row_count": 14,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q40",
+      "question": "各商品的銷售數量是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 4.295,
+      "plan": {
+        "base_table": "pos_saleitem",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_saleitem",
+              "column": "quantity"
+            },
+            "alias": "total_quantity"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "product",
+            "column": "product_name"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_saleitem rows are joined to product through pos_saleitem.product_id; rows without a matching product row keep NULL there.",
+        "pos_saleitem rows are joined to pos_sale through pos_saleitem.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "total_quantity = SUM of pos_saleitem.quantity; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_saleitem row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT product.product_name AS product_name, SUM(pos_saleitem.quantity) AS total_quantity FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL GROUP BY product.product_name ORDER BY product_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_saleitem",
+        "tables": [
+          "pos_saleitem",
+          "product",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_saleitem.product_id -> product.product_id",
+          "pos_saleitem.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "total_quantity = sum(pos_saleitem.quantity)"
+        ],
+        "dimensions": [
+          "product.product_name"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "sum(pos_saleitem.quantity) over pos_saleitem; by product.product_name",
+      "literal_checks": 0,
+      "row_count": 591,
+      "rows_truncated": true,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q41",
+      "question": "各商品分類的銷售額占同期全部銷售額的比例是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "unsupported",
+      "correct": null,
+      "elapsed_seconds": 0.0,
+      "reason": "unsupported_shape:share_of_total",
+      "matched_name": "比例",
+      "clarification": "Shares, ratios and percentages are not supported yet: the service returns one aggregate query without derived arithmetic. Ask for the underlying amounts or counts (for example the amount per group and the total) and compute the share from them.",
+      "status_without_coverage": "unsupported"
+    },
+    {
+      "case_id": "q42",
+      "question": "銷售金額最高的前 10 項商品有哪些？若同額，請依商品名稱由小到大排列。",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 5.49,
+      "plan": {
+        "base_table": "pos_saleitem",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_saleitem",
+              "column": "amount"
+            },
+            "alias": "total_sales"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "product",
+            "column": "product_name"
+          }
+        ],
+        "filters": [],
+        "order": [
+          {
+            "field": "total_sales",
+            "direction": "desc"
+          },
+          {
+            "field": "product_name",
+            "direction": "asc"
+          }
+        ],
+        "limit": 10
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_saleitem rows are joined to product through pos_saleitem.product_id; rows without a matching product row keep NULL there.",
+        "pos_saleitem rows are joined to pos_sale through pos_saleitem.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "total_sales = SUM of pos_saleitem.amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_saleitem row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT product.product_name AS product_name, SUM(pos_saleitem.amount) AS total_sales FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL GROUP BY product.product_name ORDER BY total_sales DESC NULLS LAST, product_name NULLS FIRST LIMIT %(limit_0)s",
+      "lineage": {
+        "base_table": "pos_saleitem",
+        "tables": [
+          "pos_saleitem",
+          "product",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_saleitem.product_id -> product.product_id",
+          "pos_saleitem.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "total_sales = sum(pos_saleitem.amount)"
+        ],
+        "dimensions": [
+          "product.product_name"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "sum(pos_saleitem.amount) over pos_saleitem; by product.product_name; limit 10",
+      "literal_checks": 0,
+      "row_count": 10,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q43",
+      "question": "銷售數量最高的前 10 項商品有哪些？若同數，請依商品名稱由小到大排列。",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 5.422,
+      "plan": {
+        "base_table": "pos_saleitem",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_saleitem",
+              "column": "quantity"
+            },
+            "alias": "total_quantity"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "product",
+            "column": "product_name"
+          }
+        ],
+        "filters": [],
+        "order": [
+          {
+            "field": "total_quantity",
+            "direction": "desc"
+          },
+          {
+            "field": "product_name",
+            "direction": "asc"
+          }
+        ],
+        "limit": 10
+      },
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_saleitem rows are joined to product through pos_saleitem.product_id; rows without a matching product row keep NULL there.",
+        "pos_saleitem rows are joined to pos_sale through pos_saleitem.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "total_quantity = SUM of pos_saleitem.quantity; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_saleitem row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [
+        "returns"
+      ],
+      "sql": "SELECT product.product_name AS product_name, SUM(pos_saleitem.quantity) AS total_quantity FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL GROUP BY product.product_name ORDER BY total_quantity DESC NULLS LAST, product_name NULLS FIRST LIMIT %(limit_0)s",
+      "lineage": {
+        "base_table": "pos_saleitem",
+        "tables": [
+          "pos_saleitem",
+          "product",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_saleitem.product_id -> product.product_id",
+          "pos_saleitem.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "total_quantity = sum(pos_saleitem.quantity)"
+        ],
+        "dimensions": [
+          "product.product_name"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "sum(pos_saleitem.quantity) over pos_saleitem; by product.product_name; limit 10",
+      "literal_checks": 0,
+      "row_count": 10,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q44",
+      "question": "指定商品分類在指定日期區間內的銷售總額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": null,
+      "elapsed_seconds": 3.594,
+      "reason": "semantic_gap",
+      "clarification": "The question asks for sales total for a 'specified product category' and 'specified date range', but no specific category name or date values were provided in the prompt.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "q45",
+      "question": "退貨交易總共有幾筆？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 3.012,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "return_count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "return_count = Count of pos_sale rows that reference an origin transaction (origin_transaction_no is set). Signed by the owner on 2026-09-09.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "sql": "SELECT COUNT(*) AS return_count FROM public.pos_sale WHERE NOT pos_sale.origin_transaction_no IS NULL",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "return_count = count(*) [return_count]"
+        ],
+        "dimensions": [],
+        "filters": [
+          "[return_count] pos_sale.origin_transaction_no not_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "metric return_count over pos_sale",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q46",
+      "question": "各門市的退貨總金額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 3.631,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "return_amount"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "return_amount = Sum of pos_sale.total_amount over transactions that reference an origin transaction (pos_sale.origin_transaction_no is set); the owner confirmed on 2026-09-09 that such a transaction is a return. Signed by the owner on 2026-09-09.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "sql": "SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS return_amount FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE NOT pos_sale.origin_transaction_no IS NULL GROUP BY store.store_name ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "return_amount = sum(pos_sale.total_amount) [return_amount]"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [
+          "[return_amount] pos_sale.origin_transaction_no not_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "metric return_amount over pos_sale; by store.store_name",
+      "literal_checks": 0,
+      "row_count": 5,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q47",
+      "question": "每日的退貨筆數是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "clarify",
+      "correct": null,
+      "elapsed_seconds": 4.641,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "return_count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "day",
+            "offset": 0,
+            "length": 1,
+            "to_date": false
+          },
+          "grain": "day"
+        },
+        "order": []
+      },
+      "reason": "per_period_single_window",
+      "matched_name": "每日",
+      "clarification": "The question asks for one value per period, but the plan covered only the current period. Say which range to break down (for example every day of last month), or ask for today alone.",
+      "status_without_coverage": "clarify"
+    },
+    {
+      "case_id": "q48",
+      "question": "各商品的退貨數量是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 3.72,
+      "plan": {
+        "base_table": "pos_saleitem",
+        "measures": [
+          {
+            "metric": "return_quantity"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "product",
+            "column": "product_name"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "pos_saleitem rows are joined to product through pos_saleitem.product_id; rows without a matching product row keep NULL there.",
+        "pos_saleitem rows are joined to pos_sale through pos_saleitem.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "return_quantity = Sum of pos_saleitem.quantity over line items whose transaction references an origin transaction (pos_sale.origin_transaction_no is set). Signed by the owner on 2026-09-09.",
+        "No row filter was applied beyond the time window; every pos_saleitem row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "sql": "SELECT product.product_name AS product_name, SUM(pos_saleitem.quantity) AS return_quantity FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no WHERE NOT pos_sale.origin_transaction_no IS NULL GROUP BY product.product_name ORDER BY product_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_saleitem",
+        "tables": [
+          "pos_saleitem",
+          "product",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_saleitem.product_id -> product.product_id",
+          "pos_saleitem.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "return_quantity = sum(pos_saleitem.quantity) [return_quantity]"
+        ],
+        "dimensions": [
+          "product.product_name"
+        ],
+        "filters": [
+          "[return_quantity] pos_sale.origin_transaction_no not_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "metric return_quantity over pos_saleitem; by product.product_name",
+      "literal_checks": 0,
+      "row_count": 304,
+      "rows_truncated": true,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q49",
+      "question": "以退貨數量除以銷售數量計算，哪些商品的退貨率最高？若同率，請依商品名稱由小到大排列。",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": null,
+      "elapsed_seconds": 4.817,
+      "reason": "semantic_gap",
+      "clarification": "The request asks for a 'return rate' calculated as 'return quantity divided by sales quantity'. While 'return quantity' is available as a reviewed metric, the schema does not provide a single pre-defined metric for 'sales quantity' (total quantity sold across all transactions) that can be combined in a single aggregate query to calculate a ratio per product.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "q50",
+      "question": "退貨金額占同期銷售總額的比例是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "unsupported",
+      "correct": null,
+      "elapsed_seconds": 0.0,
+      "reason": "unsupported_shape:share_of_total",
+      "matched_name": "比例",
+      "clarification": "Shares, ratios and percentages are not supported yet: the service returns one aggregate query without derived arithmetic. Ask for the underlying amounts or counts (for example the amount per group and the total) and compute the share from them.",
+      "status_without_coverage": "unsupported"
+    }
+  ]
+}

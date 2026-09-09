@@ -64,6 +64,8 @@ class RelativeScope(DomainModel):
     unit: RelativeUnit
     offset: int = Field(le=0, ge=-MAX_RELATIVE_SPAN)
     length: int = Field(default=1, ge=1, le=MAX_RELATIVE_SPAN)
+    # "month to date", "this year so far": the window ends after as_of's day.
+    to_date: bool = False
 
 
 class PeriodsScope(DomainModel):
@@ -197,7 +199,13 @@ def resolve_time_scope(
         else:
             first_label, last_label = f"{first_year:04d}", f"{last_year:04d}"
         label = first_label if scope.length == 1 else f"{first_label}..{last_label}"
-        return [ResolvedPeriod(label=label, start=start, end_exclusive=end)]
+        return [
+            _to_date(
+                scope,
+                anchor,
+                ResolvedPeriod(label=label, start=start, end_exclusive=end),
+            )
+        ]
     if scope.unit is RelativeUnit.WEEK:
         week_start = anchor.date() - timedelta(days=anchor.weekday())  # Monday
         first_day = week_start + timedelta(weeks=scope.offset)
@@ -210,13 +218,54 @@ def resolve_time_scope(
         if scope.length == 1
         else f"{first_day.isoformat()}..{end_day.isoformat()}"
     )
-    return [
-        ResolvedPeriod(
-            label=label,
-            start=datetime.combine(first_day, time(), tzinfo=zone),
-            end_exclusive=datetime.combine(end_day, time(), tzinfo=zone),
-        )
-    ]
+    period = ResolvedPeriod(
+        label=label,
+        start=datetime.combine(first_day, time(), tzinfo=zone),
+        end_exclusive=datetime.combine(end_day, time(), tzinfo=zone),
+    )
+    return [_to_date(scope, anchor, period)]
+
+
+def _to_date(
+    scope: RelativeScope, anchor: datetime, period: ResolvedPeriod
+) -> ResolvedPeriod:
+    """Clamp a "to date" window to the end of as_of's day (still half-open)."""
+
+    if not scope.to_date:
+        return period
+    day_end = datetime.combine(
+        anchor.date() + timedelta(days=1), time(), tzinfo=anchor.tzinfo
+    )
+    if day_end >= period.end_exclusive or day_end <= period.start:
+        return period
+    return period.model_copy(
+        update={
+            "end_exclusive": day_end,
+            "label": f"{period.label} to {anchor.date().isoformat()}",
+        }
+    )
+
+
+def current_unit_end(
+    as_of: datetime, unit: RelativeUnit, business_timezone: str
+) -> datetime:
+    """Start of the unit after the one containing ``as_of`` (business time zone)."""
+
+    anchor = as_of.astimezone(ZoneInfo(business_timezone))
+    zone = anchor.tzinfo
+    if unit is RelativeUnit.DAY:
+        return datetime.combine(anchor.date() + timedelta(days=1), time(), tzinfo=zone)
+    if unit is RelativeUnit.WEEK:
+        monday = anchor.date() - timedelta(days=anchor.weekday())
+        return datetime.combine(monday + timedelta(weeks=1), time(), tzinfo=zone)
+    months_per_unit = {
+        RelativeUnit.MONTH: 1,
+        RelativeUnit.QUARTER: 3,
+        RelativeUnit.YEAR: 12,
+    }[unit]
+    unit_month = ((anchor.month - 1) // months_per_unit) * months_per_unit + 1
+    year, month = _add_months(anchor.year, unit_month, months_per_unit)
+    return datetime(year, month, 1, tzinfo=zone)
 
 
 def _month_period(month: str, zone: ZoneInfo) -> ResolvedPeriod:

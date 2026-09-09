@@ -40,14 +40,20 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
    word yields `unsupported` with the pack's clarification, measured in
    `../research/deterministic-gates.md`).
 3. Plan: `ChatCompletionsPlanClient.propose` sends the rules, the JSON Schema
-   of `PlanProposal`, the value-free schema payload (plus overlay metrics and
-   aliases, plus the previous turn for follow-ups) and gets one JSON object:
-   a `QueryPlan` or a decline with a reason. String-shaped column references
-   are repaired only when they resolve to exactly one table.
+   of `PlanProposal`, the value-free schema payload (plus overlay metrics,
+   aliases, value names, default time columns and segments, plus the previous
+   turn for follow-ups) and gets one JSON object: a `QueryPlan` or a decline
+   with a reason. String-shaped column references are repaired only when they
+   resolve to exactly one table. One deterministic check runs on the proposal
+   before compilation: a per-period question (每天, monthly; language pack
+   `period_words`) answered with a single current-period window is a
+   `clarify` (`single_period_misread`), never a rewritten plan.
 4. Compile: `PlanCompiler.compile` validates every identifier and kind, walks
    foreign keys away from the base table only (up to three hops, ambiguous
-   paths rejected), expands reviewed metrics, resolves time windows in the
-   business time zone from `as_of`, builds the SQL as a sqlglot AST with
+   paths rejected), expands reviewed metrics, applies the overlay segments the
+   question did not lift (`excluded_segments`) as reviewed default filters,
+   resolves time windows in the business time zone from `as_of` (rejecting a
+   past window that reaches the future), builds the SQL as a sqlglot AST with
    bound placeholders, and emits lineage, assumptions, interpretation and the
    verification level.
 5. Gate: `PostgresSqlPolicy(tables=..., functions=...)` re-parses the SQL and
@@ -61,8 +67,8 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
    statement and idle timeouts, a named cursor, bounded rows, and the
    cancellation registry.
 8. Answer: status, verification, interpretation, assumptions, lineage, SQL,
-   rows; or a typed refusal with the reason and, when available, a
-   clarification.
+   rows, a warning when the result is empty; or a typed refusal with the
+   reason and, when available, a clarification.
 
 ## Invariants
 

@@ -104,9 +104,22 @@ class Filter(DomainModel):
 
 
 class TimeSpec(DomainModel):
+    """A time column with a window, a grain, or both.
+
+    ``scope`` may be omitted only together with a ``grain``: "every day" over
+    all the data buckets by day without a window. A window without a grain is
+    a plain filter; a grain without a window is a plain breakdown.
+    """
+
     column: ColumnRef
-    scope: TimeScope
+    scope: TimeScope | None = None
     grain: TimeGrain | None = None
+
+    @model_validator(mode="after")
+    def window_or_grain(self) -> TimeSpec:
+        if self.scope is None and self.grain is None:
+            raise ValueError("plan_time_requires_scope_or_grain")
+        return self
 
 
 class OrderSpec(DomainModel):
@@ -175,6 +188,9 @@ _PLAN_ERROR_CODES = frozenset(
         "unknown_metric",
         "metric_base_table_mismatch",
         "metric_conflict",
+        # a past relative window whose end lies beyond the current unit (for
+        # example unit week, offset -1, length 7: the model meant days)
+        "relative_window_reaches_future",
     }
 )
 

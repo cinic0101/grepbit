@@ -22,3 +22,10 @@ class UnsupportedShape(DomainModel):
 class ShapePack(DomainModel):
     revision: str = Field(min_length=1)
     shapes: list[UnsupportedShape] = Field(default_factory=list)
+    # Words that ask for one value per period (每天, monthly); a plan that
+    # answers such a question with a single current-period window misread it.
+    period_words: list[str] = Field(default_factory=list)
+    period_clarification: str = (
+        "The question asks for one value per period, but the plan covered only "
+        "the current period."
+    )

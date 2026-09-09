@@ -16,7 +16,7 @@ from grepbit.domain.plan import PlanProposal, PreviousTurn
 from grepbit.domain.schema_model import SchemaModel
 from grepbit.ports.grounding import GroundingModelError
 
-PLAN_PROMPT_REVISION = "plan-classify-json-v5"
+PLAN_PROMPT_REVISION = "plan-classify-json-v7"
 
 _RULES = (
     "You translate one analytics question into ONE aggregate query plan over the "
@@ -42,7 +42,14 @@ _RULES = (
     "unit quarter offset 0; last 7 days is unit day offset -7 length 7), or "
     '{"kind":"periods","periods":[{"kind":"month","month":"YYYY-MM"},...]}. '
     "Set grain (day, week, month, quarter, or year) when the question wants a "
-    "trend or compares periods. "
+    "trend or compares periods. A question that asks for a value per period "
+    "(每天, 每日, daily, 各月份, monthly, per week) sets grain; give it a scope "
+    "only if the question states a window, otherwise omit scope and the server "
+    "buckets all the data. Never add a window the question does not ask for. "
+    "In a relative window, length counts units: last week is unit week "
+    "offset -1 length 1, not length 7. A period so far (本月截至今天, month to "
+    'date, year to date) is {"kind":"relative","unit":...,"offset":0,"length":1,'
+    '"to_date":true}. '
     "Never compute dates yourself; the server resolves relative windows from as_of. "
     "(6) Use order and limit for top-N questions; order fields must be output "
     "names (dimension column name, measure alias, or period_start). "
@@ -71,7 +78,11 @@ _OVERLAY_RULE = (
     '{"metric": "<id>"} with no aggregate or column; the metric carries its own '
     "definition and filters, so do not add filters that restate it. Still take "
     "dimensions, time, order, and limit from the question; base_table must be the "
-    "metric's base_table. Column aliases list the business names of a column."
+    "metric's base_table. Tables and columns may list aliases (their business "
+    "names) and a table may name its default_time_column: prefer it for that "
+    "table. A column's value_aliases map business names to stored values: use "
+    "the stored value as the literal. segments describe row subsets the server "
+    "already excludes by default; do not add filters for them."
 )
 
 
@@ -90,23 +101,39 @@ def schema_payload(
             "sample_values": column.sample_values or None,
         }
         if overlay is not None:
-            aliases = overlay.aliases_for(f"{table_name}.{column.name}")
+            column_id = f"{table_name}.{column.name}"
+            aliases = overlay.aliases_for(column_id)
             if aliases:
                 entry["aliases"] = aliases
+            values = overlay.values_for(column_id)
+            if values:
+                # Reviewed stored values with their business names; the planner
+                # uses the stored spelling as the literal.
+                entry["value_aliases"] = [
+                    {"value": v.value, "names": v.names} for v in values
+                ]
+        return entry
+
+    def table_entry(table) -> dict[str, Any]:
+        entry: dict[str, Any] = {
+            "name": table.name,
+            "comment": table.comment,
+            "primary_key": table.primary_key,
+        }
+        if overlay is not None:
+            names = overlay.table_names(table.name)
+            if names:
+                entry["aliases"] = names
+            default = overlay.time_default(table.name)
+            if default is not None:
+                entry["default_time_column"] = default.id
+        entry["columns"] = [column_entry(table.name, c) for c in table.columns]
         return entry
 
     payload: dict[str, Any] = {
         "datasource_id": model.datasource_id,
         "business_timezone": model.business_timezone,
-        "tables": [
-            {
-                "name": table.name,
-                "comment": table.comment,
-                "primary_key": table.primary_key,
-                "columns": [column_entry(table.name, c) for c in table.columns],
-            }
-            for table in model.tables
-        ],
+        "tables": [table_entry(table) for table in model.tables],
         "foreign_keys": [
             f"{fk.table}.{fk.column} -> {fk.referenced_table}.{fk.referenced_column}"
             for fk in model.foreign_keys
@@ -122,6 +149,17 @@ def schema_payload(
                 "review_state": metric.review_state.value,
             }
             for metric in overlay.metrics
+        ]
+    if overlay is not None and overlay.segments:
+        payload["segments"] = [
+            {
+                "id": segment.id,
+                "names": segment.names,
+                "table": segment.table,
+                "excluded_by_default": segment.default_exclude,
+                "note": segment.note,
+            }
+            for segment in overlay.segments
         ]
     return payload
 

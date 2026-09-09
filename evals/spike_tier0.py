@@ -56,8 +56,12 @@ from grepbit.adapters.sqlglot.policy import (
 )
 from grepbit.application.active_queries import ActiveQueryRegistry
 from grepbit.application.literals import text_literal_checks
-from grepbit.application.overlay import match_absent_concept, overlay_problems
-from grepbit.application.shapes import match_unsupported_shape
+from grepbit.application.overlay import (
+    excluded_segments,
+    match_absent_concept,
+    overlay_problems,
+)
+from grepbit.application.shapes import match_unsupported_shape, single_period_misread
 from grepbit.domain.grounding import normalize_question
 from grepbit.domain.plan import PlanError, PreviousTurn, QueryPlan
 from grepbit.ports.grounding import GroundingModelError
@@ -115,6 +119,10 @@ def normalize_rows(rows: list[dict[str, Any]] | list[tuple]) -> list[tuple[str, 
     return sorted(normalized)
 
 
+class _Skip(Exception):
+    """Leave the compile-and-execute block after a deterministic clarify."""
+
+
 _ROW_FIELDS = ("rows", "reference_rows")
 VERDICTS = (
     "correct",
@@ -124,6 +132,26 @@ VERDICTS = (
     "refusal_bad",
     "unsure",
 )
+
+
+def empty_result_warning(rows: Any) -> str | None:
+    """A deterministic note when an answer carries no data.
+
+    No rows, or a single row whose measure columns are all NULL (an aggregate
+    over zero rows), is reported as an answer but usually means the window or
+    filters matched nothing; the note travels with the answer so the caller does
+    not read NULL as a number.
+    """
+
+    rows = list(rows)
+    if not rows:
+        return "The query matched no rows; the window or filters select nothing."
+    if len(rows) == 1 and all(v is None for v in rows[0].values()):
+        return (
+            "Every value is NULL: the aggregate ran over zero rows (the window or "
+            "filters select nothing)."
+        )
+    return None
 
 
 def redact_rows(result: dict[str, Any]) -> dict[str, Any]:
@@ -380,11 +408,28 @@ def main(argv: list[str] | None = None) -> int:
                     answered_plans[case["case_id"]] = (question, proposal.plan)
                     if client.last_repairs:
                         detail["shape_repairs"] = list(client.last_repairs)
+                    exclusions = excluded_segments(question, overlay) if overlay else []
+                    misread = (
+                        single_period_misread(question, proposal.plan, shape_pack)
+                        if shape_pack
+                        else None
+                    )
+                    if misread is not None:
+                        status = "clarify"
+                        detail["reason"] = "per_period_single_window"
+                        detail["matched_name"] = misread
+                        detail["clarification"] = shape_pack.period_clarification
                     try:
-                        compiled = compiler.compile(proposal.plan, as_of=as_of)
+                        if misread is not None:
+                            raise _Skip()
+                        compiled = compiler.compile(
+                            proposal.plan, as_of=as_of, exclude_segments=exclusions
+                        )
                         policy.assert_safe_select_statement(
                             compiled.compiled.physical_sql
                         )
+                    except _Skip:
+                        pass
                     except PlanError as error:
                         status, detail["reason"] = "unsupported", f"plan_{error.code}"
                         detail["detail"] = error.detail
@@ -393,6 +438,11 @@ def main(argv: list[str] | None = None) -> int:
                     else:
                         detail["assumptions"] = [a.text for a in compiled.assumptions]
                         detail["verification"] = compiled.verification
+                        detail["excluded_segments"] = [
+                            text.split("]")[0].removeprefix("[default: exclude ")
+                            for text in compiled.lineage.filters
+                            if text.startswith("[default: exclude ")
+                        ]
                         detail["sql"] = compiled.compiled.physical_sql
                         detail["lineage"] = compiled.lineage.as_dict()
                         detail["interpretation"] = compiled.interpretation
@@ -448,6 +498,9 @@ def main(argv: list[str] | None = None) -> int:
                             status = "answered"
                             detail["row_count"] = execution.row_count
                             detail["rows_truncated"] = execution.truncated
+                            warning = empty_result_warning(execution.rows)
+                            if warning:
+                                detail["warnings"] = [warning]
                             detail["rows"] = [
                                 {
                                     k: (str(v) if not isinstance(v, (int, str)) else v)
@@ -516,6 +569,7 @@ def main(argv: list[str] | None = None) -> int:
         "datasource_id": arguments.datasource_id,
         "cases_file": str(arguments.cases),
         "prompt_revision": PLAN_PROMPT_REVISION if arguments.live else None,
+        "overlay_revision": overlay.revision if overlay is not None else None,
         "as_of": as_of.isoformat(),
         "cases": len(results),
         "judged": len(judged),
@@ -578,8 +632,13 @@ def main(argv: list[str] | None = None) -> int:
             for r in results
             if str(r.get("reason") or "").startswith("unsupported_shape:")
         ),
+        "per_period_clarifies": sum(
+            1 for r in results if r.get("reason") == "per_period_single_window"
+        ),
         "literal_checks": sum(r.get("literal_checks", 0) for r in results),
         "literal_misses": sum(1 for r in results if r.get("missing_literals")),
+        "empty_result_warnings": sum(1 for r in results if r.get("warnings")),
+        "segment_exclusions": sum(1 for r in results if r.get("excluded_segments")),
     }
     if arguments.verify_coverage:
         flagged = [

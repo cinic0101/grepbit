@@ -2,8 +2,10 @@
 
 Everything here is data a reviewer signs, never code: metrics as plan fragments
 (one aggregate plus the filters that define it), concepts known to be absent
-from the datasource, and the names people use for columns. The tier-0 planner
-still chooses; the overlay tells the compiler which choices are reviewed.
+from the datasource, the names people use for tables, columns and stored
+values, the default time column of a table, and segments (named row subsets
+the server may exclude by default). The tier-0 planner still chooses; the
+overlay tells the compiler which choices are reviewed.
 """
 
 from __future__ import annotations
@@ -13,7 +15,7 @@ from enum import StrEnum
 from pydantic import Field, model_validator
 
 from grepbit.domain.models import DomainModel
-from grepbit.domain.plan import Aggregate, ColumnRef, Filter
+from grepbit.domain.plan import Aggregate, ColumnRef, Filter, FilterOp
 
 _IDENTIFIER = r"^[A-Za-z_][A-Za-z0-9_$]*$"
 
@@ -53,19 +55,115 @@ class ColumnAlias(DomainModel):
     names: list[str] = Field(min_length=1)
 
 
+class TableAlias(DomainModel):
+    """Business names of a table (訂單 -> pos_sale), shown to the planner."""
+
+    table: str = Field(pattern=_IDENTIFIER)
+    names: list[str] = Field(min_length=1)
+
+
+class ValueName(DomainModel):
+    value: str = Field(min_length=1)
+    names: list[str] = Field(min_length=1)
+
+
+class ValueAlias(DomainModel):
+    """Reviewed stored values of a column and the names people use for them.
+
+    The PII-safe substitute for sampling: a reviewer lists the values that may
+    be shown to the planner, which then uses the stored spelling as the literal.
+    """
+
+    column: ColumnRef
+    values: list[ValueName] = Field(min_length=1)
+
+
+class TimeDefault(DomainModel):
+    """The time column questions about a table usually mean."""
+
+    table: str = Field(pattern=_IDENTIFIER)
+    column: ColumnRef
+
+
+_SEGMENT_OPS = {FilterOp.IS_NULL, FilterOp.NOT_NULL, FilterOp.EQ, FilterOp.NE}
+
+
+class Segment(DomainModel):
+    """A named row subset of a table, defined by one invertible filter.
+
+    With ``default_exclude`` the server removes the subset from every plan
+    over that table (or a table that reaches it through foreign keys) unless
+    the question names the segment or the plan already filters on its column;
+    the exclusion is stated as a reviewed assumption.
+    """
+
+    id: str = Field(pattern=_IDENTIFIER)
+    names: list[str] = Field(min_length=1)
+    table: str = Field(pattern=_IDENTIFIER)
+    filter: Filter
+    default_exclude: bool = False
+    note: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def filter_is_invertible_and_on_the_table(self) -> Segment:
+        if self.filter.op not in _SEGMENT_OPS:
+            raise ValueError("overlay_segment_filter_not_invertible")
+        if self.filter.column.table != self.table:
+            raise ValueError("overlay_segment_filter_table_mismatch")
+        return self
+
+    def inverse(self) -> Filter:
+        opposite = {
+            FilterOp.IS_NULL: FilterOp.NOT_NULL,
+            FilterOp.NOT_NULL: FilterOp.IS_NULL,
+            FilterOp.EQ: FilterOp.NE,
+            FilterOp.NE: FilterOp.EQ,
+        }[self.filter.op]
+        return self.filter.model_copy(update={"op": opposite})
+
+
 class SemanticOverlay(DomainModel):
     datasource_id: str = Field(min_length=1)
     revision: str = Field(min_length=1)
     metrics: list[ReviewedMetric] = Field(default_factory=list)
     absent_concepts: list[AbsentConcept] = Field(default_factory=list)
     column_aliases: list[ColumnAlias] = Field(default_factory=list)
+    table_aliases: list[TableAlias] = Field(default_factory=list)
+    value_aliases: list[ValueAlias] = Field(default_factory=list)
+    time_defaults: list[TimeDefault] = Field(default_factory=list)
+    segments: list[Segment] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def metric_ids_unique(self) -> SemanticOverlay:
         ids = [metric.id for metric in self.metrics]
         if len(ids) != len(set(ids)):
             raise ValueError("overlay_metric_id_duplicate")
+        segment_ids = [segment.id for segment in self.segments]
+        if len(segment_ids) != len(set(segment_ids)):
+            raise ValueError("overlay_segment_id_duplicate")
+        tables = [default.table for default in self.time_defaults]
+        if len(tables) != len(set(tables)):
+            raise ValueError("overlay_time_default_duplicate")
         return self
+
+    def table_names(self, table: str) -> list[str]:
+        return [
+            n
+            for alias in self.table_aliases
+            if alias.table == table
+            for n in alias.names
+        ]
+
+    def values_for(self, column_id: str) -> list[ValueName]:
+        return [
+            value
+            for alias in self.value_aliases
+            if alias.column.id == column_id
+            for value in alias.values
+        ]
+
+    def time_default(self, table: str) -> ColumnRef | None:
+        return next((d.column for d in self.time_defaults if d.table == table), None)
 
     def metric(self, metric_id: str) -> ReviewedMetric | None:
         return next((m for m in self.metrics if m.id == metric_id), None)

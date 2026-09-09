@@ -66,6 +66,11 @@ The two deterministic gates are on by default; `--no-shape-gate` and
 `shape_gate_refusals`, `literal_checks` (literals checked) and
 `literal_misses` (cases turned into `clarify` by a literal that matched no
 row); a row carries `matched_name` or `missing_literals` when a gate fired.
+With an overlay the summary also counts `segment_exclusions` (cases where a
+default segment exclusion applied; the row lists `excluded_segments`),
+`per_period_clarifies` (per-period questions the planner answered for the
+current period only) and `empty_result_warnings` (answers with no rows or an
+all-NULL row; the row carries `warnings`).
 
 `--enum-distinct-limit` (default 20) bounds the distinct values sampled per
 non-key text column and shown to the planner; `0` disables sampling so no

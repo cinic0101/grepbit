@@ -4,33 +4,45 @@
 # (no row value reaches the model) and --redact-rows (no row value in the
 # artifact). pos_payment.payment_method is a PostgreSQL enum whose labels are
 # English snake_case; the questions use the Chinese words a cashier would use.
+# Since overlay v2 (2026-09-09) returns (pos_sale.origin_transaction_no set)
+# are excluded by default, so every reference over pos_sale or its payments
+# carries origin_transaction_no IS NULL; the pre-overlay references are in
+# git history and the artifacts pos-real-smoke-{before,after}.json.
 datasource_id: pos_real
 as_of: "2026-02-10T12:00:00+08:00"
 cases:
   - case_id: payments_by_method
     question: "各付款方式的付款總金額"
     expected: {status: answered}
-    reference_sql: "SELECT payment_method, SUM(payment_amount) FROM pos_payment GROUP BY 1"
+    reference_sql: >-
+      SELECT p.payment_method, SUM(p.payment_amount) FROM pos_payment p LEFT JOIN pos_sale s ON s.transaction_no = p.transaction_no
+      WHERE s.origin_transaction_no IS NULL GROUP BY 1
   - case_id: credit_card_total
     question: "信用卡付款的總金額"
     expected: {status: answered}
-    reference_sql: "SELECT SUM(payment_amount) FROM pos_payment WHERE payment_method = 'credit_card'"
+    reference_sql: >-
+      SELECT SUM(p.payment_amount) FROM pos_payment p LEFT JOIN pos_sale s ON s.transaction_no = p.transaction_no
+      WHERE p.payment_method = 'credit_card' AND s.origin_transaction_no IS NULL
   - case_id: line_pay_count
     question: "用LINE Pay付款的筆數"
     expected: {status: answered}
-    reference_sql: "SELECT COUNT(*) FROM pos_payment WHERE payment_method = 'line_pay'"
+    reference_sql: >-
+      SELECT COUNT(*) FROM pos_payment p LEFT JOIN pos_sale s ON s.transaction_no = p.transaction_no
+      WHERE p.payment_method = 'line_pay' AND s.origin_transaction_no IS NULL
   - case_id: cash_payments_jan
     question: "2026年1月現金付款的金額"
     expected: {status: answered}
     reference_sql: >-
       SELECT SUM(p.payment_amount) FROM pos_payment p JOIN pos_sale s ON s.transaction_no = p.transaction_no
-      WHERE p.payment_method = 'cash' AND s.sale_date >= '2026-01-01T00:00:00+08:00' AND s.sale_date < '2026-02-01T00:00:00+08:00'
+      WHERE p.payment_method = 'cash' AND s.origin_transaction_no IS NULL
+      AND s.sale_date >= '2026-01-01T00:00:00+08:00' AND s.sale_date < '2026-02-01T00:00:00+08:00'
   - case_id: sales_by_store_jan
     question: "2026年1月各門市的營業額"
     expected: {status: answered}
     reference_sql: >-
       SELECT st.store_name, SUM(s.total_amount) FROM pos_sale s LEFT JOIN store st ON st.store_id = s.store_id
-      WHERE s.sale_date >= '2026-01-01T00:00:00+08:00' AND s.sale_date < '2026-02-01T00:00:00+08:00' GROUP BY 1
+      WHERE s.origin_transaction_no IS NULL
+      AND s.sale_date >= '2026-01-01T00:00:00+08:00' AND s.sale_date < '2026-02-01T00:00:00+08:00' GROUP BY 1
   - case_id: transfer_status_counts
     question: "各調撥狀態的筆數"
     expected: {status: answered}

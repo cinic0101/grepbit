@@ -17,8 +17,51 @@ blind run on the real database comes first.
 | Unsupported-shape language pack, literal existence check | built as deterministic gates; measured on the 160 author cases in `../research/deterministic-gates.md` |
 | Blind run of the owner's 30 to 50 real questions | waiting on the question file and the `as_of` date |
 | Ask service, datasource registration, MCP tool, vocabulary gate | after the blind run, in the order its numbers dictate |
-| Real-database overlay | draft-1 in `overlays/pos_real.json` (return metrics, absent concepts, aliases), measured on the 50 questions; definitions await the owner's signature |
+| Real-database overlay | v2 in `overlays/pos_real.json`: return metrics and paid-amount metric signed by the owner (verified), absent concepts, table and column aliases, payment-method value names, default time columns, a returns segment excluded by default (confirmed by the owner). Format additions measured on the 160 author cases and the 50 questions with prompt v6 |
 | Period-over-period growth | deferred by the owner to the phase after the 50 questions are settled (stage 3 derived metrics) |
+
+### Decisions recorded from the first real-question run (owner, 2026-09-09)
+
+- Ambiguous questions: keep answering the more plausible reading with the
+  assumption exposed; refuse only when two readings are equally plausible.
+  Recurring misreadings are fixed in the overlay (q03 已付款 became the
+  `paid_amount` metric), not in the prompt.
+- Rules about rows (which rows are returns, that they are excluded unless
+  asked) are overlay data; the mechanism that applies them is code and
+  datasource-agnostic.
+- Response contract: keep a `parameters` list (name, type, value) next to the
+  SQL so a reviewer or the calling agent can reproduce the query; rows are
+  bounded at 200 with a `truncated` flag; default ordering stays by the
+  grouping columns ascending unless the question or the overlay says otherwise.
+- Sign-off of overlay definitions is delegated to the build side once the
+  owner has confirmed the business rule in conversation.
+
+### Semantic-layer gaps to take up in the next phase (from the Cube and Wren comparison)
+
+Not expressible in the overlay today, each seen at least once in the 50
+questions or in the owner's discussion; see `../knowledge/overlay-format.md`
+for what exists.
+
+| Gap | Seen in | Closest prior art |
+|---|---|---|
+| Ratio and share measures (客單價, 退貨率, 佔比), a ratio of two aggregates or of a group to the total | q10, q13, q17, q21, q24, q34, q41, q49, q50 | Cube calculated measures (`type: number`), Wren calculated fields |
+| Derived dimensions: a CASE label as a group-by (各訂單狀態 as 銷售/退貨) | q05 | Cube `case` dimensions, Wren calculated fields |
+| Period-over-period growth (LAG windows) | owner's deferral | Cube rolling windows and comparisons |
+| Aggregate filters (HAVING): 交易筆數超過 100 的銷售員 | not in the 50; expected in the next batch | any SQL semantic layer |
+| Declared joins for schemas without foreign keys where inference fails | not yet hit | Cube joins, Wren relationships |
+| Hidden tables or columns per datasource (transfer tables for sales questions) | q06 | Cube views and `public: false` |
+| Hierarchies and drill paths (category to product) | not needed yet | Cube hierarchies |
+| Latest-record lookups, weekday or hour breakdowns, anti-joins (沒有交易的門市), rolling averages | not in the 50; put two or three of each in the next batch so they become measured refusals | |
+
+Deliberately not adopted: free-text instructions or question-to-SQL pairs
+shown to the model (Wren AI). The model never writes SQL, and prompt knowledge
+carried as data is prompt tuning by another name.
+
+Also for the next phase, raised by the owner on 2026-09-09: how an overlay is
+organized so that a user can adjust it without an engineer (file layout per
+datasource, one document versus several by kind, revision and sign-off
+workflow, what the ask log proposes and what a reviewer edits by hand). Input
+to that discussion: `overlays/pos_real.json` as it stands after this batch.
 
 ## Stage 1 (about two weeks): make it callable
 

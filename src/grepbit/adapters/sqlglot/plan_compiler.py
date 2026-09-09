@@ -11,6 +11,7 @@ templates. It also derives the lineage and the assumptions the caller sees.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
 
 from sqlglot import exp
@@ -22,7 +23,12 @@ from grepbit.domain.models import (
     QueryParameter,
     SemanticRefSource,
 )
-from grepbit.domain.overlay import ReviewedMetric, ReviewState, SemanticOverlay
+from grepbit.domain.overlay import (
+    ReviewedMetric,
+    ReviewState,
+    Segment,
+    SemanticOverlay,
+)
 from grepbit.domain.plan import (
     Aggregate,
     ColumnRef,
@@ -43,6 +49,7 @@ from grepbit.domain.schema_model import (
 from grepbit.domain.structured_query import (
     RelativeScope,
     ResolvedPeriod,
+    current_unit_end,
     resolve_time_scope,
 )
 
@@ -71,7 +78,13 @@ class PlanCompiler:
         self._schema = schema
         self._overlay = overlay
 
-    def compile(self, plan: QueryPlan, *, as_of: datetime) -> CompiledPlan:
+    def compile(
+        self,
+        plan: QueryPlan,
+        *,
+        as_of: datetime,
+        exclude_segments: Sequence[Segment] = (),
+    ) -> CompiledPlan:
         schema = self._schema
         base = schema.table(plan.base_table)
         if base is None:
@@ -111,6 +124,23 @@ class PlanCompiler:
                 )
             )
             metric_filters.extend((metric.id, item) for item in metric.filters)
+        # Default-excluded segments: applied when the segment's table is the base
+        # table or reachable from it, and nothing in the plan already filters on
+        # the segment's column (a return metric must keep its own rows).
+        referenced = {f.column.id for f in plan.filters} | {
+            f.column.id for _, f in metric_filters
+        }
+        segment_filters: list[tuple[Segment, Filter]] = []
+        for segment in exclude_segments:
+            if segment.filter.column.id in referenced:
+                continue
+            if segment.table != base.name:
+                try:
+                    _parent_path(schema, base.name, segment.table)
+                except PlanError:
+                    continue
+            segment_filters.append((segment, segment.inverse()))
+
         time_spec = plan.time
         if (
             time_spec is not None
@@ -163,15 +193,25 @@ class PlanCompiler:
             time_column = resolve(time_spec.column)
             if time_column.kind not in {ColumnKind.TIMESTAMP, ColumnKind.DATE}:
                 raise PlanError("time_column_kind_mismatch", time_spec.column.id)
-            periods = tuple(
-                resolve_time_scope(
-                    time_spec.scope,
-                    as_of=as_of,
-                    business_timezone=schema.business_timezone,
+            scope = time_spec.scope
+            if scope is not None:
+                periods = tuple(
+                    resolve_time_scope(
+                        scope,
+                        as_of=as_of,
+                        business_timezone=schema.business_timezone,
+                    )
                 )
-            )
             if len(periods) > 1 and time_spec.grain is None:
                 raise PlanError("time_scope_requires_grain")
+            if isinstance(scope, RelativeScope) and scope.offset < 0:
+                limit = current_unit_end(as_of, scope.unit, schema.business_timezone)
+                if periods[-1].end_exclusive > limit:
+                    raise PlanError(
+                        "relative_window_reaches_future",
+                        f"{scope.unit.value} offset {scope.offset} length "
+                        f"{scope.length} ends {periods[-1].end_exclusive.date()}",
+                    )
             if time_spec.grain is not None:
                 column_expression = exp.column(
                     time_spec.column.column, table=time_spec.column.table
@@ -215,6 +255,21 @@ class PlanCompiler:
             column = resolve(item.column)
             conditions.append(self._condition(item, column, bind))
             filter_texts.append(f"[{metric_id}] {_filter_text(item)}")
+        for segment, item in segment_filters:
+            column = resolve(item.column)
+            conditions.append(self._condition(item, column, bind))
+            filter_texts.append(f"[default: exclude {segment.id}] {_filter_text(item)}")
+            assumptions.append(
+                Assumption(
+                    text=(
+                        f"Rows of segment '{segment.id}' ({segment.note}) are "
+                        f"excluded by default; say '{segment.names[0]}' to include "
+                        "them."
+                    ),
+                    source=AssumptionSource.REVIEWED,
+                    definition_ref=f"overlay.segments.{segment.id}",
+                )
+            )
         time_texts: list[str] = []
         if time_spec is not None and periods:
             reference = exp.column(
@@ -549,6 +604,8 @@ def _interpretation(plan: QueryPlan, periods: tuple[ResolvedPeriod, ...]) -> str
         parts.append(f"per {plan.time.grain.value}")
     if periods:
         parts.append("for " + ", ".join(p.label for p in periods))
+    elif plan.time is not None:
+        parts.append("over all data")
     if plan.filters:
         parts.append("where " + " and ".join(_filter_text(f) for f in plan.filters))
     if plan.limit is not None:

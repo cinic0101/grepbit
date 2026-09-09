@@ -62,6 +62,8 @@ def test_default_pack_is_valid_and_covers_the_case_sets_refusal_probes() -> None
     for path in sorted(glob.glob(str(ROOT / "evals" / "cases" / "tier0" / "*.yaml"))):
         document = yaml.safe_load(open(path, encoding="utf-8"))
         for case in document["cases"]:
+            if "expected" not in case:
+                continue  # judged cases (real questions) carry no expectation
             if match_unsupported_shape(case["question"], PACK) is not None:
                 accepted = case.get("accept_statuses") or [case["expected"]["status"]]
                 assert "unsupported" in accepted, (path, case["case_id"])
@@ -181,3 +183,37 @@ def test_missing_literals_binds_each_value_and_casts_enums_to_text() -> None:
     assert connection.rolled_back
     # no literal, no connection at all
     assert missing_literals(lambda: 1 / 0, "public", []) == []
+
+
+def test_per_period_word_with_a_single_current_window_is_a_misread() -> None:
+    from grepbit.application.shapes import single_period_misread
+
+    today_only = QueryPlan.model_validate(
+        {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count"}],
+            "time": {
+                "column": {"table": "alerts", "column": "raised_at"},
+                "scope": {"kind": "relative", "unit": "day", "offset": 0, "length": 1},
+                "grain": "day",
+            },
+        }
+    )
+    assert single_period_misread("每天的告警數是多少？", today_only, PACK) == "每天"
+    assert single_period_misread("Daily alert count", today_only, PACK) == "daily"
+    # the same plan is right for a question about today
+    assert single_period_misread("今天的告警數是多少？", today_only, PACK) is None
+    # a per-period question with a real range or no window is fine
+    last_month_by_day = today_only.model_copy(
+        update={
+            "time": today_only.time.model_copy(
+                update={
+                    "scope": {"kind": "relative", "unit": "month", "offset": -1},
+                }
+            )
+        }
+    )
+    assert single_period_misread("上個月每天的告警數", last_month_by_day, PACK) is None
+    no_window = today_only.model_copy(update={"time": None})
+    assert single_period_misread("每天的告警數", no_window, PACK) is None
+    assert PACK.period_words and PACK.period_clarification
