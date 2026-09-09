@@ -48,6 +48,7 @@ from grepbit.adapters.overlay_store import load_semantic_overlay
 from grepbit.adapters.postgres.executor import PsycopgQueryExecutor
 from grepbit.adapters.postgres.introspect import infer_foreign_keys, introspect_schema
 from grepbit.adapters.postgres.value_check import missing_literals
+from grepbit.adapters.postgres.value_index import load_column_values
 from grepbit.adapters.sqlglot.plan_compiler import PlanCompiler
 from grepbit.adapters.sqlglot.policy import (
     PLAN_AGGREGATE_FUNCTIONS,
@@ -55,6 +56,7 @@ from grepbit.adapters.sqlglot.policy import (
     PostgresSqlPolicy,
 )
 from grepbit.application.active_queries import ActiveQueryRegistry
+from grepbit.application.grounding import ValueIndex, resolve_plan_literals
 from grepbit.application.literals import text_literal_checks
 from grepbit.application.overlay import (
     excluded_segments,
@@ -265,6 +267,11 @@ def main(argv: list[str] | None = None) -> int:
         help="ablation: do not check eq/in text literals against the column",
     )
     parser.add_argument(
+        "--no-grounding",
+        action="store_true",
+        help="ablation: no value index, no question hints, no literal resolution",
+    )
+    parser.add_argument(
         "--propose-policies",
         type=Path,
         help=(
@@ -348,6 +355,21 @@ def main(argv: list[str] | None = None) -> int:
             f"{len(overlay.column_aliases)} aliased columns"
         )
     shape_pack = None if arguments.no_shape_gate else load_shape_pack()
+    index: ValueIndex | None = None
+    index_skipped: list[str] = []
+    if overlay is not None and not arguments.no_grounding:
+        groundable = overlay.groundable_columns()
+        if groundable:
+            values, index_skipped = load_column_values(connect, schema, groundable)
+            index = ValueIndex(values)
+            print(
+                f"value index: {len(index.columns)} columns, {index.size()} values"
+                + (
+                    f", skipped for size: {', '.join(index_skipped)}"
+                    if index_skipped
+                    else ""
+                )
+            )
     compiler = PlanCompiler(schema, overlay=overlay)
     policy = PostgresSqlPolicy(
         tables=frozenset(t.name for t in schema.tables),
@@ -410,6 +432,11 @@ def main(argv: list[str] | None = None) -> int:
         elif client is None:
             status = "not_run"
         else:
+            hints = index.mentions(question) if index is not None else []
+            if hints:
+                detail["question_values"] = [
+                    {"column": m.column, "value": m.value} for m in hints
+                ]
             try:
                 proposal = client.propose(
                     question,
@@ -417,6 +444,7 @@ def main(argv: list[str] | None = None) -> int:
                     as_of=as_of.isoformat(),
                     overlay=overlay,
                     previous=previous,
+                    question_values=detail.get("question_values"),
                 )
             except GroundingModelError as error:
                 status, detail = "failed", {"reason": error.code}
@@ -482,7 +510,58 @@ def main(argv: list[str] | None = None) -> int:
                         )
                         misses = missing_literals(connect, schema.schema_name, checks)
                         detail["literal_checks"] = len(checks)
-                        if misses:
+                        if misses and index is not None:
+                            resolved_plan, resolutions = resolve_plan_literals(
+                                proposal.plan,
+                                [(m.table + "." + m.column, m.value) for m in misses],
+                                index,
+                            )
+                            detail["grounding"] = [
+                                r.model_dump(mode="json") for r in resolutions
+                            ]
+                            if resolved_plan is not proposal.plan:
+                                # unique resolutions substituted: recompile and recheck
+                                compiled = compiler.compile(
+                                    resolved_plan,
+                                    as_of=as_of,
+                                    exclude_segments=exclusions,
+                                )
+                                policy.assert_safe_select_statement(
+                                    compiled.compiled.physical_sql
+                                )
+                                detail["plan"] = resolved_plan.model_dump(
+                                    mode="json", exclude_none=True
+                                )
+                                detail["sql"] = compiled.compiled.physical_sql
+                                detail["lineage"] = compiled.lineage.as_dict()
+                                detail["interpretation"] = compiled.interpretation
+                                detail["assumptions"] = [
+                                    a.text for a in compiled.assumptions
+                                ] + [
+                                    f"'{r.literal}' was read as the stored value "
+                                    f"'{r.value}' of {r.column} (similarity "
+                                    f"{r.candidates[0].score}); give the exact "
+                                    "value to override."
+                                    for r in resolutions
+                                    if r.kind == "unique"
+                                ]
+                                checks = text_literal_checks(resolved_plan, schema)
+                                misses = missing_literals(
+                                    connect, schema.schema_name, checks
+                                )
+                            ambiguous = [
+                                r for r in resolutions if r.kind == "ambiguous"
+                            ]
+                            if misses and ambiguous:
+                                status = "clarify"
+                                detail["reason"] = "filter_value_ambiguous"
+                                detail["clarification"] = "; ".join(
+                                    f"{r.column}: did you mean "
+                                    + ", ".join(f"'{c.value}'" for c in r.candidates)
+                                    + f" for '{r.literal}'?"
+                                    for r in ambiguous
+                                )
+                        if misses and detail.get("reason") != "filter_value_ambiguous":
                             status = "clarify"
                             detail["reason"] = "filter_value_not_found"
                             detail["missing_literals"] = [
@@ -669,6 +748,20 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "literal_checks": sum(r.get("literal_checks", 0) for r in results),
         "literal_misses": sum(1 for r in results if r.get("missing_literals")),
+        "grounding": {
+            "columns": index.columns if index is not None else [],
+            "values": index.size() if index is not None else 0,
+            "skipped_for_size": index_skipped,
+            "hinted_cases": sum(1 for r in results if r.get("question_values")),
+            "resolved_cases": sum(
+                1
+                for r in results
+                if any(g["kind"] == "unique" for g in r.get("grounding") or [])
+            ),
+            "ambiguous_cases": sum(
+                1 for r in results if r.get("reason") == "filter_value_ambiguous"
+            ),
+        },
         "empty_result_warnings": sum(1 for r in results if r.get("warnings")),
         "segment_exclusions": sum(1 for r in results if r.get("excluded_segments")),
     }

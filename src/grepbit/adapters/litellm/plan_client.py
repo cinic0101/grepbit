@@ -16,7 +16,7 @@ from grepbit.domain.plan import PlanProposal, PreviousTurn
 from grepbit.domain.schema_model import SchemaModel
 from grepbit.ports.grounding import GroundingModelError
 
-PLAN_PROMPT_REVISION = "plan-classify-json-v8"
+PLAN_PROMPT_REVISION = "plan-classify-json-v9"
 
 _RULES = (
     "You translate one analytics question into ONE aggregate query plan over the "
@@ -69,6 +69,11 @@ _RULES = (
     "are equally plausible, return none with reason ambiguous and a one-sentence "
     "clarification naming the candidate columns. "
     "(8) Return only one JSON object."
+)
+_VALUES_RULE = (
+    " (11) question_values lists stored values that occur verbatim in the question, "
+    "each with its column. When the question refers to one of them, filter that "
+    "column with exactly that value; do not shorten or re-segment it."
 )
 _FOLLOW_UP_RULE = (
     " (10) previous_turn holds the last answered question and its plan. If the new "
@@ -272,6 +277,7 @@ class ChatCompletionsPlanClient:
         as_of: str,
         overlay: SemanticOverlay | None = None,
         previous: PreviousTurn | None = None,
+        question_values: list[dict[str, str]] | None = None,
     ) -> list[dict[str, str]]:
         schema = json.dumps(PlanProposal.model_json_schema(), sort_keys=True)
         payload: dict[str, Any] = {
@@ -284,8 +290,11 @@ class ChatCompletionsPlanClient:
             payload["previous_turn"] = previous.model_dump(
                 mode="json", exclude_none=True
             )
+        if question_values:
+            payload["question_values"] = question_values
         rules = _RULES + (_OVERLAY_RULE if overlay is not None else "")
         rules += _FOLLOW_UP_RULE if previous is not None else ""
+        rules += _VALUES_RULE if question_values else ""
         return [
             {"role": "system", "content": rules},
             {
@@ -306,13 +315,19 @@ class ChatCompletionsPlanClient:
         as_of: str,
         overlay: SemanticOverlay | None = None,
         previous: PreviousTurn | None = None,
+        question_values: list[dict[str, str]] | None = None,
     ) -> PlanProposal:
         client = self._transport._client or self._transport._create_client()
         try:
             response = client.chat.completions.create(
                 model=self._settings.model,
                 messages=self.build_messages(
-                    question, model, as_of=as_of, overlay=overlay, previous=previous
+                    question,
+                    model,
+                    as_of=as_of,
+                    overlay=overlay,
+                    previous=previous,
+                    question_values=question_values,
                 ),
                 temperature=self._settings.temperature,
                 max_tokens=max(self._settings.max_tokens, 768),

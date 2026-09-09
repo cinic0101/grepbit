@@ -81,9 +81,12 @@ Deterministic reasons (no model call, or before execution): `absent_concept`
 (overlay, `semantic_gap`), `unsupported_shape:<id>` (language pack,
 `unsupported`), `per_period_single_window` (a per-period question answered
 for the current period only, `clarify`), `filter_value_not_found` (a text
-literal matched no row, `clarify`, with the literal named in the
-clarification), `plan_<PlanError code>` (compile-time structure,
-`unsupported`).
+literal matched no row and could not be resolved, `clarify`, with the literal
+named in the clarification), `filter_value_ambiguous` (several stored values
+resemble the literal, `clarify` listing them; only for groundable columns),
+`plan_<PlanError code>` (compile-time structure, `unsupported`). A uniquely
+resolved literal is not a refusal: the plan is answered with the stored value
+and a `candidate` assumption that names the substitution and its similarity.
 
 ## Assumption sources
 
@@ -110,4 +113,6 @@ default time columns and segments; v7 (same day) makes the time scope
 optional when a grain is set, because v6's rule could not be followed while
 the schema required a scope; v8 (same day, after holdout 2) adds the
 `having` rule: a condition on a group's aggregate goes in `having`, never
-dropped and never written as a row filter.
+dropped and never written as a row filter; v9 (same day) adds the
+`question_values` rule, present only when the value index found a stored
+value verbatim in the question: filter with exactly that value.

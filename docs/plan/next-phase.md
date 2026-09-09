@@ -57,7 +57,12 @@ Deliberately not adopted: free-text instructions or question-to-SQL pairs
 shown to the model (Wren AI). The model never writes SQL, and prompt knowledge
 carried as data is prompt tuning by another name.
 
-Also for the next phase, raised by the owner on 2026-09-09: how an overlay is
+Also for the next phase, raised by the owner on 2026-09-09: a way to let an
+LLM propose a datasource onboarding (table and column aliases, candidate
+metrics, absent concepts, column policies, default time columns) from the
+introspected schema and the ask log, as a draft a reviewer approves; the
+deterministic policy proposer is the first piece, and the rule stands that a
+model proposes and never decides. And: how an overlay is
 organized so that a user can adjust it without an engineer (file layout per
 datasource, one document versus several by kind, revision and sign-off
 workflow, what the ask log proposes and what a reviewer edits by hand). Input

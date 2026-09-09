@@ -64,11 +64,18 @@ side does not open (`../plan/next-phase.md`).
   --live [--infer-joins] [--overlay <overlay.json>] [--verify-coverage] \
   [--enum-distinct-limit N] [--redact-rows] \
   [--review-sheet <dir>/<name>.md] [--verdicts <dir>/<name>.yaml] \
-  [--no-shape-gate] [--no-literal-check]
+  [--no-shape-gate] [--no-literal-check] [--no-grounding] \
+  [--propose-policies <file.json>]
 ```
 
-The two deterministic gates are on by default; `--no-shape-gate` and
-`--no-literal-check` exist for ablations. The summary counts
+The deterministic gates are on by default; `--no-shape-gate`,
+`--no-literal-check` and `--no-grounding` exist for ablations. With an
+overlay that lists groundable columns the runner builds the value index at
+start (printed as `value index: N columns, M values`), records
+`question_values` hints and `grounding` resolutions per case, and the summary
+carries a `grounding` block (columns, values, columns skipped for size,
+hinted, resolved and ambiguous cases). `--propose-policies` writes the
+column-policy draft and continues. The summary counts
 `shape_gate_refusals`, `literal_checks` (literals checked) and
 `literal_misses` (cases turned into `clarify` by a literal that matched no
 row); a row carries `matched_name` or `missing_literals` when a gate fired.

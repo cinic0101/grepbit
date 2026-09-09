@@ -13,8 +13,8 @@ application -> domain
 |---|---|---|
 | domain | `models`, `plan`, `schema_model`, `overlay`, `language_pack`, `assumptions`, `structured_query`, `grounding`, `agent_response`, `catalog` | stdlib, pydantic, domain |
 | ports | `plan_compiler`, `coverage`, `grounding`, `embedding`, `query_executor`, `active_query_lifecycle` | stdlib, domain |
-| application | `overlay` (schema check, absent concepts), `shapes` (unsupported-shape gate), `literals` (which filter literals to check), `text` (script-aware phrase match), `active_queries` (cancellation registry) | stdlib, domain, ports, application |
-| adapters | `postgres/introspect`, `postgres/value_check`, `postgres/executor`, `sqlglot/plan_compiler`, `sqlglot/policy`, `litellm/plan_client`, `litellm/coverage_client`, `litellm/grounding_client` (transport and settings), `litellm/embeddings_client`, `overlay_store`, `language_pack_store` | anything |
+| application | `overlay` (schema check, absent concepts, segment activation), `shapes` (unsupported-shape and per-period gates), `literals` (which filter literals to check), `grounding` (value index: mentions, candidates, resolution), `policies` (column-policy proposer), `text` (script-aware phrase match), `active_queries` (cancellation registry) | stdlib, domain, ports, application |
+| adapters | `postgres/introspect`, `postgres/value_check`, `postgres/value_index`, `postgres/executor`, `sqlglot/plan_compiler`, `sqlglot/policy`, `litellm/plan_client`, `litellm/coverage_client`, `litellm/grounding_client` (transport and settings), `litellm/embeddings_client`, `overlay_store`, `language_pack_store` | anything |
 
 `resources/unsupported_shapes.json` is the packaged language pack of question
 shapes the algebra cannot express (shares, growth rates) in Chinese, English
@@ -43,9 +43,14 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
    of `PlanProposal`, the value-free schema payload (plus overlay metrics,
    aliases, value names, default time columns and segments, plus the previous
    turn for follow-ups) and gets one JSON object: a `QueryPlan` or a decline
-   with a reason. String-shaped column references are repaired only when they
-   resolve to exactly one table. One deterministic check runs on the proposal
-   before compilation: a per-period question (每天, monthly; language pack
+   with a reason. Before the call, the value index (distinct values of the
+   overlay's groundable columns, loaded once per run and capped per column)
+   lists stored values that occur verbatim in the question as
+   `question_values`, so a name is not cut at a segmentation boundary. Hidden
+   tables and columns and withheld samples follow the overlay's policies.
+   String-shaped column references are repaired only when they resolve to
+   exactly one table. One deterministic check runs on the proposal before
+   compilation: a per-period question (每天, monthly; language pack
    `period_words`) answered with a single current-period window is a
    `clarify` (`single_period_misread`), never a rewritten plan.
 4. Compile: `PlanCompiler.compile` validates every identifier and kind, walks
@@ -62,8 +67,13 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
 6. Check literals: every `eq` or `in` text literal the plan filters on is
    checked against its column (`text_literal_checks` chooses, `missing_literals`
    runs one bounded `SELECT EXISTS` per literal with the literal bound). A
-   literal that matches no row turns the answer into `clarify` naming the
-   literal, instead of an empty aggregate that reads like a number.
+   literal that matches no row is resolved against the value index when its
+   column is groundable (`resolve_plan_literals`: character-bigram similarity
+   with an edit-distance tie break): one clear candidate is substituted into
+   the plan, which is recompiled, and stated as a candidate assumption;
+   several candidates become a `clarify` that lists them; none, or a column
+   that is not groundable, leaves the `clarify` naming the literal, instead of
+   an empty aggregate that reads like a number.
 7. Execute: `PsycopgQueryExecutor` runs inside `BEGIN READ ONLY` with
    statement and idle timeouts, a named cursor, bounded rows, and the
    cancellation registry.

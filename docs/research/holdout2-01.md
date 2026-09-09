@@ -87,3 +87,39 @@ threshold cases on the POS fixture with thresholds that split the groups, one
 row-filter control): `having-pos-01.json` 6/6, every threshold landed in
 `having` and the price condition stayed a row filter. The set joins every
 regression from here on.
+
+## Third run, after value grounding (prompt v9, overlay v5)
+
+`.artifacts/holdout2/run-03.json` (SHA-256 recorded in the tally once the
+owner has judged). Column policies: store, product, category, transfer status
+and payment method groundable; salesperson name and member id personal.
+Value index: 5 columns, all values loaded. Author sets, having guard, smoke
+and batch 1 unchanged (156/160, 6/6, 7/7, 49/50 with the q06 wobble).
+
+| Status | Run 2 | Run 3 |
+|---|---|---|
+| answered | 7 | 21 |
+| clarify | 16 | 3 |
+| semantic_gap | 1 | 0 |
+| unsupported | 6 | 6 |
+
+How the 14 new answers came about: 16 questions received `question_values`
+hints because a stored value occurred verbatim in the question once
+normalized (spaces, case and punctuation dropped), which covers q03's
+店名帶空格 and every product and category name the model previously cut or
+altered; 4 literals that still missed were resolved uniquely from the index
+(永和中正店, 特約板橋華將, 台南崇德, 應用週邊) and stated as candidate
+assumptions. The 3 remaining clarifies: q14 (平版 against 平板商品類, one
+wrong character in a two-character abbreviation, below the bigram
+threshold) and q19, q20 (salesperson names, personal by policy, so no
+candidates by design). No ambiguous case.
+
+Two movements that are not gains: q29 went from a correct answer to
+`grain_conflict` because with category hints the model picked `category` as
+the base for a product measure; q28 answers with zero rows under its HAVING
+threshold and carries the empty-result warning. The two value-grounded
+rewrites (`pos-real-values-02.json`): q29b now answers with the full store
+name and the right week, q44b as before.
+
+The owner judges run 3 from `.artifacts/holdout2/review-03.md`; 13 verdicts
+are carried from run 2, 17 are open.

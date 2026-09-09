@@ -46,6 +46,14 @@ owner's real POS database; overlays for real datasources live under
      "filter": {"column": {"table": "pos_sale", "column": "origin_transaction_no"}, "op": "not_null"},
      "default_exclude": true,
      "note": "transactions that reference an origin transaction are returns"}
+  ],
+  "column_policies": [
+    {"column": {"table": "store", "column": "store_name"}, "sensitivity": "public"},
+    {"column": {"table": "salesperson", "column": "sales_name"}, "sensitivity": "personal"},
+    {"column": {"table": "pos_sale", "column": "receipt_no"}, "sensitivity": "public", "sample": false, "ground": true}
+  ],
+  "table_policies": [
+    {"table": "transfer_status", "visible": false}
   ]
 }
 ```
@@ -74,6 +82,20 @@ owner's real POS database; overlays for real datasources live under
 - Time defaults name the time column questions about a table usually mean
   (`pos_saleitem` rows are dated by their sale's `sale_date`). Shown to the
   planner as `default_time_column`; the compiler does not enforce it.
+- Column policies carry one reviewed fact per column, `sensitivity`
+  (`public` or `personal`), and three switches derived from it, each
+  overridable: `sample` (values may be shown to the planner as samples),
+  `ground` (values may be indexed, looked up as candidates and shown in a
+  clarification) and `visible` (the column is offered to the planner at all).
+  Public defaults to all three on, personal to visible only. Grounding is
+  opt-in: an unlisted column is visible and samplable but never grounded. A
+  table policy with `visible: false` hides a whole table. Hidden tables and
+  columns are absent from the payload and unknown to the compiler, so a plan
+  cannot name them; a table left without a visible column fails validation.
+  `evals/spike_tier0.py --propose-policies <file>` writes a deterministic
+  draft (`application/policies.py`: kinds, keys, cardinality, person words in
+  names and comments) to a file the runtime never loads; copying an entry
+  into the overlay is the review.
 - Segments are named row subsets defined by one invertible filter (`is_null`,
   `not_null`, `eq`, `ne`) on the segment's table. With `default_exclude` the
   server removes the subset from every plan over that table, or over a table
