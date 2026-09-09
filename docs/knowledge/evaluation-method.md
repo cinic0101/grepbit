@@ -57,8 +57,15 @@ side has seen (`../plan/next-phase.md`).
   --datasource-id <id> --cases <file.yaml> --output <dir>/<name>.json \
   --live [--infer-joins] [--overlay <overlay.json>] [--verify-coverage] \
   [--enum-distinct-limit N] [--redact-rows] \
-  [--review-sheet <dir>/<name>.md] [--verdicts <dir>/<name>.yaml]
+  [--review-sheet <dir>/<name>.md] [--verdicts <dir>/<name>.yaml] \
+  [--no-shape-gate] [--no-literal-check]
 ```
+
+The two deterministic gates are on by default; `--no-shape-gate` and
+`--no-literal-check` exist for ablations. The summary counts
+`shape_gate_refusals`, `literal_checks` (literals checked) and
+`literal_misses` (cases turned into `clarify` by a literal that matched no
+row); a row carries `matched_name` or `missing_literals` when a gate fired.
 
 `--enum-distinct-limit` (default 20) bounds the distinct values sampled per
 non-key text column and shown to the planner; `0` disables sampling so no

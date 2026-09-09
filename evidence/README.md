@@ -26,3 +26,7 @@ hold no cell value (`rows_redacted: true` in the summary).
 | `retail-06.json`, `pos-04.json` | same-day with-sample baselines for the sampling ablation | 12/12, 26/26 |
 | `iot-nosample-01.json`, `retail-nosample-01.json`, `pos-nosample-01.json` | sampling ablation, `--enum-distinct-limit 0` (`../docs/research/sampling-ablation.md`) | 19/20, 11/12, 24/26; 3 refusals, 1 wrong (partial store name) |
 | `pos-real-smoke-before.json`, `pos-real-smoke-after.json` | real POS test database, enum column as `other` then as text with catalog labels (`../docs/research/pos-real-enum.md`); rows redacted | 4/7 (2 refusals, 1 driver error) to 7/7 |
+| `iot-08.json`, `retail-07.json`, `pos-05.json`, `coverage-iot-03.json`, `coverage-retail-02.json`, `coverage-pos-03.json`, `pos-multilingual-02.json`, `pos-overlay-gates-01.json` | the 160-case regression with the shape gate and the literal check on (`../docs/research/deterministic-gates.md`) | all equal to their baselines; 4 shape hits on refusal cases, 17 literals checked, 0 missed |
+| `pos-features-03.json` | feature probes with gates but without the overlay (run by mistake; kept as a data point, not a comparison) | 30/32 |
+| `pos-features-04.json`, `pos-features-05.json` | feature probes with overlay and gates, before and after the sibling-table shape repair | 31/32 (one `invalid_structured_output`), 32/32 |
+| `pos-nosample-02.json` | `pos.yaml` with sampling off and gates on: the partial store name becomes `clarify` naming the literal | 25/26, 0 wrong numbers (was 24/26 with 1 wrong) |

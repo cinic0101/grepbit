@@ -1,0 +1,25 @@
+{
+  "revision": "unsupported-shapes-v1",
+  "shapes": [
+    {
+      "id": "share_of_total",
+      "names": [
+        "佔比", "占比", "比例", "比率", "百分比", "份額", "占率",
+        "share of", "market share", "percentage", "percent of", "proportion", "ratio",
+        "割合", "構成比", "シェア", "パーセント"
+      ],
+      "clarification": "Shares, ratios and percentages are not supported yet: the service returns one aggregate query without derived arithmetic. Ask for the underlying amounts or counts (for example the amount per group and the total) and compute the share from them."
+    },
+    {
+      "id": "growth",
+      "names": [
+        "成長率", "增長率", "成長幅度", "增幅", "成長", "增長", "年增", "月增", "同比", "環比",
+        "較去年", "較上月", "較前期", "增減", "變化率", "漲幅", "跌幅",
+        "growth", "growth rate", "year over year", "year-over-year", "yoy",
+        "month over month", "month-over-month", "mom", "change rate", "percent change",
+        "前年比", "前月比", "伸び率", "成長率", "増加率", "増減"
+      ],
+      "clarification": "Growth rates and period-over-period changes are not supported yet: the service returns one aggregate query without derived arithmetic. Ask for the amount of each period (for example this month and last month by month) and compute the change from them."
+    }
+  ]
+}

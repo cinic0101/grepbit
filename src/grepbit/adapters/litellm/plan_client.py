@@ -131,9 +131,11 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
 
     Only the shape is repaired ("store_name" or "store.store_name" becomes
     {"table": ..., "column": ...}) and only when the name resolves to exactly
-    one table (or to the base table). Meaning is never guessed; anything that
-    stays ambiguous fails validation as before. Repairs are reported so the
-    caller can count how often the model slips.
+    one table (or to the base table). A measure or filter that carries the
+    table as a sibling key ({"column": "store_name", "table": "store", ...})
+    is folded the same way when that table has that column. Meaning is never
+    guessed; anything that stays ambiguous fails validation as before. Repairs
+    are reported so the caller can count how often the model slips.
     """
 
     repairs: list[str] = []
@@ -160,8 +162,19 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
 
     for key in ("measures", "filters"):
         for item in plan.get(key) or []:
-            if isinstance(item, dict) and "column" in item:
-                item["column"] = coerce(item["column"])
+            if not isinstance(item, dict) or "column" not in item:
+                continue
+            table, column = item.get("table"), item["column"]
+            if isinstance(table, str) and isinstance(column, str) and "." not in column:
+                owner = model.table(table)
+                if owner is not None and owner.column(column) is not None:
+                    del item["table"]
+                    repairs.append(f"{column} + table {table} -> {table}.{column}")
+                    item["column"] = {"table": table, "column": column}
+                # A sibling table that does not own the column is left alone:
+                # the extra key fails validation instead of being guessed away.
+                continue
+            item["column"] = coerce(column)
     if isinstance(plan.get("dimensions"), list):
         plan["dimensions"] = [coerce(d) for d in plan["dimensions"]]
     time = plan.get("time")

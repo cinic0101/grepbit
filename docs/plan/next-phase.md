@@ -3,6 +3,21 @@
 Each stage has an exit that is a measurement or a working call, not a
 document.
 
+## Status (2026-09-09, owner's ordering)
+
+The owner chose to run the real questions before building the callable
+surface, so stage 1 is reordered: only what stands between the code and a
+blind run on the real database comes first.
+
+| Item | State |
+|---|---|
+| PII sampling approach | decision deferred by the owner to the column-settings work; the first real run uses `--enum-distinct-limit 0` (no row value reaches the model). Enum labels come from the catalog and are shown regardless (`../research/pos-real-enum.md`). |
+| Judged runs for questions without reference SQL | done: `--review-sheet`, `--verdicts`, `evals/tally_verdicts.py`, `--redact-rows` (`../knowledge/evaluation-method.md`) |
+| Real POS test database | granted to `grepbit_ro`; 9 tables; compatibility smoke 7/7 |
+| Unsupported-shape language pack, literal existence check | built as deterministic gates; measured on the 160 author cases in `../research/deterministic-gates.md` |
+| Blind run of the owner's 30 to 50 real questions | waiting on the question file and the `as_of` date |
+| Ask service, datasource registration, MCP tool, vocabulary gate | after the blind run, in the order its numbers dictate |
+
 ## Stage 1 (about two weeks): make it callable
 
 - Ask service on tier-0 plus overlay: template of the v0.2 response contract

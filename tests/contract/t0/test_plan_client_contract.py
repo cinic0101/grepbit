@@ -106,6 +106,30 @@ def test_schema_payload_marks_enum_columns_and_lists_their_labels() -> None:
     assert entry["sample_values"] == ["email", "sms"]
 
 
+def test_repair_folds_a_sibling_table_key_into_the_column_reference() -> None:
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count"}],
+            "filters": [
+                {"column": "status", "table": "devices", "op": "eq", "values": ["x"]},
+                {"column": "status", "table": "nowhere", "op": "eq", "values": ["x"]},
+            ],
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    first, second = repaired["plan"]["filters"]
+    assert first == {
+        "column": {"table": "devices", "column": "status"},
+        "op": "eq",
+        "values": ["x"],
+    }
+    assert repairs == ["status + table devices -> devices.status"]
+    # an unknown table is not guessed away: the sibling key stays and validation fails
+    assert second["table"] == "nowhere" and second["column"] == "status"
+
+
 def test_propose_returns_declines_and_rejects_incoherent_or_malformed_output() -> None:
     decline = json.dumps(
         {"decision": "none", "reason": "ambiguous", "clarification": "avg or max?"}

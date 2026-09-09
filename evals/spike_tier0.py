@@ -37,6 +37,7 @@ from typing import Any
 
 import yaml
 
+from grepbit.adapters.language_pack_store import load_shape_pack
 from grepbit.adapters.litellm.coverage_client import ChatCompletionsCoverageClient
 from grepbit.adapters.litellm.grounding_client import GroundingModelSettings
 from grepbit.adapters.litellm.plan_client import (
@@ -46,6 +47,7 @@ from grepbit.adapters.litellm.plan_client import (
 from grepbit.adapters.overlay_store import load_semantic_overlay
 from grepbit.adapters.postgres.executor import PsycopgQueryExecutor
 from grepbit.adapters.postgres.introspect import infer_foreign_keys, introspect_schema
+from grepbit.adapters.postgres.value_check import missing_literals
 from grepbit.adapters.sqlglot.plan_compiler import PlanCompiler
 from grepbit.adapters.sqlglot.policy import (
     PLAN_AGGREGATE_FUNCTIONS,
@@ -53,7 +55,9 @@ from grepbit.adapters.sqlglot.policy import (
     PostgresSqlPolicy,
 )
 from grepbit.application.active_queries import ActiveQueryRegistry
+from grepbit.application.literals import text_literal_checks
 from grepbit.application.overlay import match_absent_concept, overlay_problems
+from grepbit.application.shapes import match_unsupported_shape
 from grepbit.domain.grounding import normalize_question
 from grepbit.domain.plan import PlanError, PreviousTurn, QueryPlan
 from grepbit.ports.grounding import GroundingModelError
@@ -222,6 +226,16 @@ def main(argv: list[str] | None = None) -> int:
         help="distinct values sampled per non-key text column; 0 disables sampling",
     )
     parser.add_argument(
+        "--no-shape-gate",
+        action="store_true",
+        help="ablation: do not refuse share/growth shapes before the model call",
+    )
+    parser.add_argument(
+        "--no-literal-check",
+        action="store_true",
+        help="ablation: do not check eq/in text literals against the column",
+    )
+    parser.add_argument(
         "--redact-rows",
         action="store_true",
         help="keep result and reference rows out of the JSON report (real data)",
@@ -276,6 +290,7 @@ def main(argv: list[str] | None = None) -> int:
             f"{len(overlay.absent_concepts)} absent concepts, "
             f"{len(overlay.column_aliases)} aliased columns"
         )
+    shape_pack = None if arguments.no_shape_gate else load_shape_pack()
     compiler = PlanCompiler(schema, overlay=overlay)
     policy = PostgresSqlPolicy(
         tables=frozenset(t.name for t in schema.tables),
@@ -322,11 +337,19 @@ def main(argv: list[str] | None = None) -> int:
         status = "not_run"
         detail: dict[str, Any] = {}
         absent = match_absent_concept(question, overlay) if overlay else None
+        shape = match_unsupported_shape(question, shape_pack) if shape_pack else None
         if unsafe(question):
             status = "unsafe"
         elif absent is not None:
             status = "semantic_gap"
             detail = {"reason": "absent_concept", "clarification": absent.note}
+        elif shape is not None:
+            status = "unsupported"
+            detail = {
+                "reason": f"unsupported_shape:{shape[0].id}",
+                "matched_name": shape[1],
+                "clarification": shape[0].clarification,
+            }
         elif client is None:
             status = "not_run"
         else:
@@ -370,7 +393,28 @@ def main(argv: list[str] | None = None) -> int:
                     else:
                         detail["assumptions"] = [a.text for a in compiled.assumptions]
                         detail["verification"] = compiled.verification
-                        if verifier is not None:
+                        detail["sql"] = compiled.compiled.physical_sql
+                        detail["lineage"] = compiled.lineage.as_dict()
+                        detail["interpretation"] = compiled.interpretation
+                        checks = (
+                            []
+                            if arguments.no_literal_check
+                            else text_literal_checks(proposal.plan, schema)
+                        )
+                        misses = missing_literals(connect, schema.schema_name, checks)
+                        detail["literal_checks"] = len(checks)
+                        if misses:
+                            status = "clarify"
+                            detail["reason"] = "filter_value_not_found"
+                            detail["missing_literals"] = [
+                                f"{m.table}.{m.column} = {m.value!r}" for m in misses
+                            ]
+                            detail["clarification"] = (
+                                "No row matches "
+                                + "; ".join(detail["missing_literals"])
+                                + ". Check the spelling or give the stored value."
+                            )
+                        if verifier is not None and not misses:
                             started_audit = time.monotonic()
                             try:
                                 report = verifier.verify(question, compiled, schema)
@@ -386,17 +430,19 @@ def main(argv: list[str] | None = None) -> int:
                                         time.monotonic() - started_audit, 3
                                     ),
                                 }
-                        execution = executor.execute(
-                            compiled.compiled,
-                            max_rows=200,
-                            preview_rows=200,
-                            statement_timeout_seconds=10,
-                            run_id=f"spike-{case['case_id']}",
-                        )
-                        detail["sql"] = compiled.compiled.physical_sql
-                        detail["lineage"] = compiled.lineage.as_dict()
-                        detail["interpretation"] = compiled.interpretation
-                        if execution.error_code is not None:
+                        if misses:
+                            execution = None
+                        else:
+                            execution = executor.execute(
+                                compiled.compiled,
+                                max_rows=200,
+                                preview_rows=200,
+                                statement_timeout_seconds=10,
+                                run_id=f"spike-{case['case_id']}",
+                            )
+                        if execution is None:
+                            pass
+                        elif execution.error_code is not None:
                             status, detail["reason"] = "failed", execution.error_code
                         else:
                             status = "answered"
@@ -523,9 +569,17 @@ def main(argv: list[str] | None = None) -> int:
         "zero_call_refusals": sum(
             1
             for r in results
-            if r["status"] in {"unsafe", "semantic_gap"}
-            and r.get("reason") == "absent_concept"
+            if r["status"] == "unsafe"
+            or r.get("reason") == "absent_concept"
+            or str(r.get("reason") or "").startswith("unsupported_shape:")
         ),
+        "shape_gate_refusals": sum(
+            1
+            for r in results
+            if str(r.get("reason") or "").startswith("unsupported_shape:")
+        ),
+        "literal_checks": sum(r.get("literal_checks", 0) for r in results),
+        "literal_misses": sum(1 for r in results if r.get("missing_literals")),
     }
     if arguments.verify_coverage:
         flagged = [

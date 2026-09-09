@@ -59,6 +59,12 @@ the same length), `aggregate_kind_mismatch`, `filter_kind_mismatch`,
 
 `answered`, `clarify`, `semantic_gap`, `unsupported`, `unsafe`, `failed`.
 
+Deterministic reasons (no model call, or before execution): `absent_concept`
+(overlay, `semantic_gap`), `unsupported_shape:<id>` (language pack,
+`unsupported`), `filter_value_not_found` (a text literal matched no row,
+`clarify`, with the literal named in the clarification), `plan_<PlanError code>`
+(compile-time structure, `unsupported`).
+
 ## Assumption sources
 
 `reviewed` (from the overlay), `candidate` (inferred join, schema-only

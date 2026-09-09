@@ -11,10 +11,14 @@ application -> domain
 
 | Layer | Modules | May import |
 |---|---|---|
-| domain | `models`, `plan`, `schema_model`, `overlay`, `assumptions`, `structured_query`, `grounding`, `agent_response`, `catalog` | stdlib, pydantic, domain |
+| domain | `models`, `plan`, `schema_model`, `overlay`, `language_pack`, `assumptions`, `structured_query`, `grounding`, `agent_response`, `catalog` | stdlib, pydantic, domain |
 | ports | `plan_compiler`, `coverage`, `grounding`, `embedding`, `query_executor`, `active_query_lifecycle` | stdlib, domain |
-| application | `overlay` (schema check, absent concepts), `text` (script-aware phrase match), `active_queries` (cancellation registry) | stdlib, domain, ports, application |
-| adapters | `postgres/introspect`, `postgres/executor`, `sqlglot/plan_compiler`, `sqlglot/policy`, `litellm/plan_client`, `litellm/coverage_client`, `litellm/grounding_client` (transport and settings), `litellm/embeddings_client`, `overlay_store` | anything |
+| application | `overlay` (schema check, absent concepts), `shapes` (unsupported-shape gate), `literals` (which filter literals to check), `text` (script-aware phrase match), `active_queries` (cancellation registry) | stdlib, domain, ports, application |
+| adapters | `postgres/introspect`, `postgres/value_check`, `postgres/executor`, `sqlglot/plan_compiler`, `sqlglot/policy`, `litellm/plan_client`, `litellm/coverage_client`, `litellm/grounding_client` (transport and settings), `litellm/embeddings_client`, `overlay_store`, `language_pack_store` | anything |
+
+`resources/unsupported_shapes.json` is the packaged language pack of question
+shapes the algebra cannot express (shares, growth rates) in Chinese, English
+and Japanese; it is data, loaded by `language_pack_store`.
 
 `tests/contract/test_module_boundaries.py` enforces the table and adds one
 more rule: sqlglot is imported only inside `adapters/sqlglot/`.
@@ -30,8 +34,11 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
    are the labels from `pg_enum` (type metadata, shown at any sampling
    limit); the compiler compares them as text so an unknown literal matches
    no row instead of raising.
-2. Deterministic gates before any model call: unsafe words (language pack),
-   overlay absent concepts (`match_absent_concept`), both zero cost.
+2. Deterministic gates before any model call, all zero cost: unsafe words
+   (language pack), overlay absent concepts (`match_absent_concept`), and
+   unsupported shapes (`match_unsupported_shape`: a share, ratio or growth
+   word yields `unsupported` with the pack's clarification, measured in
+   `../research/deterministic-gates.md`).
 3. Plan: `ChatCompletionsPlanClient.propose` sends the rules, the JSON Schema
    of `PlanProposal`, the value-free schema payload (plus overlay metrics and
    aliases, plus the previous turn for follow-ups) and gets one JSON object:
@@ -45,10 +52,15 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
    verification level.
 5. Gate: `PostgresSqlPolicy(tables=..., functions=...)` re-parses the SQL and
    allows one SELECT over the introspected tables with reviewed functions.
-6. Execute: `PsycopgQueryExecutor` runs inside `BEGIN READ ONLY` with
+6. Check literals: every `eq` or `in` text literal the plan filters on is
+   checked against its column (`text_literal_checks` chooses, `missing_literals`
+   runs one bounded `SELECT EXISTS` per literal with the literal bound). A
+   literal that matches no row turns the answer into `clarify` naming the
+   literal, instead of an empty aggregate that reads like a number.
+7. Execute: `PsycopgQueryExecutor` runs inside `BEGIN READ ONLY` with
    statement and idle timeouts, a named cursor, bounded rows, and the
    cancellation registry.
-7. Answer: status, verification, interpretation, assumptions, lineage, SQL,
+8. Answer: status, verification, interpretation, assumptions, lineage, SQL,
    rows; or a typed refusal with the reason and, when available, a
    clarification.
 
