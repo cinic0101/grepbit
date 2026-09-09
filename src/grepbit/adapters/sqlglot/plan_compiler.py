@@ -87,7 +87,7 @@ class PlanCompiler:
     ) -> CompiledPlan:
         schema = self._schema
         base = schema.table(plan.base_table)
-        if base is None:
+        if base is None or not self._visible(plan.base_table):
             raise PlanError("unknown_table", plan.base_table)
         joins: dict[str, ForeignKey] = {}
         assumptions: list[Assumption] = []
@@ -161,8 +161,10 @@ class PlanCompiler:
 
         def resolve(ref: ColumnRef) -> SchemaColumn:
             table = schema.table(ref.table)
-            if table is None:
+            if table is None or not self._visible(ref.table):
                 raise PlanError("unknown_table", ref.table)
+            if not self._visible(ref.table, ref.column):
+                raise PlanError("unknown_column", ref.id)
             column = table.column(ref.column)
             if column is None:
                 raise PlanError("unknown_column", ref.id)
@@ -511,6 +513,19 @@ class PlanCompiler:
             periods=periods,
             verification=verification,
         )
+
+    def _visible(self, table: str, column: str | None = None) -> bool:
+        """Hidden tables and columns (overlay policies) do not exist for a plan.
+
+        Key columns stay usable for joins through the foreign-key walk, which
+        does not go through ``resolve``; only what the plan names is checked.
+        """
+
+        if self._overlay is None:
+            return True
+        if column is None:
+            return self._overlay.table_visible(table)
+        return self._overlay.visible_column(table, column)
 
     @staticmethod
     def _aggregate(measure: Measure, resolve) -> exp.Expression:

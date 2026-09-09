@@ -97,13 +97,19 @@ def schema_payload(
     """Value-free schema description: names, kinds, comments, sampled enum values."""
 
     def column_entry(table_name: str, column) -> dict[str, Any]:
+        samples = column.sample_values or None
+        if (
+            overlay is not None
+            and not overlay.column_switches(f"{table_name}.{column.name}")[0]
+        ):
+            samples = None  # policy: this column's values never reach the planner
         entry = {
             "name": column.name,
             "kind": column.kind.value,
             "type": f"enum {column.data_type}" if column.is_enum else column.data_type,
             "nullable": column.nullable,
             "comment": column.comment,
-            "sample_values": column.sample_values or None,
+            "sample_values": samples,
         }
         if overlay is not None:
             column_id = f"{table_name}.{column.name}"
@@ -132,16 +138,30 @@ def schema_payload(
             default = overlay.time_default(table.name)
             if default is not None:
                 entry["default_time_column"] = default.id
-        entry["columns"] = [column_entry(table.name, c) for c in table.columns]
+        entry["columns"] = [
+            column_entry(table.name, c)
+            for c in table.columns
+            if overlay is None or overlay.visible_column(table.name, c.name)
+        ]
         return entry
+
+    def visible_table(table) -> bool:
+        return overlay is None or overlay.table_visible(table.name)
 
     payload: dict[str, Any] = {
         "datasource_id": model.datasource_id,
         "business_timezone": model.business_timezone,
-        "tables": [table_entry(table) for table in model.tables],
+        "tables": [
+            table_entry(table) for table in model.tables if visible_table(table)
+        ],
         "foreign_keys": [
             f"{fk.table}.{fk.column} -> {fk.referenced_table}.{fk.referenced_column}"
             for fk in model.foreign_keys
+            if overlay is None
+            or (
+                overlay.table_visible(fk.table)
+                and overlay.table_visible(fk.referenced_table)
+            )
         ],
     }
     if overlay is not None and overlay.metrics:

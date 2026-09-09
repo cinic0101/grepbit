@@ -51,6 +51,18 @@ def overlay_problems(overlay: SemanticOverlay, schema: SchemaModel) -> list[str]
         where = f"segments.{segment.id}"
         check(segment.table, None, where)
         check(segment.filter.column.table, segment.filter.column.column, where)
+    for policy in overlay.column_policies:
+        check(policy.column.table, policy.column.column, "column_policies")
+    for table_policy in overlay.table_policies:
+        check(table_policy.table, None, "table_policies")
+    for table in schema.tables:
+        if not overlay.table_visible(table.name):
+            continue
+        visible = [
+            c for c in table.columns if overlay.visible_column(table.name, c.name)
+        ]
+        if not visible:
+            problems.append(f"table_policies: {table.name} has no visible column left")
     return problems
 
 

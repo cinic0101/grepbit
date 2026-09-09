@@ -122,6 +122,44 @@ class Segment(DomainModel):
         return self.filter.model_copy(update={"op": opposite})
 
 
+class Sensitivity(StrEnum):
+    PUBLIC = "public"
+    PERSONAL = "personal"
+
+
+class ColumnPolicy(DomainModel):
+    """One reviewed fact about a column and three switches derived from it.
+
+    ``sensitivity`` sets the defaults: public columns may be sampled for the
+    planner (subject to the cardinality limit), grounded (candidates looked up
+    and shown) and are visible; personal columns are visible but never sampled
+    nor grounded. Each switch can be overridden per column. Being in the
+    overlay is the review: proposals live in a separate file the runtime
+    never loads.
+    """
+
+    column: ColumnRef
+    sensitivity: Sensitivity = Sensitivity.PUBLIC
+    sample: bool | None = None
+    ground: bool | None = None
+    visible: bool | None = None
+
+    def switches(self) -> tuple[bool, bool, bool]:
+        public = self.sensitivity is Sensitivity.PUBLIC
+        return (
+            public if self.sample is None else self.sample,
+            public if self.ground is None else self.ground,
+            True if self.visible is None else self.visible,
+        )
+
+
+class TablePolicy(DomainModel):
+    """A table hidden from the planner is not offered and cannot be referenced."""
+
+    table: str = Field(pattern=_IDENTIFIER)
+    visible: bool = True
+
+
 class SemanticOverlay(DomainModel):
     datasource_id: str = Field(min_length=1)
     revision: str = Field(min_length=1)
@@ -132,6 +170,8 @@ class SemanticOverlay(DomainModel):
     value_aliases: list[ValueAlias] = Field(default_factory=list)
     time_defaults: list[TimeDefault] = Field(default_factory=list)
     segments: list[Segment] = Field(default_factory=list)
+    column_policies: list[ColumnPolicy] = Field(default_factory=list)
+    table_policies: list[TablePolicy] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def metric_ids_unique(self) -> SemanticOverlay:
@@ -144,7 +184,43 @@ class SemanticOverlay(DomainModel):
         tables = [default.table for default in self.time_defaults]
         if len(tables) != len(set(tables)):
             raise ValueError("overlay_time_default_duplicate")
+        policy_columns = [policy.column.id for policy in self.column_policies]
+        if len(policy_columns) != len(set(policy_columns)):
+            raise ValueError("overlay_column_policy_duplicate")
+        policy_tables = [policy.table for policy in self.table_policies]
+        if len(policy_tables) != len(set(policy_tables)):
+            raise ValueError("overlay_table_policy_duplicate")
         return self
+
+    def column_switches(self, column_id: str) -> tuple[bool, bool, bool]:
+        """(sample, ground, visible) for a column; unlisted columns are public."""
+
+        policy = next(
+            (p for p in self.column_policies if p.column.id == column_id), None
+        )
+        return (True, True, True) if policy is None else policy.switches()
+
+    def table_visible(self, table: str) -> bool:
+        policy = next((p for p in self.table_policies if p.table == table), None)
+        return True if policy is None else policy.visible
+
+    def visible_column(self, table: str, column: str) -> bool:
+        return (
+            self.table_visible(table) and self.column_switches(f"{table}.{column}")[2]
+        )
+
+    def groundable_columns(self) -> list[ColumnRef]:
+        """Columns whose ground switch is on; only listed columns qualify.
+
+        Grounding reads and may show stored values, so it is opt-in per column:
+        an unlisted column is visible and samplable but never grounded.
+        """
+
+        return [
+            p.column
+            for p in self.column_policies
+            if p.switches()[1] and self.visible_column(p.column.table, p.column.column)
+        ]
 
     def table_names(self, table: str) -> list[str]:
         return [

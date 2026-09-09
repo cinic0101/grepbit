@@ -61,6 +61,7 @@ from grepbit.application.overlay import (
     match_absent_concept,
     overlay_problems,
 )
+from grepbit.application.policies import PROPOSER_REVISION, propose_policies
 from grepbit.application.shapes import match_unsupported_shape, single_period_misread
 from grepbit.domain.grounding import normalize_question
 from grepbit.domain.plan import PlanError, PreviousTurn, QueryPlan
@@ -264,6 +265,14 @@ def main(argv: list[str] | None = None) -> int:
         help="ablation: do not check eq/in text literals against the column",
     )
     parser.add_argument(
+        "--propose-policies",
+        type=Path,
+        help=(
+            "write deterministic column-policy proposals (a draft the runtime "
+            "never loads) and continue"
+        ),
+    )
+    parser.add_argument(
         "--redact-rows",
         action="store_true",
         help="keep result and reference rows out of the JSON report (real data)",
@@ -306,6 +315,26 @@ def main(argv: list[str] | None = None) -> int:
     inferred_keys = [fk.id for fk in schema.foreign_keys if fk.inferred]
     if inferred_keys:
         print("inferred joins:", *inferred_keys, sep="\n  ")
+    if arguments.propose_policies is not None:
+        proposals = propose_policies(schema)
+        arguments.propose_policies.parent.mkdir(parents=True, exist_ok=True)
+        arguments.propose_policies.write_text(
+            json.dumps(
+                {
+                    "datasource_id": arguments.datasource_id,
+                    "proposer": PROPOSER_REVISION,
+                    "note": "draft; copy approved entries into the datasource overlay",
+                    "column_policies": [
+                        p.model_dump(mode="json", exclude_none=True) for p in proposals
+                    ],
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        print(f"policy proposals: {len(proposals)} -> {arguments.propose_policies}")
     overlay = None
     if arguments.overlay is not None:
         overlay = load_semantic_overlay(arguments.overlay)
