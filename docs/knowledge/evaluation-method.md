@@ -97,6 +97,12 @@ database can be committed under `evidence/`. The summary records
 
 ## Judged runs (real questions)
 
+A holdout arrives as a UTF-8 text file, one question per line (leading
+numbers are stripped, blank lines skipped). `evals/questions_to_cases.py
+--questions <file.txt> --datasource-id <id> --as-of <ISO datetime> --output
+<cases.yaml>` converts it into a judged-mode case file and prints only the
+count, so the build side never reads the questions before the run.
+
 Real questions carry no reference SQL, so a run over them produces three
 files: the JSON report (with `--redact-rows`), a review sheet
 (`--review-sheet`, one readable page per case with question, status,

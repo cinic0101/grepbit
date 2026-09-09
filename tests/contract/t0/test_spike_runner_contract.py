@@ -218,3 +218,19 @@ def test_settle_inlines_bound_values_as_sql_literals() -> None:
     )
     with pytest.raises(ValueError, match="settle_unbound_placeholder"):
         settle.inline_parameters("x = %(f_9)s", [])
+
+
+def test_questions_to_cases_strips_numbering_and_blank_lines() -> None:
+    spec_q = importlib.util.spec_from_file_location(
+        "questions_to_cases", ROOT / "evals" / "questions_to_cases.py"
+    )
+    module = importlib.util.module_from_spec(spec_q)
+    assert spec_q.loader is not None
+    spec_q.loader.exec_module(module)
+    text = "1. 各門市營業額\n\n  2) 上週每天的交易筆數\n3、退貨率\n退貨金額佔比\n"
+    questions = module.parse_questions(text)
+    assert questions == ["各門市營業額", "上週每天的交易筆數", "退貨率", "退貨金額佔比"]
+    cases = module.build_cases(questions)
+    assert cases[0] == {"case_id": "q01", "question": "各門市營業額"}
+    assert cases[-1]["case_id"] == "q04"
+    assert all("expected" not in c for c in cases)
