@@ -1,0 +1,55 @@
+{
+  "datasource_id": "pos_real",
+  "revision": "pos-real-overlay-draft-1",
+  "metrics": [
+    {
+      "id": "return_amount",
+      "names": ["退貨金額", "退貨總金額", "退款金額", "return amount", "refund amount"],
+      "description": "Sum of pos_sale.total_amount over transactions that reference an origin transaction (pos_sale.origin_transaction_no is set); the owner confirmed on 2026-09-09 that such a transaction is a return.",
+      "base_table": "pos_sale",
+      "aggregate": "sum",
+      "column": {"table": "pos_sale", "column": "total_amount"},
+      "filters": [{"column": {"table": "pos_sale", "column": "origin_transaction_no"}, "op": "not_null"}],
+      "time_column": {"table": "pos_sale", "column": "sale_date"},
+      "review_state": "candidate"
+    },
+    {
+      "id": "return_count",
+      "names": ["退貨筆數", "退貨交易筆數", "退貨交易數", "幾筆退貨", "return count", "number of returns"],
+      "description": "Count of pos_sale rows that reference an origin transaction (origin_transaction_no is set).",
+      "base_table": "pos_sale",
+      "aggregate": "count",
+      "filters": [{"column": {"table": "pos_sale", "column": "origin_transaction_no"}, "op": "not_null"}],
+      "time_column": {"table": "pos_sale", "column": "sale_date"},
+      "review_state": "candidate"
+    },
+    {
+      "id": "return_quantity",
+      "names": ["退貨數量", "退貨件數", "return quantity", "returned units"],
+      "description": "Sum of pos_saleitem.quantity over line items whose transaction references an origin transaction (pos_sale.origin_transaction_no is set).",
+      "base_table": "pos_saleitem",
+      "aggregate": "sum",
+      "column": {"table": "pos_saleitem", "column": "quantity"},
+      "filters": [{"column": {"table": "pos_sale", "column": "origin_transaction_no"}, "op": "not_null"}],
+      "time_column": {"table": "pos_sale", "column": "sale_date"},
+      "review_state": "candidate"
+    }
+  ],
+  "absent_concepts": [
+    {"names": ["訂單狀態", "交易狀態", "order status"], "note": "This datasource records no order status: a pos_sale row is either a normal sale or a return (origin_transaction_no set). transfer_status.status is the status of a stock transfer order, not of a sale."},
+    {"names": ["取消的訂單", "取消訂單", "已取消", "cancelled order", "canceled order"], "note": "Cancellations are not recorded; only returns (origin_transaction_no set) exist."},
+    {"names": ["已付款", "未付款", "付款狀態", "paid order", "unpaid", "payment status"], "note": "Payments carry no status; every pos_payment row is a completed payment."}
+  ],
+  "column_aliases": [
+    {"column": {"table": "pos_sale", "column": "total_amount"}, "names": ["營業額", "銷售總額", "銷售額", "交易金額", "sales amount", "revenue"]},
+    {"column": {"table": "pos_saleitem", "column": "amount"}, "names": ["銷售金額（明細）", "line amount"]},
+    {"column": {"table": "pos_saleitem", "column": "quantity"}, "names": ["銷售數量", "quantity sold"]},
+    {"column": {"table": "store", "column": "store_name"}, "names": ["門市", "store"]},
+    {"column": {"table": "salesperson", "column": "sales_name"}, "names": ["銷售員", "銷售人員", "salesperson"]},
+    {"column": {"table": "pos_payment", "column": "payment_method"}, "names": ["付款方式", "payment method"]},
+    {"column": {"table": "category", "column": "category_name"}, "names": ["商品分類", "分類", "category"]},
+    {"column": {"table": "product", "column": "product_name"}, "names": ["商品", "product"]},
+    {"column": {"table": "product", "column": "price"}, "names": ["單價", "商品單價", "unit price"]},
+    {"column": {"table": "transfer_status", "column": "status"}, "names": ["調撥狀態", "調撥單狀態", "transfer status"]}
+  ]
+}

@@ -17,6 +17,8 @@ blind run on the real database comes first.
 | Unsupported-shape language pack, literal existence check | built as deterministic gates; measured on the 160 author cases in `../research/deterministic-gates.md` |
 | Blind run of the owner's 30 to 50 real questions | waiting on the question file and the `as_of` date |
 | Ask service, datasource registration, MCP tool, vocabulary gate | after the blind run, in the order its numbers dictate |
+| Real-database overlay | draft-1 in `overlays/pos_real.json` (return metrics, absent concepts, aliases), measured on the 50 questions; definitions await the owner's signature |
+| Period-over-period growth | deferred by the owner to the phase after the 50 questions are settled (stage 3 derived metrics) |
 
 ## Stage 1 (about two weeks): make it callable
 

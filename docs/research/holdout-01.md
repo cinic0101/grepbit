@@ -50,3 +50,23 @@ Zero model failures, zero literal checks fired (no question carried a value).
 - Generalization: the questions were seen by the build side before the run.
   The 50 become the first regression batch on the real schema; the next
   batch (with values) is the holdout.
+
+## Second run: the same 50 with a draft overlay (`overlays/pos_real.json`, draft-1)
+
+Content only, no format change: three return metrics (`origin_transaction_no`
+set, confirmed by the owner as the return rule), three absent concepts
+(order status, cancellations, payment status), ten column aliases. Metrics
+are `candidate` until the owner signs them. Artifact
+`evidence/spike-tier0/pos-real-holdout-02-overlay.json`; P50 4.0 s, P95 5.2 s.
+
+| Change | Cases | Note |
+|---|---|---|
+| refusal to answer through a return metric | q45, q46, q48 | `partially_verified` (candidate metrics); q47 answers too but reads 每日 as today again |
+| model refusal to zero-call absent-concept refusal with the reviewer's note | q04, q05 | same status, now deterministic and explained |
+| answer to absent-concept refusal | q03 (已付款) | the first run summed every payment and the owner accepted the number; the note now says payments carry no status. The owner decides which is wanted |
+| answer to model refusal | q24 (每天的平均客單價) | with reviewed metrics present the model declines an undefined 客單價; q13 still answers it as `AVG` |
+| unchanged wrong answer | q06 | 訂單筆數最多的狀態 does not contain the absent-concept phrase; still `transfer_status` |
+| plan changes without a value change | q01, q02, q07, q12, q13, q15, q18, q35, q37 to q40 | only measure aliases or an added `ORDER BY`; q32 happened to get `length: 1` this time (correct), q31 did not |
+
+Statuses: 37 answered, 7 `semantic_gap` (9 zero-call refusals in total with
+the 6 shape hits), 6 `unsupported`.
