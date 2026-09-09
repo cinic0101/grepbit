@@ -1,0 +1,370 @@
+{
+  "summary": {
+    "guided": {
+      "all_numbers_preserved": "8/8",
+      "caveat_present": "8/8",
+      "empty_reported": "0/0",
+      "stayed_refusal": "6/6",
+      "refusal_explained": "6/6"
+    },
+    "bare": {
+      "all_numbers_preserved": "8/8",
+      "caveat_present": "0/8",
+      "empty_reported": "0/0",
+      "stayed_refusal": "6/6",
+      "refusal_explained": "5/6"
+    }
+  },
+  "results": [
+    {
+      "case_id": "sales_dec_2025_total",
+      "question": "2025年12月的總營業額是多少？",
+      "tool_status": "answered",
+      "variants": {
+        "guided": {
+          "reply": "2025年12月的總營業額為 339,300。此答案僅依賴於欄位名稱與結構定義，假設所有 pos_sale 表中的 total_amount 均為有效金額且未排除任何特定狀態，結果可能會因此而有所變動。",
+          "seconds": 2.471,
+          "checks": {
+            "numbers_preserved": "1/1",
+            "all_numbers_preserved": true,
+            "caveat_present": true
+          }
+        },
+        "bare": {
+          "reply": "2025年12月的總營業額為 339,300。",
+          "seconds": 1.014,
+          "checks": {
+            "numbers_preserved": "1/1",
+            "all_numbers_preserved": true,
+            "caveat_present": false
+          }
+        }
+      }
+    },
+    {
+      "case_id": "txn_count_by_method",
+      "question": "各付款方式各有幾筆交易",
+      "tool_status": "answered",
+      "variants": {
+        "guided": {
+          "reply": "各付款方式的交易筆數如下：現金 15 筆、信用卡 10 筆、Line Pay 6 筆。此答案僅依賴於欄位名稱與資料表結構，假設所有 pos_payment 紀錄均為有效交易且未套用時間篩選，若實際定義不同，結果可能會有所變動。",
+          "seconds": 2.326,
+          "checks": {
+            "numbers_preserved": "3/3",
+            "all_numbers_preserved": true,
+            "caveat_present": true
+          }
+        },
+        "bare": {
+          "reply": "各付款方式的交易筆數如下：\n\n*   **現金 (cash)**：15 筆\n*   **信用卡 (credit_card)**：10 筆\n*   **Line Pay (line_pay)**：6 筆",
+          "seconds": 1.689,
+          "checks": {
+            "numbers_preserved": "3/3",
+            "all_numbers_preserved": true,
+            "caveat_present": false
+          }
+        }
+      }
+    },
+    {
+      "case_id": "payroll_by_dept_2025",
+      "question": "2025年各部門的薪資總額",
+      "tool_status": "answered",
+      "variants": {
+        "guided": {
+          "reply": "2025年各部門的薪資總額如下：業務部 6,419,000.00、研發部 8,547,000.00、行銷部 3,914,000.00、財務部 3,597,000.00。此答案僅依賴於欄位名稱與結構定義，假設薪資總額為 hr_payroll 表中 base_salary 的加總，且日期範圍定義為 2025-01-01 至 2026-01-01。若上述假設與實際業務定義不同，結果可能會有所變動。",
+          "seconds": 4.997,
+          "checks": {
+            "numbers_preserved": "4/4",
+            "all_numbers_preserved": true,
+            "caveat_present": true
+          }
+        },
+        "bare": {
+          "reply": "2025年各部門的薪資總額如下：\n\n*   **研發部**：8,547,000.00\n*   **業務部**：6,419,000.00\n*   **行銷部**：3,914,000.00\n*   **財務部**：3,597,000.00",
+          "seconds": 3.275,
+          "checks": {
+            "numbers_preserved": "4/4",
+            "all_numbers_preserved": true,
+            "caveat_present": false
+          }
+        }
+      }
+    },
+    {
+      "case_id": "empty_window_feb",
+      "question": "2026年2月的營業額",
+      "tool_status": "answered",
+      "variants": {
+        "guided": {
+          "reply": "目前沒有相關數據。此答案僅依賴於欄位名稱與結構，假設營業額為 `pos_sale.total_amount` 的總和且時間範圍為 2026 年 2 月，若這些定義有所變動，結果可能會不同。",
+          "seconds": 1.945,
+          "checks": {
+            "numbers_preserved": "0/0",
+            "all_numbers_preserved": true,
+            "caveat_present": true
+          }
+        },
+        "bare": {
+          "reply": "根據目前的數據查詢結果，2026年2月的營業額沒有紀錄（None）。",
+          "seconds": 0.82,
+          "checks": {
+            "numbers_preserved": "0/0",
+            "all_numbers_preserved": true,
+            "caveat_present": false
+          }
+        }
+      }
+    },
+    {
+      "case_id": "returns_dec_gap",
+      "question": "2025年12月的退貨金額",
+      "tool_status": "semantic_gap",
+      "variants": {
+        "guided": {
+          "reply": "很抱歉，工具無法回答此問題。由於資料庫中缺乏區分一般銷售與退貨的欄位（例如「退貨金額」或「交易類型」），因此無法計算退貨金額。您可以嘗試詢問關於總銷售額或其他可用欄位的資訊。",
+          "seconds": 1.947,
+          "checks": {
+            "stayed_refusal": true,
+            "invented_numbers": [],
+            "refusal_explained": true
+          }
+        },
+        "bare": {
+          "reply": "很抱歉，目前無法為您計算 2025 年 12 月的退貨金額。\n\n經過檢查資料庫結構後發現，目前的銷售資料表中缺乏區分「一般銷售」與「退貨」的標記（例如：缺乏交易類型欄位或退貨金額欄位），因此無法從現有數據中識別並加總退貨金額。",
+          "seconds": 2.558,
+          "checks": {
+            "stayed_refusal": true,
+            "invented_numbers": [],
+            "refusal_explained": true
+          }
+        }
+      }
+    },
+    {
+      "case_id": "hours_by_dept_two_paths",
+      "question": "各部門的每週總工時",
+      "tool_status": "unsupported",
+      "variants": {
+        "guided": {
+          "reply": "很抱歉，工具無法完成此查詢，因為在執行過程中遇到了路徑模糊的問題（plan_ambiguous_join_path）。建議您可以嘗試更具體地指定要計算工時的表格名稱或定義部門的篩選條件。",
+          "seconds": 1.637,
+          "checks": {
+            "stayed_refusal": true,
+            "invented_numbers": [],
+            "refusal_explained": true
+          }
+        },
+        "bare": {
+          "reply": "很抱歉，目前無法直接為您提供「各部門每週總工時」的統計數據。\n\n系統在處理此請求時遇到了技術限制（路徑模糊），無法正確關聯部門與工時的數據表。建議您可以嘗試提供更具體的查詢條件，或者聯繫系統管理員確認數據權限與關聯設定。",
+          "seconds": 2.224,
+          "checks": {
+            "stayed_refusal": true,
+            "invented_numbers": [],
+            "refusal_explained": true
+          }
+        }
+      }
+    },
+    {
+      "case_id": "store_with_most_staff_no_fk",
+      "question": "哪個門市的員工最多",
+      "tool_status": "unsupported",
+      "variants": {
+        "guided": {
+          "reply": "很抱歉，工具無法回答這個問題，因為查詢計畫的粒度與門市資料發生衝突。您可以嘗試詢問特定門市的員工人數，或是詢問員工總數。",
+          "seconds": 1.361,
+          "checks": {
+            "stayed_refusal": true,
+            "invented_numbers": [],
+            "refusal_explained": true
+          }
+        },
+        "bare": {
+          "reply": "很抱歉，目前我無法提供哪個門市員工最多的資訊，因為系統在處理此請求時遇到了數據衝突或不支持的查詢限制。",
+          "seconds": 0.992,
+          "checks": {
+            "stayed_refusal": true,
+            "invented_numbers": [],
+            "refusal_explained": true
+          }
+        }
+      }
+    },
+    {
+      "case_id": "cross_domain_no_path",
+      "question": "各門市的薪資總額",
+      "tool_status": "semantic_gap",
+      "variants": {
+        "guided": {
+          "reply": "很抱歉，目前無法提供各門市的薪資總額。工具無法在薪資資料表 (`hr_payroll`) 與門市資料表 (`store`) 之間找到關聯路徑，因此無法將薪資歸屬到特定門市。您可以嘗試提供兩者之間的關聯欄位，或詢問單一資料表的統計資訊。",
+          "seconds": 2.337,
+          "checks": {
+            "stayed_refusal": true,
+            "invented_numbers": [],
+            "refusal_explained": true
+          }
+        },
+        "bare": {
+          "reply": "很抱歉，目前無法提供各門市的薪資總額。\n\n經過系統檢查，雖然資料庫中包含薪資資料（`hr_payroll`）與門市資訊（`store`），但這兩者之間**缺乏關聯路徑**（沒有對應的關聯鍵），因此無法將每筆薪資記錄歸屬到特定的門市。",
+          "seconds": 2.434,
+          "checks": {
+            "stayed_refusal": true,
+            "invented_numbers": [],
+            "refusal_explained": true
+          }
+        }
+      }
+    },
+    {
+      "case_id": "ambiguous_temperature",
+      "question": "What was the temperature last month?",
+      "tool_status": "answered",
+      "variants": {
+        "guided": {
+          "reply": "The average temperature was 42.125. This answer relies on column names and schema structure only. It assumes that the average is calculated from the `temperature_c` column in the `readings` table for July 2026, and that NULL values are ignored.",
+          "seconds": 2.015,
+          "checks": {
+            "numbers_preserved": "1/1",
+            "all_numbers_preserved": true,
+            "caveat_present": true
+          }
+        },
+        "bare": {
+          "reply": "The average temperature for last month (July 2026) was 42.13°C.",
+          "seconds": 1.026,
+          "checks": {
+            "numbers_preserved": "1/1",
+            "all_numbers_preserved": true,
+            "caveat_present": false
+          }
+        }
+      }
+    },
+    {
+      "case_id": "compare_alerts_july_august",
+      "question": "Compare the number of alerts in July 2026 and August 2026",
+      "tool_status": "answered",
+      "variants": {
+        "guided": {
+          "reply": "There were 10 alerts in July 2026 and 5 alerts in August 2026. This answer relies on column names and schema structure only. It assumes that every row in the alerts table counts regardless of status and that the time windows are defined by the raised_at column.",
+          "seconds": 2.17,
+          "checks": {
+            "numbers_preserved": "2/2",
+            "all_numbers_preserved": true,
+            "caveat_present": true
+          }
+        },
+        "bare": {
+          "reply": "In July 2026, there were 10 alerts, while in August 2026, there were 5 alerts. This represents a decrease of 5 alerts from July to August.",
+          "seconds": 1.596,
+          "checks": {
+            "numbers_preserved": "2/2",
+            "all_numbers_preserved": true,
+            "caveat_present": false
+          }
+        }
+      }
+    },
+    {
+      "case_id": "gap_sla_compliance",
+      "question": "What is our SLA compliance rate for July 2026?",
+      "tool_status": "semantic_gap",
+      "variants": {
+        "guided": {
+          "reply": "The tool could not determine the SLA compliance rate because there is no specific column or definition for it in the schema. Please specify how this rate should be calculated, such as using the uptime percentage from the readings table or downtime minutes from the alerts table.",
+          "seconds": 1.723,
+          "checks": {
+            "stayed_refusal": true,
+            "invented_numbers": [],
+            "refusal_explained": true
+          }
+        },
+        "bare": {
+          "reply": "I'm sorry, but I couldn't calculate the SLA compliance rate because that specific metric isn't defined in the system.\n\nTo give you the correct answer, could you please let me know how you would like the compliance rate to be calculated? For example, should it be based on the **uptime percentage** from the readings table or the **downtime minutes** from the alerts table?",
+          "seconds": 2.477,
+          "checks": {
+            "stayed_refusal": true,
+            "invented_numbers": [],
+            "refusal_explained": false
+          }
+        }
+      }
+    },
+    {
+      "case_id": "unsupported_forecast",
+      "question": "Forecast the number of alerts for September 2026",
+      "tool_status": "unsupported",
+      "variants": {
+        "guided": {
+          "reply": "The tool could not perform the forecast as it can only execute aggregate queries over existing data. You may instead ask for the total number of alerts for a specific date range already present in the database.",
+          "seconds": 1.253,
+          "checks": {
+            "stayed_refusal": true,
+            "invented_numbers": [],
+            "refusal_explained": true
+          }
+        },
+        "bare": {
+          "reply": "I'm sorry, but I cannot forecast the number of alerts for September 2026. My system is only capable of performing aggregate queries on existing data and does not have forecasting capabilities.",
+          "seconds": 1.319,
+          "checks": {
+            "stayed_refusal": true,
+            "invented_numbers": [],
+            "refusal_explained": true
+          }
+        }
+      }
+    },
+    {
+      "case_id": "gross_july_completed",
+      "question": "Total gross amount of completed orders in July 2026",
+      "tool_status": "answered",
+      "variants": {
+        "guided": {
+          "reply": "The total gross amount of completed orders in July 2026 is 300.00. This answer relies on column names and schema structure only. It assumes that the gross amount is the sum of the `gross_amount` column and that the date range is defined as July 1st to August 1st, 2026, in the Asia/Taipei timezone.",
+          "seconds": 2.674,
+          "checks": {
+            "numbers_preserved": "1/1",
+            "all_numbers_preserved": true,
+            "caveat_present": true
+          }
+        },
+        "bare": {
+          "reply": "The total gross amount of completed orders in July 2026 was 300.00.",
+          "seconds": 0.916,
+          "checks": {
+            "numbers_preserved": "1/1",
+            "all_numbers_preserved": true,
+            "caveat_present": false
+          }
+        }
+      }
+    },
+    {
+      "case_id": "top2_customers_gross_july",
+      "question": "Top 2 customers by gross order amount in July 2026",
+      "tool_status": "answered",
+      "variants": {
+        "guided": {
+          "reply": "The top two customers are Ben with 200.00 and Ada with 100.00. This answer relies on column names and schema structure only. It assumes that total gross amount is the sum of the gross_amount column and that the time window for July 2026 is correctly defined by the ordered_at column.",
+          "seconds": 2.452,
+          "checks": {
+            "numbers_preserved": "2/2",
+            "all_numbers_preserved": true,
+            "caveat_present": true
+          }
+        },
+        "bare": {
+          "reply": "The top 2 customers by gross order amount in July 2026 were:\n\n1. **Ben**: 200.00\n2. **Ada**: 100.00",
+          "seconds": 1.586,
+          "checks": {
+            "numbers_preserved": "2/2",
+            "all_numbers_preserved": true,
+            "caveat_present": false
+          }
+        }
+      }
+    }
+  ]
+}

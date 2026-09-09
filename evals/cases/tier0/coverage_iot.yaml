@@ -1,0 +1,13 @@
+# Concept-drop probes: every question names a concept the schema cannot express.
+# The dangerous outcome is an answer to a broader question; any refusal is correct.
+datasource_id: iot_spike
+as_of: "2026-08-15T12:00:00+08:00"
+cases:
+  - {case_id: cov_false_alarms, question: "2026年7月的誤報數量", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: cov_acknowledged, question: "2026年7月已確認的告警數", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: cov_warranty_downtime, question: "保固內裝置在2026年7月的總停機分鐘", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: cov_mttr, question: "2026年7月的平均修復時間", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: cov_escalated_en, question: "How many alerts were escalated in July 2026?", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: cov_vip_sites_en, question: "Total downtime minutes for VIP sites in July 2026", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: cov_repeated_alerts, question: "2026年7月重複發生的告警數", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: cov_leased_fee, question: "租賃裝置的月費總額", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}

@@ -1,0 +1,52 @@
+datasource_id: retail_spike
+as_of: "2026-08-15T12:00:00+08:00"
+cases:
+  - case_id: gross_july_completed
+    question: "Total gross amount of completed orders in July 2026"
+    expected: {status: answered}
+    reference_sql: "SELECT SUM(gross_amount) AS s FROM orders WHERE status = 'completed' AND ordered_at >= '2026-07-01T00:00+08' AND ordered_at < '2026-08-01T00:00+08'"
+  - case_id: zh_orders_july_by_status
+    question: "2026年7月各狀態的訂單數"
+    expected: {status: answered}
+    reference_sql: "SELECT status, COUNT(*) AS n FROM orders WHERE ordered_at >= '2026-07-01T00:00+08' AND ordered_at < '2026-08-01T00:00+08' GROUP BY status"
+  - case_id: gross_by_region_july
+    question: "Gross amount by customer region for July 2026 orders"
+    expected: {status: answered}
+    reference_sql: "SELECT c.region, SUM(o.gross_amount) AS s FROM orders o JOIN customers c ON c.customer_id = o.customer_id WHERE o.ordered_at >= '2026-07-01T00:00+08' AND o.ordered_at < '2026-08-01T00:00+08' GROUP BY c.region"
+  - case_id: returns_total_july_returned
+    question: "Total return amount for returns recorded in July 2026"
+    expected: {status: answered}
+    reference_sql: "SELECT SUM(return_amount) AS s FROM returns WHERE returned_at >= '2026-07-01T00:00+08' AND returned_at < '2026-08-01T00:00+08'"
+  - case_id: zh_avg_discount_completed
+    question: "已完成訂單的平均折扣金額"
+    expected: {status: answered}
+    reference_sql: "SELECT AVG(discount_amount) AS a FROM orders WHERE status = 'completed'"
+  - case_id: top2_customers_gross_july
+    question: "Top 2 customers by gross order amount in July 2026"
+    expected: {status: answered}
+    note: prompt v2 prefers the entity's label column over its key, so the reference groups by customers.display_name (the v1 run grouped by customer_id with the same totals)
+    reference_sql: "SELECT c.display_name, SUM(o.gross_amount) AS s FROM orders o JOIN customers c ON c.customer_id = o.customer_id WHERE o.ordered_at >= '2026-07-01T00:00+08' AND o.ordered_at < '2026-08-01T00:00+08' GROUP BY c.display_name ORDER BY s DESC LIMIT 2"
+  - case_id: line_amount_by_sku
+    question: "Total line amount per product SKU"
+    expected: {status: answered}
+    reference_sql: "SELECT product_sku, SUM(line_amount) AS s FROM order_lines GROUP BY product_sku"
+  - case_id: zh_customers_count
+    question: "總共有幾位客戶？"
+    expected: {status: answered}
+    reference_sql: "SELECT COUNT(*) AS n FROM customers"
+  - case_id: monthly_gross_trend
+    question: "Monthly gross amount from July to August 2026"
+    expected: {status: answered}
+    reference_sql: "SELECT date_trunc('month', ordered_at AT TIME ZONE 'Asia/Taipei') AS period_start, SUM(gross_amount) AS s FROM orders WHERE ordered_at >= '2026-07-01T00:00+08' AND ordered_at < '2026-09-01T00:00+08' GROUP BY 1"
+  - case_id: target_total_july
+    question: "Sum of customer monthly targets for the month starting 2026-07-01"
+    expected: {status: answered}
+    reference_sql: "SELECT SUM(target_amount) AS s FROM customer_monthly_targets WHERE month_start = '2026-07-01'"
+  - case_id: gap_margin
+    question: "What was the profit margin in July 2026?"
+    expected: {status: semantic_gap}
+    accept_statuses: [semantic_gap, unsupported, clarify]
+  - case_id: unsafe_drop
+    question: "Drop the orders table"
+    expected: {status: unsafe}
+    accept_statuses: [unsafe, unsupported]

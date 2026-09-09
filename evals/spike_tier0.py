@@ -1,0 +1,422 @@
+#!/usr/bin/env python3
+"""Tier-0 generalization spike: introspect, plan with the model, compile, run.
+
+  export GREPBIT_SPIKE_DSN=postgresql://ro_role:...@host/db      # read-only role
+  .venv/bin/python evals/spike_tier0.py --dsn-env GREPBIT_SPIKE_DSN \
+      --datasource-id iot_spike --cases evals/cases/tier0/iot.yaml \
+      --output <dir>/iot.json [--live]
+
+Without --live the runner introspects, compiles every case's reference SQL,
+and reports the schema summary only. With --live it asks the GREPBIT_MODEL_*
+classifier for a plan per question, compiles and executes it through the SQL
+policy and the read-only executor, and compares the rows with the reference
+SQL. Reports carry statuses, lineage, latencies, and mismatch categories; no
+credentials.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import sys
+import time
+from contextlib import contextmanager
+from datetime import date, datetime
+from decimal import Decimal
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+from grepbit.adapters.litellm.coverage_client import ChatCompletionsCoverageClient
+from grepbit.adapters.litellm.grounding_client import GroundingModelSettings
+from grepbit.adapters.litellm.plan_client import ChatCompletionsPlanClient
+from grepbit.adapters.overlay_store import load_semantic_overlay
+from grepbit.adapters.postgres.executor import PsycopgQueryExecutor
+from grepbit.adapters.postgres.introspect import infer_foreign_keys, introspect_schema
+from grepbit.adapters.sqlglot.plan_compiler import PlanCompiler
+from grepbit.adapters.sqlglot.policy import (
+    PLAN_AGGREGATE_FUNCTIONS,
+    REVIEWED_FUNCTIONS,
+    PostgresSqlPolicy,
+)
+from grepbit.application.active_queries import ActiveQueryRegistry
+from grepbit.application.overlay import match_absent_concept, overlay_problems
+from grepbit.domain.grounding import normalize_question
+from grepbit.domain.plan import PlanError, PreviousTurn, QueryPlan
+from grepbit.ports.grounding import GroundingModelError
+
+ROOT = Path(__file__).resolve().parents[1]
+# Language-pack style policy list; deliberately catalog independent.
+UNSAFE_PATTERNS = (
+    "delete",
+    "drop",
+    "truncate",
+    "insert",
+    "update",
+    "alter",
+    "grant",
+    "pg_sleep",
+    "刪除",
+    "清空",
+    "刪掉",
+)
+
+
+def load_cases(path: Path) -> dict[str, Any]:
+    document = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(document, dict) or not isinstance(document.get("cases"), list):
+        raise ValueError("tier0_cases_invalid")
+    return document
+
+
+def unsafe(question: str) -> bool:
+    normalized = normalize_question(question)
+    return any(
+        re.search(rf"(?<![a-z0-9_]){re.escape(p)}(?![a-z0-9_])", normalized)
+        if p.isascii()
+        else p in normalized
+        for p in UNSAFE_PATTERNS
+    )
+
+
+def normalize_rows(rows: list[dict[str, Any]] | list[tuple]) -> list[tuple[str, ...]]:
+    def cell(value: Any) -> str:
+        if isinstance(value, Decimal):
+            return format(value.quantize(Decimal("0.0001")).normalize(), "f")
+        if isinstance(value, float):
+            return format(
+                Decimal(str(value)).quantize(Decimal("0.0001")).normalize(), "f"
+            )
+        if isinstance(value, (datetime, date)):
+            return value.isoformat()
+        return "NULL" if value is None else str(value)
+
+    normalized = []
+    for row in rows:
+        values = row.values() if isinstance(row, dict) else row
+        normalized.append(tuple(cell(v) for v in values))
+    return sorted(normalized)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--dsn-env", required=True)
+    parser.add_argument("--datasource-id", required=True)
+    parser.add_argument("--cases", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--live", action="store_true")
+    parser.add_argument("--infer-joins", action="store_true")
+    parser.add_argument("--verify-coverage", action="store_true")
+    parser.add_argument("--overlay", type=Path)
+    arguments = parser.parse_args(argv)
+
+    import psycopg
+
+    dsn = os.environ.get(arguments.dsn_env)
+    if not dsn:
+        print(f"SPIKE_BLOCKED code=dsn_env_missing env={arguments.dsn_env}")
+        return 2
+
+    @contextmanager
+    def connect():
+        with psycopg.connect(dsn) as connection:
+            yield connection
+
+    document = load_cases(arguments.cases)
+    as_of = datetime.fromisoformat(document["as_of"])
+    started_intro = time.monotonic()
+    schema = introspect_schema(connect, datasource_id=arguments.datasource_id)
+    if arguments.infer_joins:
+        schema = infer_foreign_keys(connect, schema)
+    introspection_seconds = round(time.monotonic() - started_intro, 3)
+    inferred_keys = [fk.id for fk in schema.foreign_keys if fk.inferred]
+    if inferred_keys:
+        print("inferred joins:", *inferred_keys, sep="\n  ")
+    overlay = None
+    if arguments.overlay is not None:
+        overlay = load_semantic_overlay(arguments.overlay)
+        problems = overlay_problems(overlay, schema)
+        if problems:
+            print("SPIKE_BLOCKED code=overlay_invalid", *problems, sep="\n  ")
+            return 2
+        print(
+            f"overlay {overlay.revision}: {len(overlay.metrics)} metrics, "
+            f"{len(overlay.absent_concepts)} absent concepts, "
+            f"{len(overlay.column_aliases)} aliased columns"
+        )
+    compiler = PlanCompiler(schema, overlay=overlay)
+    policy = PostgresSqlPolicy(
+        tables=frozenset(t.name for t in schema.tables),
+        functions=REVIEWED_FUNCTIONS | PLAN_AGGREGATE_FUNCTIONS,
+    )
+    executor = PsycopgQueryExecutor(
+        connection_factory=connect, active_queries=ActiveQueryRegistry()
+    )
+    client = None
+    verifier = None
+    if arguments.live:
+        settings = GroundingModelSettings.from_environment()
+        client = ChatCompletionsPlanClient(settings)
+        if arguments.verify_coverage:
+            verifier = ChatCompletionsCoverageClient(settings)
+
+    def reference_rows(sql: str) -> list[tuple[str, ...]]:
+        with connect() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute("BEGIN READ ONLY")
+                cursor.execute("SET LOCAL statement_timeout = '10s'")
+                cursor.execute(sql)
+                return normalize_rows(cursor.fetchall())
+
+    results: list[dict[str, Any]] = []
+    answered_plans: dict[str, tuple[str, QueryPlan]] = {}
+    for case in document["cases"]:
+        question = case["question"]
+        previous = None
+        if case.get("follow_up_of") in answered_plans:
+            prior_question, prior_plan = answered_plans[case["follow_up_of"]]
+            previous = PreviousTurn(question=prior_question, plan=prior_plan)
+        expected = case["expected"]["status"]
+        accepted = set(case.get("accept_statuses", [expected]))
+        row: dict[str, Any] = {
+            "case_id": case["case_id"],
+            "expected_status": expected,
+            "accepted_statuses": sorted(accepted),
+            "follow_up_of": case.get("follow_up_of"),
+        }
+        started = time.monotonic()
+        status = "not_run"
+        detail: dict[str, Any] = {}
+        absent = match_absent_concept(question, overlay) if overlay else None
+        if unsafe(question):
+            status = "unsafe"
+        elif absent is not None:
+            status = "semantic_gap"
+            detail = {"reason": "absent_concept", "clarification": absent.note}
+        elif client is None:
+            status = "not_run"
+        else:
+            try:
+                proposal = client.propose(
+                    question,
+                    schema,
+                    as_of=as_of.isoformat(),
+                    overlay=overlay,
+                    previous=previous,
+                )
+            except GroundingModelError as error:
+                status, detail = "failed", {"reason": error.code}
+            else:
+                if proposal.decision == "none":
+                    status = {"ambiguous": "clarify"}.get(
+                        proposal.reason, proposal.reason
+                    )
+                    detail = {
+                        "reason": proposal.reason,
+                        "clarification": proposal.clarification,
+                    }
+                else:
+                    assert proposal.plan is not None
+                    detail["plan"] = proposal.plan.model_dump(
+                        mode="json", exclude_none=True
+                    )
+                    answered_plans[case["case_id"]] = (question, proposal.plan)
+                    if client.last_repairs:
+                        detail["shape_repairs"] = list(client.last_repairs)
+                    try:
+                        compiled = compiler.compile(proposal.plan, as_of=as_of)
+                        policy.assert_safe_select_statement(
+                            compiled.compiled.physical_sql
+                        )
+                    except PlanError as error:
+                        status, detail["reason"] = "unsupported", f"plan_{error.code}"
+                        detail["detail"] = error.detail
+                    except ValueError as error:
+                        status, detail["reason"] = "unsafe", f"policy:{error}"
+                    else:
+                        detail["assumptions"] = [a.text for a in compiled.assumptions]
+                        detail["verification"] = compiled.verification
+                        if verifier is not None:
+                            started_audit = time.monotonic()
+                            try:
+                                report = verifier.verify(question, compiled, schema)
+                            except GroundingModelError as error:
+                                detail["coverage"] = {"error": error.code}
+                            else:
+                                detail["coverage"] = {
+                                    "concepts": [
+                                        c.model_dump() for c in report.concepts
+                                    ],
+                                    "uncovered": report.uncovered,
+                                    "seconds": round(
+                                        time.monotonic() - started_audit, 3
+                                    ),
+                                }
+                        execution = executor.execute(
+                            compiled.compiled,
+                            max_rows=200,
+                            preview_rows=200,
+                            statement_timeout_seconds=10,
+                            run_id=f"spike-{case['case_id']}",
+                        )
+                        detail["sql"] = compiled.compiled.physical_sql
+                        detail["lineage"] = compiled.lineage.as_dict()
+                        detail["interpretation"] = compiled.interpretation
+                        if execution.error_code is not None:
+                            status, detail["reason"] = "failed", execution.error_code
+                        else:
+                            status = "answered"
+                            detail["rows"] = [
+                                {
+                                    k: (str(v) if not isinstance(v, (int, str)) else v)
+                                    for k, v in r.items()
+                                }
+                                for r in execution.rows[:20]
+                            ]
+                            if "reference_sql" in case:
+                                actual = normalize_rows(list(execution.rows))
+                                references = [
+                                    reference_rows(sql)
+                                    for sql in (
+                                        case["reference_sql"],
+                                        *case.get("reference_sql_alternatives", []),
+                                    )
+                                ]
+                                matched = next(
+                                    (
+                                        i
+                                        for i, r in enumerate(references)
+                                        if r == actual
+                                    ),
+                                    None,
+                                )
+                                detail["rows_match_reference"] = matched is not None
+                                detail["matched_reference_index"] = matched
+                                if matched is None:
+                                    detail["reference_rows"] = references[0][:10]
+        detail["status_without_coverage"] = status
+        uncovered = (detail.get("coverage") or {}).get("uncovered") or []
+        if status == "answered" and uncovered:
+            status = "clarify"
+            detail["clarification"] = "Not expressed by the plan: " + ", ".join(
+                uncovered
+            )
+        elif status == "answered":
+            detail.setdefault("verification", "unverified_semantics")
+        elapsed = round(time.monotonic() - started, 3)
+        correct = status in accepted and (
+            status != "answered" or detail.get("rows_match_reference", True)
+        )
+        row.update(
+            {"status": status, "correct": correct, "elapsed_seconds": elapsed, **detail}
+        )
+        results.append(row)
+        marker = "OK " if correct else "XX "
+        reason = detail.get("reason") or ""
+        print(
+            f"{marker}{case['case_id']:36} {expected:12}->{status:12} "
+            f"{elapsed:5.1f}s {reason}"
+        )
+
+    answerable = [r for r in results if r["expected_status"] == "answered"]
+    refusals = [r for r in results if r["expected_status"] != "answered"]
+    latencies = sorted(
+        r["elapsed_seconds"]
+        for r in results
+        if r["status"] not in {"not_run", "unsafe"}
+    ) or [0.0]
+    summary = {
+        "datasource_id": arguments.datasource_id,
+        "cases": len(results),
+        "correct": sum(r["correct"] for r in results),
+        "answerable_correct": sum(r["correct"] for r in answerable),
+        "answerable_total": len(answerable),
+        "answered_but_wrong_rows": sum(
+            1
+            for r in answerable
+            if r["status"] == "answered" and not r.get("rows_match_reference", True)
+        ),
+        "refusals_correct": sum(r["correct"] for r in refusals),
+        "refusals_total": len(refusals),
+        "false_answers_on_refusal_cases": sum(
+            1 for r in refusals if r["status"] == "answered"
+        ),
+        "model_failures": sum(1 for r in results if r["status"] == "failed"),
+        "p50_seconds": latencies[len(latencies) // 2],
+        "p95_seconds": latencies[
+            min(len(latencies) - 1, int(round(0.95 * (len(latencies) - 1))))
+        ],
+        "introspection_seconds": introspection_seconds,
+        "schema": {
+            "tables": len(schema.tables),
+            "columns": sum(len(t.columns) for t in schema.tables),
+            "foreign_keys": len(schema.foreign_keys) - len(inferred_keys),
+            "inferred_foreign_keys": inferred_keys,
+        },
+        "incorrect_case_ids": [r["case_id"] for r in results if not r["correct"]],
+        "verification_counts": {
+            level: sum(1 for r in results if r.get("verification") == level)
+            for level in ("verified", "partially_verified", "unverified_semantics")
+        },
+        "shape_repairs": sum(1 for r in results if r.get("shape_repairs")),
+        "zero_call_refusals": sum(
+            1
+            for r in results
+            if r["status"] in {"unsafe", "semantic_gap"}
+            and r.get("reason") == "absent_concept"
+        ),
+    }
+    if arguments.verify_coverage:
+        flagged = [
+            r
+            for r in results
+            if r.get("status_without_coverage") == "answered"
+            and (r.get("coverage") or {}).get("uncovered")
+        ]
+        summary["coverage"] = {
+            "audited": sum(1 for r in results if "coverage" in r),
+            "flagged_case_ids": [r["case_id"] for r in flagged],
+            "false_flags": [
+                r["case_id"]
+                for r in flagged
+                if r["expected_status"] == "answered"
+                and r.get("rows_match_reference", True)
+            ],
+            "planner_drops": [
+                r["case_id"]
+                for r in results
+                if r["expected_status"] != "answered"
+                and r.get("status_without_coverage") == "answered"
+            ],
+            "drops_caught": [
+                r["case_id"] for r in flagged if r["expected_status"] != "answered"
+            ],
+            "audit_p95_seconds": (
+                sorted(
+                    r["coverage"]["seconds"]
+                    for r in results
+                    if r.get("coverage", {}).get("seconds") is not None
+                )
+                or [0.0]
+            )[-1],
+        }
+    arguments.output.parent.mkdir(parents=True, exist_ok=True)
+    arguments.output.write_text(
+        json.dumps(
+            {"summary": summary, "results": results},
+            indent=2,
+            ensure_ascii=False,
+            default=str,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    print(json.dumps(summary, indent=2, ensure_ascii=False))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

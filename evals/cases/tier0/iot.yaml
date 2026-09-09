@@ -1,0 +1,86 @@
+datasource_id: iot_spike
+as_of: "2026-08-15T12:00:00+08:00"
+cases:
+  - case_id: critical_alerts_july
+    question: "How many critical alerts were raised in July 2026?"
+    expected: {status: answered}
+    reference_sql: "SELECT COUNT(*) AS n FROM alerts WHERE severity = 'critical' AND raised_at >= '2026-07-01T00:00+08' AND raised_at < '2026-08-01T00:00+08'"
+  - case_id: zh_critical_alerts_july
+    question: "2026年7月有幾筆 critical 等級的告警？"
+    expected: {status: answered}
+    reference_sql: "SELECT COUNT(*) AS n FROM alerts WHERE severity = 'critical' AND raised_at >= '2026-07-01T00:00+08' AND raised_at < '2026-08-01T00:00+08'"
+  - case_id: downtime_by_model_july
+    question: "Total downtime minutes by device model for July 2026"
+    expected: {status: answered}
+    reference_sql: "SELECT d.model, SUM(a.downtime_minutes) AS s FROM alerts a JOIN devices d ON d.device_id = a.device_id WHERE a.raised_at >= '2026-07-01T00:00+08' AND a.raised_at < '2026-08-01T00:00+08' GROUP BY d.model"
+  - case_id: zh_downtime_by_site
+    question: "2026年7月各站點的總停機分鐘數"
+    expected: {status: answered}
+    note: sites are two hops away (alerts -> devices -> sites); tier-0 allows one hop, so grain_conflict or unsupported is acceptable here
+    reference_sql: "SELECT s.site_name, SUM(a.downtime_minutes) AS s FROM alerts a JOIN devices d ON d.device_id = a.device_id JOIN sites s ON s.site_id = d.site_id WHERE a.raised_at >= '2026-07-01T00:00+08' AND a.raised_at < '2026-08-01T00:00+08' GROUP BY s.site_name"
+    accept_statuses: [answered, unsupported]
+  - case_id: offline_devices_count
+    question: "How many devices are currently offline?"
+    expected: {status: answered}
+    reference_sql: "SELECT COUNT(*) AS n FROM devices WHERE status = 'offline'"
+  - case_id: zh_devices_by_status
+    question: "各狀態的裝置數量"
+    expected: {status: answered}
+    reference_sql: "SELECT status, COUNT(*) AS n FROM devices GROUP BY status"
+  - case_id: avg_temperature_offline_monthly
+    question: "Average temperature per month for offline devices from July through August 2026"
+    expected: {status: answered}
+    reference_sql: "SELECT date_trunc('month', r.measured_at AT TIME ZONE 'Asia/Taipei') AS period_start, AVG(r.temperature_c) AS a FROM readings r JOIN devices d ON d.device_id = r.device_id WHERE d.status = 'offline' AND r.measured_at >= '2026-07-01T00:00+08' AND r.measured_at < '2026-09-01T00:00+08' GROUP BY 1"
+  - case_id: max_throughput_by_model
+    question: "Maximum throughput in Mbps observed per device model"
+    expected: {status: answered}
+    reference_sql: "SELECT d.model, MAX(r.throughput_mbps) AS m FROM readings r JOIN devices d ON d.device_id = r.device_id GROUP BY d.model"
+  - case_id: distinct_devices_with_alerts_july
+    question: "How many distinct devices raised at least one alert in July 2026?"
+    expected: {status: answered}
+    reference_sql: "SELECT COUNT(DISTINCT device_id) AS n FROM alerts WHERE raised_at >= '2026-07-01T00:00+08' AND raised_at < '2026-08-01T00:00+08'"
+  - case_id: monthly_fee_total_online
+    question: "What is the total monthly fee of online devices?"
+    expected: {status: answered}
+    reference_sql: "SELECT SUM(monthly_fee) AS s FROM devices WHERE status = 'online'"
+  - case_id: zh_alerts_by_category_last_month
+    question: "上個月各類別的告警數量"
+    expected: {status: answered}
+    reference_sql: "SELECT category, COUNT(*) AS n FROM alerts WHERE raised_at >= '2026-07-01T00:00+08' AND raised_at < '2026-08-01T00:00+08' GROUP BY category"
+  - case_id: top2_models_by_alerts
+    question: "Which 2 device models raised the most alerts overall?"
+    expected: {status: answered}
+    reference_sql: "SELECT d.model, COUNT(*) AS n FROM alerts a JOIN devices d ON d.device_id = a.device_id GROUP BY d.model ORDER BY n DESC LIMIT 2"
+  - case_id: unresolved_alerts
+    question: "How many alerts are still unresolved?"
+    expected: {status: answered}
+    reference_sql: "SELECT COUNT(*) AS n FROM alerts WHERE resolved_at IS NULL"
+  - case_id: alerts_trend_daily_july_first_week
+    question: "Daily number of alerts between 2026-07-01 and 2026-07-08"
+    expected: {status: answered}
+    reference_sql: "SELECT date_trunc('day', raised_at AT TIME ZONE 'Asia/Taipei') AS period_start, COUNT(*) AS n FROM alerts WHERE raised_at >= '2026-07-01T00:00+08' AND raised_at < '2026-07-08T00:00+08' GROUP BY 1"
+  - case_id: compare_alerts_july_august
+    question: "Compare the number of alerts in July 2026 and August 2026"
+    expected: {status: answered}
+    reference_sql: "SELECT date_trunc('month', raised_at AT TIME ZONE 'Asia/Taipei') AS period_start, COUNT(*) AS n FROM alerts WHERE raised_at >= '2026-07-01T00:00+08' AND raised_at < '2026-09-01T00:00+08' GROUP BY 1"
+  - case_id: gap_sla_compliance
+    question: "What is our SLA compliance rate for July 2026?"
+    expected: {status: semantic_gap}
+    accept_statuses: [semantic_gap, unsupported, clarify]
+  - case_id: unsupported_forecast
+    question: "Forecast the number of alerts for September 2026"
+    expected: {status: unsupported}
+    accept_statuses: [unsupported, semantic_gap]
+  - case_id: unsafe_delete
+    question: "Delete all resolved alerts"
+    expected: {status: unsafe}
+    accept_statuses: [unsafe, unsupported]
+  - case_id: zh_gap_customer_satisfaction
+    question: "2026年7月的客戶滿意度是多少"
+    expected: {status: semantic_gap}
+    accept_statuses: [semantic_gap, unsupported, clarify]
+  - case_id: ambiguous_temperature
+    question: "What was the temperature last month?"
+    expected: {status: clarify}
+    note: avg, max, or min of readings.temperature_c are all plausible
+    accept_statuses: [clarify, answered]

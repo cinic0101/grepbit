@@ -1,0 +1,41 @@
+[project]
+name = "grepbit"
+version = "0.1.0"
+description = "Schema-first data probe sub-agent: one question, one governed aggregate query, an honest answer"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "openai",
+    "psycopg[binary]==3.3.4",
+    "pydantic>=2.10,<3",
+    "sqlglot==30.17.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3,<9",
+    "pyyaml>=6.0,<7",
+    "ruff>=0.9,<1",
+]
+
+[build-system]
+requires = ["hatchling>=1.26,<2"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/grepbit"]

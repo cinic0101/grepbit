@@ -1,0 +1,775 @@
+{
+  "summary": {
+    "datasource_id": "pos_test",
+    "cases": 10,
+    "correct": 9,
+    "answerable_correct": 9,
+    "answerable_total": 10,
+    "answered_but_wrong_rows": 0,
+    "refusals_correct": 0,
+    "refusals_total": 0,
+    "false_answers_on_refusal_cases": 0,
+    "model_failures": 0,
+    "p50_seconds": 6.247,
+    "p95_seconds": 7.668,
+    "introspection_seconds": 0.035,
+    "schema": {
+      "tables": 13,
+      "columns": 58,
+      "foreign_keys": 11,
+      "inferred_foreign_keys": []
+    },
+    "incorrect_case_ids": [
+      "suggested_09"
+    ],
+    "verification_counts": {
+      "verified": 3,
+      "partially_verified": 0,
+      "unverified_semantics": 6
+    },
+    "shape_repairs": 1,
+    "zero_call_refusals": 0
+  },
+  "results": [
+    {
+      "case_id": "suggested_01",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.865,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "range",
+            "start": "1900-01-01",
+            "end_exclusive": "2026-02-11"
+          }
+        },
+        "order": []
+      },
+      "assumptions": [
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "1900-01-01..2026-02-11 is [1900-01-01T00:00:00+08:00, 2026-02-11T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date."
+      ],
+      "verification": "verified",
+      "sql": "SELECT SUM(pos_sale.total_amount) AS net_sales FROM public.pos_sale WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [1900-01-01T00:00:00+08:00, 2026-02-11T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "metric net_sales over pos_sale; for 1900-01-01..2026-02-11",
+      "rows": [
+        {
+          "net_sales": "680100"
+        }
+      ],
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "suggested_02",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.823,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "alias": "net_sales"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "order": [
+          {
+            "field": "net_sales",
+            "direction": "desc"
+          }
+        ]
+      },
+      "assumptions": [
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count."
+      ],
+      "verification": "verified",
+      "sql": "SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS net_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id GROUP BY store.store_name ORDER BY net_sales DESC NULLS LAST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [],
+        "time_window": []
+      },
+      "interpretation": "metric net_sales over pos_sale; by store.store_name",
+      "rows": [
+        {
+          "store_name": "特約竹東長春二",
+          "net_sales": "231700"
+        },
+        {
+          "store_name": "特約新店遠東",
+          "net_sales": "201100"
+        },
+        {
+          "store_name": "特約永和中正",
+          "net_sales": "152900"
+        },
+        {
+          "store_name": "特約板橋華江",
+          "net_sales": "54500"
+        },
+        {
+          "store_name": "特約台南崇德",
+          "net_sales": "39900"
+        }
+      ],
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "suggested_03",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 7.668,
+      "plan": {
+        "base_table": "pos_saleitem",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_saleitem",
+              "column": "amount"
+            },
+            "alias": "total_sales"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "category",
+            "column": "category_name"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "range",
+            "start": "1900-01-01",
+            "end_exclusive": "2026-02-11"
+          }
+        },
+        "order": [
+          {
+            "field": "total_sales",
+            "direction": "desc"
+          }
+        ],
+        "limit": 1
+      },
+      "assumptions": [
+        "pos_saleitem rows are joined to pos_sale through pos_saleitem.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "pos_saleitem rows are joined to product through pos_saleitem.product_id; rows without a matching product row keep NULL there.",
+        "pos_saleitem rows are joined to category through product.category_id; rows without a matching category row keep NULL there.",
+        "total_sales = SUM of pos_saleitem.amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_saleitem row counts, including any status the question did not mention.",
+        "1900-01-01..2026-02-11 is [1900-01-01T00:00:00+08:00, 2026-02-11T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT category.category_name AS category_name, SUM(pos_saleitem.amount) AS total_sales FROM public.pos_saleitem LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id LEFT JOIN public.category ON product.category_id = category.category_id WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s GROUP BY category.category_name ORDER BY total_sales DESC NULLS LAST LIMIT %(limit_2)s",
+      "lineage": {
+        "base_table": "pos_saleitem",
+        "tables": [
+          "pos_saleitem",
+          "pos_sale",
+          "product",
+          "category"
+        ],
+        "joins": [
+          "pos_saleitem.transaction_no -> pos_sale.transaction_no",
+          "pos_saleitem.product_id -> product.product_id",
+          "product.category_id -> category.category_id"
+        ],
+        "measures": [
+          "total_sales = sum(pos_saleitem.amount)"
+        ],
+        "dimensions": [
+          "category.category_name"
+        ],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [1900-01-01T00:00:00+08:00, 2026-02-11T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(pos_saleitem.amount) over pos_saleitem; by category.category_name; for 1900-01-01..2026-02-11; limit 1",
+      "rows": [
+        {
+          "category_name": "通訊商品類",
+          "total_sales": "632200"
+        }
+      ],
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "suggested_04",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 7.063,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_payment",
+              "column": "payment_amount"
+            }
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "pos_payment",
+              "column": "payment_method"
+            },
+            "op": "eq",
+            "values": [
+              "credit_card"
+            ]
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "range",
+            "start": "1900-01-01",
+            "end_exclusive": "2026-02-11"
+          }
+        },
+        "order": []
+      },
+      "assumptions": [
+        "pos_payment rows are joined to pos_sale through pos_payment.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "sum_payment_amount = SUM of pos_payment.payment_amount; NULL values are ignored by the aggregate.",
+        "1900-01-01..2026-02-11 is [1900-01-01T00:00:00+08:00, 2026-02-11T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT SUM(pos_payment.payment_amount) AS sum_payment_amount FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE pos_payment.payment_method = %(f_0)s AND (pos_sale.sale_date >= %(p1_start_1)s AND pos_sale.sale_date < %(p1_end_2)s)",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_payment.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "sum_payment_amount = sum(pos_payment.payment_amount)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "pos_payment.payment_method eq credit_card"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [1900-01-01T00:00:00+08:00, 2026-02-11T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(pos_payment.payment_amount) over pos_payment; for 1900-01-01..2026-02-11; where pos_payment.payment_method eq credit_card",
+      "rows": [
+        {
+          "sum_payment_amount": "295400"
+        }
+      ],
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "suggested_05",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 6.247,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "avg",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            },
+            "alias": "avg_transaction_amount"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "range",
+            "start": "1900-01-01",
+            "end_exclusive": "2026-02-11"
+          }
+        },
+        "order": []
+      },
+      "assumptions": [
+        "avg_transaction_amount = AVG of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "1900-01-01..2026-02-11 is [1900-01-01T00:00:00+08:00, 2026-02-11T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT AVG(pos_sale.total_amount) AS avg_transaction_amount FROM public.pos_sale WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "avg_transaction_amount = avg(pos_sale.total_amount)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [1900-01-01T00:00:00+08:00, 2026-02-11T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "avg(pos_sale.total_amount) over pos_sale; for 1900-01-01..2026-02-11",
+      "rows": [
+        {
+          "avg_transaction_amount": "24289.285714285714"
+        }
+      ],
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "suggested_06",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.838,
+      "plan": {
+        "base_table": "hr_employee",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "employee_count"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "hr_dept",
+            "column": "dept_name"
+          }
+        ],
+        "filters": [
+          {
+            "column": {
+              "table": "hr_employee",
+              "column": "hired_at"
+            },
+            "op": "lte",
+            "values": [
+              "2026-02-10"
+            ]
+          },
+          {
+            "column": {
+              "table": "hr_employee",
+              "column": "terminated_at"
+            },
+            "op": "is_null",
+            "values": []
+          }
+        ],
+        "order": []
+      },
+      "shape_repairs": [
+        "hired_at -> hr_employee.hired_at",
+        "terminated_at -> hr_employee.terminated_at"
+      ],
+      "assumptions": [
+        "hr_employee rows are joined to hr_dept through hr_employee.dept_id; rows without a matching hr_dept row keep NULL there.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT hr_dept.dept_name AS dept_name, COUNT(*) AS employee_count FROM public.hr_employee LEFT JOIN public.hr_dept ON hr_employee.dept_id = hr_dept.dept_id WHERE hr_employee.hired_at <= %(f_0)s AND hr_employee.terminated_at IS NULL GROUP BY hr_dept.dept_name ORDER BY dept_name NULLS FIRST",
+      "lineage": {
+        "base_table": "hr_employee",
+        "tables": [
+          "hr_employee",
+          "hr_dept"
+        ],
+        "joins": [
+          "hr_employee.dept_id -> hr_dept.dept_id"
+        ],
+        "measures": [
+          "employee_count = count(*)"
+        ],
+        "dimensions": [
+          "hr_dept.dept_name"
+        ],
+        "filters": [
+          "hr_employee.hired_at lte 2026-02-10",
+          "hr_employee.terminated_at is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "count(*) over hr_employee; by hr_dept.dept_name; where hr_employee.hired_at lte 2026-02-10 and hr_employee.terminated_at is_null",
+      "rows": [
+        {
+          "dept_name": "業務部",
+          "employee_count": 7
+        },
+        {
+          "dept_name": "研發部",
+          "employee_count": 11
+        },
+        {
+          "dept_name": "行銷部",
+          "employee_count": 5
+        },
+        {
+          "dept_name": "財務部",
+          "employee_count": 4
+        }
+      ],
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "suggested_07",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.018,
+      "plan": {
+        "base_table": "hr_payroll",
+        "measures": [
+          {
+            "metric": "base_salary_total"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "hr_dept",
+            "column": "dept_name"
+          }
+        ],
+        "filters": [],
+        "order": [
+          {
+            "field": "base_salary_total",
+            "direction": "desc"
+          }
+        ],
+        "limit": 1
+      },
+      "assumptions": [
+        "hr_payroll rows are joined to hr_employee through hr_payroll.emp_id; rows without a matching hr_employee row keep NULL there.",
+        "hr_payroll rows are joined to hr_dept through hr_employee.dept_id; rows without a matching hr_dept row keep NULL there.",
+        "base_salary_total = Sum of hr_payroll.base_salary over payroll periods, attributed to the period start date; bonuses are excluded.",
+        "No row filter was applied beyond the time window; every hr_payroll row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count."
+      ],
+      "verification": "verified",
+      "sql": "SELECT hr_dept.dept_name AS dept_name, SUM(hr_payroll.base_salary) AS base_salary_total FROM public.hr_payroll LEFT JOIN public.hr_employee ON hr_payroll.emp_id = hr_employee.emp_id LEFT JOIN public.hr_dept ON hr_employee.dept_id = hr_dept.dept_id GROUP BY hr_dept.dept_name ORDER BY base_salary_total DESC NULLS LAST LIMIT %(limit_0)s",
+      "lineage": {
+        "base_table": "hr_payroll",
+        "tables": [
+          "hr_payroll",
+          "hr_employee",
+          "hr_dept"
+        ],
+        "joins": [
+          "hr_payroll.emp_id -> hr_employee.emp_id",
+          "hr_employee.dept_id -> hr_dept.dept_id"
+        ],
+        "measures": [
+          "base_salary_total = sum(hr_payroll.base_salary) [base_salary_total]"
+        ],
+        "dimensions": [
+          "hr_dept.dept_name"
+        ],
+        "filters": [],
+        "time_window": []
+      },
+      "interpretation": "metric base_salary_total over hr_payroll; by hr_dept.dept_name; limit 1",
+      "rows": [
+        {
+          "dept_name": "研發部",
+          "base_salary_total": "9323000.00"
+        }
+      ],
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "suggested_08",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.91,
+      "plan": {
+        "base_table": "hr_project",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "project_count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "hr_project",
+              "column": "ended_at"
+            },
+            "op": "is_null",
+            "values": []
+          }
+        ],
+        "order": []
+      },
+      "assumptions": [
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT COUNT(*) AS project_count FROM public.hr_project WHERE hr_project.ended_at IS NULL",
+      "lineage": {
+        "base_table": "hr_project",
+        "tables": [
+          "hr_project"
+        ],
+        "joins": [],
+        "measures": [
+          "project_count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "hr_project.ended_at is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "count(*) over hr_project; where hr_project.ended_at is_null",
+      "rows": [
+        {
+          "project_count": 6
+        }
+      ],
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "suggested_09",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "unsupported",
+      "correct": false,
+      "elapsed_seconds": 6.744,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "return_count"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "product",
+            "column": "product_name"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "range",
+            "start": "1900-01-01",
+            "end_exclusive": "2026-02-11"
+          }
+        },
+        "order": [
+          {
+            "field": "return_count",
+            "direction": "desc"
+          }
+        ],
+        "limit": 3
+      },
+      "reason": "plan_grain_conflict",
+      "detail": "product",
+      "status_without_coverage": "unsupported"
+    },
+    {
+      "case_id": "suggested_10",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 6.775,
+      "plan": {
+        "base_table": "hr_assignment",
+        "measures": [
+          {
+            "aggregate": "avg",
+            "column": {
+              "table": "hr_assignment",
+              "column": "hours_per_week"
+            },
+            "alias": "avg_weekly_hours"
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "hr_assignment",
+              "column": "started_at"
+            },
+            "op": "lte",
+            "values": [
+              "2026-02-10"
+            ]
+          },
+          {
+            "column": {
+              "table": "hr_assignment",
+              "column": "ended_at"
+            },
+            "op": "is_null",
+            "values": []
+          }
+        ],
+        "order": []
+      },
+      "assumptions": [
+        "avg_weekly_hours = AVG of hr_assignment.hours_per_week; NULL values are ignored by the aggregate.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT AVG(hr_assignment.hours_per_week) AS avg_weekly_hours FROM public.hr_assignment WHERE hr_assignment.started_at <= %(f_0)s AND hr_assignment.ended_at IS NULL",
+      "lineage": {
+        "base_table": "hr_assignment",
+        "tables": [
+          "hr_assignment"
+        ],
+        "joins": [],
+        "measures": [
+          "avg_weekly_hours = avg(hr_assignment.hours_per_week)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "hr_assignment.started_at lte 2026-02-10",
+          "hr_assignment.ended_at is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "avg(hr_assignment.hours_per_week) over hr_assignment; where hr_assignment.started_at lte 2026-02-10 and hr_assignment.ended_at is_null",
+      "rows": [
+        {
+          "avg_weekly_hours": "30.4444444444444444"
+        }
+      ],
+      "status_without_coverage": "answered"
+    }
+  ]
+}

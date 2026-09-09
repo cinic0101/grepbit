@@ -1,0 +1,72 @@
+{
+  "datasource_id": "pos_test",
+  "revision": "pos-overlay-experiment-v1",
+  "metrics": [
+    {
+      "id": "return_amount",
+      "names": ["退貨金額", "退貨", "return amount", "returns", "返品金額"],
+      "description": "Sum of pos_sale.total_amount over transactions that reference an origin transaction (origin_transaction_no is set), which this business records as returns or exchanges.",
+      "base_table": "pos_sale",
+      "aggregate": "sum",
+      "column": {"table": "pos_sale", "column": "total_amount"},
+      "filters": [{"column": {"table": "pos_sale", "column": "origin_transaction_no"}, "op": "not_null"}],
+      "time_column": {"table": "pos_sale", "column": "sale_date"}
+    },
+    {
+      "id": "return_count",
+      "names": ["退貨筆數", "幾筆退貨", "number of returns", "return count"],
+      "description": "Count of pos_sale rows that reference an origin transaction (origin_transaction_no is set).",
+      "base_table": "pos_sale",
+      "aggregate": "count",
+      "filters": [{"column": {"table": "pos_sale", "column": "origin_transaction_no"}, "op": "not_null"}],
+      "time_column": {"table": "pos_sale", "column": "sale_date"}
+    },
+    {
+      "id": "transaction_count",
+      "names": ["交易數", "交易筆數", "幾筆交易", "number of transactions", "transaction count", "取引件数"],
+      "description": "Number of distinct pos_payment.transaction_no; a transaction paid in several parts counts once. Time is the sale_date of the transaction.",
+      "base_table": "pos_payment",
+      "aggregate": "count_distinct",
+      "column": {"table": "pos_payment", "column": "transaction_no"},
+      "time_column": {"table": "pos_sale", "column": "sale_date"}
+    },
+    {
+      "id": "net_sales",
+      "names": ["折扣後營業額", "淨營業額", "net sales", "sales after discount"],
+      "description": "Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+      "base_table": "pos_sale",
+      "aggregate": "sum",
+      "column": {"table": "pos_sale", "column": "total_amount"},
+      "time_column": {"table": "pos_sale", "column": "sale_date"}
+    },
+    {
+      "id": "base_salary_total",
+      "names": ["薪資總額", "薪資", "本薪總額", "total salary", "payroll total"],
+      "description": "Sum of hr_payroll.base_salary over payroll periods, attributed to the period start date; bonuses are excluded.",
+      "base_table": "hr_payroll",
+      "aggregate": "sum",
+      "column": {"table": "hr_payroll", "column": "base_salary"},
+      "time_column": {"table": "hr_payroll", "column": "period_start"}
+    }
+  ],
+  "absent_concepts": [
+    {"names": ["庫存", "inventory", "stock level", "在庫"], "note": "This datasource has no inventory or stock data."},
+    {"names": ["分期", "installment"], "note": "Payment methods are cash, credit_card, line_pay; installments are not recorded."},
+    {"names": ["加班費", "overtime"], "note": "Payroll records base salary and bonus only; no overtime pay."},
+    {"names": ["線上", "online order", "online sales", "電商"], "note": "Sales carry no channel; online and in-store cannot be separated."},
+    {"names": ["新會員", "new member"], "note": "Members have no join date; new members cannot be identified."},
+    {"names": ["保固", "warranty"], "note": "No warranty data exists in this datasource."}
+  ],
+  "column_aliases": [
+    {"column": {"table": "pos_sale", "column": "total_amount"}, "names": ["營業額", "銷售額", "sales amount", "revenue", "売上高"]},
+    {"column": {"table": "pos_saleitem", "column": "amount"}, "names": ["銷售金額", "line amount"]},
+    {"column": {"table": "store", "column": "store_name"}, "names": ["門市", "store"]},
+    {"column": {"table": "pos_payment", "column": "payment_method"}, "names": ["付款方式", "payment method"]},
+    {"column": {"table": "pos_sale", "column": "member_id"}, "names": ["會員", "member"]},
+    {"column": {"table": "hr_employee", "column": "job_title"}, "names": ["職稱", "job title"]},
+    {"column": {"table": "hr_dept", "column": "dept_name"}, "names": ["部門", "department"]},
+    {"column": {"table": "hr_payroll", "column": "base_salary"}, "names": ["本薪", "base salary"]},
+    {"column": {"table": "hr_payroll", "column": "bonus"}, "names": ["獎金", "bonus"]},
+    {"column": {"table": "hr_employee", "column": "terminated_at"}, "names": ["離職日", "在職 (NULL)"]}
+  ]
+}

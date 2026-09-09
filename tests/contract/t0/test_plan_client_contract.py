@@ -1,0 +1,158 @@
+"""Plan client: one strict call, value-free schema payload, validated output."""
+
+from __future__ import annotations
+
+import json
+from types import SimpleNamespace
+
+import pytest
+from t0_helpers import iot_schema
+
+from grepbit.adapters.litellm.grounding_client import GroundingModelSettings
+from grepbit.adapters.litellm.plan_client import (
+    PLAN_PROMPT_REVISION,
+    ChatCompletionsPlanClient,
+    repair_column_refs,
+    schema_payload,
+)
+from grepbit.ports.grounding import GroundingModelError
+
+SETTINGS = GroundingModelSettings(base_url="http://model.local/v1", model="test-model")
+
+
+class _FakeClient:
+    def __init__(self, content: str) -> None:
+        self.calls: list[dict] = []
+        self.chat = SimpleNamespace(completions=SimpleNamespace(create=self._create))
+        self._content = content
+
+    def _create(self, **kwargs):
+        self.calls.append(kwargs)
+        message = SimpleNamespace(content=self._content)
+        return SimpleNamespace(choices=[SimpleNamespace(message=message)])
+
+
+def test_schema_payload_offers_identifiers_kinds_and_enum_samples_only() -> None:
+    payload = schema_payload(iot_schema())
+    assert payload["foreign_keys"] == [
+        "devices.site_id -> sites.site_id",
+        "alerts.device_id -> devices.device_id",
+        "readings.device_id -> devices.device_id",
+    ]
+    devices = next(t for t in payload["tables"] if t["name"] == "devices")
+    status = next(c for c in devices["columns"] if c["name"] == "status")
+    assert status == {
+        "name": "status",
+        "kind": "text",
+        "type": "text",
+        "nullable": True,
+        "comment": None,
+        "sample_values": ["offline", "online"],
+    }
+    assert set(devices) == {"name", "comment", "primary_key", "columns"}
+
+
+def test_propose_makes_one_json_mode_call_and_validates_the_plan() -> None:
+    plan = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count"}],
+            "time": {
+                "column": {"table": "alerts", "column": "raised_at"},
+                "scope": {"kind": "month", "month": "2026-07"},
+            },
+        },
+    }
+    fake = _FakeClient(json.dumps(plan))
+    client = ChatCompletionsPlanClient(SETTINGS, client=fake)
+    proposal = client.propose(
+        "How many alerts in July 2026?", iot_schema(), as_of="2026-08-15T12:00:00+08:00"
+    )
+    assert proposal.decision == "plan" and proposal.plan is not None
+    assert proposal.plan.base_table == "alerts"
+    [call] = fake.calls
+    assert call["model"] == "test-model"
+    assert call["temperature"] == 0.0
+    assert call["response_format"] == {"type": "json_object"}
+    system, schema_message, user = call["messages"]
+    assert system["role"] == "system" and "never invent" in system["content"]
+    assert schema_message["content"].startswith("Conform exactly to this JSON Schema: ")
+    payload = json.loads(user["content"])
+    assert payload["prompt_revision"] == PLAN_PROMPT_REVISION
+    assert payload["question"] == "How many alerts in July 2026?"
+    assert payload["schema"] == schema_payload(iot_schema())
+
+
+def test_propose_returns_declines_and_rejects_incoherent_or_malformed_output() -> None:
+    decline = json.dumps(
+        {"decision": "none", "reason": "ambiguous", "clarification": "avg or max?"}
+    )
+    proposal = ChatCompletionsPlanClient(SETTINGS, client=_FakeClient(decline)).propose(
+        "temperature last month?", iot_schema(), as_of="2026-08-15T12:00:00+08:00"
+    )
+    assert proposal.decision == "none" and proposal.reason == "ambiguous"
+    assert proposal.clarification == "avg or max?"
+
+    for content in (
+        "not json",
+        json.dumps({"decision": "plan"}),
+        json.dumps({"decision": "none"}),
+        json.dumps(
+            {
+                "decision": "plan",
+                "plan": {
+                    "base_table": "alerts; DROP",
+                    "measures": [{"aggregate": "count"}],
+                },
+            }
+        ),
+    ):
+        client = ChatCompletionsPlanClient(SETTINGS, client=_FakeClient(content))
+        with pytest.raises(GroundingModelError) as info:
+            client.propose("q", iot_schema(), as_of="2026-08-15T12:00:00+08:00")
+        assert info.value.code == "invalid_structured_output"
+
+
+def test_string_column_references_are_repaired_only_when_unambiguous() -> None:
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "sum", "column": "downtime_minutes"}],
+            "dimensions": ["devices.model"],
+            "filters": [{"column": "device_id", "op": "not_null"}],
+            "time": {
+                "column": "raised_at",
+                "scope": {"kind": "month", "month": "2026-07"},
+            },
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    plan = repaired["plan"]
+    assert plan["measures"][0]["column"] == {
+        "table": "alerts",
+        "column": "downtime_minutes",
+    }
+    assert plan["dimensions"] == [{"table": "devices", "column": "model"}]
+    # device_id exists in alerts, devices and readings: the base table wins.
+    assert plan["filters"][0]["column"] == {"table": "alerts", "column": "device_id"}
+    assert plan["time"]["column"] == {"table": "alerts", "column": "raised_at"}
+    assert len(repairs) == 4
+    # site_id exists in two tables, neither is the base: left alone, so
+    # validation fails.
+    ambiguous = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count"}],
+            "dimensions": ["site_id"],
+        },
+    }
+    still, repairs = repair_column_refs(ambiguous, iot_schema())
+    assert still["plan"]["dimensions"] == ["site_id"] and repairs == []
+    client = ChatCompletionsPlanClient(
+        SETTINGS, client=_FakeClient(json.dumps(ambiguous))
+    )
+    with pytest.raises(GroundingModelError):
+        client.propose("q", iot_schema(), as_of="2026-08-15T12:00:00+08:00")

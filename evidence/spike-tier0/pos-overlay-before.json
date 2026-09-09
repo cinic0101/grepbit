@@ -1,0 +1,815 @@
+{
+  "summary": {
+    "datasource_id": "pos_test",
+    "cases": 14,
+    "correct": 10,
+    "answerable_correct": 6,
+    "answerable_total": 10,
+    "answered_but_wrong_rows": 2,
+    "refusals_correct": 4,
+    "refusals_total": 4,
+    "false_answers_on_refusal_cases": 0,
+    "model_failures": 0,
+    "p50_seconds": 4.638,
+    "p95_seconds": 6.479,
+    "introspection_seconds": 0.053,
+    "schema": {
+      "tables": 13,
+      "columns": 58,
+      "foreign_keys": 11,
+      "inferred_foreign_keys": []
+    },
+    "incorrect_case_ids": [
+      "ov_returns_dec",
+      "ov_returns_dec_en",
+      "ov_payroll_by_dept",
+      "ov_payroll_monthly"
+    ],
+    "verification_counts": {
+      "verified": 0,
+      "partially_verified": 0,
+      "unverified_semantics": 8
+    },
+    "zero_call_refusals": 0
+  },
+  "results": [
+    {
+      "case_id": "ov_returns_dec",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "semantic_gap",
+      "correct": false,
+      "elapsed_seconds": 6.479,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column or flag to distinguish between a regular sale and a return (e.g., a 'return_amount' column or a 'transaction_type' column). While 'origin_transaction_no' in 'pos_sale' suggests a relationship between transactions, there is no explicit way to identify which records represent returns and how to calculate the 'return amount'.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "ov_returns_dec_en",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "semantic_gap",
+      "correct": false,
+      "elapsed_seconds": 4.393,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column or table that explicitly represents 'returns' or 'refunds'. While there is a 'pos_sale' table with an 'origin_transaction_no', it is unclear if this indicates a return or another type of transaction.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "ov_return_count_dec",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.612,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "return_count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "pos_sale",
+              "column": "origin_transaction_no"
+            },
+            "op": "not_null",
+            "values": []
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2025-12"
+          }
+        },
+        "order": []
+      },
+      "assumptions": [
+        "2025-12 is [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT COUNT(*) AS return_count FROM public.pos_sale WHERE NOT pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s)",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "return_count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "pos_sale.origin_transaction_no not_null"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "count(*) over pos_sale; for 2025-12; where pos_sale.origin_transaction_no not_null",
+      "rows": [
+        {
+          "return_count": 4
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ov_txn_by_method",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 3.946,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "transaction_count"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "pos_payment",
+            "column": "payment_method"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "No row filter was applied beyond the time window; every pos_payment row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT pos_payment.payment_method AS payment_method, COUNT(*) AS transaction_count FROM public.pos_payment GROUP BY pos_payment.payment_method ORDER BY payment_method NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment"
+        ],
+        "joins": [],
+        "measures": [
+          "transaction_count = count(*)"
+        ],
+        "dimensions": [
+          "pos_payment.payment_method"
+        ],
+        "filters": [],
+        "time_window": []
+      },
+      "interpretation": "count(*) over pos_payment; by pos_payment.payment_method",
+      "rows": [
+        {
+          "payment_method": "cash",
+          "transaction_count": 15
+        },
+        {
+          "payment_method": "credit_card",
+          "transaction_count": 10
+        },
+        {
+          "payment_method": "line_pay",
+          "transaction_count": 6
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ov_txn_jan",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.639,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "transaction_count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-01"
+          }
+        },
+        "order": []
+      },
+      "assumptions": [
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2026-01 is [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT COUNT(*) AS transaction_count FROM public.pos_sale WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "transaction_count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "count(*) over pos_sale; for 2026-01",
+      "rows": [
+        {
+          "transaction_count": 10
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ov_net_sales_dec",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.416,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            },
+            "alias": "total_revenue"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2025-12"
+          }
+        },
+        "order": []
+      },
+      "assumptions": [
+        "total_revenue = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2025-12 is [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT SUM(pos_sale.total_amount) AS total_revenue FROM public.pos_sale WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "total_revenue = sum(pos_sale.total_amount)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(pos_sale.total_amount) over pos_sale; for 2025-12",
+      "rows": [
+        {
+          "total_revenue": "339300"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ov_payroll_by_dept",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": false,
+      "elapsed_seconds": 7.319,
+      "plan": {
+        "base_table": "hr_payroll",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "hr_payroll",
+              "column": "base_salary"
+            },
+            "alias": "total_salary"
+          },
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "hr_payroll",
+              "column": "bonus"
+            },
+            "alias": "total_bonus"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "hr_dept",
+            "column": "dept_name"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "hr_payroll",
+            "column": "paid_at"
+          },
+          "scope": {
+            "kind": "range",
+            "start": "2025-01-01",
+            "end_exclusive": "2026-01-01"
+          }
+        },
+        "order": []
+      },
+      "assumptions": [
+        "hr_payroll rows are joined to hr_employee through hr_payroll.emp_id; rows without a matching hr_employee row keep NULL there.",
+        "hr_payroll rows are joined to hr_dept through hr_employee.dept_id; rows without a matching hr_dept row keep NULL there.",
+        "total_salary = SUM of hr_payroll.base_salary; NULL values are ignored by the aggregate.",
+        "total_bonus = SUM of hr_payroll.bonus; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every hr_payroll row counts, including any status the question did not mention.",
+        "2025-01-01..2026-01-01 is [2025-01-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on hr_payroll.paid_at.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT hr_dept.dept_name AS dept_name, SUM(hr_payroll.base_salary) AS total_salary, SUM(hr_payroll.bonus) AS total_bonus FROM public.hr_payroll LEFT JOIN public.hr_employee ON hr_payroll.emp_id = hr_employee.emp_id LEFT JOIN public.hr_dept ON hr_employee.dept_id = hr_dept.dept_id WHERE hr_payroll.paid_at >= %(p1_start_0)s AND hr_payroll.paid_at < %(p1_end_1)s GROUP BY hr_dept.dept_name ORDER BY dept_name NULLS FIRST",
+      "lineage": {
+        "base_table": "hr_payroll",
+        "tables": [
+          "hr_payroll",
+          "hr_employee",
+          "hr_dept"
+        ],
+        "joins": [
+          "hr_payroll.emp_id -> hr_employee.emp_id",
+          "hr_employee.dept_id -> hr_dept.dept_id"
+        ],
+        "measures": [
+          "total_salary = sum(hr_payroll.base_salary)",
+          "total_bonus = sum(hr_payroll.bonus)"
+        ],
+        "dimensions": [
+          "hr_dept.dept_name"
+        ],
+        "filters": [],
+        "time_window": [
+          "hr_payroll.paid_at in [2025-01-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(hr_payroll.base_salary), sum(hr_payroll.bonus) over hr_payroll; by hr_dept.dept_name; for 2025-01-01..2026-01-01",
+      "rows": [
+        {
+          "dept_name": "業務部",
+          "total_salary": "6419000.00",
+          "total_bonus": "500000.00"
+        },
+        {
+          "dept_name": "研發部",
+          "total_salary": "8547000.00",
+          "total_bonus": "714500.00"
+        },
+        {
+          "dept_name": "行銷部",
+          "total_salary": "3914000.00",
+          "total_bonus": "288500.00"
+        },
+        {
+          "dept_name": "財務部",
+          "total_salary": "3597000.00",
+          "total_bonus": "264000.00"
+        }
+      ],
+      "rows_match_reference": false,
+      "matched_reference_index": null,
+      "reference_rows": [
+        [
+          "業務部",
+          "6966000"
+        ],
+        [
+          "研發部",
+          "9323000"
+        ],
+        [
+          "行銷部",
+          "4282000"
+        ],
+        [
+          "財務部",
+          "3924000"
+        ]
+      ],
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ov_payroll_monthly",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": false,
+      "elapsed_seconds": 5.975,
+      "plan": {
+        "base_table": "hr_payroll",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "hr_payroll",
+              "column": "base_salary"
+            },
+            "alias": "total_salary"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "hr_payroll",
+            "column": "paid_at"
+          },
+          "scope": {
+            "kind": "range",
+            "start": "2025-01-01",
+            "end_exclusive": "2026-01-01"
+          },
+          "grain": "month"
+        },
+        "order": []
+      },
+      "assumptions": [
+        "total_salary = SUM of hr_payroll.base_salary; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every hr_payroll row counts, including any status the question did not mention.",
+        "2025-01-01..2026-01-01 is [2025-01-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on hr_payroll.paid_at.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT CAST(DATE_TRUNC('MONTH', hr_payroll.paid_at) AS DATE) AS period_start, SUM(hr_payroll.base_salary) AS total_salary FROM public.hr_payroll WHERE hr_payroll.paid_at >= %(p1_start_0)s AND hr_payroll.paid_at < %(p1_end_1)s GROUP BY CAST(DATE_TRUNC('MONTH', hr_payroll.paid_at) AS DATE) ORDER BY period_start NULLS FIRST",
+      "lineage": {
+        "base_table": "hr_payroll",
+        "tables": [
+          "hr_payroll"
+        ],
+        "joins": [],
+        "measures": [
+          "total_salary = sum(hr_payroll.base_salary)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "hr_payroll.paid_at in [2025-01-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(hr_payroll.base_salary) over hr_payroll; per month; for 2025-01-01..2026-01-01",
+      "rows": [
+        {
+          "period_start": "2025-02-01",
+          "total_salary": "1964000.00"
+        },
+        {
+          "period_start": "2025-03-01",
+          "total_salary": "2026000.00"
+        },
+        {
+          "period_start": "2025-04-01",
+          "total_salary": "2026000.00"
+        },
+        {
+          "period_start": "2025-05-01",
+          "total_salary": "2084000.00"
+        },
+        {
+          "period_start": "2025-06-01",
+          "total_salary": "2020000.00"
+        },
+        {
+          "period_start": "2025-07-01",
+          "total_salary": "2075000.00"
+        },
+        {
+          "period_start": "2025-08-01",
+          "total_salary": "2082000.00"
+        },
+        {
+          "period_start": "2025-09-01",
+          "total_salary": "2082000.00"
+        },
+        {
+          "period_start": "2025-10-01",
+          "total_salary": "2082000.00"
+        },
+        {
+          "period_start": "2025-11-01",
+          "total_salary": "2018000.00"
+        },
+        {
+          "period_start": "2025-12-01",
+          "total_salary": "2018000.00"
+        }
+      ],
+      "rows_match_reference": false,
+      "matched_reference_index": null,
+      "reference_rows": [
+        [
+          "2025-01-01",
+          "1964000"
+        ],
+        [
+          "2025-02-01",
+          "2026000"
+        ],
+        [
+          "2025-03-01",
+          "2026000"
+        ],
+        [
+          "2025-04-01",
+          "2084000"
+        ],
+        [
+          "2025-05-01",
+          "2020000"
+        ],
+        [
+          "2025-06-01",
+          "2075000"
+        ],
+        [
+          "2025-07-01",
+          "2082000"
+        ],
+        [
+          "2025-08-01",
+          "2082000"
+        ],
+        [
+          "2025-09-01",
+          "2082000"
+        ],
+        [
+          "2025-10-01",
+          "2018000"
+        ]
+      ],
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ov_absent_inventory",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.727,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a table or column for inventory levels or stock quantities; it only contains sales records (pos_saleitem) and product definitions (product).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "ov_absent_installments",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 4.303,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column or value that identifies a transaction as 'installment' (分期付款). The `pos_payment.payment_method` column only lists 'cash', 'credit_card', and 'line_pay'.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "ov_absent_overtime",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.749,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column for overtime pay (加班費). The `hr_payroll` table only includes `base_salary` and `bonus`.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "ov_absent_online_en",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.955,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column or flag to distinguish between 'online' and 'offline' sales (e.g., a sales channel or store type).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "ov_control_category",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.638,
+      "plan": {
+        "base_table": "pos_saleitem",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_saleitem",
+              "column": "amount"
+            },
+            "alias": "total_sales"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "category",
+            "column": "category_name"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "pos_saleitem rows are joined to product through pos_saleitem.product_id; rows without a matching product row keep NULL there.",
+        "pos_saleitem rows are joined to category through product.category_id; rows without a matching category row keep NULL there.",
+        "total_sales = SUM of pos_saleitem.amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_saleitem row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT category.category_name AS category_name, SUM(pos_saleitem.amount) AS total_sales FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id LEFT JOIN public.category ON product.category_id = category.category_id GROUP BY category.category_name ORDER BY category_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_saleitem",
+        "tables": [
+          "pos_saleitem",
+          "product",
+          "category"
+        ],
+        "joins": [
+          "pos_saleitem.product_id -> product.product_id",
+          "product.category_id -> category.category_id"
+        ],
+        "measures": [
+          "total_sales = sum(pos_saleitem.amount)"
+        ],
+        "dimensions": [
+          "category.category_name"
+        ],
+        "filters": [],
+        "time_window": []
+      },
+      "interpretation": "sum(pos_saleitem.amount) over pos_saleitem; by category.category_name",
+      "rows": [
+        {
+          "category_name": "其他商品類",
+          "total_sales": "3300"
+        },
+        {
+          "category_name": "應用週邊商品類",
+          "total_sales": "44600"
+        },
+        {
+          "category_name": "通訊商品類",
+          "total_sales": "632200"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ov_control_active",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.372,
+      "plan": {
+        "base_table": "hr_employee",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "employee_count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "hr_employee",
+              "column": "terminated_at"
+            },
+            "op": "is_null",
+            "values": []
+          }
+        ],
+        "order": []
+      },
+      "assumptions": [
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT COUNT(*) AS employee_count FROM public.hr_employee WHERE hr_employee.terminated_at IS NULL",
+      "lineage": {
+        "base_table": "hr_employee",
+        "tables": [
+          "hr_employee"
+        ],
+        "joins": [],
+        "measures": [
+          "employee_count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "hr_employee.terminated_at is_null"
+        ],
+        "time_window": []
+      },
+      "interpretation": "count(*) over hr_employee; where hr_employee.terminated_at is_null",
+      "rows": [
+        {
+          "employee_count": 27
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    }
+  ]
+}

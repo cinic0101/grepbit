@@ -1,0 +1,212 @@
+{
+  "summary": {
+    "datasource_id": "iot_spike",
+    "cases": 8,
+    "correct": 7,
+    "answerable_correct": 0,
+    "answerable_total": 0,
+    "answered_but_wrong_rows": 0,
+    "refusals_correct": 7,
+    "refusals_total": 8,
+    "false_answers_on_refusal_cases": 1,
+    "model_failures": 0,
+    "p50_seconds": 2.498,
+    "p95_seconds": 4.116,
+    "introspection_seconds": 0.029,
+    "schema": {
+      "tables": 4,
+      "columns": 24,
+      "foreign_keys": 3,
+      "inferred_foreign_keys": []
+    },
+    "incorrect_case_ids": [
+      "cov_leased_fee"
+    ],
+    "coverage": {
+      "audited": 1,
+      "flagged_case_ids": [],
+      "false_flags": [],
+      "planner_drops": [
+        "cov_leased_fee"
+      ],
+      "drops_caught": [],
+      "audit_p95_seconds": 1.903
+    }
+  },
+  "results": [
+    {
+      "case_id": "cov_false_alarms",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.498,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column or flag to identify if an alert is a 'false alarm' (誤報).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_acknowledged",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.093,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column to indicate if an alert has been 'confirmed' (已確認).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_warranty_downtime",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.193,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain information about device warranties (保固), so I cannot filter for devices that are 'under warranty'.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_mttr",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.82,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column for 'repair time' or 'resolution duration'. While it has 'raised_at' and 'resolved_at' timestamps, the system cannot perform date subtraction to calculate a duration for an average.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_escalated_en",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.105,
+      "reason": "semantic_gap",
+      "clarification": "The concept of an alert being 'escalated' is not represented by any column or value in the schema.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_vip_sites_en",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.354,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column to identify 'VIP sites' (e.g., a site_type or priority column in the sites table).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_repeated_alerts",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.276,
+      "reason": "semantic_gap",
+      "clarification": "The concept of 'duplicate' or 'repeated' alerts (重複發生的告警) is not explicitly defined in the schema. It is unclear whether this refers to alerts with the same category on the same device, alerts occurring within a certain time window, or some other criteria.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_leased_fee",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "answered",
+      "correct": false,
+      "elapsed_seconds": 4.116,
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            }
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "sum_monthly_fee = SUM of devices.monthly_fee; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every devices row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "coverage": {
+        "concepts": [
+          {
+            "concept": "月費總額",
+            "mapped_to": "sum_monthly_fee = sum(devices.monthly_fee)"
+          },
+          {
+            "concept": "租賃裝置",
+            "mapped_to": "no filter"
+          }
+        ],
+        "uncovered": [],
+        "seconds": 1.903
+      },
+      "sql": "SELECT SUM(devices.monthly_fee) AS sum_monthly_fee FROM public.devices",
+      "lineage": {
+        "base_table": "devices",
+        "tables": [
+          "devices"
+        ],
+        "joins": [],
+        "measures": [
+          "sum_monthly_fee = sum(devices.monthly_fee)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": []
+      },
+      "interpretation": "sum(devices.monthly_fee) over devices",
+      "rows": [
+        {
+          "sum_monthly_fee": "3100.00"
+        }
+      ],
+      "status_without_coverage": "answered",
+      "verification": "unverified_semantics"
+    }
+  ]
+}

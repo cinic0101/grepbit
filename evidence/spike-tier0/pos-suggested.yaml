@@ -1,0 +1,43 @@
+datasource_id: pos_test
+as_of: '2026-02-10T12:00:00+08:00'
+cases:
+- case_id: suggested_01
+  question: 截至 2026-02-10，所有門市的總營業額是多少？
+  expected:
+    status: answered
+- case_id: suggested_02
+  question: 截至 2026-02-10，各個門市的淨營業額排名如何？
+  expected:
+    status: answered
+- case_id: suggested_03
+  question: 截至 2026-02-10，哪一個商品類別的銷售金額最高？
+  expected:
+    status: answered
+- case_id: suggested_04
+  question: 截至 2026-02-10，使用信用卡付款的交易總金額是多少？
+  expected:
+    status: answered
+- case_id: suggested_05
+  question: 截至 2026-02-10，平均每筆交易的金額是多少？
+  expected:
+    status: answered
+- case_id: suggested_06
+  question: 截至 2026-02-10，公司各部門的員工總數是多少？
+  expected:
+    status: answered
+- case_id: suggested_07
+  question: 截至 2026-02-10，本薪總額最高的部門是哪一個？
+  expected:
+    status: answered
+- case_id: suggested_08
+  question: 截至 2026-02-10，目前有多少個專案仍在進行中？
+  expected:
+    status: answered
+- case_id: suggested_09
+  question: 截至 2026-02-10，退貨筆數最多的前三名商品是什麼？
+  expected:
+    status: answered
+- case_id: suggested_10
+  question: 截至 2026-02-10，每位員工平均每週投入專案的工時是多少？
+  expected:
+    status: answered

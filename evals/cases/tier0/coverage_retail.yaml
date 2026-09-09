@@ -1,0 +1,11 @@
+datasource_id: retail_spike
+as_of: "2026-08-15T12:00:00+08:00"
+cases:
+  - {case_id: cov_net_revenue, question: "2026年7月的淨營收", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: cov_new_customers, question: "2026年7月新客戶的訂單數", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: cov_online_orders_en, question: "Gross amount of online orders in July 2026", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: cov_promo_orders, question: "2026年7月促銷訂單的金額", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: cov_repeat_customers_en, question: "Number of repeat customers in July 2026", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: cov_b2b_orders, question: "2026年7月 B2B 客戶的訂單金額", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: cov_delivery_time_en, question: "Average delivery time for July 2026 orders", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: cov_reordered_after_cancel, question: "2026年7月取消後重新下單的訂單數", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}

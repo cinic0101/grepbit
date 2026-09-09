@@ -1,0 +1,224 @@
+{
+  "summary": {
+    "datasource_id": "pos_test",
+    "cases": 8,
+    "correct": 7,
+    "answerable_correct": 0,
+    "answerable_total": 0,
+    "answered_but_wrong_rows": 0,
+    "refusals_correct": 7,
+    "refusals_total": 8,
+    "false_answers_on_refusal_cases": 1,
+    "model_failures": 0,
+    "p50_seconds": 3.864,
+    "p95_seconds": 9.308,
+    "introspection_seconds": 0.036,
+    "schema": {
+      "tables": 13,
+      "columns": 58,
+      "foreign_keys": 11,
+      "inferred_foreign_keys": []
+    },
+    "incorrect_case_ids": [
+      "cov_discounted_sales"
+    ],
+    "coverage": {
+      "audited": 1,
+      "flagged_case_ids": [],
+      "false_flags": [],
+      "planner_drops": [
+        "cov_discounted_sales"
+      ],
+      "drops_caught": [],
+      "audit_p95_seconds": 3.625
+    }
+  },
+  "results": [
+    {
+      "case_id": "cov_discounted_sales",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "answered",
+      "correct": false,
+      "elapsed_seconds": 9.308,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            }
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2025-12"
+          }
+        },
+        "order": []
+      },
+      "assumptions": [
+        "sum_total_amount = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2025-12 is [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "coverage": {
+        "concepts": [
+          {
+            "concept": "折扣後營業額",
+            "mapped_to": "sum_total_amount = sum(pos_sale.total_amount)"
+          },
+          {
+            "concept": "2025年12月",
+            "mapped_to": "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+          }
+        ],
+        "uncovered": [],
+        "seconds": 3.625
+      },
+      "sql": "SELECT SUM(pos_sale.total_amount) AS sum_total_amount FROM public.pos_sale WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "sum_total_amount = sum(pos_sale.total_amount)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(pos_sale.total_amount) over pos_sale; for 2025-12",
+      "rows": [
+        {
+          "sum_total_amount": "339300"
+        }
+      ],
+      "status_without_coverage": "answered",
+      "verification": "unverified_semantics"
+    },
+    {
+      "case_id": "cov_new_members",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.864,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a member table with a registration date to identify 'new members' (新會員) for December 2025.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_overtime_pay",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.781,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column for overtime pay (加班費). The `hr_payroll` table only includes `base_salary` and `bonus`.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_attrition_rate",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 4.645,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not provide a pre-calculated 'turnover rate' (離職率) column. Calculating a turnover rate typically requires dividing the number of employees who left by the average number of employees over a specific period, which cannot be expressed in a single aggregate query plan.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_online_sales",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.648,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column to distinguish between 'online' and 'offline' orders (e.g., an order channel or store type).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_contractors",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.538,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column to distinguish between regular employees and outsourced personnel (外包人員).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_installments",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 4.218,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column or value that identifies a transaction as 'installment' (分期付款). The `pos_payment.payment_method` column only lists 'cash', 'credit_card', and 'line_pay'.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_inventory",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.669,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a table or column for current inventory levels (e.g., a stock or inventory table).",
+      "status_without_coverage": "semantic_gap"
+    }
+  ]
+}

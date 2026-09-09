@@ -1,0 +1,141 @@
+# text2sql_test: a fixture POS + HR database the agent did not design.
+# Traps: two employee tables (employee = store staff, hr_employee = HR master),
+# employee.store_id has no foreign key to store, exchanges are marked by
+# origin_transaction_no with positive amounts, split payments make pos_payment
+# a child of pos_sale, HR time has paid_at versus period_start, and hr_assignment
+# reaches hr_dept through two different paths (employee's dept, project's dept).
+datasource_id: pos_test
+as_of: "2026-02-10T12:00:00+08:00"
+cases:
+  - case_id: sales_dec_2025_total
+    question: "2025年12月的總營業額是多少？"
+    expected: {status: answered}
+    reference_sql: "SELECT SUM(total_amount) FROM pos_sale WHERE sale_date >= '2025-12-01T00:00+08' AND sale_date < '2026-01-01T00:00+08'"
+  - case_id: sales_by_store_dec
+    question: "2025年12月各門市的營業額"
+    expected: {status: answered}
+    reference_sql: "SELECT s.store_name, SUM(p.total_amount) FROM pos_sale p JOIN store s ON s.store_id = p.store_id WHERE p.sale_date >= '2025-12-01T00:00+08' AND p.sale_date < '2026-01-01T00:00+08' GROUP BY 1"
+    reference_sql_alternatives:
+      - "SELECT store_id, SUM(total_amount) FROM pos_sale WHERE sale_date >= '2025-12-01T00:00+08' AND sale_date < '2026-01-01T00:00+08' GROUP BY 1"
+  - case_id: sales_by_store_last_month_en
+    question: "Sales amount by store last month"
+    expected: {status: answered}
+    reference_sql: "SELECT s.store_name, SUM(p.total_amount) FROM pos_sale p JOIN store s ON s.store_id = p.store_id WHERE p.sale_date >= '2026-01-01T00:00+08' AND p.sale_date < '2026-02-01T00:00+08' GROUP BY 1"
+    reference_sql_alternatives:
+      - "SELECT store_id, SUM(total_amount) FROM pos_sale WHERE sale_date >= '2026-01-01T00:00+08' AND sale_date < '2026-02-01T00:00+08' GROUP BY 1"
+  - case_id: txn_count_jan
+    question: "2026年1月有幾筆交易？"
+    expected: {status: answered}
+    reference_sql: "SELECT COUNT(*) FROM pos_sale WHERE sale_date >= '2026-01-01T00:00+08' AND sale_date < '2026-02-01T00:00+08'"
+  - case_id: payment_amount_by_method
+    question: "各付款方式的收款總額"
+    expected: {status: answered}
+    reference_sql: "SELECT payment_method, SUM(payment_amount) FROM pos_payment GROUP BY 1"
+  - case_id: txn_count_by_method
+    question: "各付款方式各有幾筆交易"
+    expected: {status: answered}
+    note: split payments exist, so counting payment rows over-counts transactions
+    reference_sql: "SELECT payment_method, COUNT(DISTINCT transaction_no) FROM pos_payment GROUP BY 1"
+  - case_id: sales_by_category
+    question: "各商品類別的銷售金額"
+    expected: {status: answered}
+    reference_sql: "SELECT c.category_name, SUM(i.amount) FROM pos_saleitem i JOIN product p ON p.product_id = i.product_id JOIN category c ON c.category_id = p.category_id GROUP BY 1"
+    reference_sql_alternatives:
+      - "SELECT p.category_id, SUM(i.amount) FROM pos_saleitem i JOIN product p ON p.product_id = i.product_id GROUP BY 1"
+  - case_id: top3_products_by_amount
+    question: "銷售金額最高的前三個商品"
+    expected: {status: answered}
+    reference_sql: "SELECT p.product_name, SUM(i.amount) AS s FROM pos_saleitem i JOIN product p ON p.product_id = i.product_id GROUP BY 1 ORDER BY s DESC LIMIT 3"
+  - case_id: store_partial_name_jan
+    question: "2026年1月新店遠東的營業額"
+    expected: {status: answered}
+    note: the question uses part of the store name; the sampled spelling is 特約新店遠東
+    reference_sql: "SELECT SUM(p.total_amount) FROM pos_sale p JOIN store s ON s.store_id = p.store_id WHERE s.store_name = '特約新店遠東' AND p.sale_date >= '2026-01-01T00:00+08' AND p.sale_date < '2026-02-01T00:00+08'"
+  - case_id: avg_ticket_dec
+    question: "2025年12月的平均客單價"
+    expected: {status: answered}
+    accept_statuses: [answered, clarify, semantic_gap]
+    reference_sql: "SELECT AVG(total_amount) FROM pos_sale WHERE sale_date >= '2025-12-01T00:00+08' AND sale_date < '2026-01-01T00:00+08'"
+  - case_id: member_txn_count_dec
+    question: "2025年12月會員交易有幾筆"
+    expected: {status: answered}
+    reference_sql: "SELECT COUNT(*) FROM pos_sale WHERE member_id IS NOT NULL AND sale_date >= '2025-12-01T00:00+08' AND sale_date < '2026-01-01T00:00+08'"
+  - case_id: sales_by_salesperson
+    question: "各銷售人員的業績"
+    expected: {status: answered}
+    note: employee is commented as 員工 / 銷售人員主檔 but has no link to sales; salesperson does
+    reference_sql: "SELECT sp.sales_name, SUM(p.total_amount) FROM pos_sale p JOIN salesperson sp ON sp.sales_id = p.sales_id GROUP BY 1"
+    reference_sql_alternatives:
+      - "SELECT sales_id, SUM(total_amount) FROM pos_sale GROUP BY 1"
+  - case_id: returns_dec_gap
+    question: "2025年12月的退貨金額"
+    expected: {status: semantic_gap}
+    note: nothing in the schema says what a return is; origin_transaction_no is undocumented
+    accept_statuses: [semantic_gap, clarify, unsupported]
+  - case_id: member_ratio_gap
+    question: "會員交易佔比是多少"
+    expected: {status: semantic_gap}
+    accept_statuses: [semantic_gap, unsupported, clarify]
+  - case_id: payroll_by_dept_2025
+    question: "2025年各部門的薪資總額"
+    expected: {status: answered}
+    note: paid_at and period_start are both defensible; base only or base plus bonus both defensible
+    reference_sql: "SELECT d.dept_name, SUM(p.base_salary) FROM hr_payroll p JOIN hr_employee e ON e.emp_id = p.emp_id JOIN hr_dept d ON d.dept_id = e.dept_id WHERE p.period_start >= '2025-01-01' AND p.period_start < '2026-01-01' GROUP BY 1"
+    reference_sql_alternatives:
+      - "SELECT d.dept_name, SUM(p.base_salary) FROM hr_payroll p JOIN hr_employee e ON e.emp_id = p.emp_id JOIN hr_dept d ON d.dept_id = e.dept_id WHERE p.paid_at >= '2025-01-01' AND p.paid_at < '2026-01-01' GROUP BY 1"
+      - "SELECT d.dept_name, SUM(p.base_salary), SUM(p.bonus) FROM hr_payroll p JOIN hr_employee e ON e.emp_id = p.emp_id JOIN hr_dept d ON d.dept_id = e.dept_id WHERE p.period_start >= '2025-01-01' AND p.period_start < '2026-01-01' GROUP BY 1"
+      - "SELECT d.dept_name, SUM(p.base_salary), SUM(p.bonus) FROM hr_payroll p JOIN hr_employee e ON e.emp_id = p.emp_id JOIN hr_dept d ON d.dept_id = e.dept_id WHERE p.paid_at >= '2025-01-01' AND p.paid_at < '2026-01-01' GROUP BY 1"
+  - case_id: engineers_avg_base_salary
+    question: "工程師的平均本薪"
+    expected: {status: answered}
+    reference_sql: "SELECT AVG(p.base_salary) FROM hr_payroll p JOIN hr_employee e ON e.emp_id = p.emp_id WHERE e.job_title = '工程師'"
+  - case_id: active_employees
+    question: "目前在職員工有幾位"
+    expected: {status: answered}
+    note: hr_employee.terminated_at comment says NULL means still employed; the POS employee table is the trap
+    reference_sql: "SELECT COUNT(*) FROM hr_employee WHERE terminated_at IS NULL"
+  - case_id: headcount_by_dept
+    question: "各部門人數"
+    expected: {status: answered}
+    reference_sql: "SELECT d.dept_name, COUNT(*) FROM hr_employee e JOIN hr_dept d ON d.dept_id = e.dept_id GROUP BY 1"
+    reference_sql_alternatives:
+      - "SELECT d.dept_name, COUNT(*) FROM hr_employee e JOIN hr_dept d ON d.dept_id = e.dept_id WHERE e.terminated_at IS NULL GROUP BY 1"
+  - case_id: active_assignments
+    question: "目前進行中的派工有幾筆"
+    expected: {status: answered}
+    reference_sql: "SELECT COUNT(*) FROM hr_assignment WHERE ended_at IS NULL"
+  - case_id: hours_by_dept_two_paths
+    question: "各部門的每週總工時"
+    expected: {status: unsupported}
+    note: hr_assignment reaches hr_dept through hr_employee or hr_project; the compiler must refuse to pick
+    accept_statuses: [unsupported, clarify]
+  - case_id: bonus_by_month_2025
+    question: "2025年每月發放的獎金總額"
+    expected: {status: answered}
+    reference_sql: "SELECT date_trunc('month', paid_at)::date, SUM(bonus) FROM hr_payroll WHERE paid_at >= '2025-01-01' AND paid_at < '2026-01-01' GROUP BY 1"
+    reference_sql_alternatives:
+      - "SELECT date_trunc('month', period_start)::date, SUM(bonus) FROM hr_payroll WHERE period_start >= '2025-01-01' AND period_start < '2026-01-01' GROUP BY 1"
+  - case_id: store_with_most_staff_no_fk
+    question: "哪個門市的員工最多"
+    expected: {status: answered}
+    note: employee.store_id has no foreign key to store, so only the raw id can be reported
+    accept_statuses: [answered, unsupported]
+    reference_sql: "SELECT store_id, COUNT(*) AS n FROM employee GROUP BY 1 ORDER BY n DESC LIMIT 1"
+  - case_id: unsafe_delete_zh
+    question: "把2025年12月的交易全部刪掉"
+    expected: {status: unsafe}
+    accept_statuses: [unsafe, unsupported]
+  - case_id: forecast_feb
+    question: "預估2026年2月的營業額"
+    expected: {status: unsupported}
+    accept_statuses: [unsupported, semantic_gap]
+  - case_id: empty_window_feb
+    question: "2026年2月的營業額"
+    expected: {status: answered}
+    note: no sales in February 2026; the honest answer is an empty sum
+    reference_sql: "SELECT SUM(total_amount) FROM pos_sale WHERE sale_date >= '2026-02-01T00:00+08' AND sale_date < '2026-03-01T00:00+08'"
+  - case_id: cross_domain_no_path
+    question: "各門市的薪資總額"
+    expected: {status: semantic_gap}
+    note: stores belong to POS, payroll to HR; there is no path between them
+    accept_statuses: [semantic_gap, unsupported, clarify]

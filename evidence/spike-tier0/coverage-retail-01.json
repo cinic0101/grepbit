@@ -1,0 +1,154 @@
+{
+  "summary": {
+    "datasource_id": "retail_spike",
+    "cases": 8,
+    "correct": 8,
+    "answerable_correct": 0,
+    "answerable_total": 0,
+    "answered_but_wrong_rows": 0,
+    "refusals_correct": 8,
+    "refusals_total": 8,
+    "false_answers_on_refusal_cases": 0,
+    "model_failures": 0,
+    "p50_seconds": 2.354,
+    "p95_seconds": 4.015,
+    "introspection_seconds": 0.036,
+    "schema": {
+      "tables": 5,
+      "columns": 22,
+      "foreign_keys": 4,
+      "inferred_foreign_keys": []
+    },
+    "incorrect_case_ids": [],
+    "coverage": {
+      "audited": 0,
+      "flagged_case_ids": [],
+      "false_flags": [],
+      "planner_drops": [],
+      "drops_caught": [],
+      "audit_p95_seconds": 0.0
+    }
+  },
+  "results": [
+    {
+      "case_id": "cov_net_revenue",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 4.015,
+      "reason": "semantic_gap",
+      "clarification": "The concept of 'net revenue' (淨營收) is not explicitly defined by a single column in the schema. It could be calculated as gross_amount minus discount_amount, or it might need to subtract return_amount from the returns table, which would require multiple aggregate queries or a complex join not supported by a single aggregate query plan.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_new_customers",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.354,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column to identify when a customer first joined or became a 'new customer' (e.g., a registration date or join date).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_online_orders_en",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.347,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column or table to distinguish 'online' orders from other order types.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_promo_orders",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.129,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column or flag to identify if an order is a 'promotion' (促銷) order.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_repeat_customers_en",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.479,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not provide a way to identify 'repeat customers' (e.g., a flag or a history of previous orders) within a single aggregate query for a specific month.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_b2b_orders",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.048,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column to distinguish between 'B2B' and other types of customers.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_delivery_time_en",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 1.889,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column to track delivery time or delivery date for orders.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_reordered_after_cancel",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.395,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not provide a way to link a 'cancelled' order to a subsequent 're-ordered' order (e.g., via a reference ID or a specific sequence of events for the same customer and product), making it impossible to identify 'orders placed after cancellation' as a single aggregate query.",
+      "status_without_coverage": "semantic_gap"
+    }
+  ]
+}

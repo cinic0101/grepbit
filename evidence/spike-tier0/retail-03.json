@@ -1,0 +1,692 @@
+{
+  "summary": {
+    "datasource_id": "retail_spike",
+    "cases": 12,
+    "correct": 12,
+    "answerable_correct": 10,
+    "answerable_total": 10,
+    "answered_but_wrong_rows": 0,
+    "refusals_correct": 2,
+    "refusals_total": 2,
+    "false_answers_on_refusal_cases": 0,
+    "model_failures": 0,
+    "p50_seconds": 2.687,
+    "p95_seconds": 4.266,
+    "introspection_seconds": 0.03,
+    "schema": {
+      "tables": 5,
+      "columns": 22,
+      "foreign_keys": 4
+    },
+    "incorrect_case_ids": []
+  },
+  "results": [
+    {
+      "case_id": "gross_july_completed",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 3.997,
+      "plan": {
+        "base_table": "orders",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "orders",
+              "column": "gross_amount"
+            }
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "orders",
+              "column": "status"
+            },
+            "op": "eq",
+            "values": [
+              "completed"
+            ]
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "orders",
+            "column": "ordered_at"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-07"
+          }
+        },
+        "order": []
+      },
+      "sql": "SELECT SUM(orders.gross_amount) AS sum_gross_amount FROM public.orders WHERE orders.status = %(f_0)s AND (orders.ordered_at >= %(p1_start_1)s AND orders.ordered_at < %(p1_end_2)s)",
+      "lineage": {
+        "base_table": "orders",
+        "tables": [
+          "orders"
+        ],
+        "joins": [],
+        "measures": [
+          "sum_gross_amount = sum(orders.gross_amount)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "orders.status eq completed"
+        ],
+        "time_window": [
+          "orders.ordered_at in [2026-07-01T00:00:00+08:00, 2026-08-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(orders.gross_amount) over orders; for 2026-07; where orders.status eq completed",
+      "rows": [
+        {
+          "sum_gross_amount": "300.00"
+        }
+      ],
+      "rows_match_reference": true
+    },
+    {
+      "case_id": "zh_orders_july_by_status",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 2.661,
+      "plan": {
+        "base_table": "orders",
+        "measures": [
+          {
+            "aggregate": "count"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "orders",
+            "column": "status"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "orders",
+            "column": "ordered_at"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-07"
+          }
+        },
+        "order": []
+      },
+      "sql": "SELECT orders.status AS status, COUNT(*) AS row_count FROM public.orders WHERE orders.ordered_at >= %(p1_start_0)s AND orders.ordered_at < %(p1_end_1)s GROUP BY orders.status ORDER BY status NULLS FIRST",
+      "lineage": {
+        "base_table": "orders",
+        "tables": [
+          "orders"
+        ],
+        "joins": [],
+        "measures": [
+          "row_count = count(*)"
+        ],
+        "dimensions": [
+          "orders.status"
+        ],
+        "filters": [],
+        "time_window": [
+          "orders.ordered_at in [2026-07-01T00:00:00+08:00, 2026-08-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "count(*) over orders; by orders.status; for 2026-07",
+      "rows": [
+        {
+          "status": "cancelled",
+          "row_count": 1
+        },
+        {
+          "status": "completed",
+          "row_count": 3
+        }
+      ],
+      "rows_match_reference": true
+    },
+    {
+      "case_id": "gross_by_region_july",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 3.154,
+      "plan": {
+        "base_table": "orders",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "orders",
+              "column": "gross_amount"
+            }
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "customers",
+            "column": "region"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "orders",
+            "column": "ordered_at"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-07"
+          }
+        },
+        "order": []
+      },
+      "sql": "SELECT customers.region AS region, SUM(orders.gross_amount) AS sum_gross_amount FROM public.orders LEFT JOIN public.customers ON orders.customer_id = customers.customer_id WHERE orders.ordered_at >= %(p1_start_0)s AND orders.ordered_at < %(p1_end_1)s GROUP BY customers.region ORDER BY region NULLS FIRST",
+      "lineage": {
+        "base_table": "orders",
+        "tables": [
+          "orders",
+          "customers"
+        ],
+        "joins": [
+          "orders.customer_id -> customers.customer_id"
+        ],
+        "measures": [
+          "sum_gross_amount = sum(orders.gross_amount)"
+        ],
+        "dimensions": [
+          "customers.region"
+        ],
+        "filters": [],
+        "time_window": [
+          "orders.ordered_at in [2026-07-01T00:00:00+08:00, 2026-08-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(orders.gross_amount) over orders; by customers.region; for 2026-07",
+      "rows": [
+        {
+          "region": "None",
+          "sum_gross_amount": "50.00"
+        },
+        {
+          "region": "north",
+          "sum_gross_amount": "100.00"
+        },
+        {
+          "region": "south",
+          "sum_gross_amount": "200.00"
+        }
+      ],
+      "rows_match_reference": true
+    },
+    {
+      "case_id": "returns_total_july_returned",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 2.687,
+      "plan": {
+        "base_table": "returns",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "returns",
+              "column": "return_amount"
+            }
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "returns",
+            "column": "returned_at"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-07"
+          }
+        },
+        "order": []
+      },
+      "sql": "SELECT SUM(returns.return_amount) AS sum_return_amount FROM public.returns WHERE returns.returned_at >= %(p1_start_0)s AND returns.returned_at < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "returns",
+        "tables": [
+          "returns"
+        ],
+        "joins": [],
+        "measures": [
+          "sum_return_amount = sum(returns.return_amount)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "returns.returned_at in [2026-07-01T00:00:00+08:00, 2026-08-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(returns.return_amount) over returns; for 2026-07",
+      "rows": [
+        {
+          "sum_return_amount": "15.00"
+        }
+      ],
+      "rows_match_reference": true
+    },
+    {
+      "case_id": "zh_avg_discount_completed",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 2.392,
+      "plan": {
+        "base_table": "orders",
+        "measures": [
+          {
+            "aggregate": "avg",
+            "column": {
+              "table": "orders",
+              "column": "discount_amount"
+            }
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "orders",
+              "column": "status"
+            },
+            "op": "eq",
+            "values": [
+              "completed"
+            ]
+          }
+        ],
+        "order": []
+      },
+      "sql": "SELECT AVG(orders.discount_amount) AS avg_discount_amount FROM public.orders WHERE orders.status = %(f_0)s",
+      "lineage": {
+        "base_table": "orders",
+        "tables": [
+          "orders"
+        ],
+        "joins": [],
+        "measures": [
+          "avg_discount_amount = avg(orders.discount_amount)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "orders.status eq completed"
+        ],
+        "time_window": []
+      },
+      "interpretation": "avg(orders.discount_amount) over orders; where orders.status eq completed",
+      "rows": [
+        {
+          "avg_discount_amount": "13.3333333333333333"
+        }
+      ],
+      "rows_match_reference": true
+    },
+    {
+      "case_id": "top2_customers_gross_july",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.266,
+      "plan": {
+        "base_table": "orders",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "orders",
+              "column": "gross_amount"
+            },
+            "alias": "total_gross_amount"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "customers",
+            "column": "display_name"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "orders",
+            "column": "ordered_at"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-07"
+          }
+        },
+        "order": [
+          {
+            "field": "total_gross_amount",
+            "direction": "desc"
+          }
+        ],
+        "limit": 2
+      },
+      "sql": "SELECT customers.display_name AS display_name, SUM(orders.gross_amount) AS total_gross_amount FROM public.orders LEFT JOIN public.customers ON orders.customer_id = customers.customer_id WHERE orders.ordered_at >= %(p1_start_0)s AND orders.ordered_at < %(p1_end_1)s GROUP BY customers.display_name ORDER BY total_gross_amount DESC NULLS LAST LIMIT %(limit_2)s",
+      "lineage": {
+        "base_table": "orders",
+        "tables": [
+          "orders",
+          "customers"
+        ],
+        "joins": [
+          "orders.customer_id -> customers.customer_id"
+        ],
+        "measures": [
+          "total_gross_amount = sum(orders.gross_amount)"
+        ],
+        "dimensions": [
+          "customers.display_name"
+        ],
+        "filters": [],
+        "time_window": [
+          "orders.ordered_at in [2026-07-01T00:00:00+08:00, 2026-08-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(orders.gross_amount) over orders; by customers.display_name; for 2026-07; limit 2",
+      "rows": [
+        {
+          "display_name": "Ben",
+          "total_gross_amount": "200.00"
+        },
+        {
+          "display_name": "Ada",
+          "total_gross_amount": "100.00"
+        }
+      ],
+      "rows_match_reference": true
+    },
+    {
+      "case_id": "line_amount_by_sku",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 2.39,
+      "plan": {
+        "base_table": "order_lines",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "order_lines",
+              "column": "line_amount"
+            }
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "order_lines",
+            "column": "product_sku"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "sql": "SELECT order_lines.product_sku AS product_sku, SUM(order_lines.line_amount) AS sum_line_amount FROM public.order_lines GROUP BY order_lines.product_sku ORDER BY product_sku NULLS FIRST",
+      "lineage": {
+        "base_table": "order_lines",
+        "tables": [
+          "order_lines"
+        ],
+        "joins": [],
+        "measures": [
+          "sum_line_amount = sum(order_lines.line_amount)"
+        ],
+        "dimensions": [
+          "order_lines.product_sku"
+        ],
+        "filters": [],
+        "time_window": []
+      },
+      "interpretation": "sum(order_lines.line_amount) over order_lines; by order_lines.product_sku",
+      "rows": [
+        {
+          "product_sku": "widget-a",
+          "sum_line_amount": "260.00"
+        },
+        {
+          "product_sku": "widget-b",
+          "sum_line_amount": "90.00"
+        },
+        {
+          "product_sku": "widget-c",
+          "sum_line_amount": "300.00"
+        },
+        {
+          "product_sku": "widget-free",
+          "sum_line_amount": "0.00"
+        }
+      ],
+      "rows_match_reference": true
+    },
+    {
+      "case_id": "zh_customers_count",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 0.982,
+      "plan": {
+        "base_table": "customers",
+        "measures": [
+          {
+            "aggregate": "count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "order": []
+      },
+      "sql": "SELECT COUNT(*) AS row_count FROM public.customers",
+      "lineage": {
+        "base_table": "customers",
+        "tables": [
+          "customers"
+        ],
+        "joins": [],
+        "measures": [
+          "row_count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": []
+      },
+      "interpretation": "count(*) over customers",
+      "rows": [
+        {
+          "row_count": 4
+        }
+      ],
+      "rows_match_reference": true
+    },
+    {
+      "case_id": "monthly_gross_trend",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 3.47,
+      "plan": {
+        "base_table": "orders",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "orders",
+              "column": "gross_amount"
+            }
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "orders",
+            "column": "ordered_at"
+          },
+          "scope": {
+            "kind": "range",
+            "start": "2026-07-01",
+            "end_exclusive": "2026-09-01"
+          },
+          "grain": "month"
+        },
+        "order": []
+      },
+      "sql": "SELECT DATE_TRUNC('MONTH', orders.ordered_at AT TIME ZONE 'Asia/Taipei') AS period_start, SUM(orders.gross_amount) AS sum_gross_amount FROM public.orders WHERE orders.ordered_at >= %(p1_start_0)s AND orders.ordered_at < %(p1_end_1)s GROUP BY DATE_TRUNC('MONTH', orders.ordered_at AT TIME ZONE 'Asia/Taipei') ORDER BY period_start NULLS FIRST",
+      "lineage": {
+        "base_table": "orders",
+        "tables": [
+          "orders"
+        ],
+        "joins": [],
+        "measures": [
+          "sum_gross_amount = sum(orders.gross_amount)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "orders.ordered_at in [2026-07-01T00:00:00+08:00, 2026-09-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(orders.gross_amount) over orders; per month; for 2026-07-01..2026-09-01",
+      "rows": [
+        {
+          "period_start": "2026-07-01 00:00:00",
+          "sum_gross_amount": "350.00"
+        },
+        {
+          "period_start": "2026-08-01 00:00:00",
+          "sum_gross_amount": "300.00"
+        }
+      ],
+      "rows_match_reference": true
+    },
+    {
+      "case_id": "target_total_july",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 3.038,
+      "plan": {
+        "base_table": "customer_monthly_targets",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "customer_monthly_targets",
+              "column": "target_amount"
+            }
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "customer_monthly_targets",
+            "column": "month_start"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-07"
+          }
+        },
+        "order": []
+      },
+      "sql": "SELECT SUM(customer_monthly_targets.target_amount) AS sum_target_amount FROM public.customer_monthly_targets WHERE customer_monthly_targets.month_start >= %(p1_start_0)s AND customer_monthly_targets.month_start < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "customer_monthly_targets",
+        "tables": [
+          "customer_monthly_targets"
+        ],
+        "joins": [],
+        "measures": [
+          "sum_target_amount = sum(customer_monthly_targets.target_amount)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "customer_monthly_targets.month_start in [2026-07-01T00:00:00+08:00, 2026-08-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(customer_monthly_targets.target_amount) over customer_monthly_targets; for 2026-07",
+      "rows": [
+        {
+          "sum_target_amount": "200.00"
+        }
+      ],
+      "rows_match_reference": true
+    },
+    {
+      "case_id": "gap_margin",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 1.374,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a cost or profit column, making it impossible to calculate profit margin."
+    },
+    {
+      "case_id": "unsafe_drop",
+      "expected_status": "unsafe",
+      "accepted_statuses": [
+        "unsafe",
+        "unsupported"
+      ],
+      "status": "unsafe",
+      "correct": true,
+      "elapsed_seconds": 0.0
+    }
+  ]
+}

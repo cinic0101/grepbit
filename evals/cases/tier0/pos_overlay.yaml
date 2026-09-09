@@ -1,0 +1,50 @@
+# Before/after set for the semantic overlay: the questions that were wrong, weak,
+# or refused under tier-0 alone, plus two controls that should stay tier-0.
+datasource_id: pos_test
+as_of: "2026-02-10T12:00:00+08:00"
+cases:
+  - case_id: ov_returns_dec
+    question: "2025年12月的退貨金額"
+    expected: {status: answered}
+    reference_sql: "SELECT SUM(total_amount) FROM pos_sale WHERE origin_transaction_no IS NOT NULL AND sale_date >= '2025-12-01T00:00+08' AND sale_date < '2026-01-01T00:00+08'"
+  - case_id: ov_returns_dec_en
+    question: "Return amount in December 2025"
+    expected: {status: answered}
+    reference_sql: "SELECT SUM(total_amount) FROM pos_sale WHERE origin_transaction_no IS NOT NULL AND sale_date >= '2025-12-01T00:00+08' AND sale_date < '2026-01-01T00:00+08'"
+  - case_id: ov_return_count_dec
+    question: "2025年12月有幾筆退貨"
+    expected: {status: answered}
+    reference_sql: "SELECT COUNT(*) FROM pos_sale WHERE origin_transaction_no IS NOT NULL AND sale_date >= '2025-12-01T00:00+08' AND sale_date < '2026-01-01T00:00+08'"
+  - case_id: ov_txn_by_method
+    question: "各付款方式各有幾筆交易"
+    expected: {status: answered}
+    reference_sql: "SELECT payment_method, COUNT(DISTINCT transaction_no) FROM pos_payment GROUP BY 1"
+  - case_id: ov_txn_jan
+    question: "2026年1月有幾筆交易"
+    expected: {status: answered}
+    reference_sql: "SELECT COUNT(*) FROM pos_sale WHERE sale_date >= '2026-01-01T00:00+08' AND sale_date < '2026-02-01T00:00+08'"
+  - case_id: ov_net_sales_dec
+    question: "2025年12月的折扣後營業額"
+    expected: {status: answered}
+    reference_sql: "SELECT SUM(total_amount) FROM pos_sale WHERE sale_date >= '2025-12-01T00:00+08' AND sale_date < '2026-01-01T00:00+08'"
+  - case_id: ov_payroll_by_dept
+    question: "2025年各部門的薪資總額"
+    expected: {status: answered}
+    note: with the overlay only the period_start reading of base salary is the reviewed one
+    reference_sql: "SELECT d.dept_name, SUM(p.base_salary) FROM hr_payroll p JOIN hr_employee e ON e.emp_id = p.emp_id JOIN hr_dept d ON d.dept_id = e.dept_id WHERE p.period_start >= '2025-01-01' AND p.period_start < '2026-01-01' GROUP BY 1"
+  - case_id: ov_payroll_monthly
+    question: "2025年每月的薪資總額"
+    expected: {status: answered}
+    reference_sql: "SELECT date_trunc('month', period_start)::date, SUM(base_salary) FROM hr_payroll WHERE period_start >= '2025-01-01' AND period_start < '2026-01-01' GROUP BY 1"
+  - {case_id: ov_absent_inventory, question: "目前的庫存數量", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: ov_absent_installments, question: "2025年12月分期付款的交易數", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: ov_absent_overtime, question: "2025年的加班費總額", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: ov_absent_online_en, question: "Online sales amount in December 2025", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - case_id: ov_control_category
+    question: "各商品類別的銷售金額"
+    expected: {status: answered}
+    reference_sql: "SELECT c.category_name, SUM(i.amount) FROM pos_saleitem i JOIN product p ON p.product_id = i.product_id JOIN category c ON c.category_id = p.category_id GROUP BY 1"
+  - case_id: ov_control_active
+    question: "目前在職員工有幾位"
+    expected: {status: answered}
+    reference_sql: "SELECT COUNT(*) FROM hr_employee WHERE terminated_at IS NULL"
