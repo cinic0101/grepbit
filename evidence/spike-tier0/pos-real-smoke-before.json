@@ -1,0 +1,353 @@
+{
+  "summary": {
+    "datasource_id": "pos_real",
+    "cases_file": "evals/cases/tier0/pos_real_smoke.yaml",
+    "prompt_revision": "plan-classify-json-v5",
+    "as_of": "2026-02-10T12:00:00+08:00",
+    "cases": 7,
+    "judged": 7,
+    "unjudged": 0,
+    "correct": 4,
+    "answerable_correct": 3,
+    "answerable_total": 6,
+    "answered_but_wrong_rows": 0,
+    "refusals_correct": 1,
+    "refusals_total": 1,
+    "false_answers_on_refusal_cases": 0,
+    "model_failures": 1,
+    "p50_seconds": 3.228,
+    "p95_seconds": 4.821,
+    "introspection_seconds": 0.062,
+    "schema": {
+      "tables": 9,
+      "columns": 33,
+      "foreign_keys": 8,
+      "inferred_foreign_keys": [],
+      "enum_distinct_limit": 0,
+      "sampled_columns": 0
+    },
+    "status_counts": {
+      "answered": 3,
+      "failed": 1,
+      "semantic_gap": 3
+    },
+    "rows_redacted": true,
+    "incorrect_case_ids": [
+      "credit_card_total",
+      "line_pay_count",
+      "cash_payments_jan"
+    ],
+    "verification_counts": {
+      "verified": 0,
+      "partially_verified": 0,
+      "unverified_semantics": 4
+    },
+    "shape_repairs": 0,
+    "zero_call_refusals": 0
+  },
+  "results": [
+    {
+      "case_id": "payments_by_method",
+      "question": "各付款方式的付款總金額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.291,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_payment",
+              "column": "payment_amount"
+            },
+            "alias": "total_payment_amount"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "pos_payment",
+            "column": "payment_method"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "total_payment_amount = SUM of pos_payment.payment_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_payment row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT pos_payment.payment_method AS payment_method, SUM(pos_payment.payment_amount) AS total_payment_amount FROM public.pos_payment GROUP BY pos_payment.payment_method ORDER BY payment_method NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment"
+        ],
+        "joins": [],
+        "measures": [
+          "total_payment_amount = sum(pos_payment.payment_amount)"
+        ],
+        "dimensions": [
+          "pos_payment.payment_method"
+        ],
+        "filters": [],
+        "time_window": []
+      },
+      "interpretation": "sum(pos_payment.payment_amount) over pos_payment; by pos_payment.payment_method",
+      "row_count": 12,
+      "rows_truncated": false,
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "credit_card_total",
+      "question": "信用卡付款的總金額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": false,
+      "elapsed_seconds": 3.228,
+      "reason": "semantic_gap",
+      "clarification": "The question asks for 'credit card' payments, but the `payment_method` column in the `pos_payment` table does not have provided sample values to determine how credit card payments are identified.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "line_pay_count",
+      "question": "用LINE Pay付款的筆數",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 3.369,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "pos_payment",
+              "column": "payment_method"
+            },
+            "op": "eq",
+            "values": [
+              "LINE Pay"
+            ]
+          }
+        ],
+        "order": []
+      },
+      "assumptions": [
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT COUNT(*) AS count FROM public.pos_payment WHERE pos_payment.payment_method = %(f_0)s",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment"
+        ],
+        "joins": [],
+        "measures": [
+          "count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "pos_payment.payment_method eq LINE Pay"
+        ],
+        "time_window": []
+      },
+      "interpretation": "count(*) over pos_payment; where pos_payment.payment_method eq LINE Pay",
+      "reason": "22P02",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "cash_payments_jan",
+      "question": "2026年1月現金付款的金額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": false,
+      "elapsed_seconds": 3.188,
+      "reason": "semantic_gap",
+      "clarification": "The question asks for 'cash payments' (現金付款), but the `payment_method` column in the `pos_payment` table does not have provided sample values to confirm how 'cash' is represented.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "sales_by_store_jan",
+      "question": "2026年1月各門市的營業額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.821,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            },
+            "alias": "revenue"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-01"
+          }
+        },
+        "order": []
+      },
+      "assumptions": [
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "revenue = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2026-01 is [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS revenue FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s GROUP BY store.store_name ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "revenue = sum(pos_sale.total_amount)"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00)"
+        ]
+      },
+      "interpretation": "sum(pos_sale.total_amount) over pos_sale; by store.store_name; for 2026-01",
+      "row_count": 5,
+      "rows_truncated": false,
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "transfer_status_counts",
+      "question": "各調撥狀態的筆數",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 2.93,
+      "plan": {
+        "base_table": "transfer_status",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "count"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "transfer_status",
+            "column": "status"
+          }
+        ],
+        "filters": [],
+        "order": []
+      },
+      "assumptions": [
+        "No row filter was applied beyond the time window; every transfer_status row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "sql": "SELECT transfer_status.status AS status, COUNT(*) AS count FROM public.transfer_status GROUP BY transfer_status.status ORDER BY status NULLS FIRST",
+      "lineage": {
+        "base_table": "transfer_status",
+        "tables": [
+          "transfer_status"
+        ],
+        "joins": [],
+        "measures": [
+          "count = count(*)"
+        ],
+        "dimensions": [
+          "transfer_status.status"
+        ],
+        "filters": [],
+        "time_window": []
+      },
+      "interpretation": "count(*) over transfer_status; by transfer_status.status",
+      "row_count": 4,
+      "rows_truncated": false,
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "gross_margin_gap",
+      "question": "2026年1月的毛利率",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.114,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain cost information (e.g., product cost or purchase price), which is required to calculate the gross profit margin (毛利率).",
+      "status_without_coverage": "semantic_gap"
+    }
+  ]
+}

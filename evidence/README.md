@@ -4,7 +4,9 @@ Raw artifacts of the live runs cited in `docs/research/`. Each JSON file is a
 `spike_tier0.py` report (summary plus one row per case: status, plan, SQL
 with placeholders, lineage, assumptions, interpretation, first rows, reference
 match, latency) unless noted. They contain fixture data and model-generated
-plans and text; they contain no credentials and no bound values.
+plans and text; they contain no credentials and no bound values. Artifacts
+taken on the real POS test database are written with `--redact-rows` and
+hold no cell value (`rows_redacted: true` in the summary).
 
 | File | Experiment | Notes |
 |---|---|---|
@@ -23,3 +25,4 @@ plans and text; they contain no credentials and no bound values.
 | `iot-07.json` | IoT rerun on the restart machine (environment check), prompt v5 | 20/20 |
 | `retail-06.json`, `pos-04.json` | same-day with-sample baselines for the sampling ablation | 12/12, 26/26 |
 | `iot-nosample-01.json`, `retail-nosample-01.json`, `pos-nosample-01.json` | sampling ablation, `--enum-distinct-limit 0` (`../docs/research/sampling-ablation.md`) | 19/20, 11/12, 24/26; 3 refusals, 1 wrong (partial store name) |
+| `pos-real-smoke-before.json`, `pos-real-smoke-after.json` | real POS test database, enum column as `other` then as text with catalog labels (`../docs/research/pos-real-enum.md`); rows redacted | 4/7 (2 refusals, 1 driver error) to 7/7 |

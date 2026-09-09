@@ -79,23 +79,52 @@ class _Result:
 
 
 class _ScriptedConnection:
-    """Answers the five catalog queries in order, then samples every text column."""
+    """Answers the six catalog queries in order, then samples every text column."""
 
-    def __init__(self) -> None:
+    def __init__(self, *, enum_column: bool = False) -> None:
+        def column(table, name, data_type, nullable, position, comment, udt=None):
+            return (
+                table,
+                name,
+                data_type,
+                nullable,
+                position,
+                comment,
+                "pg_catalog",
+                udt,
+            )
+
+        columns = [
+            column("devices", "device_id", "text", False, 1, None),
+            column("devices", "status", "text", True, 2, "online/offline"),
+            column("devices", "monthly_fee", "numeric", True, 3, None),
+            column("alerts", "alert_id", "bigint", False, 1, None),
+            column("alerts", "device_id", "text", True, 2, None),
+            column("alerts", "severity", "text", True, 3, None),
+            column("alerts", "raised_at", "timestamp with time zone", False, 4, None),
+        ]
+        enums: list[tuple] = []
+        if enum_column:
+            columns.append(
+                (
+                    "alerts",
+                    "channel",
+                    "USER-DEFINED",
+                    True,
+                    5,
+                    None,
+                    "public",
+                    "channel_t",
+                )
+            )
+            enums = [("public", "channel_t", "email"), ("public", "channel_t", "sms")]
         self.catalog = [
-            [  # columns
-                ("devices", "device_id", "text", False, 1, None),
-                ("devices", "status", "text", True, 2, "online/offline"),
-                ("devices", "monthly_fee", "numeric", True, 3, None),
-                ("alerts", "alert_id", "bigint", False, 1, None),
-                ("alerts", "device_id", "text", True, 2, None),
-                ("alerts", "severity", "text", True, 3, None),
-                ("alerts", "raised_at", "timestamp with time zone", False, 4, None),
-            ],
+            columns,
             [("devices", "Managed devices"), ("alerts", None)],  # table comments
             [("devices", 12), ("alerts", 40)],  # row estimates
             [("devices", "device_id"), ("alerts", "alert_id")],  # primary keys
             [("alerts", "device_id", "devices", "device_id")],  # foreign keys
+            enums,  # enum labels (type metadata)
         ]
         self.sampled: list[object] = []
 
@@ -150,6 +179,20 @@ def test_introspection_with_limit_zero_never_reads_a_cell_value() -> None:
     assert schema.table("alerts").column("severity").sample_values == []
     assert schema.table("devices").column("status").distinct_estimate is None
     assert schema.foreign_keys[0].referenced_table == "devices"  # structure intact
+
+
+def test_enum_columns_are_text_with_catalog_labels_and_are_never_sampled() -> None:
+    connection = _ScriptedConnection(enum_column=True)
+    schema = introspect_schema(
+        lambda: connection, datasource_id="ds", enum_distinct_limit=0
+    )
+    channel = schema.table("alerts").column("channel")
+    assert channel.kind is ColumnKind.TEXT and channel.is_enum
+    assert channel.data_type == "channel_t"
+    assert channel.sample_values == ["email", "sms"]  # labels, shown at limit 0
+    assert channel.distinct_estimate == 2
+    assert connection.sampled == []  # labels came from pg_enum, no row was read
+    assert not schema.table("devices").column("status").is_enum
 
 
 def test_inference_needs_a_name_match_and_zero_orphans_and_one_parent() -> None:

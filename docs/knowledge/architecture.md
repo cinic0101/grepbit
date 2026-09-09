@@ -26,6 +26,10 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
    distinct values of text columns that have at most 20 of them (key columns
    excluded). Optional `infer_foreign_keys` adds joins that a name rule and
    zero-orphan containment both support, marked `inferred` with evidence.
+   Columns of a PostgreSQL enum type are text columns whose sample values
+   are the labels from `pg_enum` (type metadata, shown at any sampling
+   limit); the compiler compares them as text so an unknown literal matches
+   no row instead of raising.
 2. Deterministic gates before any model call: unsafe words (language pack),
    overlay absent concepts (`match_absent_concept`), both zero cost.
 3. Plan: `ChatCompletionsPlanClient.propose` sends the rules, the JSON Schema

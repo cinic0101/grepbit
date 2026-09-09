@@ -84,7 +84,7 @@ def schema_payload(
         entry = {
             "name": column.name,
             "kind": column.kind.value,
-            "type": column.data_type,
+            "type": f"enum {column.data_type}" if column.is_enum else column.data_type,
             "nullable": column.nullable,
             "comment": column.comment,
             "sample_values": column.sample_values or None,

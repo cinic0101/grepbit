@@ -556,3 +556,50 @@ def test_inferred_join_is_stated_as_a_candidate_assumption() -> None:
         "is inferred, not a declared foreign key: names match" in a.text
         for a in candidate
     )
+
+
+def test_enum_filters_compare_as_text_so_unknown_labels_miss_instead_of_raising():
+    from t0_helpers import col
+
+    from grepbit.domain.schema_model import ColumnKind
+
+    schema = iot_schema()
+    devices = schema.table("devices")
+    assert devices is not None
+    channel = col(
+        "channel",
+        ColumnKind.TEXT,
+        data_type="channel_t",
+        sample_values=["email", "sms"],
+        is_enum=True,
+    )
+    devices = devices.model_copy(update={"columns": [*devices.columns, channel]})
+    schema = schema.model_copy(
+        update={
+            "tables": [devices if t.name == "devices" else t for t in schema.tables]
+        }
+    )
+    compiled = compile_plan(
+        {
+            "base_table": "devices",
+            "measures": [{"aggregate": "count"}],
+            "dimensions": [{"table": "devices", "column": "channel"}],
+            "filters": [
+                {
+                    "column": {"table": "devices", "column": "channel"},
+                    "op": "in",
+                    "values": ["email", "fax"],
+                }
+            ],
+        },
+        schema=schema,
+    )
+    sql = compiled.compiled.physical_sql
+    assert "CAST(devices.channel AS TEXT) IN (%(f_0)s, %(f_1)s)" in sql
+    assert (
+        "SELECT devices.channel AS channel" in sql
+    )  # the dimension itself is not cast
+    assert [p.type_name for p in compiled.compiled.execution_parameters] == [
+        "text",
+        "text",
+    ]

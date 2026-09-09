@@ -14,7 +14,7 @@ from grepbit.domain.schema_model import (
     SchemaTable,
 )
 
-INTROSPECTOR_REVISION = "postgres-introspect-v1"
+INTROSPECTOR_REVISION = "postgres-introspect-v2"
 INFERENCE_REVISION = "fk-infer-name-containment-v1"
 _NUMERIC_TYPES = {
     "smallint",
@@ -55,6 +55,9 @@ def introspect_schema(
 
     ``enum_distinct_limit`` bounds the distinct values sampled per non-key text
     column; ``0`` disables sampling so no cell value leaves the database.
+    Columns of a PostgreSQL enum type are reported as text with the type's
+    labels as sample values; the labels come from ``pg_enum`` (type metadata),
+    so they are shown whatever the limit and the column is never sampled.
     """
 
     with connection_factory() as connection:
@@ -65,7 +68,8 @@ def introspect_schema(
                    col_description(
                        format('%%I.%%I', c.table_schema, c.table_name)::regclass,
                        c.ordinal_position
-                   )
+                   ),
+                   c.udt_schema, c.udt_name
             FROM information_schema.columns AS c
             JOIN information_schema.tables AS t
               ON t.table_schema = c.table_schema AND t.table_name = c.table_name
@@ -142,17 +146,45 @@ def introspect_schema(
                 ).fetchall()
             )
         ]
+        # Enum labels are type metadata in pg_catalog, not row values.
+        enum_labels: dict[tuple[str, str], list[str]] = {}
+        for type_schema, type_name, label in connection.execute(
+            """
+            SELECT ns.nspname, t.typname, e.enumlabel
+            FROM pg_catalog.pg_enum AS e
+            JOIN pg_catalog.pg_type AS t ON t.oid = e.enumtypid
+            JOIN pg_catalog.pg_namespace AS ns ON ns.oid = t.typnamespace
+            ORDER BY ns.nspname, t.typname, e.enumsortorder
+            """
+        ).fetchall():
+            enum_labels.setdefault((type_schema, type_name), []).append(label)
         key_columns = {
             (table_name, column)
             for table_name, columns in primary_keys.items()
             for column in columns
         } | {(fk.table, fk.column) for fk in foreign_keys}
         columns_by_table: dict[str, list[SchemaColumn]] = {}
-        for table_name, column_name, data_type, nullable, _, comment in rows:
+        for (
+            table_name,
+            column_name,
+            data_type,
+            nullable,
+            _,
+            comment,
+            udt_schema,
+            udt_name,
+        ) in rows:
+            udt = (udt_schema, udt_name)
             kind = column_kind(data_type)
             samples: list[str] = []
             distinct: int | None = None
-            if (
+            is_enum = data_type == "USER-DEFINED" and udt in enum_labels
+            if is_enum:
+                kind = ColumnKind.TEXT
+                data_type = udt[1]
+                samples = list(enum_labels[udt])
+                distinct = len(samples)
+            elif (
                 enum_distinct_limit > 0
                 and kind is ColumnKind.TEXT
                 and (table_name, column_name) not in key_columns
@@ -173,6 +205,7 @@ def introspect_schema(
                     comment=comment,
                     sample_values=samples,
                     distinct_estimate=distinct,
+                    is_enum=is_enum,
                 )
             )
     tables = [

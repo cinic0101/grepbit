@@ -84,6 +84,28 @@ def test_propose_makes_one_json_mode_call_and_validates_the_plan() -> None:
     assert payload["schema"] == schema_payload(iot_schema())
 
 
+def test_schema_payload_marks_enum_columns_and_lists_their_labels() -> None:
+    from t0_helpers import col
+
+    from grepbit.domain.schema_model import ColumnKind
+
+    schema = iot_schema()
+    devices = schema.table("devices")
+    assert devices is not None
+    channel = col(
+        "channel",
+        ColumnKind.TEXT,
+        data_type="channel_t",
+        sample_values=["email", "sms"],
+        is_enum=True,
+    )
+    devices = devices.model_copy(update={"columns": [*devices.columns, channel]})
+    payload = schema_payload(schema.model_copy(update={"tables": [devices]}))
+    entry = next(c for c in payload["tables"][0]["columns"] if c["name"] == "channel")
+    assert entry["kind"] == "text" and entry["type"] == "enum channel_t"
+    assert entry["sample_values"] == ["email", "sms"]
+
+
 def test_propose_returns_declines_and_rejects_incoherent_or_malformed_output() -> None:
     decline = json.dumps(
         {"decision": "none", "reason": "ambiguous", "clarification": "avg or max?"}

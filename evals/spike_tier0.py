@@ -500,7 +500,13 @@ def main(argv: list[str] | None = None) -> int:
             "inferred_foreign_keys": inferred_keys,
             "enum_distinct_limit": arguments.enum_distinct_limit,
             "sampled_columns": sum(
-                1 for t in schema.tables for c in t.columns if c.sample_values
+                1
+                for t in schema.tables
+                for c in t.columns
+                if c.sample_values and not c.is_enum
+            ),
+            "enum_columns": sum(
+                1 for t in schema.tables for c in t.columns if c.is_enum
             ),
         },
         "status_counts": {

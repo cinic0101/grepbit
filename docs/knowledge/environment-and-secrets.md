@@ -38,6 +38,15 @@ Embeddings (not used by tier-0 yet; kept for the vocabulary gate):
 `text2sql_test` (owner's POS plus HR fixture), `grepbit_spike_pos_nofk` (a
 clone of the latter with foreign keys dropped). Read by role `grepbit_ro`.
 
+`t2s_8c2b8bbc_6d072f83` is the owner's real POS schema copied down with test
+data (9 tables, 33 columns, 8 foreign keys, one enum column; the owner
+consented to testing on it, 2026-09-09). `grepbit_ro` holds CONNECT, USAGE
+and SELECT there. It has personal data in `salesperson.sales_name` and
+`pos_sale.member_id`: until the per-datasource column whitelist exists, run it
+only with `--enum-distinct-limit 0` and write artifacts with `--redact-rows`.
+Its `sale_date` values span 2025-12-11 to 2026-02-04 (UTC), which matters for
+the `as_of` of relative-time questions.
+
 ## Known hazard
 
 Introspection samples low-cardinality text values and shows them to the

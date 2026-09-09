@@ -30,6 +30,9 @@ class SchemaColumn(DomainModel):
     comment: str | None = None
     sample_values: list[str] = Field(default_factory=list)
     distinct_estimate: int | None = Field(default=None, ge=0)
+    # A PostgreSQL enum: kind TEXT, data_type is the type name, sample_values are
+    # its labels read from the catalog (type metadata, never a row value).
+    is_enum: bool = False
 
 
 class SchemaTable(DomainModel):

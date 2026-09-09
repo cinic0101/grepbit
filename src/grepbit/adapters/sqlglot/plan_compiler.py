@@ -461,6 +461,10 @@ class PlanCompiler:
             return exp.Not(this=reference.is_(exp.Null()))
         type_name = _bind_type(column, item.values)
         placeholders = [bind("f_", value, type_name) for value in item.values]
+        if column.is_enum:
+            # An enum compared with a literal outside its labels raises in
+            # PostgreSQL; compared as text it simply matches no row.
+            reference = exp.cast(reference, "text")
         if item.op is FilterOp.IN:
             return reference.isin(*placeholders)
         [placeholder] = placeholders

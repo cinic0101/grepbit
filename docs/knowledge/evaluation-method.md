@@ -43,6 +43,7 @@ cases:
 | `pos_multilingual.yaml` | English and Japanese variants of POS questions | 32 |
 | `pos_overlay.yaml` | before/after set for the overlay | 14 |
 | `pos_features.yaml` | competitor feature probes and follow-ups | 32 |
+| `pos_real_smoke.yaml` | compatibility check on the owner's real POS test database (enum column, joins); run with `--enum-distinct-limit 0 --redact-rows` | 7 |
 
 All of these were written by the agent that built the system, after looking
 at the data. They are smoke signals and regression guards. The first
@@ -61,8 +62,9 @@ side has seen (`../plan/next-phase.md`).
 
 `--enum-distinct-limit` (default 20) bounds the distinct values sampled per
 non-key text column and shown to the planner; `0` disables sampling so no
-cell value leaves the database (the summary records the limit and the
-number of sampled columns).
+cell value leaves the database (the summary records the limit, the number of
+row-sampled columns and, separately, the number of enum columns whose labels
+come from the catalog).
 
 Without `--live` it introspects and validates the case file only. The JSON
 report holds a summary (correct, answerable correct, refusals correct, false
