@@ -21,8 +21,8 @@
 
 | Number | Value |
 |---|---|
-| Correctness over 50 judged | 39/50 = 78% (24 answered correctly, 15 refusals the owner accepted) |
-| Wrong numbers without an exposed assumption | 4 (q07, q14, q16, q20; q16 and q20 disputed, see below) |
+| Correctness over 50 judged | 42/50 = 84% (27 answered correctly, 15 refusals the owner accepted); first pass 39/50 before q07, q16, q20 were revised |
+| Wrong numbers without an exposed assumption | 1 (q14, returns not excluded) |
 | Wrong numbers with the reading exposed in the interpretation | 7 (q06, q22, q23, q24, q27, q31, q32) |
 | Clarify rate / refusal rate | 0% / 30% (9 `semantic_gap`, 6 shape gate) |
 | P50 / P95 | 3.6 s / 4.7 s |
@@ -40,7 +40,7 @@ Zero model failures, zero literal checks fired (no question carried a value).
 | Returns not excluded | q14 (min picks a return); q37 to q39 accepted with the same caveat | no business definition of a sale versus a return | overlay: a return is `pos_sale.origin_transaction_no` not null; default scope or metric filters |
 | Ratios | q10, q17, q21, q34, q41, q50 (shape gate), q49 (退貨率, refused by the model), q13 and q24 (客單價, right only because the base table has one row per transaction) | not in the algebra | derived-metric shapes: share of total and ratio of two aggregates |
 | Templates without values | q29, q44 | refused; the owner will rewrite them with a store and a product name | none needed |
-| Ordering | q16, q20 marked wrong by the owner | both plans order by the measure desc then by name asc; `LIMIT %(limit_0)s` is a bound parameter (1 and 3) | to recheck with the owner |
+| Ordering | q16, q20 first marked wrong | both plans order by the measure desc then by name asc; `LIMIT %(limit_0)s` is a bound parameter (1 and 3); revised to correct | none |
 
 ## What this run does not show
 

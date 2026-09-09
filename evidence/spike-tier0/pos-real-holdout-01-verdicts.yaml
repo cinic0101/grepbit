@@ -43,9 +43,9 @@ verdicts:
 - case_id: q07
   question: 每筆訂單的平均金額是多少？
   status: answered
-  verdict: wrong_silent
-  note: 'owner: ''per order'', not the overall average; expected reading still to
-    be confirmed'
+  verdict: correct
+  note: 'owner revised to correct: pos_sale has one row per order, so AVG(total_amount)
+    is the per-order average'
 - case_id: q08
   question: 各付款方式的付款總額是多少？請依付款方式名稱由小到大排列。
   status: answered
@@ -91,9 +91,9 @@ verdicts:
 - case_id: q16
   question: 銷售總額最高的門市是哪一間？若同額，請依門市名稱由小到大取第一間。
   status: answered
-  verdict: wrong_silent
-  note: owner marked wrong; the plan orders by total_sales desc then store_name asc
-    and LIMIT is a bound parameter (1); recheck
+  verdict: correct
+  note: 'owner revised to correct: the plan orders by total_sales desc then store_name
+    asc; LIMIT is a bound parameter'
 - case_id: q17
   question: 各門市的銷售額占同期全部銷售額的比例是多少？
   status: unsupported
@@ -112,9 +112,9 @@ verdicts:
 - case_id: q20
   question: 銷售額最高的前 3 位銷售員是誰？若同額，請依銷售員名稱由小到大排列。
   status: answered
-  verdict: wrong_silent
-  note: owner marked wrong (name tie-break missing); the plan has sales_name asc as
-    second order field; recheck
+  verdict: correct
+  note: 'owner revised to correct: the plan orders by total_sales desc then sales_name
+    asc'
 - case_id: q21
   question: 各銷售員的銷售額占同期全部銷售額的比例是多少？
   status: unsupported
@@ -272,4 +272,5 @@ verdicts:
   verdict: refusal_ok
   note: ''
 judge: owner, verdicts given in chat 2026-09-09; exposed/silent split by the build
-  side from the artifact's interpretation lines
+  side from the artifact's interpretation lines; q07, q16, q20 revised to correct
+  by the owner after discussion

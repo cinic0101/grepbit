@@ -5,9 +5,9 @@
   "cases": 50,
   "judged": 50,
   "unsure": 0,
-  "correct": 39,
-  "correctness": 0.78,
-  "wrong_numbers_without_exposed_assumption": 4,
+  "correct": 42,
+  "correctness": 0.84,
+  "wrong_numbers_without_exposed_assumption": 1,
   "wrong_numbers_with_exposed_assumption": 7,
   "refusals_that_should_have_answered": 0,
   "clarify_count": 0,
@@ -19,9 +19,9 @@
     "unsupported": 6
   },
   "verdict_counts": {
-    "correct": 24,
+    "correct": 27,
     "wrong_exposed": 7,
-    "wrong_silent": 4,
+    "wrong_silent": 1,
     "refusal_ok": 15,
     "refusal_bad": 0,
     "unsure": 0
