@@ -127,6 +127,19 @@ class OrderSpec(DomainModel):
     direction: Literal["asc", "desc"] = "desc"
 
 
+class HavingSpec(DomainModel):
+    """A condition on a measure of each group (stores whose total exceeds N).
+
+    ``field`` is a measure output name; the compiler places the comparison on
+    the aggregate expression itself (SQL HAVING), so the threshold from the
+    question is never dropped and never mistaken for a row filter.
+    """
+
+    field: str = Field(pattern=_IDENTIFIER)
+    op: Literal["gt", "gte", "lt", "lte", "eq", "ne"]
+    value: int | float
+
+
 class QueryPlan(DomainModel):
     base_table: str = Field(pattern=_IDENTIFIER)
     measures: list[Measure] = Field(min_length=1, max_length=4)
@@ -134,6 +147,7 @@ class QueryPlan(DomainModel):
     filters: list[Filter] = Field(default_factory=list, max_length=6)
     time: TimeSpec | None = None
     order: list[OrderSpec] = Field(default_factory=list, max_length=2)
+    having: list[HavingSpec] = Field(default_factory=list, max_length=2)
     limit: int | None = Field(default=None, ge=1, le=MAX_PLAN_LIMIT)
 
     @model_validator(mode="after")
@@ -147,6 +161,10 @@ class QueryPlan(DomainModel):
         for item in self.order:
             if item.field not in outputs:
                 raise ValueError("plan_order_field_unknown")
+        measure_names = {measure.output_name for measure in self.measures}
+        for item in self.having:
+            if item.field not in measure_names:
+                raise ValueError("plan_having_field_not_a_measure")
         return self
 
 
@@ -213,6 +231,7 @@ class Lineage:
     dimensions: tuple[str, ...]
     filters: tuple[str, ...]
     time_window: tuple[str, ...]
+    having: tuple[str, ...] = ()
 
     def as_dict(self) -> dict[str, object]:
         return {
@@ -223,6 +242,7 @@ class Lineage:
             "dimensions": list(self.dimensions),
             "filters": list(self.filters),
             "time_window": list(self.time_window),
+            "having": list(self.having),
         }
 
 

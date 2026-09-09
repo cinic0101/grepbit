@@ -13,6 +13,7 @@
            "scope": {"kind": "relative", "unit": "quarter", "offset": -1, "length": 1},
            "grain": "month"},
   "order": [{"field": "sum_total_amount", "direction": "desc"}],
+  "having": [{"field": "sum_total_amount", "op": "gt", "value": 100000}],
   "limit": 5
 }
 ```
@@ -38,6 +39,12 @@
   `relative_window_reaches_future`.
 - order fields are output names (dimension column, measure alias, or
   `period_start`); limit is 1 to 200.
+- having: up to 2 conditions on measures of each group (`field` is a measure
+  output name; ops gt, gte, lt, lte, eq, ne; numeric value), compiled onto the
+  aggregate expression as SQL HAVING with the value bound. Added after
+  holdout 2, where four "groups whose total exceeds N" questions were
+  answered without the threshold. A row condition stays in `filters`; the
+  planner rule says which is which.
 
 ## PlanProposal
 
@@ -101,4 +108,6 @@ without inventing a window, relative length counts units, `to_date` for
 month-to-date, and the overlay rule names table aliases, value aliases,
 default time columns and segments; v7 (same day) makes the time scope
 optional when a grain is set, because v6's rule could not be followed while
-the schema required a scope.
+the schema required a scope; v8 (same day, after holdout 2) adds the
+`having` rule: a condition on a group's aggregate goes in `having`, never
+dropped and never written as a row filter.

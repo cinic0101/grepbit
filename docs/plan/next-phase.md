@@ -47,7 +47,7 @@ for what exists.
 | Ratio and share measures (客單價, 退貨率, 佔比), a ratio of two aggregates or of a group to the total | q10, q13, q17, q21, q24, q34, q41, q49, q50 | Cube calculated measures (`type: number`), Wren calculated fields |
 | Derived dimensions: a CASE label as a group-by (各訂單狀態 as 銷售/退貨) | q05 | Cube `case` dimensions, Wren calculated fields |
 | Period-over-period growth (LAG windows) | owner's deferral | Cube rolling windows and comparisons |
-| Aggregate filters (HAVING): 交易筆數超過 100 的銷售員 | not in the 50; expected in the next batch | any SQL semantic layer |
+| Aggregate filters (HAVING): 交易筆數超過 100 的銷售員 | holdout 2: 4 of 30 answered without the threshold, silent wrong numbers; `having` added to the algebra the same day (prompt v8), measured in `../research/holdout2-01.md` | Cube and Looker measure filters, Malloy `having` |
 | Declared joins for schemas without foreign keys where inference fails | not yet hit | Cube joins, Wren relationships |
 | Hidden tables or columns per datasource (transfer tables for sales questions) | q06 | Cube views and `public: false` |
 | Hierarchies and drill paths (category to product) | not needed yet | Cube hierarchies |

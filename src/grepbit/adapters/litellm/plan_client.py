@@ -16,7 +16,7 @@ from grepbit.domain.plan import PlanProposal, PreviousTurn
 from grepbit.domain.schema_model import SchemaModel
 from grepbit.ports.grounding import GroundingModelError
 
-PLAN_PROMPT_REVISION = "plan-classify-json-v7"
+PLAN_PROMPT_REVISION = "plan-classify-json-v8"
 
 _RULES = (
     "You translate one analytics question into ONE aggregate query plan over the "
@@ -52,7 +52,12 @@ _RULES = (
     '"to_date":true}. '
     "Never compute dates yourself; the server resolves relative windows from as_of. "
     "(6) Use order and limit for top-N questions; order fields must be output "
-    "names (dimension column name, measure alias, or period_start). "
+    "names (dimension column name, measure alias, or period_start). A condition "
+    "on a group's aggregate (stores whose total sales exceed 100000, salespeople "
+    "with more than 100 transactions: 超過, 以上, 至少, 大於, 少於, 低於 applied to a "
+    'sum, count or average) goes in having as {"field": <measure output name>, '
+    '"op": gt|gte|lt|lte|eq|ne, "value": number}; filters compare a row '
+    "column, having compares a group measure. Never drop such a condition. "
     "(7) If the question asks for something the schema cannot express with one "
     "aggregate query (a metric with no column, a forecast, free text, a data "
     "change, several unrelated questions), return decision none with reason "

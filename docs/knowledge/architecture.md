@@ -53,8 +53,9 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
    paths rejected), expands reviewed metrics, applies the overlay segments the
    question did not lift (`excluded_segments`) as reviewed default filters,
    resolves time windows in the business time zone from `as_of` (rejecting a
-   past window that reaches the future), builds the SQL as a sqlglot AST with
-   bound placeholders, and emits lineage, assumptions, interpretation and the
+   past window that reaches the future), places `having` conditions on the
+   aggregate expressions, builds the SQL as a sqlglot AST with bound
+   placeholders, and emits lineage, assumptions, interpretation and the
    verification level.
 5. Gate: `PostgresSqlPolicy(tables=..., functions=...)` re-parses the SQL and
    allows one SELECT over the introspected tables with reviewed functions.

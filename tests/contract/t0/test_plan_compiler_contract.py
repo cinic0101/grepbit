@@ -79,6 +79,7 @@ def test_count_with_month_window_binds_boundaries_in_business_timezone() -> None
         "time_window": [
             "alerts.raised_at in [2026-07-01T00:00:00+08:00, 2026-08-01T00:00:00+08:00)"
         ],
+        "having": [],
     }
     policy_for(iot_schema()).assert_safe_select_statement(sql)
 
@@ -603,3 +604,58 @@ def test_enum_filters_compare_as_text_so_unknown_labels_miss_instead_of_raising(
         "text",
         "text",
     ]
+
+
+def test_having_compares_the_aggregate_expression_with_a_bound_value() -> None:
+    compiled = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [
+                {"aggregate": "count", "alias": "alert_count"},
+                {
+                    "aggregate": "sum",
+                    "column": {"table": "alerts", "column": "downtime_minutes"},
+                },
+            ],
+            "dimensions": [{"table": "devices", "column": "model"}],
+            "having": [
+                {"field": "alert_count", "op": "gt", "value": 100},
+                {"field": "sum_downtime_minutes", "op": "lte", "value": 5000},
+            ],
+        }
+    )
+    sql = compiled.compiled.physical_sql
+    assert (
+        "GROUP BY devices.model HAVING COUNT(*) > %(h_0)s "
+        "AND SUM(alerts.downtime_minutes) <= %(h_1)s"
+    ) in sql
+    assert [
+        (p.name, p.type_name, p.value) for p in compiled.compiled.execution_parameters
+    ] == [
+        ("h_0", "numeric", 100),
+        ("h_1", "numeric", 5000),
+    ]
+    assert compiled.lineage.having == (
+        "alert_count gt 100",
+        "sum_downtime_minutes lte 5000",
+    )
+    assert (
+        "having alert_count gt 100 and sum_downtime_minutes lte 5000"
+        in compiled.interpretation
+    )
+    assert compiled.lineage.as_dict()["having"] == [
+        "alert_count gt 100",
+        "sum_downtime_minutes lte 5000",
+    ]
+
+
+def test_having_field_must_name_a_measure() -> None:
+    with pytest.raises(ValueError, match="plan_having_field_not_a_measure"):
+        QueryPlan.model_validate(
+            {
+                "base_table": "alerts",
+                "measures": [{"aggregate": "count", "alias": "n"}],
+                "dimensions": [{"table": "devices", "column": "model"}],
+                "having": [{"field": "model", "op": "gt", "value": 1}],
+            }
+        )

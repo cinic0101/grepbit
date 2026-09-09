@@ -303,6 +303,28 @@ class PlanCompiler:
             query = query.where(exp.and_(*conditions))
         if group_by:
             query = query.group_by(*group_by)
+        having_texts: list[str] = []
+        if plan.having:
+            aggregates = {
+                measure.output_name: self._aggregate(measure, resolve)
+                for measure, _ in effective
+            }
+            conditions_having = []
+            for item in plan.having:
+                expression = aggregates[item.field]
+                placeholder = bind("h_", item.value, "numeric")
+                conditions_having.append(
+                    {
+                        "gt": expression > placeholder,
+                        "gte": expression >= placeholder,
+                        "lt": expression < placeholder,
+                        "lte": expression <= placeholder,
+                        "eq": expression.eq(placeholder),
+                        "ne": expression.neq(placeholder),
+                    }[item.op]
+                )
+                having_texts.append(f"{item.field} {item.op} {item.value}")
+            query = query.having(exp.and_(*conditions_having))
         if plan.order:
             for item in plan.order:
                 column = exp.column(item.field)
@@ -459,6 +481,7 @@ class PlanCompiler:
             ),
             dimensions=tuple(d.id for d in plan.dimensions),
             filters=tuple(filter_texts),
+            having=tuple(having_texts),
             time_window=tuple(time_texts),
         )
         semantic_refs = sorted(
@@ -608,6 +631,10 @@ def _interpretation(plan: QueryPlan, periods: tuple[ResolvedPeriod, ...]) -> str
         parts.append("over all data")
     if plan.filters:
         parts.append("where " + " and ".join(_filter_text(f) for f in plan.filters))
+    if plan.having:
+        parts.append(
+            "having " + " and ".join(f"{h.field} {h.op} {h.value}" for h in plan.having)
+        )
     if plan.limit is not None:
         parts.append(f"limit {plan.limit}")
     return "; ".join(parts)
