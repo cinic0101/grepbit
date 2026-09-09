@@ -111,6 +111,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--infer-joins", action="store_true")
     parser.add_argument("--verify-coverage", action="store_true")
     parser.add_argument("--overlay", type=Path)
+    parser.add_argument(
+        "--enum-distinct-limit",
+        type=int,
+        default=20,
+        help="distinct values sampled per non-key text column; 0 disables sampling",
+    )
     arguments = parser.parse_args(argv)
 
     import psycopg
@@ -128,7 +134,11 @@ def main(argv: list[str] | None = None) -> int:
     document = load_cases(arguments.cases)
     as_of = datetime.fromisoformat(document["as_of"])
     started_intro = time.monotonic()
-    schema = introspect_schema(connect, datasource_id=arguments.datasource_id)
+    schema = introspect_schema(
+        connect,
+        datasource_id=arguments.datasource_id,
+        enum_distinct_limit=arguments.enum_distinct_limit,
+    )
     if arguments.infer_joins:
         schema = infer_foreign_keys(connect, schema)
     introspection_seconds = round(time.monotonic() - started_intro, 3)
@@ -355,6 +365,10 @@ def main(argv: list[str] | None = None) -> int:
             "columns": sum(len(t.columns) for t in schema.tables),
             "foreign_keys": len(schema.foreign_keys) - len(inferred_keys),
             "inferred_foreign_keys": inferred_keys,
+            "enum_distinct_limit": arguments.enum_distinct_limit,
+            "sampled_columns": sum(
+                1 for t in schema.tables for c in t.columns if c.sample_values
+            ),
         },
         "incorrect_case_ids": [r["case_id"] for r in results if not r["correct"]],
         "verification_counts": {

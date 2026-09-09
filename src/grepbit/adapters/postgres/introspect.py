@@ -51,7 +51,11 @@ def introspect_schema(
     business_timezone: str = "Asia/Taipei",
     enum_distinct_limit: int = 20,
 ) -> SchemaModel:
-    """Read structure and low-cardinality text values with the runtime role."""
+    """Read structure and low-cardinality text values with the runtime role.
+
+    ``enum_distinct_limit`` bounds the distinct values sampled per non-key text
+    column; ``0`` disables sampling so no cell value leaves the database.
+    """
 
     with connection_factory() as connection:
         rows = connection.execute(
@@ -148,7 +152,11 @@ def introspect_schema(
             kind = column_kind(data_type)
             samples: list[str] = []
             distinct: int | None = None
-            if kind is ColumnKind.TEXT and (table_name, column_name) not in key_columns:
+            if (
+                enum_distinct_limit > 0
+                and kind is ColumnKind.TEXT
+                and (table_name, column_name) not in key_columns
+            ):
                 samples, distinct = _sample_text_values(
                     connection,
                     schema_name,

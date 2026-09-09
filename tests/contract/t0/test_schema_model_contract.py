@@ -140,6 +140,18 @@ def test_introspection_builds_keys_kinds_and_samples_only_non_key_text() -> None
     assert len(connection.sampled) == 2
 
 
+def test_introspection_with_limit_zero_never_reads_a_cell_value() -> None:
+    connection = _ScriptedConnection()
+    schema = introspect_schema(
+        lambda: connection, datasource_id="ds", enum_distinct_limit=0
+    )
+    assert connection.sampled == []  # no sampling query was issued at all
+    assert schema.table("devices").column("status").sample_values == []
+    assert schema.table("alerts").column("severity").sample_values == []
+    assert schema.table("devices").column("status").distinct_estimate is None
+    assert schema.foreign_keys[0].referenced_table == "devices"  # structure intact
+
+
 def test_inference_needs_a_name_match_and_zero_orphans_and_one_parent() -> None:
     from t0_helpers import col
 

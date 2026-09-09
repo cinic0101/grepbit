@@ -51,8 +51,14 @@ side has seen (`../plan/next-phase.md`).
 ```sh
 .venv/bin/python evals/spike_tier0.py --dsn-env <ENV_VAR_WITH_DSN> \
   --datasource-id <id> --cases <file.yaml> --output <dir>/<name>.json \
-  --live [--infer-joins] [--overlay <overlay.json>] [--verify-coverage]
+  --live [--infer-joins] [--overlay <overlay.json>] [--verify-coverage] \
+  [--enum-distinct-limit N]
 ```
+
+`--enum-distinct-limit` (default 20) bounds the distinct values sampled per
+non-key text column and shown to the planner; `0` disables sampling so no
+cell value leaves the database (the summary records the limit and the
+number of sampled columns).
 
 Without `--live` it introspects and validates the case file only. The JSON
 report holds a summary (correct, answerable correct, refusals correct, false

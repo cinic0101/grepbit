@@ -44,3 +44,5 @@ Introspection samples low-cardinality text values and shows them to the
 model. On a real database that can include names. PII exclusion or an
 opt-in list is the first item in the next phase; until then, fixtures and
 consented databases only.
+What the samples are worth to the planner is measured in
+`../research/sampling-ablation.md`; `--enum-distinct-limit 0` turns them off.

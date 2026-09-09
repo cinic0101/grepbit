@@ -20,3 +20,6 @@ plans and text; they contain no credentials and no bound values.
 | `pos-overlay-before.json`, `pos-overlay-after.json` | overlay before/after | 10/14 to 14/14 |
 | `pos-features-01.json`, `pos-features-02.json` | competitor feature probes, before and after shape repair | 30/32, 31/32 |
 | `pos-suggested.yaml`, `pos-suggested-01.json`, `pos-suggested-02.json` | suggested questions and their answers | 9/10 |
+| `iot-07.json` | IoT rerun on the restart machine (environment check), prompt v5 | 20/20 |
+| `retail-06.json`, `pos-04.json` | same-day with-sample baselines for the sampling ablation | 12/12, 26/26 |
+| `iot-nosample-01.json`, `retail-nosample-01.json`, `pos-nosample-01.json` | sampling ablation, `--enum-distinct-limit 0` (`../docs/research/sampling-ablation.md`) | 19/20, 11/12, 24/26; 3 refusals, 1 wrong (partial store name) |

@@ -12,6 +12,9 @@ document.
 - Datasource registration command: introspect, infer joins, store the schema
   digest, refresh on demand, and sampling that excludes PII (opt-in column
   list or name and value heuristics; default off for free-text columns).
+  Input for that choice: `../research/sampling-ablation.md` (without any
+  sampling 54/58 on the base sets, 3 refusals and 1 wrong answer on a name
+  column).
 - MCP tool `ask` and `capabilities` per datasource; the tool description
   carries the relay rules (only returned numbers, restate assumptions, say
   what was refused and why).
