@@ -119,6 +119,15 @@ counts only and belongs under `evidence/`. The build side never opens the
 question file before the run, never changes prompts between runs of the same
 holdout, and reports which run was the first (blind) one.
 
+Settling a judged batch: `evals/settle_batch.py --report <run.json>
+--verdicts <filled.yaml> --cases <judged.yaml> --dsn-env <ENV> --datasource-id
+<id> [--overlay <overlay.json>] --output <batch.yaml>` recompiles the plan of
+every case judged `correct` (it must reproduce the judged SQL), inlines the
+bound values into a `reference_sql`, turns `refusal_ok` cases into refusal
+cases, and leaves out anything judged wrong or unsure. The result is a
+regression set whose references are the system's own accepted output; the
+file header says so. `pos_real_batch1.yaml` was produced this way.
+
 Other runners: `spike_parent_agent.py` (relay experiment) and
 `spike_suggest.py` (suggested questions written as a case file).
 

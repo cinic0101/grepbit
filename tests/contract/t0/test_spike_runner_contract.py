@@ -187,3 +187,34 @@ def test_cases_without_expected_status_are_left_to_the_judge(tmp_path) -> None:
     document = spike.load_cases(path)
     case = document["cases"][0]
     assert "expected" not in case  # the runner reads it as None and marks correct null
+
+
+def test_settle_inlines_bound_values_as_sql_literals() -> None:
+    settle_spec = importlib.util.spec_from_file_location(
+        "settle_batch", ROOT / "evals" / "settle_batch.py"
+    )
+    settle = importlib.util.module_from_spec(settle_spec)
+    assert settle_spec.loader is not None
+    settle_spec.loader.exec_module(settle)
+    from grepbit.domain.models import QueryParameter
+
+    sql = (
+        "WHERE s.name = %(f_0)s AND d >= %(p1_start_1)s AND n > %(f_2)s "
+        "LIMIT %(limit_3)s"
+    )
+    parameters = [
+        QueryParameter(name="f_0", type_name="text", value="O'Reilly"),
+        QueryParameter(
+            name="p1_start_1",
+            type_name="timestamptz",
+            value="2026-01-01T00:00:00+08:00",
+        ),
+        QueryParameter(name="f_2", type_name="numeric", value=1000),
+        QueryParameter(name="limit_3", type_name="integer", value=3),
+    ]
+    assert settle.inline_parameters(sql, parameters) == (
+        "WHERE s.name = 'O''Reilly' AND d >= '2026-01-01T00:00:00+08:00'::timestamptz "
+        "AND n > 1000 LIMIT 3"
+    )
+    with pytest.raises(ValueError, match="settle_unbound_placeholder"):
+        settle.inline_parameters("x = %(f_9)s", [])
