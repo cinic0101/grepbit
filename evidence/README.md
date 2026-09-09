@@ -30,3 +30,4 @@ hold no cell value (`rows_redacted: true` in the summary).
 | `pos-features-03.json` | feature probes with gates but without the overlay (run by mistake; kept as a data point, not a comparison) | 30/32 |
 | `pos-features-04.json`, `pos-features-05.json` | feature probes with overlay and gates, before and after the sibling-table shape repair | 31/32 (one `invalid_structured_output`), 32/32 |
 | `pos-nosample-02.json` | `pos.yaml` with sampling off and gates on: the partial store name becomes `clarify` naming the literal | 25/26, 0 wrong numbers (was 24/26 with 1 wrong) |
+| `pos-real-holdout-01.json` | first run of the owner's 50 real questions on the real POS test database (`evals/cases/tier0/pos_real_holdout.yaml`), judged mode, sampling off, rows redacted, gates on; the owner's verdicts and tally follow | 35 answered, 9 semantic_gap, 6 unsupported (shape gate), 0 failed; P50 3.6 s, P95 4.7 s |
