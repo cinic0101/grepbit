@@ -63,8 +63,8 @@ THING_WORDS = (
     "商品",
     "分類",
     "品項",
-    "店",
-)
+    "店名",
+)  # not 店 alone: 店長姓名 names a person, 門市名稱 a thing
 GROUNDABLE_MAX_DISTINCT = 5000
 PROPOSER_REVISION = "policy-proposer-v1"
 

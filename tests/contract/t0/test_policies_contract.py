@@ -54,7 +54,11 @@ def test_sensitivity_sets_the_switch_defaults_and_overrides_win() -> None:
     )
     assert opened.switches() == (False, True, True)
     assert OVERLAY.column_switches("devices.nothing_listed") == (True, True, True)
-    assert [c.id for c in OVERLAY.groundable_columns()] == ["devices.model"]
+    # a public column with sampling switched off is still groundable by default
+    assert [c.id for c in OVERLAY.groundable_columns()] == [
+        "devices.model",
+        "alerts.severity",
+    ]
 
 
 def test_payload_hides_tables_and_columns_and_drops_samples_by_policy() -> None:
