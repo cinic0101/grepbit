@@ -43,6 +43,7 @@ cases:
 | `pos_multilingual.yaml` | English and Japanese variants of POS questions | 32 |
 | `pos_overlay.yaml` | before/after set for the overlay | 14 |
 | `pos_features.yaml` | competitor feature probes and follow-ups | 32 |
+| `having_pos.yaml` | aggregate-threshold (HAVING) guard on the POS fixture, thresholds chosen to split groups, plus one row-filter control; part of every regression from prompt v8 on | 6 |
 | `pos_real_smoke.yaml` | compatibility check on the owner's real POS test database (enum column, joins); run with `--enum-distinct-limit 0 --redact-rows --overlay overlays/pos_real.json` | 7 |
 | `pos_real_holdout.yaml` | the owner's 50 real questions as received, judged mode (no expectations); the record behind `docs/research/holdout-*.md`, not rerun | 50 |
 | `pos_real_batch1.yaml` | the same 50 settled as a regression set: references are the run-4 SQL the owner judged correct with bound values inlined, refusals accept any typed refusal; q29/q44 replaced by the value-grounded q29b/q44b | 50 |

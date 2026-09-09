@@ -1,0 +1,44 @@
+# Aggregate-threshold (HAVING) guard cases on the POS plus HR fixture
+# (text2sql_test), written by the build side after holdout 2 showed four
+# real questions answered without their threshold. Thresholds were chosen
+# from the fixture data so that each condition keeps some groups and drops
+# others. The last case is a row-filter control: a price condition belongs in
+# filters, not having. Smoke and regression guard only.
+datasource_id: pos_test
+as_of: "2026-02-10T12:00:00+08:00"
+cases:
+  - case_id: hv_stores_sales_over_100k_dec
+    question: "2025年12月營業額超過10萬的門市有哪些？"
+    expected: {status: answered}
+    reference_sql: >-
+      SELECT st.store_name, SUM(p.total_amount) FROM pos_sale p LEFT JOIN store st ON st.store_id = p.store_id
+      WHERE p.sale_date >= '2025-12-01T00:00:00+08:00' AND p.sale_date < '2026-01-01T00:00:00+08:00'
+      GROUP BY 1 HAVING SUM(p.total_amount) > 100000
+  - case_id: hv_salespeople_at_least_10_txn
+    question: "交易筆數至少10筆的銷售員有哪些？"
+    expected: {status: answered}
+    reference_sql: >-
+      SELECT sp.sales_name, COUNT(*) FROM pos_sale p LEFT JOIN salesperson sp ON sp.sales_id = p.sales_id
+      GROUP BY 1 HAVING COUNT(*) >= 10
+  - case_id: hv_products_qty_over_15
+    question: "銷售數量超過15的商品有哪些？"
+    expected: {status: answered}
+    reference_sql: >-
+      SELECT pr.product_name, SUM(i.quantity) FROM pos_saleitem i LEFT JOIN product pr ON pr.product_id = i.product_id
+      GROUP BY 1 HAVING SUM(i.quantity) > 15
+  - case_id: hv_stores_avg_under_20k
+    question: "平均交易金額低於2萬的門市有哪些？"
+    expected: {status: answered}
+    reference_sql: >-
+      SELECT st.store_name, AVG(p.total_amount) FROM pos_sale p LEFT JOIN store st ON st.store_id = p.store_id
+      GROUP BY 1 HAVING AVG(p.total_amount) < 20000
+  - case_id: hv_categories_over_2_products
+    question: "商品數超過2項的分類有哪些？"
+    expected: {status: answered}
+    reference_sql: >-
+      SELECT c.category_name, COUNT(*) FROM product pr LEFT JOIN category c ON c.category_id = pr.category_id
+      GROUP BY 1 HAVING COUNT(*) > 2
+  - case_id: hv_control_row_filter_price
+    question: "單價高於5000元的商品有幾項？"
+    expected: {status: answered}
+    reference_sql: "SELECT COUNT(*) FROM product WHERE price > 5000"

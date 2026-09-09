@@ -81,6 +81,9 @@ q16 moved from a model refusal to a literal-check `clarify`: the model now
 filters on a value it cannot see and the server catches it, the behaviour
 grounding will make uniform.
 
-What "HAVING is solved" rests on: three real questions plus unit tests. No
-author set contains an aggregate-threshold question yet; a handful should be
-added to the fixture sets so the shape stays guarded in regression.
+What "HAVING is solved" rests on: three real questions, unit tests, and the
+guard set `evals/cases/tier0/having_pos.yaml` added afterwards (five
+threshold cases on the POS fixture with thresholds that split the groups, one
+row-filter control): `having-pos-01.json` 6/6, every threshold landed in
+`having` and the price condition stayed a row filter. The set joins every
+regression from here on.
