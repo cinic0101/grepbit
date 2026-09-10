@@ -442,3 +442,144 @@ def test_having_count_zero_over_base_rows_is_an_anti_join_refusal() -> None:
     # and a threshold other than zero is an ordinary HAVING
     plan["having"] = [{"field": "alerts_n", "op": "lt", "value": 5}]
     compile_plan(plan)
+
+
+def test_without_compiles_an_anti_join_with_window_filters_and_segments() -> None:
+    """哪些裝置本月沒有任何告警: devices with no alerts row in the window; the
+    default-excluded test alerts do not count as activity."""
+
+    overlay = SemanticOverlay.model_validate(
+        {
+            "datasource_id": "iot_test",
+            "revision": "t",
+            "segments": [
+                {
+                    "id": "test_alerts",
+                    "names": ["測試"],
+                    "table": "alerts",
+                    "filter": {
+                        "column": {"table": "alerts", "column": "severity"},
+                        "op": "eq",
+                        "values": ["test"],
+                    },
+                    "default_exclude": True,
+                    "note": "alerts raised by the test harness",
+                }
+            ],
+            "time_defaults": [
+                {
+                    "table": "alerts",
+                    "column": {"table": "alerts", "column": "raised_at"},
+                }
+            ],
+        }
+    )
+    plan = QueryPlan.model_validate(
+        {
+            "base_table": "devices",
+            "measures": [{"aggregate": "count", "alias": "device_count"}],
+            "dimensions": [{"table": "devices", "column": "model"}],
+            "without": {
+                "table": "alerts",
+                "filters": [
+                    {
+                        "column": {"table": "alerts", "column": "downtime_minutes"},
+                        "op": "gt",
+                        "values": [0],
+                    }
+                ],
+                "time": {"scope": {"kind": "month", "month": "2026-07"}},
+            },
+        }
+    )
+    compiled = PlanCompiler(iot_schema(), overlay=overlay).compile(
+        plan, as_of=AS_OF, exclude_segments=overlay.segments
+    )
+    sql = compiled.compiled.physical_sql
+    POLICY.assert_safe_select_statement(sql)
+    assert "WHERE NOT EXISTS(SELECT 1 FROM public.alerts WHERE " in sql
+    assert "alerts.device_id = devices.device_id" in sql
+    assert "alerts.downtime_minutes > %(f_0)s" in sql  # the child's own filter
+    assert (
+        "alerts.raised_at >= %(w1_start_" in sql
+    )  # window from the default time column
+    assert "alerts.severity <> %(f_" in sql  # the segment inside the test
+    assert "GROUP BY devices.model" in sql
+    assert any("[no rows in alerts]" in text for text in compiled.lineage.filters)
+    assert any("NOT EXISTS" in a.text for a in compiled.assumptions)
+    assert any("do not count as activity" in a.text for a in compiled.assumptions)
+    assert compiled.interpretation.endswith("with no alerts rows")
+    # a without filter on the segment column lifts the default, as in the main query
+    lifted = PlanCompiler(iot_schema(), overlay=overlay).compile(
+        QueryPlan.model_validate(
+            {
+                "base_table": "devices",
+                "measures": [{"aggregate": "count"}],
+                "without": {
+                    "table": "alerts",
+                    "filters": [
+                        {
+                            "column": {"table": "alerts", "column": "severity"},
+                            "op": "eq",
+                            "values": ["critical"],
+                        }
+                    ],
+                },
+            }
+        ),
+        as_of=AS_OF,
+        exclude_segments=overlay.segments,
+    )
+    assert "<>" not in lifted.compiled.physical_sql
+    # readings reach sites through devices (two hops): allowed. alerts are not
+    # referenced by readings at all: refused.
+    two_hops = compile_plan(
+        {
+            "base_table": "sites",
+            "measures": [{"aggregate": "count"}],
+            "without": {"table": "readings"},
+        }
+    )
+    assert "JOIN public.devices ON readings.device_id = devices.device_id" in (
+        two_hops.compiled.physical_sql
+    )
+    assert "devices.site_id = sites.site_id" in two_hops.compiled.physical_sql
+    with pytest.raises(PlanError, match="without_table_not_a_child"):
+        compile_plan(
+            {
+                "base_table": "alerts",
+                "measures": [{"aggregate": "count"}],
+                "without": {"table": "readings"},
+            }
+        )
+    with pytest.raises(PlanError, match="without_filter_outside_child"):
+        compile_plan(
+            {
+                "base_table": "devices",
+                "measures": [{"aggregate": "count"}],
+                "without": {
+                    "table": "alerts",
+                    "filters": [
+                        {
+                            "column": {"table": "devices", "column": "model"},
+                            "op": "eq",
+                            "values": ["X1"],
+                        }
+                    ],
+                },
+            }
+        )
+    with pytest.raises(ValueError, match="plan_without_takes_a_window_not_a_grain"):
+        QueryPlan.model_validate(
+            {
+                "base_table": "devices",
+                "measures": [{"aggregate": "count"}],
+                "without": {
+                    "table": "alerts",
+                    "time": {
+                        "column": {"table": "alerts", "column": "raised_at"},
+                        "grain": "month",
+                    },
+                },
+            }
+        )

@@ -31,6 +31,7 @@ from grepbit.domain.overlay import (
     SemanticOverlay,
 )
 from grepbit.domain.plan import (
+    Absence,
     Aggregate,
     ColumnRef,
     CompiledPlan,
@@ -47,6 +48,7 @@ from grepbit.domain.schema_model import (
     ForeignKey,
     SchemaColumn,
     SchemaModel,
+    SchemaTable,
 )
 from grepbit.domain.structured_query import (
     RelativeScope,
@@ -489,6 +491,20 @@ class PlanCompiler:
                 )
             conditions.append(windows[0] if len(windows) == 1 else exp.or_(*windows))
 
+        if plan.without is not None:
+            conditions.append(
+                self._absence(
+                    plan.without,
+                    base,
+                    as_of,
+                    bind,
+                    exclude_segments,
+                    assumptions,
+                    filter_texts,
+                    time_texts,
+                )
+            )
+
         query = exp.select(*selects).from_(exp.table_(base.name, db=schema.schema_name))
         for parent_name, link in joins.items():
             query = query.join(
@@ -768,6 +784,146 @@ class PlanCompiler:
             ),
         )
 
+    def _absence(
+        self,
+        without: Absence,
+        base: SchemaTable,
+        as_of: datetime,
+        bind,
+        exclude_segments: Sequence[Segment],
+        assumptions: list[Assumption],
+        filter_texts: list[str],
+        time_texts: list[str],
+    ) -> exp.Expression:
+        """``NOT EXISTS`` over the child rows that would disqualify a base row.
+
+        The child reaches the base through foreign keys (the last link is the
+        correlation); its own filters, its window and the default-excluded
+        segments on it apply inside, so "stores with no sales this month" tests
+        for non-return sales in the window, and says so.
+        """
+
+        schema = self._schema
+        child = schema.table(without.table)
+        if child is None or not self._visible(without.table):
+            raise PlanError("unknown_table", without.table)
+        try:
+            path = _parent_path(schema, child.name, base.name)
+        except PlanError:
+            raise PlanError("without_table_not_a_child", without.table) from None
+        inner = exp.select(exp.Literal.number(1)).from_(
+            exp.table_(child.name, db=schema.schema_name)
+        )
+        for link in path[:-1]:
+            inner = inner.join(
+                exp.table_(link.referenced_table, db=schema.schema_name),
+                on=exp.column(link.column, table=link.table).eq(
+                    exp.column(link.referenced_column, table=link.referenced_table)
+                ),
+                join_type="inner",
+            )
+        last = path[-1]
+        clauses: list[exp.Expression] = [
+            exp.column(last.column, table=last.table).eq(
+                exp.column(last.referenced_column, table=base.name)
+            )
+        ]
+        texts: list[str] = []
+        filtered = {f.column.id for f in without.filters}
+        for item in without.filters:
+            if item.column.table != child.name or not self._visible(
+                child.name, item.column.column
+            ):
+                raise PlanError("without_filter_outside_child", item.column.id)
+            column = child.column(item.column.column)
+            if column is None:
+                raise PlanError("unknown_column", item.column.id)
+            clauses.append(self._condition(item, column, bind))
+            texts.append(_filter_text(item))
+        for segment in exclude_segments:
+            if segment.table != child.name or segment.filter.column.id in filtered:
+                continue
+            item = segment.inverse()
+            column = child.column(item.column.column)
+            if column is None:
+                continue
+            clauses.append(self._condition(item, column, bind))
+            texts.append(f"[default: exclude {segment.id}] {_filter_text(item)}")
+            assumptions.append(
+                Assumption(
+                    text=(
+                        f"Inside the absence test, rows of segment '{segment.id}' "
+                        f"({segment.note}) do not count as activity; say "
+                        f"'{segment.names[0]}' to count them."
+                    ),
+                    source=AssumptionSource.REVIEWED,
+                    definition_ref=f"overlay.segments.{segment.id}",
+                )
+            )
+        window_text = ""
+        if without.time is not None:
+            time_ref = without.time.column
+            if time_ref is None:
+                default = (
+                    self._overlay.time_default(child.name) if self._overlay else None
+                )
+                if default is None:
+                    raise PlanError("time_column_required", child.name)
+                time_ref = default
+            if time_ref.table != child.name:
+                raise PlanError("without_filter_outside_child", time_ref.id)
+            time_column = child.column(time_ref.column)
+            if time_column is None:
+                raise PlanError("unknown_column", time_ref.id)
+            if time_column.kind not in {ColumnKind.TIMESTAMP, ColumnKind.DATE}:
+                raise PlanError("time_column_kind_mismatch", time_ref.id)
+            assert without.time.scope is not None  # validated: window only
+            periods = resolve_time_scope(
+                without.time.scope,
+                as_of=as_of,
+                business_timezone=schema.business_timezone,
+            )
+            scope = without.time.scope
+            if isinstance(scope, RelativeScope):
+                limit = current_unit_end(as_of, scope.unit, schema.business_timezone)
+                if periods[-1].end_exclusive > limit:
+                    raise PlanError(
+                        "relative_window_reaches_future",
+                        f"{scope.unit.value} offset {scope.offset} length "
+                        f"{scope.length} ends {periods[-1].end_exclusive.date()}",
+                    )
+            reference = exp.column(time_ref.column, table=child.name)
+            windows = []
+            for index, period in enumerate(periods, start=1):
+                start = bind(
+                    f"w{index}_start_", period.start.isoformat(), "timestamptz"
+                )
+                end = bind(
+                    f"w{index}_end_", period.end_exclusive.isoformat(), "timestamptz"
+                )
+                windows.append(exp.and_(reference >= start, reference < end))
+                time_texts.append(
+                    f"[no rows in {child.name}] {time_ref.id} in "
+                    f"[{period.start.isoformat()}, {period.end_exclusive.isoformat()})"
+                )
+            clauses.append(windows[0] if len(windows) == 1 else exp.or_(*windows))
+            window_text = " in the window " + ", ".join(p.label for p in periods)
+        filter_texts.append(
+            f"[no rows in {child.name}]" + (" " + " and ".join(texts) if texts else "")
+        )
+        assumptions.append(
+            Assumption(
+                text=(
+                    f"Only {base.name} rows with no {child.name} row referencing them"
+                    f"{window_text} are kept (NOT EXISTS); a row with any matching "
+                    f"{child.name} row is dropped, not counted as zero."
+                ),
+                source=AssumptionSource.DEFAULT,
+                definition_ref="plan.without",
+            )
+        )
+        return exp.Not(this=exp.Exists(this=inner.where(exp.and_(*clauses))))
+
     @staticmethod
     def _reject_impossible_zero_count(item, expression, base, resolve) -> None:
         """HAVING count = 0 over the base table's own rows can never match.
@@ -1033,6 +1189,8 @@ def _interpretation(plan: QueryPlan, periods: tuple[ResolvedPeriod, ...]) -> str
         parts.append("over all data")
     if plan.filters:
         parts.append("where " + " and ".join(_filter_text(f) for f in plan.filters))
+    if plan.without is not None:
+        parts.append(f"with no {plan.without.table} rows")
     if plan.having:
         parts.append(
             "having " + " and ".join(f"{h.field} {h.op} {h.value}" for h in plan.having)

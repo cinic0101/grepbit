@@ -367,3 +367,29 @@ def test_repair_takes_a_missing_relative_unit_from_the_grain() -> None:
     assert (
         repairs == []
     )  # nothing to take the unit from: validation will fail as before
+
+
+def test_repair_reaches_into_without() -> None:
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "devices",
+            "measures": [{"aggregate": "count"}],
+            "without": {
+                "table": "alerts",
+                "filters": [{"column": "severity", "op": "eq", "values": ["critical"]}],
+                "time": {
+                    "column": "raised_at",
+                    "scope": {"kind": "month", "month": "2026-07"},
+                },
+            },
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    without = repaired["plan"]["without"]
+    assert without["filters"][0]["column"] == {"table": "alerts", "column": "severity"}
+    assert without["time"]["column"] == {"table": "alerts", "column": "raised_at"}
+    assert set(repairs) == {
+        "severity -> alerts.severity",
+        "raised_at -> alerts.raised_at",
+    }

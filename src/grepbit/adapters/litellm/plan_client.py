@@ -17,7 +17,7 @@ from grepbit.domain.schema_model import SchemaModel
 from grepbit.ports.ask import RELATIVE_WINDOW_REPAIR
 from grepbit.ports.grounding import GroundingModelError
 
-PLAN_PROMPT_REVISION = "plan-classify-json-v11"
+PLAN_PROMPT_REVISION = "plan-classify-json-v12"
 
 _RULES = (
     "You translate one analytics question into ONE aggregate query plan over the "
@@ -85,7 +85,15 @@ _RULES = (
     "reason semantic_gap and name the concept in clarification. If two readings "
     "are equally plausible, return none with reason ambiguous and a one-sentence "
     "clarification naming the candidate columns. "
-    "(8) Return only one JSON object."
+    "(8) Entities with no activity (哪些商品從未出現在銷售明細, 沒有任何交易的門市, "
+    "沒有銷售紀錄的店員, products never sold, stores without orders): base_table "
+    "is the entity table, dimensions its name column, measures "
+    '[{"aggregate": "count", "alias": "<entity>_count"}], and "without": '
+    '{"table": <the child table whose rows must be absent>, "filters": [...], '
+    '"time": {"column": ..., "scope": ...}} carrying the window and filters that '
+    "describe the missing activity (time has a scope, no grain). Never express "
+    "this as having count = 0; a group that exists always has rows. "
+    "(9) Return only one JSON object."
 )
 _VALUES_RULE = (
     " (11) question_values lists stored values that occur verbatim in the question, "
@@ -384,6 +392,18 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
         repairs.append(f"{value} -> {candidates[0]}.{column}")
         return {"table": candidates[0], "column": column}
 
+    without = plan.get("without")
+    if isinstance(without, dict):
+        w_time = without.get("time")
+        if isinstance(w_time, dict):
+            if w_time.get("scope") is None and w_time.get("grain") is None:
+                del without["time"]
+                repairs.append("dropped without.time without scope")
+            elif isinstance(w_time.get("column"), str):
+                w_time["column"] = coerce(w_time["column"])
+        for item in without.get("filters") or []:
+            if isinstance(item, dict) and isinstance(item.get("column"), str):
+                item["column"] = coerce(item["column"])
     for key in ("measures", "filters"):
         for item in plan.get(key) or []:
             if not isinstance(item, dict) or "column" not in item:

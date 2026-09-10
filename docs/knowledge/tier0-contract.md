@@ -28,6 +28,17 @@
   within each period when the plan has a grain, via a window function). When
   operands carry different reviewed filters each aggregate gets its own
   `FILTER (WHERE ...)`; a single metric keeps its filters in `WHERE`.
+- without: `{"table": <child>, "filters": [...], "time": {"column"?, "scope"}}`
+  keeps only base rows with no matching row in a child table that references
+  the base through foreign keys (up to 3 hops): entities with no activity
+  (從未出現在銷售明細的商品, 沒有任何交易的門市). Compiled as a correlated
+  `NOT EXISTS` whose inner query carries the child's own filters, its window
+  (a scope, never a grain; the child's default time column when none is
+  named) and the default-excluded segments on the child, each stated in the
+  lineage (`[no rows in <child>]`) and as assumptions. `base_table` is
+  required with it; filters or time columns outside the child are
+  `without_filter_outside_child`; a table that does not reach the base is
+  `without_table_not_a_child`.
 - growth: up to 2 `{"measure": <output name>}` entries, each adding
   `<name>_growth` = (current minus previous period) / previous period per group
   with `LAG` over `period_start`; requires a grain. The first period is NULL.
@@ -91,6 +102,7 @@ work item, not a surprise (the regression summary counts them as
 | `relative_window_reaches_future` | `unsupported` with the window in the detail. Since 2026-09-10 it also fires for a window anchored on the current unit (offset 0) that is longer than one unit; the planner adapter re-anchors that shape first (`relative window` repair below), so the gate is the safety net behind it |
 | `unknown_metric`, `metric_base_table_mismatch`, `metric_conflict` | `unsupported`; overlay definitions are the fix, not code |
 | `growth_to_date_unsupported` | `unsupported`: growth on a period-to-date window would compare a whole previous period with a partial one (holdout 3 q01) |
+| `without_table_not_a_child`, `without_filter_outside_child` | `unsupported`; the plan named a `without` table that does not reference the base, or a filter outside the child |
 | `anti_join_required` | `unsupported` with the reason: `HAVING count = 0` over the base table's own rows can never match, the question wants entities with no rows at all (holdout 3 q10, q11); the anti-join construct is on the roadmap |
 
 `PlanCompiler.compile(plan, as_of=..., exclude_segments=[...],
@@ -159,7 +171,7 @@ does not read NULL as a number.
 
 ## Prompt revisions
 
-`PLAN_PROMPT_REVISION` in `adapters/litellm/plan_client.py` is `plan-classify-json-v7`.
+`PLAN_PROMPT_REVISION` in `adapters/litellm/plan_client.py` is `plan-classify-json-v12`.
 History: v1 baseline; v2 prefer an entity's label column over its key; v3 a
 business concept with no column, sample value or null check must decline;
 v4 reviewed metrics rule (only when an overlay is present); v5 follow-up rule
@@ -179,3 +191,7 @@ value verbatim in the question: filter with exactly that value; v10
 refusing share and growth words; v11 (same day) restricts `growth` to
 questions that ask for change and distinguishes a per-group share from the
 share of a subset in the whole (a ratio with a restricted numerator).
+
+v12 (2026-09-10 evening) adds rule (8): entities with no activity are a
+`without` on the entity table, never `having count = 0`; measured in
+`../research/holdout3-01.md`.

@@ -189,6 +189,26 @@ class HavingSpec(DomainModel):
     value: int | float
 
 
+class Absence(DomainModel):
+    """Keep only base rows with no matching rows in a child table: the anti-join.
+
+    ``table`` is a table that references the base through a foreign key
+    (directly, or through intermediate tables); ``filters`` and ``time``
+    describe the rows that must be absent (non-return sales in a window).
+    ``time`` is a window only, never a grain. Compiled as ``NOT EXISTS``.
+    """
+
+    table: str = Field(pattern=_IDENTIFIER)
+    filters: list[Filter] = Field(default_factory=list, max_length=4)
+    time: TimeSpec | None = None
+
+    @model_validator(mode="after")
+    def window_only(self) -> Absence:
+        if self.time is not None and self.time.grain is not None:
+            raise ValueError("plan_without_takes_a_window_not_a_grain")
+        return self
+
+
 class QueryPlan(DomainModel):
     """One aggregate query. ``base_table`` may be omitted when the measure
     columns or metrics determine it; the compiler derives it then."""
@@ -202,6 +222,8 @@ class QueryPlan(DomainModel):
     having: list[HavingSpec] = Field(default_factory=list, max_length=2)
     growth: list[GrowthSpec] = Field(default_factory=list, max_length=2)
     limit: int | None = Field(default=None, ge=1, le=MAX_PLAN_LIMIT)
+    # entities with no activity: base rows without matching rows in a child table
+    without: Absence | None = None
 
     @model_validator(mode="after")
     def names_are_unique(self) -> QueryPlan:
@@ -230,6 +252,8 @@ class QueryPlan(DomainModel):
             m.metric or m.column or m.ratio for m in self.measures
         ):
             raise ValueError("plan_base_table_required")
+        if self.without is not None and self.base_table is None:
+            raise ValueError("plan_without_requires_base_table")
         return self
 
 
@@ -284,6 +308,10 @@ _PLAN_ERROR_CODES = frozenset(
         # HAVING count = 0 over the base table's own rows: every group has at
         # least one row, so the question is an anti-join the algebra lacks
         "anti_join_required",
+        # without.table does not reference the base table through foreign keys
+        "without_table_not_a_child",
+        # a without filter names a column outside the child table
+        "without_filter_outside_child",
     }
 )
 
