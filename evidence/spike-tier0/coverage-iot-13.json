@@ -1,0 +1,253 @@
+{
+  "summary": {
+    "datasource_id": "iot_spike",
+    "cases_file": "evals/cases/tier0/coverage_iot.yaml",
+    "prompt_revision": "plan-classify-json-v11",
+    "output_mode": "json_object",
+    "overlay_revision": null,
+    "perturbation": null,
+    "as_of": "2026-08-15T12:00:00+08:00",
+    "cases": 8,
+    "judged": 8,
+    "unjudged": 0,
+    "correct": 7,
+    "answerable_correct": 0,
+    "answerable_total": 0,
+    "answered_but_wrong_rows": 0,
+    "refusals_correct": 7,
+    "refusals_total": 8,
+    "false_answers_on_refusal_cases": 1,
+    "model_failures": 0,
+    "model_retries": 0,
+    "p50_seconds": 2.584,
+    "p95_seconds": 4.747,
+    "introspection_seconds": 0.038,
+    "schema": {
+      "tables": 4,
+      "columns": 24,
+      "foreign_keys": 3,
+      "inferred_foreign_keys": [],
+      "enum_distinct_limit": 20,
+      "sampled_columns": 8,
+      "enum_columns": 0
+    },
+    "status_counts": {
+      "answered": 1,
+      "semantic_gap": 7
+    },
+    "rows_redacted": false,
+    "incorrect_case_ids": [
+      "cov_leased_fee"
+    ],
+    "verification_counts": {
+      "verified": 0,
+      "partially_verified": 0,
+      "unverified_semantics": 1
+    },
+    "shape_repairs": 0,
+    "base_repairs": 0,
+    "plan_error_counts": {},
+    "zero_call_refusals": 0,
+    "shape_gate_refusals": 0,
+    "per_period_clarifies": 0,
+    "literal_checks": 0,
+    "literal_misses": 0,
+    "grounding": {
+      "columns": [],
+      "values": 0,
+      "skipped_for_size": [],
+      "hinted_cases": 0,
+      "resolved_cases": 0,
+      "ambiguous_cases": 0
+    },
+    "empty_result_warnings": 0,
+    "segment_exclusions": 0
+  },
+  "results": [
+    {
+      "case_id": "cov_false_alarms",
+      "question": "2026年7月的誤報數量",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 4.747,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column or flag to identify if an alert is a 'false alarm' (誤報).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_acknowledged",
+      "question": "2026年7月已確認的告警數",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.137,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column to indicate if an alert is 'confirmed' (已確認).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_warranty_downtime",
+      "question": "保固內裝置在2026年7月的總停機分鐘",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.271,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain information about device warranties (保固), so I cannot filter for devices that are 'under warranty'.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_mttr",
+      "question": "2026年7月的平均修復時間",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.886,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column for 'repair time' or 'resolution duration'. While it has 'raised_at' and 'resolved_at', the system cannot compute the difference between two timestamps as a measure.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_escalated_en",
+      "question": "How many alerts were escalated in July 2026?",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.116,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column or status to identify if an alert was 'escalated'.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_vip_sites_en",
+      "question": "Total downtime minutes for VIP sites in July 2026",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.386,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column to identify 'VIP sites' (e.g., a site_type or priority column in the sites table).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_repeated_alerts",
+      "question": "2026年7月重複發生的告警數",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.805,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not define what constitutes a \"duplicate\" or \"repeated\" alert (重複發生的告警). Please clarify if this refers to alerts with the same category on the same device, or some other criteria.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_leased_fee",
+      "question": "租賃裝置的月費總額",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": false,
+      "elapsed_seconds": 2.584,
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "alias": "total_monthly_fee",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT SUM(devices.monthly_fee) AS total_monthly_fee FROM public.devices",
+      "lineage": {
+        "base_table": "devices",
+        "tables": [
+          "devices"
+        ],
+        "joins": [],
+        "measures": [
+          "total_monthly_fee = sum(devices.monthly_fee)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "sum(devices.monthly_fee) over devices",
+      "assumptions": [
+        "total_monthly_fee = SUM of devices.monthly_fee; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every devices row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "total_monthly_fee": "3100.00"
+        }
+      ],
+      "status_without_coverage": "answered"
+    }
+  ]
+}
