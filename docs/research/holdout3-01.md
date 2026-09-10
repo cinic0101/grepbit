@@ -101,3 +101,42 @@ were checked in the database (per-store weekly counts; the store's last day
 with sales and its gross that day), the refusals are of constructs the
 algebra does not have.
 
+## Run 3: the `without` construct (prompt v12)
+
+Entities with no activity became a plan field: `without` names the child
+table whose rows must be absent, with its own filters and window, compiled
+as a correlated `NOT EXISTS` (`../knowledge/tier0-contract.md`). Prompt v12
+teaches the shape and forbids `having count = 0` for it. Rerun the same
+evening, same overlay and `as_of`.
+
+| Status | Run 2 | Run 3 |
+|---|---|---|
+| answered | 3 | 6 |
+| unsupported | 11 | 8 |
+| semantic_gap | 1 | 1 |
+
+The three anti-join questions answer. Checked directly in the database:
+stores with no non-return sale this month to date, 0 (the plan said 0);
+salespeople with no non-return sale in the 30 days before as_of, 3 of 25
+(the plan listed 3). Products never sold came back as 0 rows: the plan
+tested for any `pos_saleitem` row, and the returns default did not apply
+inside the test because the returns segment sits on `pos_sale`, the child's
+parent; the database has 129 products whose only line items are on returns.
+The absence test now joins the segment's table and applies the default
+inside, as a plan over the child would (`73e98f8`); run 4 measures it.
+Tally 13 of 15 (`evidence/pos-real-holdout3-03-tally.json`): the two
+exposed misses are the two-span growth computed as daily growth and the
+never-sold products before the fix; 0 silent wrong numbers; refusal rate
+60%, down from 80%.
+
+## Run 4: the default inside the test
+
+With the returns default applied inside the absence test, products never
+sold come back as 129, the number the database gives for products whose
+line items are all on returns or absent; the assumption names the rule and
+the word that lifts it. Stores and salespeople unchanged (0, 3). Tally 14 of
+15 (`evidence/pos-real-holdout3-04-tally.json`): the one exposed miss is the
+two-span growth, which waits for the previous-window growth construct.
+Refusal rate 60%, all nine refusals structural (latest row, time parts,
+rolling averages, to-date growth).
+

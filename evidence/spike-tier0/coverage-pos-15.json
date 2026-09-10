@@ -1,0 +1,340 @@
+{
+  "summary": {
+    "datasource_id": "pos_test",
+    "cases_file": "evals/cases/tier0/coverage_pos.yaml",
+    "prompt_revision": "plan-classify-json-v12",
+    "output_mode": "json_object",
+    "overlay_revision": null,
+    "perturbation": null,
+    "as_of": "2026-02-10T12:00:00+08:00",
+    "cases": 8,
+    "judged": 8,
+    "unjudged": 0,
+    "correct": 7,
+    "answerable_correct": 1,
+    "answerable_total": 1,
+    "answered_but_wrong_rows": 0,
+    "refusals_correct": 6,
+    "refusals_total": 7,
+    "false_answers_on_refusal_cases": 1,
+    "model_failures": 0,
+    "model_retries": 0,
+    "p50_seconds": 3.87,
+    "p95_seconds": 5.638,
+    "introspection_seconds": 0.043,
+    "schema": {
+      "tables": 13,
+      "columns": 58,
+      "foreign_keys": 11,
+      "inferred_foreign_keys": [],
+      "enum_distinct_limit": 20,
+      "sampled_columns": 13,
+      "enum_columns": 0
+    },
+    "status_counts": {
+      "answered": 2,
+      "semantic_gap": 6
+    },
+    "rows_redacted": false,
+    "incorrect_case_ids": [
+      "cov_discounted_sales"
+    ],
+    "verification_counts": {
+      "verified": 0,
+      "partially_verified": 0,
+      "unverified_semantics": 2
+    },
+    "shape_repairs": 0,
+    "base_repairs": 0,
+    "plan_error_counts": {},
+    "zero_call_refusals": 0,
+    "shape_gate_refusals": 0,
+    "per_period_clarifies": 0,
+    "literal_checks": 1,
+    "literal_misses": 0,
+    "grounding": {
+      "columns": [],
+      "values": 0,
+      "skipped_for_size": [],
+      "hinted_cases": 0,
+      "resolved_cases": 0,
+      "ambiguous_cases": 0
+    },
+    "empty_result_warnings": 0,
+    "negative_share_warnings": 0,
+    "segment_exclusions": 0
+  },
+  "results": [
+    {
+      "case_id": "cov_discounted_sales",
+      "question": "2025年12月的折扣後營業額",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": false,
+      "elapsed_seconds": 5.638,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            },
+            "alias": "total_revenue",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2025-12"
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT SUM(pos_sale.total_amount) AS total_revenue FROM public.pos_sale WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "total_revenue = sum(pos_sale.total_amount)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "sum(pos_sale.total_amount) over pos_sale; for 2025-12",
+      "assumptions": [
+        "total_revenue = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2025-12 is [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "total_revenue": "339300"
+        }
+      ],
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "cov_new_members",
+      "question": "2025年12月新會員的交易數",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.604,
+      "reason": "semantic_gap",
+      "clarification": "Schema does not contain a member table with a registration date to identify 'new members' (新會員).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_overtime_pay",
+      "question": "2025年的加班費總額",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.279,
+      "reason": "semantic_gap",
+      "clarification": "Schema does not contain a column for overtime pay (加班費).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_attrition_rate",
+      "question": "業務部的離職率",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered",
+        "clarify",
+        "semantic_gap"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.598,
+      "plan": {
+        "base_table": "hr_employee",
+        "measures": [
+          {
+            "alias": "turnover_rate",
+            "ratio": {
+              "numerator": {
+                "aggregate": "count",
+                "column": {
+                  "table": "hr_employee",
+                  "column": "terminated_at"
+                }
+              },
+              "denominator": {
+                "aggregate": "count"
+              }
+            },
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "hr_dept",
+              "column": "dept_name"
+            },
+            "op": "eq",
+            "values": [
+              "業務部"
+            ]
+          }
+        ],
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT CAST((COUNT(hr_employee.terminated_at)) AS DOUBLE PRECISION) / NULLIF(COUNT(*), 0) AS turnover_rate FROM public.hr_employee LEFT JOIN public.hr_dept ON hr_employee.dept_id = hr_dept.dept_id WHERE hr_dept.dept_name = %(f_0)s",
+      "lineage": {
+        "base_table": "hr_employee",
+        "tables": [
+          "hr_employee",
+          "hr_dept"
+        ],
+        "joins": [
+          "hr_employee.dept_id -> hr_dept.dept_id"
+        ],
+        "measures": [
+          "turnover_rate = count(hr_employee.terminated_at) / count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "hr_dept.dept_name eq 業務部"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(hr_employee.terminated_at) / count(*) over hr_employee; where hr_dept.dept_name eq 業務部",
+      "assumptions": [
+        "hr_employee rows are joined to hr_dept through hr_employee.dept_id; rows without a matching hr_dept row keep NULL there.",
+        "No time window was applied; all rows count.",
+        "turnover_rate divides two aggregates over the same rows; a zero denominator yields NULL.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "literal_checks": 1,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "turnover_rate": "0.125"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "cov_online_sales",
+      "question": "2025年12月線上訂單的營業額",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.87,
+      "reason": "semantic_gap",
+      "clarification": "Schema does not contain a column to distinguish between 'online' and 'offline' orders (e.g., a channel or order_type column in pos_sale).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_contractors",
+      "question": "外包人員有幾位",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.381,
+      "reason": "semantic_gap",
+      "clarification": "Schema does not contain information to distinguish between regular employees and outsourced personnel (外包人員).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_installments",
+      "question": "2025年12月分期付款的交易數",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 4.244,
+      "reason": "semantic_gap",
+      "clarification": "Schema does not contain a column or value to identify 'installment payments' (分期付款). The `pos_payment.payment_method` column only contains 'cash', 'credit_card', and 'line_pay'.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_inventory",
+      "question": "目前的庫存數量",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.301,
+      "reason": "semantic_gap",
+      "clarification": "Schema does not contain a table or column for inventory levels or stock quantities.",
+      "status_without_coverage": "semantic_gap"
+    }
+  ]
+}

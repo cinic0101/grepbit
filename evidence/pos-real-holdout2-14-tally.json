@@ -1,0 +1,31 @@
+{
+  "report": ".artifacts/holdout2/cases.yaml",
+  "datasource_id": "pos_real",
+  "prompt_revision": "plan-classify-json-v12",
+  "cases": 30,
+  "judged": 30,
+  "unsure": 0,
+  "correct": 30,
+  "correctness": 1.0,
+  "wrong_numbers_without_exposed_assumption": 0,
+  "wrong_numbers_with_exposed_assumption": 0,
+  "refusals_that_should_have_answered": 0,
+  "clarify_count": 4,
+  "clarify_rate": 0.1333,
+  "refusal_rate": 0.1667,
+  "status_counts": {
+    "answered": 25,
+    "clarify": 4,
+    "unsupported": 1
+  },
+  "verdict_counts": {
+    "correct": 25,
+    "wrong_exposed": 0,
+    "wrong_silent": 0,
+    "refusal_ok": 5,
+    "refusal_bad": 0,
+    "unsure": 0
+  },
+  "p50_seconds": 5.643,
+  "p95_seconds": 7.065
+}
