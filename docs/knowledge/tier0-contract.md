@@ -91,9 +91,13 @@ work item, not a surprise (the regression summary counts them as
 | `relative_window_reaches_future` | `unsupported` with the window in the detail; the model wrote length in days |
 | `unknown_metric`, `metric_base_table_mismatch`, `metric_conflict` | `unsupported`; overlay definitions are the fix, not code |
 
-`PlanCompiler.compile(plan, as_of=..., exclude_segments=[...])` also takes
-the overlay segments the caller wants excluded by default; each applied one is
-a `reviewed` assumption (see `overlay-format.md`).
+`PlanCompiler.compile(plan, as_of=..., exclude_segments=[...],
+named_segments=[...])` also takes the overlay segments the caller wants
+excluded by default and the ones the question named; each segment that
+shaped the SQL, query-wide or per operand, is a `reviewed` assumption and is
+listed in `CompiledPlan.applied_segments` (see `overlay-format.md`). The ask
+result's `excluded_segments` is that list, never the set of defaults the
+question merely failed to lift.
 
 ## Verification levels (CompiledPlan.verification)
 

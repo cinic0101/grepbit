@@ -24,8 +24,11 @@ class PlanCompilerPort(Protocol):
         """Validate ``plan`` against the schema and render parameterized SQL.
 
         ``exclude_segments`` are overlay segments the caller wants removed from
-        the result (default exclusions the question did not lift); each one
-        applied is stated as a reviewed assumption. Raises ``PlanError`` with a
+        the result (default exclusions the question did not lift);
+        ``named_segments`` are default-excluded segments the question named,
+        which stay out of every operand that does not itself select them. Each
+        segment that shaped the SQL is stated as a reviewed assumption and
+        listed in ``CompiledPlan.applied_segments``. Raises ``PlanError`` with a
         stable code when the plan is structurally invalid (unknown identifier,
         fan-out join, kind mismatch, missing grain, a past window that reaches
         the future).

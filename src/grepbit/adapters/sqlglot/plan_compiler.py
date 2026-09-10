@@ -694,6 +694,12 @@ class PlanCompiler:
             interpretation=_interpretation(plan, periods),
             periods=periods,
             verification=verification,
+            applied_segments=tuple(
+                dict.fromkeys(
+                    [segment.id for segment, _, _ in operand_segment_filters]
+                    + [segment.id for segment, _ in segment_filters]
+                )
+            ),
         )
 
     def _visible(self, table: str, column: str | None = None) -> bool:

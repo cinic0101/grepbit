@@ -325,6 +325,8 @@ class CompiledPlan:
     interpretation: str
     periods: tuple[ResolvedPeriod, ...] = field(default_factory=tuple)
     verification: str = "unverified_semantics"
+    applied_segments: tuple[str, ...] = field(default_factory=tuple)
+    """Ids of overlay segments whose filter shaped this SQL (WHERE or FILTER)."""
 
 
 class ConceptMapping(DomainModel):

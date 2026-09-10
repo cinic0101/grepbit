@@ -166,6 +166,7 @@ def test_default_exclusion_adds_the_inverse_filter_and_a_reviewed_assumption():
     assert "[default: exclude test_alerts] alerts.severity ne test" in (
         compiled.lineage.filters
     )
+    assert compiled.applied_segments == ("test_alerts",)
 
 
 def test_default_exclusion_is_skipped_when_the_plan_filters_the_segment_column():
@@ -175,6 +176,7 @@ def test_default_exclusion_is_skipped_when_the_plan_filters_the_segment_column()
         exclude=OVERLAY.segments,
     )
     assert "<>" not in compiled.compiled.physical_sql
+    assert compiled.applied_segments == ()  # the caller must not report it
     # a question filter on the column also lifts it
     compiled = _compile(
         {
@@ -370,6 +372,7 @@ def test_default_segment_becomes_operand_level_when_one_operand_selects_it() -> 
     )  # denominator
     assert "WHERE alerts.severity" not in sql.split("FROM")[1]  # nothing query-wide
     assert any("free of them" in a.text for a in compiled.assumptions)
+    assert compiled.applied_segments == ("test_alerts",)
     # the question names the segment and no operand selects it: lifted entirely
     plain = QueryPlan.model_validate(
         {"base_table": "alerts", "measures": [{"aggregate": "count"}]}
@@ -378,6 +381,7 @@ def test_default_segment_becomes_operand_level_when_one_operand_selects_it() -> 
         plain, as_of=AS_OF, exclude_segments=[], named_segments=overlay.segments
     )
     assert "severity" not in lifted.compiled.physical_sql
+    assert lifted.applied_segments == ()
     # not named at all: the exclusion is a WHERE condition as before
     excluded = compiler.compile(plain, as_of=AS_OF, exclude_segments=overlay.segments)
     assert "WHERE alerts.severity <> %(f_0)s" in excluded.compiled.physical_sql

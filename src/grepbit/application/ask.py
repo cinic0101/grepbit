@@ -197,7 +197,6 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
     exclusions = excluded_segments(question, overlay) if overlay else []
     named_ids = set(named_segments(question, overlay)) if overlay else set()
     named = [s for s in (overlay.segments if overlay else []) if s.id in named_ids]
-    result.excluded_segments = [s.id for s in exclusions]
 
     def compile_plan(current: QueryPlan) -> CompiledPlan:
         compiled = services.compiler.compile(
@@ -281,6 +280,7 @@ def _describe(result, compiled, question, base_repair, plan) -> None:
     result.lineage = compiled.lineage.as_dict()
     result.interpretation = compiled.interpretation
     result.verification = compiled.verification
+    result.excluded_segments = list(compiled.applied_segments)
     result.assumptions = [a.text for a in compiled.assumptions]
     if base_repair:
         result.assumptions.append(
