@@ -82,6 +82,21 @@ Same prompt, overlay and `as_of`, different plans on four of twelve cases:
   per-period gate in the other direction. Not built; the owner's verdict on
   b1_q21 decides.
 
+### Author sets
+
+The 13 author sets were rerun on the core the same afternoon (artifacts
+listed in `evidence/README.md` under the runner-on-ask row): 156/160 on the
+four base and coverage sets, 32/32 features, 6/6 having, 14/14 overlay
+fixture, 7/7 real smoke, the two value cases answered. Every case is
+identical to its previous artifact in status, plan, SQL and rows, with three
+exceptions: `pos-nosample-11` lost one case to `model_call_failed` after the
+one retry (a transport failure; the rerun `-12` is identical to `-10`), and
+two real-database cases changed only their plan form with the same rows
+(`cash_payments_jan` alias, `q44b` a `line_sales` metric instead of the raw
+sum with the segment). The four standing misses (`cov_leased_fee`,
+`cov_discounted_sales`, `en_engineers_avg_base_salary`,
+`store_partial_name_jan` without sampling) are the same four as before.
+
 ## Verdict carry
 
 Rerunning judged questions produced 30-case verdict skeletons that a human
