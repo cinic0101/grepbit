@@ -44,10 +44,16 @@ class ReviewedMetric(DomainModel):
 
 
 class AbsentConcept(DomainModel):
-    """A concept reviewers confirmed the datasource cannot express."""
+    """A concept reviewers confirmed the datasource cannot express.
+
+    ``names`` match as phrases; each list in ``all_of`` matches when every word
+    in it occurs anywhere in the question (訂單 and 狀態 in either order), for
+    phrasings that split the concept across the sentence.
+    """
 
     names: list[str] = Field(min_length=1)
     note: str = Field(min_length=1)
+    all_of: list[list[str]] = Field(default_factory=list)
 
 
 class ColumnAlias(DomainModel):

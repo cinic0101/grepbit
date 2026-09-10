@@ -253,3 +253,28 @@ def test_plan_client_offers_metrics_and_aliases_only_with_an_overlay() -> None:
         "reviewed_metrics are business definitions"
         not in fake.calls[1]["messages"][0]["content"]
     )
+
+
+def test_absent_concept_all_of_matches_split_phrasings_in_any_order() -> None:
+    from grepbit.application.overlay import match_absent_concept
+    from grepbit.domain.overlay import SemanticOverlay
+
+    overlay = SemanticOverlay.model_validate(
+        {
+            "datasource_id": "d",
+            "revision": "t",
+            "absent_concepts": [
+                {
+                    "names": ["訂單狀態"],
+                    "note": "no order status",
+                    "all_of": [["訂單", "狀態"], ["order", "status"]],
+                }
+            ],
+        }
+    )
+    assert match_absent_concept("訂單筆數最多的狀態是哪一種？", overlay) is not None
+    assert (
+        match_absent_concept("What is the status of most orders?", overlay) is not None
+    )
+    assert match_absent_concept("各門市的訂單筆數", overlay) is None  # 狀態 absent
+    assert match_absent_concept("各運送狀態的紀錄筆數", overlay) is None  # 訂單 absent

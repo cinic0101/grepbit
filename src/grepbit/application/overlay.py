@@ -89,4 +89,9 @@ def match_absent_concept(
             phrase_in(normalized, normalize_question(name)) for name in concept.names
         ):
             return concept
+        for group in concept.all_of:
+            if group and all(
+                phrase_in(normalized, normalize_question(word)) for word in group
+            ):
+                return concept
     return None

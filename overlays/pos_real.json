@@ -1,6 +1,6 @@
 {
   "datasource_id": "pos_real",
-  "revision": "pos-real-overlay-v7",
+  "revision": "pos-real-overlay-v8",
   "metrics": [
     {
       "id": "return_amount",
@@ -185,7 +185,21 @@
         "交易狀態",
         "order status"
       ],
-      "note": "An order's status is the latest shipment status (transfer_status.status, ordered by status_time) of the transfer its sale references; a transfer has several status rows over time, so this cannot be expressed as one aggregate yet (a latest-row-per-entity construct is planned). The count of shipment status records by status is answerable, but it counts records, not orders."
+      "note": "An order's status is the latest shipment status (transfer_status.status, ordered by status_time) of the transfer its sale references; a transfer has several status rows over time, so this cannot be expressed as one aggregate yet (a latest-row-per-entity construct is planned). The count of shipment status records by status is answerable, but it counts records, not orders.",
+      "all_of": [
+        [
+          "訂單",
+          "狀態"
+        ],
+        [
+          "交易",
+          "狀態"
+        ],
+        [
+          "order",
+          "status"
+        ]
+      ]
     },
     {
       "names": [

@@ -68,7 +68,10 @@ owner's real POS database; overlays for real datasources live under
   answer but never yield `verified`.
 - Absent concepts are matched deterministically against the normalized
   question (script-aware phrase match) before any model call and produce
-  `semantic_gap` with the reviewer's note at zero cost.
+  `semantic_gap` with the reviewer's note at zero cost. `names` match as
+  phrases; each list in `all_of` matches when every word in it occurs
+  anywhere in the question (訂單 and 狀態 in either order), for phrasings that
+  split a concept across the sentence. Latin words keep word boundaries.
 - Column aliases are shown to the planner next to the column and are the
   vocabulary a future coverage gate will match question concepts against.
 - Table aliases are the business names of a table (訂單 for `pos_sale`),
