@@ -97,6 +97,23 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
   The planner rule enforces it; the interpretation line exposes it; the
   overlay's absent concepts make it deterministic once seen.
 
+## The callable surface
+
+`application/ask.py` is the per-question pipeline as one function over
+ports (`ports/ask.py`): gates, planner with one transport retry, shape and
+base repairs, compile and policy, literal check with grounding, segment
+exclusion, execution, and an `AskResult` carrying the served contract.
+`adapters/mcp_server.py` composes the adapters for each datasource listed in
+`datasources.json` (the DSN comes only from the environment variable the
+registry names) and exposes two MCP tools over stdio: `capabilities`
+(datasources, visible tables, reviewed metrics, segments, absent concepts,
+supported shapes, relay rules; no values) and `ask` (status or typed refusal,
+SQL with bound parameters, lineage, assumptions, verification, up to 200
+rows, warnings, hints and resolutions). Run it with
+`.venv/bin/python -m grepbit.adapters.mcp_server` or the `grepbit-mcp`
+script after `uv sync`. The runner `evals/spike_tier0.py` is being moved
+onto the same core so measurements and the served path cannot drift.
+
 ## What is not here yet
 
 Served API and CLI, datasource registration, the vocabulary gate, MCP tool,

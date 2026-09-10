@@ -255,3 +255,42 @@ def test_registry_names_the_dsn_variable_and_resolves_the_overlay_path(
     assert overlay_path(Path("datasources.json"), pos).name == "pos_real.json"
     assert registry.get("iot_spike").overlay is None
     assert registry.get("nowhere") is None
+
+
+def test_mcp_payloads_list_capabilities_without_values_and_serialize_results():
+    from pathlib import Path
+
+    from grepbit.adapters.datasource_registry import load_registry
+    from grepbit.adapters.mcp_server import (
+        BoundDatasource,
+        capabilities_payload,
+        result_payload,
+    )
+
+    registration = load_registry(Path("datasources.json")).get("iot_spike")
+    bound = {
+        "iot_spike": BoundDatasource(
+            registration, services(_Planner(), _Executor([])), "Asia/Taipei"
+        )
+    }
+    payload = capabilities_payload(bound)
+    ds = payload["datasources"][0]
+    assert ds["id"] == "iot_spike" and "devices" in [t["name"] for t in ds["tables"]]
+    assert ds["absent_concepts"][0]["names"] == ["保固"]
+    assert ds["groundable_columns"] == ["devices.status"]
+    assert "relay_rules" in payload and payload["revisions"]["prompt"].startswith(
+        "plan-classify-json-"
+    )
+    assert "offline" not in str(payload)  # no stored value leaves through capabilities
+    result = ask(
+        "有幾台裝置離線？",
+        services(_Planner(COUNT_OFFLINE), _Executor([{"row_count": 3}])),
+        AskSettings(as_of=AS_OF),
+    )
+    out = result_payload(result, max_rows=200)
+    assert out["status"] == "answered" and out["rows"] == [{"row_count": 3}]
+    assert (
+        out["parameters"][0]["value"] == "offline"
+        and out["plan"]["base_table"] == "devices"
+    )
+    assert out["relay_rules"]

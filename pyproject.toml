@@ -19,6 +19,9 @@ dev = [
     "ruff>=0.9,<1",
 ]
 
+[project.scripts]
+grepbit-mcp = "grepbit.adapters.mcp_server:main"
+
 [build-system]
 requires = ["hatchling>=1.26,<2"]
 build-backend = "hatchling.build"
