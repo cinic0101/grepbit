@@ -99,6 +99,13 @@ owner's real POS database; overlays for real datasources live under
   draft (`application/policies.py`: kinds, keys, cardinality, person words in
   names and comments) to a file the runtime never loads; copying an entry
   into the overlay is the review.
+- Default segment exclusion is an operand-level rule. A segment some
+  operand's metric selects (a return metric) is excluded from the other
+  operands only, as `FILTER` clauses, so 退貨金額 ÷ 銷售總額 keeps gross sales
+  in its denominator (the owner's rule, 2026-09-10: 銷售總額 means gross
+  sales; `net_sales` is asked for by name); a segment the question names
+  with no operand selecting it is lifted for the whole query; otherwise the
+  exclusion is a `WHERE` condition.
 - Segments are named row subsets defined by one invertible filter (`is_null`,
   `not_null`, `eq`, `ne`) on the segment's table. With `default_exclude` the
   server removes the subset from every plan over that table, or over a table

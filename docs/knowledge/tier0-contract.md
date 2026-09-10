@@ -20,13 +20,28 @@
 
 - measures: 1 to 4; each is `aggregate` (sum, count, count_distinct, avg,
   min, max) over a column, `count` without a column, or `metric` (an overlay
-  id). sum and avg need numeric columns; min and max need ordered kinds.
+  id). sum and avg need numeric columns; min and max need ordered kinds. A
+  measure may instead be a `ratio` of two such operands over the same base
+  (`{"ratio": {"numerator": {...}, "denominator": {...}}}`, compiled as
+  `CAST(a AS DOUBLE PRECISION) / NULLIF(b, 0)`), and any measure may carry
+  `share_of_total: true` (divided by the same measure summed over all groups,
+  within each period when the plan has a grain, via a window function). When
+  operands carry different reviewed filters each aggregate gets its own
+  `FILTER (WHERE ...)`; a single metric keeps its filters in `WHERE`.
+- growth: up to 2 `{"measure": <output name>}` entries, each adding
+  `<name>_growth` = (current minus previous period) / previous period per group
+  with `LAG` over `period_start`; requires a grain. The first period is NULL.
+- base_table may be omitted when the operand columns or metrics determine it
+  (the table among them that reaches the others through foreign keys);
+  otherwise `base_table_undetermined`. It is required for a bare `count`.
 - dimensions: up to 3 columns of the base table or a table reachable by
   foreign keys away from the base (parent, grandparent, up to 3 hops).
 - filters: up to 6; ops eq, ne, in, gt, gte, lt, lte, is_null, not_null;
   values typed against the column kind (numeric, boolean, text, timestamptz,
   date).
-- time: one timestamp or date column; scope `month` (YYYY-MM), `range`
+- time: one timestamp or date column, or none when the overlay names a
+  `time_defaults` column for the base table (`time_column_required`
+  otherwise); scope `month` (YYYY-MM), `range`
   (start, end_exclusive), `relative` (unit day, week, month, quarter, year;
   offset 0 is the current unit; length counts units; `to_date` true ends the
   window after `as_of`'s day, for month-to-date and year-to-date), or
@@ -58,8 +73,9 @@ foreign keys away from the base, including child tables and unrelated tables),
 `ambiguous_join_path` (two foreign keys to the same parent, or two chains of
 the same length), `aggregate_kind_mismatch`, `filter_kind_mismatch`,
 `time_column_kind_mismatch`, `time_scope_requires_grain`,
-`relative_window_reaches_future`, `unknown_metric`,
-`metric_base_table_mismatch`, `metric_conflict`.
+`relative_window_reaches_future`, `base_table_undetermined`,
+`time_column_required`, `unknown_metric`, `metric_base_table_mismatch`,
+`metric_conflict`.
 
 Every code has a remedy, decided 2026-09-10 so that a recurring code is a
 work item, not a surprise (the regression summary counts them as
@@ -129,4 +145,9 @@ the schema required a scope; v8 (same day, after holdout 2) adds the
 `having` rule: a condition on a group's aggregate goes in `having`, never
 dropped and never written as a row filter; v9 (same day) adds the
 `question_values` rule, present only when the value index found a stored
-value verbatim in the question: filter with exactly that value.
+value verbatim in the question: filter with exactly that value; v10
+(2026-09-10) teaches `share_of_total`, `ratio`, `growth`, an omitted
+`base_table` and an omitted `time.column`, and the language pack stops
+refusing share and growth words; v11 (same day) restricts `growth` to
+questions that ask for change and distinguishes a per-group share from the
+share of a subset in the whole (a ratio with a restricted numerator).
