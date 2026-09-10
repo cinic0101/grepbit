@@ -5,6 +5,7 @@ description = "Schema-first data probe sub-agent: one question, one governed agg
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "mcp>=2.2.0",
     "openai",
     "psycopg[binary]==3.3.4",
     "pydantic>=2.10,<3",
