@@ -659,3 +659,47 @@ def test_having_field_must_name_a_measure() -> None:
                 "having": [{"field": "model", "op": "gt", "value": 1}],
             }
         )
+
+
+def test_base_repair_moves_the_base_to_the_child_holding_the_measures() -> None:
+    from grepbit.application.plan_repair import repair_base_table
+
+    # the q29 shape: grouped by the parent (sites), measures on the child (devices)
+    plan = QueryPlan.model_validate(
+        {
+            "base_table": "sites",
+            "measures": [
+                {
+                    "aggregate": "max",
+                    "column": {"table": "devices", "column": "monthly_fee"},
+                }
+            ],
+            "dimensions": [{"table": "sites", "column": "site_name"}],
+            "having": [{"field": "max_monthly_fee", "op": "gt", "value": 100}],
+        }
+    )
+    repaired, note = repair_base_table(plan, iot_schema())
+    assert repaired.base_table == "devices" and "sites -> devices" in note
+    compiled = compile_plan(repaired.model_dump(mode="json", exclude_none=True))
+    assert (
+        "FROM public.devices LEFT JOIN public.sites" in compiled.compiled.physical_sql
+    )
+    assert "HAVING MAX(devices.monthly_fee) > %(h_0)s" in compiled.compiled.physical_sql
+    # unchanged when the measure sits on the base, on several tables, is count(*),
+    # or when the base is not a parent of the measure table
+    same = QueryPlan.model_validate(
+        {"base_table": "devices", "measures": [{"aggregate": "count"}]}
+    )
+    assert repair_base_table(same, iot_schema()) == (same, None)
+    unrelated = QueryPlan.model_validate(
+        {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "aggregate": "avg",
+                    "column": {"table": "readings", "column": "temperature_c"},
+                }
+            ],
+        }
+    )
+    assert repair_base_table(unrelated, iot_schema())[1] is None

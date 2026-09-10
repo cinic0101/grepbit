@@ -63,6 +63,7 @@ from grepbit.application.overlay import (
     match_absent_concept,
     overlay_problems,
 )
+from grepbit.application.plan_repair import repair_base_table
 from grepbit.application.policies import PROPOSER_REVISION, propose_policies
 from grepbit.application.shapes import match_unsupported_shape, single_period_misread
 from grepbit.domain.grounding import normalize_question
@@ -459,6 +460,10 @@ def main(argv: list[str] | None = None) -> int:
                     }
                 else:
                     assert proposal.plan is not None
+                    repaired, base_repair = repair_base_table(proposal.plan, schema)
+                    if base_repair is not None:
+                        proposal = proposal.model_copy(update={"plan": repaired})
+                        detail["base_repair"] = base_repair
                     detail["plan"] = proposal.plan.model_dump(
                         mode="json", exclude_none=True
                     )
@@ -494,6 +499,12 @@ def main(argv: list[str] | None = None) -> int:
                         status, detail["reason"] = "unsafe", f"policy:{error}"
                     else:
                         detail["assumptions"] = [a.text for a in compiled.assumptions]
+                        if detail.get("base_repair"):
+                            detail["assumptions"].append(
+                                "The base table was moved to the table holding the "
+                                f"measure columns ({detail['base_repair']}); the "
+                                "grouping and filters are unchanged."
+                            )
                         used = {
                             str(v)
                             for f in proposal.plan.filters
@@ -744,6 +755,7 @@ def main(argv: list[str] | None = None) -> int:
             for level in ("verified", "partially_verified", "unverified_semantics")
         },
         "shape_repairs": sum(1 for r in results if r.get("shape_repairs")),
+        "base_repairs": sum(1 for r in results if r.get("base_repair")),
         "zero_call_refusals": sum(
             1
             for r in results
