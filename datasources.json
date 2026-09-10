@@ -1,0 +1,31 @@
+{
+  "datasources": [
+    {
+      "id": "pos_real",
+      "dsn_env": "GREPBIT_POS_REAL_DSN",
+      "overlay": "overlays/pos_real.json",
+      "business_timezone": "Asia/Taipei",
+      "enum_distinct_limit": 0,
+      "description": "The owner's POS schema copied with test data; sampling off, policies in the overlay."
+    },
+    {
+      "id": "pos_test",
+      "dsn_env": "GREPBIT_POS_TEST_DSN",
+      "overlay": "evals/fixtures/pos_overlay.json",
+      "enum_distinct_limit": 20,
+      "description": "POS plus HR fixture (text2sql_test)."
+    },
+    {
+      "id": "iot_spike",
+      "dsn_env": "GREPBIT_IOT_DSN",
+      "enum_distinct_limit": 20,
+      "description": "IoT fixture."
+    },
+    {
+      "id": "retail_spike",
+      "dsn_env": "GREPBIT_RETAIL_DSN",
+      "enum_distinct_limit": 20,
+      "description": "Retail fixture."
+    }
+  ]
+}
