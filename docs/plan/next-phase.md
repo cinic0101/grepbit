@@ -155,9 +155,8 @@ order the build side would take it, with the cost and the risk of skipping.
    `-04` after the overlay v11 rerun) and holdout-2 q23/q25 (same SQL).
    Then the build side settles the 7 batch-1 ratio cases into references and
    tallies holdout-2 run 11.
-2. Return-ratio sign: returns are stored negative, so 退貨率 reads -4.4%.
-   Options: a metric-level `negate` in the overlay (one algebra addition),
-   or leave the stored sign and say so in the assumption.
+2. Return-ratio sign: decided 2026-09-10, the stored negative sign stays and
+   the `return_amount` definition (overlay v12) says so; no `negate`.
 3. `--verify-coverage`: removed 2026-09-10 (the owner: no longer used).
 4. Next batch of real questions: growth rates (deferred so far), latest-row
    questions (訂單狀態, 最近一筆交易), weekday or hour breakdowns,

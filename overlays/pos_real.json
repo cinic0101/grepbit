@@ -1,6 +1,6 @@
 {
   "datasource_id": "pos_real",
-  "revision": "pos-real-overlay-v11",
+  "revision": "pos-real-overlay-v12",
   "metrics": [
     {
       "id": "return_amount",
@@ -11,7 +11,7 @@
         "return amount",
         "refund amount"
       ],
-      "description": "Sum of pos_sale.total_amount over transactions that reference an origin transaction (pos_sale.origin_transaction_no is set); the owner confirmed on 2026-09-09 that such a transaction is a return. Signed by the owner on 2026-09-09.",
+      "description": "Sum of pos_sale.total_amount over transactions that reference an origin transaction (pos_sale.origin_transaction_no is set); the owner confirmed on 2026-09-09 that such a transaction is a return. Signed by the owner on 2026-09-09. Returns are stored with a negative total_amount, so this metric and every ratio built on it (退貨率) read negative; the owner decided on 2026-09-10 to keep the stored sign rather than negate it.",
       "base_table": "pos_sale",
       "aggregate": "sum",
       "column": {

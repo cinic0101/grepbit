@@ -22,8 +22,11 @@ order, and what each turned out to be.
 
 The return ratio comes out negative (-0.044) because return transactions
 carry negative `total_amount`. That is the stored sign, not an error, but a
-reader expects 退貨率 4.4%. The algebra has no negation; a metric-level
-`negate` (or an `abs` aggregate) would be the smallest addition. Owner's call.
+reader may expect 退貨率 4.4%. The owner decided (2026-09-10) to keep the
+stored sign: overlay v12 says so in the reviewed definition of
+`return_amount`, so every return amount and return ratio answer states that
+the number is negative by storage convention. No `negate` construct was
+added; it stays on the list if a reader trips over the sign.
 
 ## Negative categories: the options
 
