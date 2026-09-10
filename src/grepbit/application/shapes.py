@@ -55,3 +55,35 @@ def single_period_misread(
         if phrase_in(normalized, normalize_question(word)):
             return word
     return None
+
+
+def unrequested_grain(question: str, plan: QueryPlan, pack: ShapePack) -> str | None:
+    """The grain to drop when the plan buckets by period but nothing asked for it.
+
+    Fires only for a grain without a window (a plain breakdown, "share within
+    each month") when the question carries none of the pack's period words
+    (每月, 趨勢, by month). The plain reading of such a question is one value
+    per group over the whole window (同期); a compare-periods window, which
+    needs a grain, has a scope and is left alone. Returns the grain's name, or
+    ``None``.
+    """
+
+    time = plan.time
+    if time is None or time.grain is None or time.scope is not None:
+        return None
+    normalized = normalize_question(question)
+    for word in pack.period_words:
+        if phrase_in(normalized, normalize_question(word)):
+            return None
+    return time.grain.value
+
+
+def drop_grain(plan: QueryPlan) -> QueryPlan:
+    """The plan without its time bucket; a column-only time spec is removed."""
+
+    assert plan.time is not None
+    if plan.time.scope is None:
+        return plan.model_copy(update={"time": None})
+    return plan.model_copy(
+        update={"time": plan.time.model_copy(update={"grain": None})}
+    )

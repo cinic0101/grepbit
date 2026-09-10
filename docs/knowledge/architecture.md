@@ -51,8 +51,10 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
    String-shaped column references are repaired only when they resolve to
    exactly one table; a base table that is merely the parent of the table
    holding every measure column is moved there (`repair_base_table`, stated
-   as an assumption). One deterministic check runs on the proposal before
-   compilation: a per-period question (每天, monthly; language pack
+   as an assumption). Two deterministic checks run on the proposal before
+   compilation: a grain without a window that no per-period or trend word
+   asked for is dropped (`unrequested_grain`, stated as an assumption), and
+   a per-period question (每天, monthly; language pack
    `period_words`) answered with a single current-period window is a
    `clarify` (`single_period_misread`), never a rewritten plan.
 4. Compile: `PlanCompiler.compile` validates every identifier and kind, walks
@@ -63,7 +65,9 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
    select it (`named_segments`; the ids that shaped the SQL come back as
    `CompiledPlan.applied_segments`),
    resolves time windows in the business time zone from `as_of` (rejecting a
-   past window that reaches the future), places `having` conditions on the
+   relative window that reaches the future), takes a share over all groups
+   even when the question filters on the grouped column (the filter selects
+   rows after the share), places `having` conditions on the
    aggregate expressions, builds the SQL as a sqlglot AST with bound
    placeholders, and emits lineage, assumptions, interpretation and the
    verification level.

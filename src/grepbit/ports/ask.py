@@ -44,3 +44,9 @@ class LiteralCheckPort(Protocol):
 
 class SqlPolicyPort(Protocol):
     def assert_safe_select_statement(self, sql: str) -> str: ...
+
+
+# Label a planner adapter prefixes on a shape repair that re-anchored a relative
+# window ("offset 0 length L" read as offset -L); the ask core states it as an
+# assumption when it sees the label.
+RELATIVE_WINDOW_REPAIR = "relative window"

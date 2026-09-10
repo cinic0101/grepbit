@@ -26,12 +26,22 @@ from grepbit.application.overlay import (
     named_segments,
 )
 from grepbit.application.plan_repair import repair_base_table
-from grepbit.application.shapes import match_unsupported_shape, single_period_misread
+from grepbit.application.shapes import (
+    drop_grain,
+    match_unsupported_shape,
+    single_period_misread,
+    unrequested_grain,
+)
 from grepbit.domain.language_pack import ShapePack
 from grepbit.domain.overlay import SemanticOverlay
 from grepbit.domain.plan import CompiledPlan, PlanError, PreviousTurn, QueryPlan
 from grepbit.domain.schema_model import SchemaModel
-from grepbit.ports.ask import LiteralCheckPort, PlannerPort, SqlPolicyPort
+from grepbit.ports.ask import (
+    RELATIVE_WINDOW_REPAIR,
+    LiteralCheckPort,
+    PlannerPort,
+    SqlPolicyPort,
+)
 from grepbit.ports.grounding import GroundingModelError
 from grepbit.ports.plan_compiler import PlanCompilerPort
 from grepbit.ports.query_executor import QueryExecutorPort
@@ -89,6 +99,7 @@ class AskResult:
     grounding: list[Resolution] = field(default_factory=list)
     missing_literals: list[str] = field(default_factory=list)
     shape_repairs: list[str] = field(default_factory=list)
+    grain_dropped: str | None = None
     base_repair: str | None = None
     excluded_segments: list[str] = field(default_factory=list)
     literal_checks: int = 0
@@ -193,6 +204,12 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
             result.status, result.reason = "clarify", "per_period_single_window"
             result.clarification = pack.period_clarification
             return
+        grain = unrequested_grain(question, plan, pack)
+        if grain is not None:
+            plan = drop_grain(plan)
+            result.plan = plan
+            result.shape_repairs.append(f"dropped grain {grain}: no per-period word")
+            result.grain_dropped = grain
 
     exclusions = excluded_segments(question, overlay) if overlay else []
     named_ids = set(named_segments(question, overlay)) if overlay else set()
@@ -287,6 +304,18 @@ def _describe(result, compiled, question, base_repair, plan) -> None:
             "The base table was moved to the table holding the measure columns "
             f"({base_repair}); the grouping and filters are unchanged."
         )
+    if result.grain_dropped:
+        result.assumptions.append(
+            f"Values are totals over the whole window, not per {result.grain_dropped}; "
+            "the question named no period, say 每月 (or 每天, 每週) for a breakdown."
+        )
+    for repair in result.shape_repairs:
+        if repair.startswith(RELATIVE_WINDOW_REPAIR):
+            result.assumptions.append(
+                "The relative window was written as starting today and running "
+                f"forward ({repair}); it was read as the same number of complete "
+                "units before as_of, the only reading with data."
+            )
     used = {str(v) for f in plan.filters for v in f.values if isinstance(v, str)}
     result.assumptions += [
         f"The question's wording was matched to the stored value '{h['value']}' of "

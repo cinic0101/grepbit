@@ -278,7 +278,7 @@ class PlanCompiler:
                 )
             if len(periods) > 1 and time_spec.grain is None:
                 raise PlanError("time_scope_requires_grain")
-            if isinstance(scope, RelativeScope) and scope.offset < 0:
+            if isinstance(scope, RelativeScope):
                 limit = current_unit_end(as_of, scope.unit, schema.business_timezone)
                 if periods[-1].end_exclusive > limit:
                     raise PlanError(
@@ -383,10 +383,34 @@ class PlanCompiler:
 
         conditions: list[exp.Expression] = []
         filter_texts: list[str] = []
+        # A share asked for one group (特約永和中正 佔全部門市) must still be
+        # taken over all groups: a filter on a grouped column selects which
+        # rows come back after the share, it does not shrink the population.
+        dimension_ids = {d.id for d in plan.dimensions}
+        selection_filters: list[Filter] = (
+            [f for f in plan.filters if f.column.id in dimension_ids]
+            if any(m.share_of_total for m in plan.measures)
+            else []
+        )
         for item in plan.filters:
             column = resolve(item.column)
+            if item in selection_filters:
+                filter_texts.append(f"[after share] {_filter_text(item)}")
+                continue
             conditions.append(self._condition(item, column, bind))
             filter_texts.append(_filter_text(item))
+        for item in selection_filters:
+            assumptions.append(
+                Assumption(
+                    text=(
+                        f"The share is taken over all {item.column.column} groups; "
+                        f"the filter on {item.column.id} only selects which groups "
+                        "are returned, so it is the subset's share of the whole."
+                    ),
+                    source=AssumptionSource.DEFAULT,
+                    definition_ref="plan.measures.share_of_total",
+                )
+            )
         for metric_id, item in metric_filters:
             column = resolve(item.column)
             conditions.append(self._condition(item, column, bind))
@@ -456,6 +480,19 @@ class PlanCompiler:
         if group_by:
             query = query.group_by(*group_by)
         having_texts: list[str] = []
+        if selection_filters:
+            inner = query
+            query = exp.select(exp.Star()).from_(inner.subquery("shares"))
+            selected = [
+                self._condition(
+                    item,
+                    resolve(item.column),
+                    bind,
+                    reference=exp.column(item.column.column),
+                )
+                for item in selection_filters
+            ]
+            query = query.where(exp.and_(*selected))
         if plan.having:
             conditions_having = []
             for item in plan.having:
@@ -599,9 +636,12 @@ class PlanCompiler:
                         text=(
                             f"{measure.output_name} is the share of the total over all "
                             + (
-                                "groups within the same period."
+                                "groups within the same period (同期 = each period's "
+                                "own total); without a per-period word the whole "
+                                "window is one period."
                                 if time_bucket is not None
-                                else "groups after the filters."
+                                else "groups over the same time window and filters "
+                                "(同期 = the same window as the group values)."
                             )
                         ),
                         source=AssumptionSource.DEFAULT,
@@ -780,8 +820,14 @@ class PlanCompiler:
         return exp.func(_AGGREGATE_FUNCTIONS[measure.aggregate], reference)
 
     @staticmethod
-    def _condition(item: Filter, column: SchemaColumn, bind) -> exp.Expression:
-        reference = exp.column(item.column.column, table=item.column.table)
+    def _condition(
+        item: Filter,
+        column: SchemaColumn,
+        bind,
+        reference: exp.Expression | None = None,
+    ) -> exp.Expression:
+        if reference is None:
+            reference = exp.column(item.column.column, table=item.column.table)
         if item.op is FilterOp.IS_NULL:
             return reference.is_(exp.Null())
         if item.op is FilterOp.NOT_NULL:

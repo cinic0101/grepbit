@@ -192,3 +192,55 @@ def test_per_period_word_with_a_single_current_window_is_a_misread() -> None:
     no_window = today_only.model_copy(update={"time": None})
     assert single_period_misread("每天的告警數", no_window, PACK) is None
     assert PACK.period_words and PACK.period_clarification
+
+
+def test_a_grain_nobody_asked_for_is_dropped_but_period_words_keep_it() -> None:
+    from grepbit.adapters.language_pack_store import load_shape_pack
+    from grepbit.application.shapes import drop_grain, unrequested_grain
+
+    pack = load_shape_pack()
+    bucketed = QueryPlan.model_validate(
+        {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count", "share_of_total": True}],
+            "dimensions": [{"table": "devices", "column": "model"}],
+            "time": {
+                "column": {"table": "alerts", "column": "raised_at"},
+                "grain": "month",
+            },
+        }
+    )
+    assert (
+        unrequested_grain("各機型的告警數占同期全部告警的比例", bucketed, pack)
+        == "month"
+    )
+    assert unrequested_grain("各機型每月的告警數占比", bucketed, pack) is None
+    assert unrequested_grain("各機型告警數的趨勢", bucketed, pack) is None
+    assert (
+        unrequested_grain("alert share by model, month by month", bucketed, pack)
+        is None
+    )
+    windowed = QueryPlan.model_validate(
+        {
+            **bucketed.model_dump(mode="json", exclude_none=True),
+            "time": {
+                "column": {"table": "alerts", "column": "raised_at"},
+                "grain": "month",
+                "scope": {
+                    "kind": "relative",
+                    "unit": "month",
+                    "offset": -3,
+                    "length": 3,
+                },
+            },
+        }
+    )
+    assert unrequested_grain("各機型的告警數占比", windowed, pack) is None
+    dropped = drop_grain(bucketed)
+    assert dropped.time is None  # a column-only time spec constrains nothing
+    kept = drop_grain(windowed)
+    assert (
+        kept.time is not None
+        and kept.time.grain is None
+        and kept.time.scope is not None
+    )

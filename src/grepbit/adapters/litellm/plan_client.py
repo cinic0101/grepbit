@@ -14,6 +14,7 @@ from grepbit.adapters.litellm.grounding_client import (
 from grepbit.domain.overlay import SemanticOverlay
 from grepbit.domain.plan import Filter, Measure, PlanProposal, PreviousTurn, QueryPlan
 from grepbit.domain.schema_model import SchemaModel
+from grepbit.ports.ask import RELATIVE_WINDOW_REPAIR
 from grepbit.ports.grounding import GroundingModelError
 
 PLAN_PROMPT_REVISION = "plan-classify-json-v11"
@@ -272,6 +273,49 @@ def _strip_qualified_columns(plan: dict[str, Any], repairs: list[str]) -> None:
         fix(time.get("column"))
 
 
+def _anchor_relative_window(plan: dict[str, Any], repairs: list[str]) -> None:
+    """Read "offset 0, length L > 1" as the last L complete units before as_of.
+
+    Anchored on the current unit and longer than it, such a window reaches
+    into the future, where no data can be (最近 30 天 written as offset 0
+    length 30 covered today and the next 29 days). The only reading with data
+    is the past one, offset -L, the encoding the prompt gives for "last L
+    units"; "to date" windows are left alone.
+    """
+
+    time = plan.get("time")
+    scope = time.get("scope") if isinstance(time, dict) else None
+    if not isinstance(scope, dict) or scope.get("kind") != "relative":
+        return
+    offset, length = scope.get("offset"), scope.get("length")
+    if offset != 0 or not isinstance(length, int) or length <= 1:
+        return
+    if scope.get("to_date"):
+        return
+    scope["offset"] = -length
+    repairs.append(
+        f"{RELATIVE_WINDOW_REPAIR} offset 0 length {length} -> offset {-length}"
+    )
+
+
+def _drop_aggregate_beside_ratio(plan: dict[str, Any], repairs: list[str]) -> None:
+    """A ratio measure that also names a bare aggregate keeps only the ratio.
+
+    The model writes {"aggregate": "count", "ratio": {...}} for 會員交易佔比:
+    the operands inside the ratio carry their own aggregates, the sibling is
+    a duplicate the validator rejects (``plan_measure_ratio_excludes_aggregate``).
+    Only a bare aggregate (no column, no metric) is dropped; anything else
+    stays ambiguous and fails validation as before.
+    """
+
+    for item in plan.get("measures") or []:
+        if not isinstance(item, dict) or not isinstance(item.get("ratio"), dict):
+            continue
+        if "aggregate" in item and "column" not in item and "metric" not in item:
+            dropped = item.pop("aggregate")
+            repairs.append(f"dropped aggregate {dropped} beside ratio")
+
+
 def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]]:
     """Coerce column references the model wrote as strings into ColumnRef dicts.
 
@@ -299,6 +343,8 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
         # a time column named without a window or a grain constrains nothing
         del plan["time"]
         repairs.append("dropped time without scope or grain")
+    _anchor_relative_window(plan, repairs)
+    _drop_aggregate_beside_ratio(plan, repairs)
     base_table = plan.get("base_table")
 
     def coerce(value: Any) -> Any:

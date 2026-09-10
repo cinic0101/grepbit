@@ -254,3 +254,57 @@ def test_having_cannot_target_a_derived_measure() -> None:
                 "having": [{"field": "s", "op": "gt", "value": 0.5}],
             }
         )
+
+
+def test_share_filtered_on_its_own_dimension_is_the_subset_share_of_the_whole():
+    """特約永和中正 佔全部門市: the filter picks the row after the share, the
+    window total still covers every group."""
+
+    compiled = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count", "share_of_total": True}],
+            "dimensions": [{"table": "devices", "column": "model"}],
+            "filters": [
+                {
+                    "column": {"table": "devices", "column": "model"},
+                    "op": "eq",
+                    "values": ["X1"],
+                },
+                {
+                    "column": {"table": "alerts", "column": "severity"},
+                    "op": "eq",
+                    "values": ["critical"],
+                },
+            ],
+        }
+    )
+    sql = compiled.compiled.physical_sql
+    inner, outer = sql.split(") AS shares")
+    assert "devices.model = " not in inner  # the population keeps every model
+    assert "alerts.severity = " in inner  # other filters still shape the population
+    assert outer.strip().startswith("WHERE model = %(f_")
+    assert sql.startswith("SELECT * FROM (SELECT devices.model AS model")
+    assert "[after share] devices.model eq X1" in compiled.lineage.filters
+    assert any("subset's share of the whole" in a.text for a in compiled.assumptions)
+    assert compiled.output_columns == ("model", "row_count_share")
+
+
+def test_a_current_window_longer_than_its_unit_is_refused_as_future() -> None:
+    with pytest.raises(PlanError) as error:
+        compile_plan(
+            {
+                "base_table": "alerts",
+                "measures": [{"aggregate": "count"}],
+                "time": {
+                    "column": {"table": "alerts", "column": "raised_at"},
+                    "scope": {
+                        "kind": "relative",
+                        "unit": "day",
+                        "offset": 0,
+                        "length": 30,
+                    },
+                },
+            }
+        )
+    assert error.value.code == "relative_window_reaches_future"

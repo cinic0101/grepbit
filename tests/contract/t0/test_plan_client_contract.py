@@ -273,3 +273,68 @@ def test_repair_strips_a_qualified_column_and_drops_an_empty_time_object() -> No
     assert "time" not in repaired["plan"]
     assert "dropped time without scope or grain" in repairs
     assert "devices.model -> model" in repairs
+
+
+def test_repair_reanchors_a_current_window_longer_than_one_unit() -> None:
+    def payload(scope):
+        return {
+            "decision": "plan",
+            "plan": {
+                "base_table": "alerts",
+                "measures": [{"aggregate": "count"}],
+                "time": {
+                    "column": {"table": "alerts", "column": "raised_at"},
+                    "scope": scope,
+                },
+            },
+        }
+
+    forward = {"kind": "relative", "unit": "day", "offset": 0, "length": 30}
+    repaired, repairs = repair_column_refs(payload(forward), iot_schema())
+    assert repaired["plan"]["time"]["scope"]["offset"] == -30
+    assert repairs == ["relative window offset 0 length 30 -> offset -30"]
+    # month to date and the current unit alone are what they say
+    for scope in (
+        {
+            "kind": "relative",
+            "unit": "month",
+            "offset": 0,
+            "length": 1,
+            "to_date": True,
+        },
+        {"kind": "relative", "unit": "day", "offset": 0, "length": 1},
+        {"kind": "relative", "unit": "day", "offset": -7, "length": 7},
+    ):
+        untouched, repairs = repair_column_refs(payload(dict(scope)), iot_schema())
+        assert untouched["plan"]["time"]["scope"]["offset"] == scope["offset"]
+        assert repairs == []
+
+
+def test_repair_drops_a_bare_aggregate_written_beside_a_ratio() -> None:
+    ratio = {
+        "numerator": {
+            "aggregate": "count",
+            "column": {"table": "alerts", "column": "device_id"},
+        },
+        "denominator": {"aggregate": "count"},
+    }
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count", "alias": "share", "ratio": ratio}],
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    assert "aggregate" not in repaired["plan"]["measures"][0]
+    assert repairs == ["dropped aggregate count beside ratio"]
+    # an aggregate with its own column beside a ratio stays: two measures in one
+    payload["plan"]["measures"] = [
+        {
+            "aggregate": "sum",
+            "column": {"table": "alerts", "column": "downtime_minutes"},
+            "ratio": ratio,
+        }
+    ]
+    untouched, repairs = repair_column_refs(payload, iot_schema())
+    assert untouched["plan"]["measures"][0]["aggregate"] == "sum" and repairs == []
