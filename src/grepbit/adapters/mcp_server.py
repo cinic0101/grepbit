@@ -16,6 +16,7 @@ from __future__ import annotations
 import os
 import re
 import sys
+from collections.abc import Callable, Sequence
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
@@ -244,6 +245,48 @@ def result_payload(result: AskResult, *, max_rows: int) -> dict[str, Any]:
     return payload
 
 
+def bind_error_text(error: BaseException) -> str:
+    """The reason a datasource could not bind, without any connection detail.
+
+    Our own reasons (``dsn_env_missing:<VAR>``, ``overlay_invalid: ...``) are
+    passed through; a driver error is reduced to its class name so a host or a
+    password in its message never reaches the caller.
+    """
+
+    text = str(error)
+    if isinstance(error, RuntimeError) and text.split(":")[0] in (
+        "dsn_env_missing",
+        "overlay_invalid",
+    ):
+        return text
+    return f"bind_failed:{type(error).__name__}"
+
+
+def collect_capabilities(
+    registrations: Sequence[DatasourceRegistration],
+    get: Callable[[str], BoundDatasource],
+    bound: dict[str, BoundDatasource],
+) -> dict[str, Any]:
+    """Capabilities of every datasource that binds; the others listed by reason.
+
+    One datasource whose environment variable is missing must not hide the
+    rest: the payload carries the bound ones under ``datasources`` and the
+    unbound ones under ``unavailable`` as ``{id: reason}``.
+    """
+
+    unavailable: dict[str, str] = {}
+    for registration in registrations:
+        try:
+            get(registration.id)
+        except Exception as error:
+            bound.pop(registration.id, None)
+            unavailable[registration.id] = bind_error_text(error)
+    payload = capabilities_payload(bound)
+    if unavailable:
+        payload["unavailable"] = unavailable
+    return payload
+
+
 def build_server(registry_path: Path, environ=os.environ, *, lazy: bool = True):
     from mcp.server.mcpserver import MCPServer
 
@@ -279,15 +322,7 @@ def build_server(registry_path: Path, environ=os.environ, *, lazy: bool = True):
         ),
     )
     def capabilities() -> dict[str, Any]:
-        for registration in registry.datasources:
-            try:
-                get(registration.id)
-            except (
-                Exception
-            ) as error:  # a datasource that cannot bind is listed with its error
-                bound.pop(registration.id, None)
-                return {"error": f"{registration.id}: {error}"}
-        return capabilities_payload(bound)
+        return collect_capabilities(registry.datasources, get, bound)
 
     @server.tool(
         name="ask",

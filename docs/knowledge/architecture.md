@@ -110,7 +110,9 @@ exclusion, execution, and an `AskResult` carrying the served contract.
 `datasources.json` (the DSN comes only from the environment variable the
 registry names) and exposes two MCP tools over stdio: `capabilities`
 (datasources, visible tables, reviewed metrics, segments, absent concepts,
-supported shapes, relay rules; no values) and `ask` (status or typed refusal,
+supported shapes, relay rules; no values; a datasource whose environment
+variable is missing or whose bind fails is listed under `unavailable` by
+reason, never by connection detail) and `ask` (status or typed refusal,
 SQL with bound parameters, lineage, assumptions, verification, up to 200
 rows, warnings, hints and resolutions). Run it with
 `.venv/bin/python -m grepbit.adapters.mcp_server` or the `grepbit-mcp`

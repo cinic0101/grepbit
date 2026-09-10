@@ -112,6 +112,22 @@ the same SQL as h2_q23 and h2_q25 in the ratio review, so the owner judges
 them once. On the ratio set it carried 2 (h2_q22 exact, h2_q24 alias-only);
 10 stay open.
 
+## MCP end to end
+
+A stdio MCP client (`mcp.client.stdio` from the same SDK) spawned
+`python -m grepbit.adapters.mcp_server` with only the real datasource's
+environment variable set, listed the two tools, called `capabilities` and
+asked three questions of `pos_real`: 所有銷售交易的總金額 answered (verified,
+one row, three assumptions, 4.2 s round trip including server start and
+introspection); 所有銀行轉帳的付款金額 refused as `semantic_gap` with the
+clarification that no bank-transfer method exists, which is true of the enum;
+訂單狀態分布 refused before any model call by the absent concept. One defect
+found and fixed: `capabilities` returned only `{"error": "pos_test:
+dsn_env_missing:..."}` because the first datasource that could not bind
+aborted the call. It now lists the bound datasources and the unbound ones
+under `unavailable` by reason, reducing a driver error to its class name so
+no host or password reaches the caller (contract test added).
+
 ## What this does and does not show
 
 - The served path and the measured path are now the same function; a

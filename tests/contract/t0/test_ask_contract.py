@@ -294,3 +294,29 @@ def test_mcp_payloads_list_capabilities_without_values_and_serialize_results():
         and out["plan"]["base_table"] == "devices"
     )
     assert out["relay_rules"]
+
+
+def test_capabilities_list_the_bound_datasources_and_name_the_unbound_by_reason():
+    from pathlib import Path
+
+    from grepbit.adapters.datasource_registry import load_registry
+    from grepbit.adapters.mcp_server import BoundDatasource, collect_capabilities
+
+    registry = load_registry(Path("datasources.json"))
+    iot = registry.get("iot_spike")
+    ready = BoundDatasource(iot, services(_Planner(), _Executor([])), "Asia/Taipei")
+    bound: dict = {}
+
+    def get(datasource_id: str) -> BoundDatasource:
+        if datasource_id == "iot_spike":
+            bound[datasource_id] = ready
+            return ready
+        if datasource_id == "pos_test":
+            raise RuntimeError("dsn_env_missing:GREPBIT_POS_TEST_DSN")
+        raise ConnectionError("password=secret host=db.internal")  # driver-style
+
+    payload = collect_capabilities(registry.datasources, get, bound)
+    assert [d["id"] for d in payload["datasources"]] == ["iot_spike"]
+    assert payload["unavailable"]["pos_test"] == "dsn_env_missing:GREPBIT_POS_TEST_DSN"
+    assert payload["unavailable"]["pos_real"] == "bind_failed:ConnectionError"
+    assert "secret" not in str(payload) and "db.internal" not in str(payload)
