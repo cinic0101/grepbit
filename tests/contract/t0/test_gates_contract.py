@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import glob
 
-import pytest
 import yaml
 from t0_helpers import ROOT, col, iot_schema
 
@@ -18,44 +17,20 @@ from grepbit.domain.schema_model import ColumnKind
 PACK = load_shape_pack()
 
 
-@pytest.mark.parametrize(
-    ("question", "shape_id"),
-    [
-        ("各付款方式的收款佔比", "share_of_total"),
-        ("前三名商品的銷售金額佔比", "share_of_total"),
-        ("會員交易比例是多少", "share_of_total"),
-        ("What is the share of revenue by store?", "share_of_total"),
-        ("店舗別売上の割合", "share_of_total"),
-        ("2026年1月營業額相較2025年12月的成長率", "growth"),
-        ("Revenue growth year over year", "growth"),
-        ("YoY revenue by store", "growth"),
-        ("前年比の売上", "growth"),
-    ],
-)
-def test_shape_pack_matches_share_and_growth_words_in_three_scripts(
-    question, shape_id
-) -> None:
-    hit = match_unsupported_shape(question, PACK)
-    assert hit is not None and hit[0].id == shape_id
-
-
-@pytest.mark.parametrize(
-    "question",
-    [
-        "2026年1月和2025年1月的營業額比較",  # a comparison of two sums is answerable
-        "各門市營業額",
-        "Revenue by store in January",
-        "What is the 95th percentile of order value?",  # 'percent' needs a boundary
-        "How many devices are managed?",
-    ],
-)
-def test_shape_pack_leaves_ordinary_aggregate_questions_alone(question) -> None:
-    assert match_unsupported_shape(question, PACK) is None
+def test_shape_pack_no_longer_refuses_share_or_growth_questions() -> None:
+    # v3: shares, ratios and growth are algebra now; the pack keeps only the
+    # per-period words for the single-window gate.
+    for question in (
+        "各付款方式的收款佔比",
+        "Revenue growth year over year",
+        "前年比の売上",
+    ):
+        assert match_unsupported_shape(question, PACK) is None
+    assert PACK.shapes == [] and PACK.period_words
 
 
 def test_default_pack_is_valid_and_covers_the_case_sets_refusal_probes() -> None:
     assert PACK.revision.startswith("unsupported-shapes-")
-    assert {s.id for s in PACK.shapes} == {"share_of_total", "growth"}
     # Every case that the pack refuses must accept `unsupported`: a hit on an
     # answerable case would be an over-refusal and must show up here.
     hits = []
@@ -68,7 +43,7 @@ def test_default_pack_is_valid_and_covers_the_case_sets_refusal_probes() -> None
                 accepted = case.get("accept_statuses") or [case["expected"]["status"]]
                 assert "unsupported" in accepted, (path, case["case_id"])
                 hits.append(case["case_id"])
-    assert len(hits) >= 4, hits  # 4 author probes plus the real-database batch
+    assert hits == []  # nothing is refused by shape any more
 
 
 def _schema_with_enum():

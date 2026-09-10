@@ -16,7 +16,7 @@ from grepbit.domain.plan import Filter, Measure, PlanProposal, PreviousTurn, Que
 from grepbit.domain.schema_model import SchemaModel
 from grepbit.ports.grounding import GroundingModelError
 
-PLAN_PROMPT_REVISION = "plan-classify-json-v9"
+PLAN_PROMPT_REVISION = "plan-classify-json-v10"
 
 _RULES = (
     "You translate one analytics question into ONE aggregate query plan over the "
@@ -25,7 +25,14 @@ _RULES = (
     "(1) Use only table and column names that appear in the schema; never invent "
     "names. base_table is the table whose rows are being counted or summed. "
     "(2) measures: aggregate is one of sum, count, count_distinct, avg, min, max; "
-    "count without a column counts rows. sum and avg need numeric columns. "
+    "count without a column counts rows. sum and avg need numeric columns. A "
+    "share or percentage of the total (佔比, 比例, share of) is the same measure "
+    'with "share_of_total": true; the server divides each group by the total over '
+    "all groups (within each period when there is a grain). A rate or ratio of "
+    "two aggregates (退貨率, 客單價 as amount per transaction, conversion rate) is "
+    '{"ratio": {"numerator": {aggregate/column or metric}, "denominator": {...}}} '
+    "over the same base table. base_table may be omitted when the measure columns "
+    "or metrics determine it. "
     "(3) dimensions and filters may use columns of base_table or of a table that "
     "base_table references through a foreign key (its parent, or the parent's "
     "parent). Never group by a child table's column. When a question groups by "
@@ -42,7 +49,11 @@ _RULES = (
     "unit quarter offset 0; last 7 days is unit day offset -7 length 7), or "
     '{"kind":"periods","periods":[{"kind":"month","month":"YYYY-MM"},...]}. '
     "Set grain (day, week, month, quarter, or year) when the question wants a "
-    "trend or compares periods. A question that asks for a value per period "
+    "trend or compares periods. Growth or change versus the previous period "
+    '(成長率, 增長, month over month) is "growth": [{"measure": <output name>}] '
+    "with a grain; the server computes (current - previous) / previous. time.column "
+    "may be omitted when the table lists a default_time_column. A question that "
+    "asks for a value per period "
     "(每天, 每日, daily, 各月份, monthly, per week) sets grain; give it a scope "
     "only if the question states a window, otherwise omit scope and the server "
     "buckets all the data. Never add a window the question does not ask for. "
