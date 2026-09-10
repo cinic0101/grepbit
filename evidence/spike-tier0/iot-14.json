@@ -1,0 +1,1074 @@
+{
+  "summary": {
+    "datasource_id": "iot_spike",
+    "cases_file": "evals/cases/tier0/iot.yaml",
+    "prompt_revision": "plan-classify-json-v9",
+    "output_mode": "json_schema",
+    "overlay_revision": null,
+    "perturbation": null,
+    "as_of": "2026-08-15T12:00:00+08:00",
+    "cases": 20,
+    "judged": 20,
+    "unjudged": 0,
+    "correct": 13,
+    "answerable_correct": 9,
+    "answerable_total": 15,
+    "answered_but_wrong_rows": 1,
+    "refusals_correct": 4,
+    "refusals_total": 5,
+    "false_answers_on_refusal_cases": 0,
+    "model_failures": 6,
+    "model_retries": 0,
+    "p50_seconds": 3.036,
+    "p95_seconds": 5.893,
+    "introspection_seconds": 0.057,
+    "schema": {
+      "tables": 4,
+      "columns": 24,
+      "foreign_keys": 3,
+      "inferred_foreign_keys": [],
+      "enum_distinct_limit": 20,
+      "sampled_columns": 8,
+      "enum_columns": 0
+    },
+    "status_counts": {
+      "answered": 10,
+      "failed": 6,
+      "semantic_gap": 2,
+      "unsafe": 1,
+      "unsupported": 1
+    },
+    "rows_redacted": false,
+    "incorrect_case_ids": [
+      "downtime_by_model_july",
+      "zh_downtime_by_site",
+      "avg_temperature_offline_monthly",
+      "max_throughput_by_model",
+      "distinct_devices_with_alerts_july",
+      "alerts_trend_daily_july_first_week",
+      "ambiguous_temperature"
+    ],
+    "verification_counts": {
+      "verified": 0,
+      "partially_verified": 0,
+      "unverified_semantics": 10
+    },
+    "shape_repairs": 0,
+    "base_repairs": 0,
+    "plan_error_counts": {},
+    "zero_call_refusals": 1,
+    "shape_gate_refusals": 0,
+    "per_period_clarifies": 0,
+    "literal_checks": 4,
+    "literal_misses": 0,
+    "grounding": {
+      "columns": [],
+      "values": 0,
+      "skipped_for_size": [],
+      "hinted_cases": 0,
+      "resolved_cases": 0,
+      "ambiguous_cases": 0
+    },
+    "empty_result_warnings": 0,
+    "segment_exclusions": 0
+  },
+  "results": [
+    {
+      "case_id": "critical_alerts_july",
+      "question": "How many critical alerts were raised in July 2026?",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.893,
+      "plan": {
+        "base_table": "alerts",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "alerts",
+              "column": "severity"
+            },
+            "op": "eq",
+            "values": [
+              "critical"
+            ]
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "alerts",
+            "column": "raised_at"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-07"
+          }
+        },
+        "order": [],
+        "having": []
+      },
+      "assumptions": [
+        "2026-07 is [2026-07-01T00:00:00+08:00, 2026-08-01T00:00:00+08:00) in Asia/Taipei on alerts.raised_at.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT COUNT(*) AS count FROM public.alerts WHERE alerts.severity = %(f_0)s AND (alerts.raised_at >= %(p1_start_1)s AND alerts.raised_at < %(p1_end_2)s)",
+      "lineage": {
+        "base_table": "alerts",
+        "tables": [
+          "alerts"
+        ],
+        "joins": [],
+        "measures": [
+          "count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "alerts.severity eq critical"
+        ],
+        "time_window": [
+          "alerts.raised_at in [2026-07-01T00:00:00+08:00, 2026-08-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "count(*) over alerts; for 2026-07; where alerts.severity eq critical",
+      "literal_checks": 1,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "count": 5
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "zh_critical_alerts_july",
+      "question": "2026年7月有幾筆 critical 等級的告警？",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.048,
+      "plan": {
+        "base_table": "alerts",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "alerts",
+              "column": "severity"
+            },
+            "op": "eq",
+            "values": [
+              "critical"
+            ]
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "alerts",
+            "column": "raised_at"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-07"
+          }
+        },
+        "order": [],
+        "having": []
+      },
+      "assumptions": [
+        "2026-07 is [2026-07-01T00:00:00+08:00, 2026-08-01T00:00:00+08:00) in Asia/Taipei on alerts.raised_at.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT COUNT(*) AS count FROM public.alerts WHERE alerts.severity = %(f_0)s AND (alerts.raised_at >= %(p1_start_1)s AND alerts.raised_at < %(p1_end_2)s)",
+      "lineage": {
+        "base_table": "alerts",
+        "tables": [
+          "alerts"
+        ],
+        "joins": [],
+        "measures": [
+          "count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "alerts.severity eq critical"
+        ],
+        "time_window": [
+          "alerts.raised_at in [2026-07-01T00:00:00+08:00, 2026-08-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "count(*) over alerts; for 2026-07; where alerts.severity eq critical",
+      "literal_checks": 1,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "count": 5
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "downtime_by_model_july",
+      "question": "Total downtime minutes by device model for July 2026",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 3.804,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "zh_downtime_by_site",
+      "question": "2026年7月各站點的總停機分鐘數",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 23.615,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "offline_devices_count",
+      "question": "How many devices are currently offline?",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 2.922,
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "devices",
+              "column": "status"
+            },
+            "op": "eq",
+            "values": [
+              "offline"
+            ]
+          }
+        ],
+        "order": [],
+        "having": []
+      },
+      "assumptions": [
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT COUNT(*) AS count FROM public.devices WHERE devices.status = %(f_0)s",
+      "lineage": {
+        "base_table": "devices",
+        "tables": [
+          "devices"
+        ],
+        "joins": [],
+        "measures": [
+          "count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "devices.status eq offline"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(*) over devices; where devices.status eq offline",
+      "literal_checks": 1,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "count": 2
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "zh_devices_by_status",
+      "question": "各狀態的裝置數量",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 2.543,
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "device_count"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "devices",
+            "column": "status"
+          }
+        ],
+        "filters": [],
+        "order": [],
+        "having": []
+      },
+      "assumptions": [
+        "No row filter was applied beyond the time window; every devices row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT devices.status AS status, COUNT(*) AS device_count FROM public.devices GROUP BY devices.status ORDER BY status NULLS FIRST",
+      "lineage": {
+        "base_table": "devices",
+        "tables": [
+          "devices"
+        ],
+        "joins": [],
+        "measures": [
+          "device_count = count(*)"
+        ],
+        "dimensions": [
+          "devices.status"
+        ],
+        "filters": [],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(*) over devices; by devices.status",
+      "literal_checks": 0,
+      "row_count": 3,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "status": "maintenance",
+          "device_count": 1
+        },
+        {
+          "status": "offline",
+          "device_count": 2
+        },
+        {
+          "status": "online",
+          "device_count": 5
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "avg_temperature_offline_monthly",
+      "question": "Average temperature per month for offline devices from July through August 2026",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 3.787,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "max_throughput_by_model",
+      "question": "Maximum throughput in Mbps observed per device model",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 2.093,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "distinct_devices_with_alerts_july",
+      "question": "How many distinct devices raised at least one alert in July 2026?",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 2.175,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "monthly_fee_total_online",
+      "question": "What is the total monthly fee of online devices?",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 3.48,
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "alias": "total_monthly_fee"
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "devices",
+              "column": "status"
+            },
+            "op": "eq",
+            "values": [
+              "online"
+            ]
+          }
+        ],
+        "order": [],
+        "having": []
+      },
+      "assumptions": [
+        "total_monthly_fee = SUM of devices.monthly_fee; NULL values are ignored by the aggregate.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT SUM(devices.monthly_fee) AS total_monthly_fee FROM public.devices WHERE devices.status = %(f_0)s",
+      "lineage": {
+        "base_table": "devices",
+        "tables": [
+          "devices"
+        ],
+        "joins": [],
+        "measures": [
+          "total_monthly_fee = sum(devices.monthly_fee)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "devices.status eq online"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "sum(devices.monthly_fee) over devices; where devices.status eq online",
+      "literal_checks": 1,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "total_monthly_fee": "1800.00"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "zh_alerts_by_category_last_month",
+      "question": "上個月各類別的告警數量",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 3.82,
+      "plan": {
+        "base_table": "alerts",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "alert_count"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "alerts",
+            "column": "category"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "alerts",
+            "column": "raised_at"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "month",
+            "offset": -1,
+            "length": 1,
+            "to_date": false
+          }
+        },
+        "order": [],
+        "having": []
+      },
+      "assumptions": [
+        "No row filter was applied beyond the time window; every alerts row counts, including any status the question did not mention.",
+        "Relative period resolved from as_of 2026-08-15T12:00:00+08:00: 2026-07 is [2026-07-01T00:00:00+08:00, 2026-08-01T00:00:00+08:00) in Asia/Taipei on alerts.raised_at.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT alerts.category AS category, COUNT(*) AS alert_count FROM public.alerts WHERE alerts.raised_at >= %(p1_start_0)s AND alerts.raised_at < %(p1_end_1)s GROUP BY alerts.category ORDER BY category NULLS FIRST",
+      "lineage": {
+        "base_table": "alerts",
+        "tables": [
+          "alerts"
+        ],
+        "joins": [],
+        "measures": [
+          "alert_count = count(*)"
+        ],
+        "dimensions": [
+          "alerts.category"
+        ],
+        "filters": [],
+        "time_window": [
+          "alerts.raised_at in [2026-07-01T00:00:00+08:00, 2026-08-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "count(*) over alerts; by alerts.category; for 2026-07",
+      "literal_checks": 0,
+      "row_count": 5,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "category": "disconnect",
+          "alert_count": 4
+        },
+        {
+          "category": "firmware",
+          "alert_count": 2
+        },
+        {
+          "category": "latency",
+          "alert_count": 2
+        },
+        {
+          "category": "power",
+          "alert_count": 1
+        },
+        {
+          "category": "temperature",
+          "alert_count": 1
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "top2_models_by_alerts",
+      "question": "Which 2 device models raised the most alerts overall?",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 3.179,
+      "plan": {
+        "base_table": "alerts",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "alert_count"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "devices",
+            "column": "model"
+          }
+        ],
+        "filters": [],
+        "order": [
+          {
+            "field": "alert_count",
+            "direction": "desc"
+          }
+        ],
+        "having": [],
+        "limit": 2
+      },
+      "assumptions": [
+        "alerts rows are joined to devices through alerts.device_id; rows without a matching devices row keep NULL there.",
+        "No row filter was applied beyond the time window; every alerts row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT devices.model AS model, COUNT(*) AS alert_count FROM public.alerts LEFT JOIN public.devices ON alerts.device_id = devices.device_id GROUP BY devices.model ORDER BY alert_count DESC NULLS LAST LIMIT %(limit_0)s",
+      "lineage": {
+        "base_table": "alerts",
+        "tables": [
+          "alerts",
+          "devices"
+        ],
+        "joins": [
+          "alerts.device_id -> devices.device_id"
+        ],
+        "measures": [
+          "alert_count = count(*)"
+        ],
+        "dimensions": [
+          "devices.model"
+        ],
+        "filters": [],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(*) over alerts; by devices.model; limit 2",
+      "literal_checks": 0,
+      "row_count": 2,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "model": "AP-500",
+          "alert_count": 7
+        },
+        {
+          "model": "AP-300",
+          "alert_count": 4
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "unresolved_alerts",
+      "question": "How many alerts are still unresolved?",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 2.969,
+      "plan": {
+        "base_table": "alerts",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "unresolved_alerts_count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "alerts",
+              "column": "resolved_at"
+            },
+            "op": "is_null",
+            "values": []
+          }
+        ],
+        "order": [],
+        "having": []
+      },
+      "assumptions": [
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT COUNT(*) AS unresolved_alerts_count FROM public.alerts WHERE alerts.resolved_at IS NULL",
+      "lineage": {
+        "base_table": "alerts",
+        "tables": [
+          "alerts"
+        ],
+        "joins": [],
+        "measures": [
+          "unresolved_alerts_count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "alerts.resolved_at is_null"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(*) over alerts; where alerts.resolved_at is_null",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "unresolved_alerts_count": 1
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "alerts_trend_daily_july_first_week",
+      "question": "Daily number of alerts between 2026-07-01 and 2026-07-08",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": false,
+      "elapsed_seconds": 2.72,
+      "plan": {
+        "base_table": "alerts",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "alerts",
+            "column": "raised_at"
+          },
+          "grain": "day"
+        },
+        "order": [],
+        "having": []
+      },
+      "assumptions": [
+        "No row filter was applied beyond the time window; every alerts row counts, including any status the question did not mention.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT DATE_TRUNC('DAY', alerts.raised_at AT TIME ZONE 'Asia/Taipei') AS period_start, COUNT(*) AS count FROM public.alerts GROUP BY DATE_TRUNC('DAY', alerts.raised_at AT TIME ZONE 'Asia/Taipei') ORDER BY period_start NULLS FIRST",
+      "lineage": {
+        "base_table": "alerts",
+        "tables": [
+          "alerts"
+        ],
+        "joins": [],
+        "measures": [
+          "count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(*) over alerts; per day; over all data",
+      "literal_checks": 0,
+      "row_count": 15,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "period_start": "2026-07-02 00:00:00",
+          "count": 1
+        },
+        {
+          "period_start": "2026-07-03 00:00:00",
+          "count": 1
+        },
+        {
+          "period_start": "2026-07-05 00:00:00",
+          "count": 1
+        },
+        {
+          "period_start": "2026-07-08 00:00:00",
+          "count": 1
+        },
+        {
+          "period_start": "2026-07-11 00:00:00",
+          "count": 1
+        },
+        {
+          "period_start": "2026-07-15 00:00:00",
+          "count": 1
+        },
+        {
+          "period_start": "2026-07-19 00:00:00",
+          "count": 1
+        },
+        {
+          "period_start": "2026-07-21 00:00:00",
+          "count": 1
+        },
+        {
+          "period_start": "2026-07-25 00:00:00",
+          "count": 1
+        },
+        {
+          "period_start": "2026-07-31 00:00:00",
+          "count": 1
+        },
+        {
+          "period_start": "2026-08-01 00:00:00",
+          "count": 1
+        },
+        {
+          "period_start": "2026-08-05 00:00:00",
+          "count": 1
+        },
+        {
+          "period_start": "2026-08-09 00:00:00",
+          "count": 1
+        },
+        {
+          "period_start": "2026-08-12 00:00:00",
+          "count": 1
+        },
+        {
+          "period_start": "2026-08-14 00:00:00",
+          "count": 1
+        }
+      ],
+      "rows_match_reference": false,
+      "matched_reference_index": null,
+      "reference_rows": [
+        [
+          "2026-07-02T00:00:00",
+          "1"
+        ],
+        [
+          "2026-07-03T00:00:00",
+          "1"
+        ],
+        [
+          "2026-07-05T00:00:00",
+          "1"
+        ]
+      ],
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "compare_alerts_july_august",
+      "question": "Compare the number of alerts in July 2026 and August 2026",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 3.321,
+      "plan": {
+        "base_table": "alerts",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "alert_count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "alerts",
+            "column": "raised_at"
+          },
+          "grain": "month"
+        },
+        "order": [
+          {
+            "field": "period_start",
+            "direction": "desc"
+          }
+        ],
+        "having": []
+      },
+      "assumptions": [
+        "No row filter was applied beyond the time window; every alerts row counts, including any status the question did not mention.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT DATE_TRUNC('MONTH', alerts.raised_at AT TIME ZONE 'Asia/Taipei') AS period_start, COUNT(*) AS alert_count FROM public.alerts GROUP BY DATE_TRUNC('MONTH', alerts.raised_at AT TIME ZONE 'Asia/Taipei') ORDER BY period_start DESC NULLS LAST",
+      "lineage": {
+        "base_table": "alerts",
+        "tables": [
+          "alerts"
+        ],
+        "joins": [],
+        "measures": [
+          "alert_count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(*) over alerts; per month; over all data",
+      "literal_checks": 0,
+      "row_count": 2,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "period_start": "2026-08-01 00:00:00",
+          "alert_count": 5
+        },
+        {
+          "period_start": "2026-07-01 00:00:00",
+          "alert_count": 10
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "gap_sla_compliance",
+      "question": "What is our SLA compliance rate for July 2026?",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.036,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column or metric for 'SLA compliance rate'. While there is 'uptime_pct' in the readings table, it is unclear if this represents the SLA compliance rate or how to calculate the overall rate from it.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "unsupported_forecast",
+      "question": "Forecast the number of alerts for September 2026",
+      "expected_status": "unsupported",
+      "accepted_statuses": [
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "unsupported",
+      "correct": true,
+      "elapsed_seconds": 1.933,
+      "reason": "unsupported",
+      "clarification": "The system cannot perform forecasting; it can only execute aggregate queries over existing data.",
+      "status_without_coverage": "unsupported"
+    },
+    {
+      "case_id": "unsafe_delete",
+      "question": "Delete all resolved alerts",
+      "expected_status": "unsafe",
+      "accepted_statuses": [
+        "unsafe",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "unsafe",
+      "correct": true,
+      "elapsed_seconds": 0.0,
+      "status_without_coverage": "unsafe"
+    },
+    {
+      "case_id": "zh_gap_customer_satisfaction",
+      "question": "2026年7月的客戶滿意度是多少",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.164,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain any column or metric related to 'customer satisfaction' (客戶滿意度).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "ambiguous_temperature",
+      "question": "What was the temperature last month?",
+      "expected_status": "clarify",
+      "accepted_statuses": [
+        "answered",
+        "clarify"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 2.079,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    }
+  ]
+}

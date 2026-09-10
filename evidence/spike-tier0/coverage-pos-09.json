@@ -1,0 +1,203 @@
+{
+  "summary": {
+    "datasource_id": "pos_test",
+    "cases_file": "evals/cases/tier0/coverage_pos.yaml",
+    "prompt_revision": "plan-classify-json-v9",
+    "output_mode": "json_schema",
+    "overlay_revision": null,
+    "perturbation": null,
+    "as_of": "2026-02-10T12:00:00+08:00",
+    "cases": 8,
+    "judged": 8,
+    "unjudged": 0,
+    "correct": 7,
+    "answerable_correct": 0,
+    "answerable_total": 0,
+    "answered_but_wrong_rows": 0,
+    "refusals_correct": 7,
+    "refusals_total": 8,
+    "false_answers_on_refusal_cases": 0,
+    "model_failures": 1,
+    "model_retries": 0,
+    "p50_seconds": 3.808,
+    "p95_seconds": 25.651,
+    "introspection_seconds": 0.047,
+    "schema": {
+      "tables": 13,
+      "columns": 58,
+      "foreign_keys": 11,
+      "inferred_foreign_keys": [],
+      "enum_distinct_limit": 20,
+      "sampled_columns": 13,
+      "enum_columns": 0
+    },
+    "status_counts": {
+      "failed": 1,
+      "semantic_gap": 7
+    },
+    "rows_redacted": false,
+    "incorrect_case_ids": [
+      "cov_discounted_sales"
+    ],
+    "verification_counts": {
+      "verified": 0,
+      "partially_verified": 0,
+      "unverified_semantics": 0
+    },
+    "shape_repairs": 0,
+    "base_repairs": 0,
+    "plan_error_counts": {},
+    "zero_call_refusals": 0,
+    "shape_gate_refusals": 0,
+    "per_period_clarifies": 0,
+    "literal_checks": 0,
+    "literal_misses": 0,
+    "grounding": {
+      "columns": [],
+      "values": 0,
+      "skipped_for_size": [],
+      "hinted_cases": 0,
+      "resolved_cases": 0,
+      "ambiguous_cases": 0
+    },
+    "empty_result_warnings": 0,
+    "segment_exclusions": 0
+  },
+  "results": [
+    {
+      "case_id": "cov_discounted_sales",
+      "question": "2025年12月的折扣後營業額",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 25.651,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "cov_new_members",
+      "question": "2025年12月新會員的交易數",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.473,
+      "reason": "semantic_gap",
+      "clarification": "Schema does not contain a member table with a registration date to identify 'new members' (新會員).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_overtime_pay",
+      "question": "2025年的加班費總額",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.228,
+      "reason": "semantic_gap",
+      "clarification": "Schema does not contain a column for overtime pay (加班費).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_attrition_rate",
+      "question": "業務部的離職率",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 4.334,
+      "reason": "semantic_gap",
+      "clarification": "離職率 (turnover rate) 通常需要計算離職人數與平均在職人數的比率，這涉及多個聚合計算（如計算離職人數與總人數），無法透過單一聚合查詢 (one aggregate query) 完成。",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_online_sales",
+      "question": "2025年12月線上訂單的營業額",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.808,
+      "reason": "semantic_gap",
+      "clarification": "Schema does not contain a column to distinguish between 'online' and 'offline' orders (e.g., a channel or order_type column).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_contractors",
+      "question": "外包人員有幾位",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.586,
+      "reason": "semantic_gap",
+      "clarification": "Schema 中沒有定義如何區分「外包人員」的欄位（例如：員工類別或合約類型）。",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_installments",
+      "question": "2025年12月分期付款的交易數",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 4.295,
+      "reason": "semantic_gap",
+      "clarification": "Schema does not contain a column or value to identify 'installment payments' (分期付款). The `pos_payment.payment_method` column only contains 'cash', 'credit_card', and 'line_pay'.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_inventory",
+      "question": "目前的庫存數量",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.385,
+      "reason": "semantic_gap",
+      "clarification": "Schema does not contain a table or column for inventory levels (庫存數量).",
+      "status_without_coverage": "semantic_gap"
+    }
+  ]
+}

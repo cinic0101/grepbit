@@ -302,6 +302,26 @@ class ChatCompletionsPlanClient:
     def settings(self) -> GroundingModelSettings:
         return self._settings
 
+    def response_format(self) -> dict[str, Any]:
+        """``json_object`` (valid JSON) or ``json_schema`` (constrained decoding).
+
+        In ``json_schema`` mode the gateway (vLLM guided decoding) can only
+        emit tokens that keep the output inside ``PlanProposal``'s schema, so
+        shape slips cannot happen; the shape repairs stay as the fallback for
+        the other mode.
+        """
+
+        if self._settings.structured_output_mode == "json_schema":
+            return {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "plan_proposal",
+                    "schema": PlanProposal.model_json_schema(),
+                    "strict": True,
+                },
+            }
+        return {"type": "json_object"}
+
     def build_messages(
         self,
         question: str,
@@ -364,7 +384,7 @@ class ChatCompletionsPlanClient:
                 ),
                 temperature=self._settings.temperature,
                 max_tokens=max(self._settings.max_tokens, 768),
-                response_format={"type": "json_object"},
+                response_format=self.response_format(),
             )
         except Exception:
             raise GroundingModelError("model_call_failed", 1) from None

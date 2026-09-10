@@ -750,6 +750,7 @@ def main(argv: list[str] | None = None) -> int:
         "datasource_id": arguments.datasource_id,
         "cases_file": str(arguments.cases),
         "prompt_revision": PLAN_PROMPT_REVISION if arguments.live else None,
+        "output_mode": client.settings.structured_output_mode if client else None,
         "overlay_revision": overlay.revision if overlay is not None else None,
         "perturbation": arguments.perturb,
         "as_of": as_of.isoformat(),

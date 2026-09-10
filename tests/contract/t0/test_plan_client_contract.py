@@ -232,3 +232,21 @@ def test_repair_drops_null_valued_extra_keys_the_model_adds_to_a_plan() -> None:
     }
     repaired, repairs = repair_column_refs(payload, iot_schema())
     assert repaired["plan"]["time"] is None and repairs == []
+
+
+def test_response_format_follows_the_output_mode_setting() -> None:
+    loose = ChatCompletionsPlanClient(SETTINGS)
+    assert loose.response_format() == {"type": "json_object"}
+    strict = ChatCompletionsPlanClient(
+        GroundingModelSettings(
+            base_url="http://model.local/v1",
+            model="test-model",
+            structured_output_mode="json_schema",
+        )
+    )
+    fmt = strict.response_format()
+    assert fmt["type"] == "json_schema" and fmt["json_schema"]["strict"] is True
+    assert (
+        fmt["json_schema"]["schema"]["$defs"]["QueryPlan"]["additionalProperties"]
+        is False
+    )

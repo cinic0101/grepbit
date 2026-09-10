@@ -51,6 +51,7 @@ for what exists.
 | Declared joins for schemas without foreign keys where inference fails | not yet hit | Cube joins, Wren relationships |
 | Hidden tables or columns per datasource (transfer tables for sales questions) | q06 | Cube views and `public: false` |
 | Hierarchies and drill paths (category to product) | not needed yet | Cube hierarchies |
+| Latest row per entity (an order's status is the latest shipment status of its transfer; 最近一筆交易) | q05, q06 of the 50: a transfer has many status rows, so the current status cannot be joined without fan-out | DISTINCT ON or window subquery as a derived parent; Cube has no direct equivalent |
 | Latest-record lookups, weekday or hour breakdowns, anti-joins (沒有交易的門市), rolling averages | not in the 50; put two or three of each in the next batch so they become measured refusals | |
 
 Deliberately not adopted: free-text instructions or question-to-SQL pairs

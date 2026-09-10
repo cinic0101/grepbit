@@ -1,6 +1,6 @@
 {
   "datasource_id": "pos_real",
-  "revision": "pos-real-overlay-v5",
+  "revision": "pos-real-overlay-v7",
   "metrics": [
     {
       "id": "return_amount",
@@ -136,6 +136,46 @@
         "column": "sale_date"
       },
       "review_state": "verified"
+    },
+    {
+      "id": "transaction_count",
+      "names": [
+        "交易筆數",
+        "銷售交易筆數",
+        "交易數",
+        "銷售筆數",
+        "transaction count",
+        "number of transactions"
+      ],
+      "description": "Count of pos_sale rows; one row is one sales transaction, so this equals the number of distinct transaction numbers, including zero-amount service transactions (SIM renewals, service fees, memberships; the owner decided on 2026-09-10 to count them; a metric filter total_amount ne 0 would exclude them). Returns are excluded by the default returns segment unless the question includes them.",
+      "base_table": "pos_sale",
+      "aggregate": "count",
+      "time_column": {
+        "table": "pos_sale",
+        "column": "sale_date"
+      },
+      "review_state": "verified"
+    },
+    {
+      "id": "paid_transaction_count",
+      "names": [
+        "付款交易筆數",
+        "各付款方式的交易筆數",
+        "有付款的交易筆數",
+        "paid transaction count"
+      ],
+      "description": "Count of distinct pos_payment.transaction_no: transactions with at least one payment row, counted once even when paid in several parts. Zero-amount service transactions (SIM renewals, service fees, memberships) carry no payment row and are not counted here; transaction_count over pos_sale counts them. Signed by the owner on 2026-09-10.",
+      "base_table": "pos_payment",
+      "aggregate": "count_distinct",
+      "column": {
+        "table": "pos_payment",
+        "column": "transaction_no"
+      },
+      "time_column": {
+        "table": "pos_sale",
+        "column": "sale_date"
+      },
+      "review_state": "verified"
     }
   ],
   "absent_concepts": [
@@ -145,7 +185,7 @@
         "交易狀態",
         "order status"
       ],
-      "note": "This datasource records no order status: a pos_sale row is either a normal sale or a return (origin_transaction_no set). transfer_status.status is the status of a stock transfer order, not of a sale."
+      "note": "An order's status is the latest shipment status (transfer_status.status, ordered by status_time) of the transfer its sale references; a transfer has several status rows over time, so this cannot be expressed as one aggregate yet (a latest-row-per-entity construct is planned). The count of shipment status records by status is answerable, but it counts records, not orders."
     },
     {
       "names": [
@@ -340,14 +380,18 @@
       "table": "transfer",
       "names": [
         "調撥單",
+        "出貨單",
+        "shipment",
         "stock transfer"
       ]
     },
     {
       "table": "transfer_status",
       "names": [
-        "調撥狀態",
-        "調撥單狀態",
+        "運送狀態",
+        "出貨狀態",
+        "調撥狀態紀錄",
+        "shipment status",
         "transfer status"
       ]
     }

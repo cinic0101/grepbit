@@ -1,0 +1,916 @@
+{
+  "summary": {
+    "datasource_id": "pos_test",
+    "cases_file": "evals/cases/tier0/pos.yaml",
+    "prompt_revision": "plan-classify-json-v9",
+    "output_mode": "json_schema",
+    "overlay_revision": null,
+    "perturbation": null,
+    "as_of": "2026-02-10T12:00:00+08:00",
+    "cases": 26,
+    "judged": 26,
+    "unjudged": 0,
+    "correct": 11,
+    "answerable_correct": 7,
+    "answerable_total": 20,
+    "answered_but_wrong_rows": 1,
+    "refusals_correct": 4,
+    "refusals_total": 6,
+    "false_answers_on_refusal_cases": 0,
+    "model_failures": 14,
+    "model_retries": 0,
+    "p50_seconds": 4.708,
+    "p95_seconds": 24.975,
+    "introspection_seconds": 0.038,
+    "schema": {
+      "tables": 13,
+      "columns": 58,
+      "foreign_keys": 11,
+      "inferred_foreign_keys": [],
+      "enum_distinct_limit": 0,
+      "sampled_columns": 0,
+      "enum_columns": 0
+    },
+    "status_counts": {
+      "answered": 7,
+      "failed": 14,
+      "semantic_gap": 1,
+      "unsafe": 1,
+      "unsupported": 3
+    },
+    "rows_redacted": false,
+    "incorrect_case_ids": [
+      "sales_dec_2025_total",
+      "sales_by_store_dec",
+      "sales_by_store_last_month_en",
+      "payment_amount_by_method",
+      "sales_by_category",
+      "top3_products_by_amount",
+      "store_partial_name_jan",
+      "avg_ticket_dec",
+      "member_txn_count_dec",
+      "sales_by_salesperson",
+      "payroll_by_dept_2025",
+      "hours_by_dept_two_paths",
+      "bonus_by_month_2025",
+      "empty_window_feb",
+      "cross_domain_no_path"
+    ],
+    "verification_counts": {
+      "verified": 0,
+      "partially_verified": 0,
+      "unverified_semantics": 7
+    },
+    "shape_repairs": 0,
+    "base_repairs": 0,
+    "plan_error_counts": {
+      "plan_grain_conflict": 1
+    },
+    "zero_call_refusals": 2,
+    "shape_gate_refusals": 1,
+    "per_period_clarifies": 0,
+    "literal_checks": 1,
+    "literal_misses": 0,
+    "grounding": {
+      "columns": [],
+      "values": 0,
+      "skipped_for_size": [],
+      "hinted_cases": 0,
+      "resolved_cases": 0,
+      "ambiguous_cases": 0
+    },
+    "empty_result_warnings": 0,
+    "segment_exclusions": 0
+  },
+  "results": [
+    {
+      "case_id": "sales_dec_2025_total",
+      "question": "2025年12月的總營業額是多少？",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 25.338,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "sales_by_store_dec",
+      "question": "2025年12月各門市的營業額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 3.193,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "sales_by_store_last_month_en",
+      "question": "Sales amount by store last month",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 3.179,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "txn_count_jan",
+      "question": "2026年1月有幾筆交易？",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.321,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-01"
+          }
+        },
+        "order": [],
+        "having": []
+      },
+      "assumptions": [
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2026-01 is [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT COUNT(*) AS count FROM public.pos_sale WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "count(*) over pos_sale; for 2026-01",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "count": 10
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "payment_amount_by_method",
+      "question": "各付款方式的收款總額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 3.11,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "txn_count_by_method",
+      "question": "各付款方式各有幾筆交易",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 3.805,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "transaction_count"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "pos_payment",
+            "column": "payment_method"
+          }
+        ],
+        "filters": [],
+        "order": [],
+        "having": []
+      },
+      "assumptions": [
+        "No row filter was applied beyond the time window; every pos_payment row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT pos_payment.payment_method AS payment_method, COUNT(*) AS transaction_count FROM public.pos_payment GROUP BY pos_payment.payment_method ORDER BY payment_method NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment"
+        ],
+        "joins": [],
+        "measures": [
+          "transaction_count = count(*)"
+        ],
+        "dimensions": [
+          "pos_payment.payment_method"
+        ],
+        "filters": [],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(*) over pos_payment; by pos_payment.payment_method",
+      "literal_checks": 0,
+      "row_count": 3,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "payment_method": "cash",
+          "transaction_count": 15
+        },
+        {
+          "payment_method": "credit_card",
+          "transaction_count": 10
+        },
+        {
+          "payment_method": "line_pay",
+          "transaction_count": 6
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "sales_by_category",
+      "question": "各商品類別的銷售金額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 24.861,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "top3_products_by_amount",
+      "question": "銷售金額最高的前三個商品",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 24.85,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "store_partial_name_jan",
+      "question": "2026年1月新店遠東的營業額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 3.162,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "avg_ticket_dec",
+      "question": "2025年12月的平均客單價",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered",
+        "clarify",
+        "semantic_gap"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 24.863,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "member_txn_count_dec",
+      "question": "2025年12月會員交易有幾筆",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": false,
+      "elapsed_seconds": 4.942,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2025-12"
+          }
+        },
+        "order": [],
+        "having": []
+      },
+      "assumptions": [
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2025-12 is [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT COUNT(*) AS count FROM public.pos_sale WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "count(*) over pos_sale; for 2025-12",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "count": 18
+        }
+      ],
+      "rows_match_reference": false,
+      "matched_reference_index": null,
+      "reference_rows": [
+        [
+          "7"
+        ]
+      ],
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "sales_by_salesperson",
+      "question": "各銷售人員的業績",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 24.975,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "returns_dec_gap",
+      "question": "2025年12月的退貨金額",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 4.708,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column or flag to distinguish between a regular sale and a return (e.g., a 'return_amount' column or a 'transaction_type' column). While 'origin_transaction_no' in 'pos_sale' suggests a relationship between transactions, there is no explicit way to identify and sum only the return amounts.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "member_ratio_gap",
+      "question": "會員交易佔比是多少",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "unsupported",
+      "correct": true,
+      "elapsed_seconds": 0.0,
+      "reason": "unsupported_shape:share_of_total",
+      "matched_name": "佔比",
+      "clarification": "Shares, ratios and percentages are not supported yet: the service returns one aggregate query without derived arithmetic. Ask for the underlying amounts or counts (for example the amount per group and the total) and compute the share from them.",
+      "status_without_coverage": "unsupported"
+    },
+    {
+      "case_id": "payroll_by_dept_2025",
+      "question": "2025年各部門的薪資總額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 24.881,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "engineers_avg_base_salary",
+      "question": "工程師的平均本薪",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.875,
+      "plan": {
+        "base_table": "hr_payroll",
+        "measures": [
+          {
+            "aggregate": "avg",
+            "column": {
+              "table": "hr_payroll",
+              "column": "base_salary"
+            },
+            "alias": "avg_base_salary"
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "hr_employee",
+              "column": "job_title"
+            },
+            "op": "eq",
+            "values": [
+              "工程師"
+            ]
+          }
+        ],
+        "order": [],
+        "having": []
+      },
+      "assumptions": [
+        "hr_payroll rows are joined to hr_employee through hr_payroll.emp_id; rows without a matching hr_employee row keep NULL there.",
+        "avg_base_salary = AVG of hr_payroll.base_salary; NULL values are ignored by the aggregate.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT AVG(hr_payroll.base_salary) AS avg_base_salary FROM public.hr_payroll LEFT JOIN public.hr_employee ON hr_payroll.emp_id = hr_employee.emp_id WHERE hr_employee.job_title = %(f_0)s",
+      "lineage": {
+        "base_table": "hr_payroll",
+        "tables": [
+          "hr_payroll",
+          "hr_employee"
+        ],
+        "joins": [
+          "hr_payroll.emp_id -> hr_employee.emp_id"
+        ],
+        "measures": [
+          "avg_base_salary = avg(hr_payroll.base_salary)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "hr_employee.job_title eq 工程師"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "avg(hr_payroll.base_salary) over hr_payroll; where hr_employee.job_title eq 工程師",
+      "literal_checks": 1,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "avg_base_salary": "63239.583333333333"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "active_employees",
+      "question": "目前在職員工有幾位",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.033,
+      "plan": {
+        "base_table": "hr_employee",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "employee_count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "hr_employee",
+              "column": "terminated_at"
+            },
+            "op": "is_null",
+            "values": []
+          }
+        ],
+        "order": [],
+        "having": []
+      },
+      "assumptions": [
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT COUNT(*) AS employee_count FROM public.hr_employee WHERE hr_employee.terminated_at IS NULL",
+      "lineage": {
+        "base_table": "hr_employee",
+        "tables": [
+          "hr_employee"
+        ],
+        "joins": [],
+        "measures": [
+          "employee_count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "hr_employee.terminated_at is_null"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(*) over hr_employee; where hr_employee.terminated_at is_null",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "employee_count": 27
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "headcount_by_dept",
+      "question": "各部門人數",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 3.738,
+      "plan": {
+        "base_table": "hr_employee",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "employee_count"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "hr_dept",
+            "column": "dept_name"
+          }
+        ],
+        "filters": [],
+        "order": [],
+        "having": []
+      },
+      "assumptions": [
+        "hr_employee rows are joined to hr_dept through hr_employee.dept_id; rows without a matching hr_dept row keep NULL there.",
+        "No row filter was applied beyond the time window; every hr_employee row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT hr_dept.dept_name AS dept_name, COUNT(*) AS employee_count FROM public.hr_employee LEFT JOIN public.hr_dept ON hr_employee.dept_id = hr_dept.dept_id GROUP BY hr_dept.dept_name ORDER BY dept_name NULLS FIRST",
+      "lineage": {
+        "base_table": "hr_employee",
+        "tables": [
+          "hr_employee",
+          "hr_dept"
+        ],
+        "joins": [
+          "hr_employee.dept_id -> hr_dept.dept_id"
+        ],
+        "measures": [
+          "employee_count = count(*)"
+        ],
+        "dimensions": [
+          "hr_dept.dept_name"
+        ],
+        "filters": [],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(*) over hr_employee; by hr_dept.dept_name",
+      "literal_checks": 0,
+      "row_count": 4,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "dept_name": "業務部",
+          "employee_count": 8
+        },
+        {
+          "dept_name": "研發部",
+          "employee_count": 12
+        },
+        {
+          "dept_name": "行銷部",
+          "employee_count": 6
+        },
+        {
+          "dept_name": "財務部",
+          "employee_count": 4
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "active_assignments",
+      "question": "目前進行中的派工有幾筆",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 3.978,
+      "plan": {
+        "base_table": "hr_assignment",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "count"
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "hr_assignment",
+              "column": "ended_at"
+            },
+            "op": "is_null",
+            "values": []
+          }
+        ],
+        "order": [],
+        "having": []
+      },
+      "assumptions": [
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "sql": "SELECT COUNT(*) AS count FROM public.hr_assignment WHERE hr_assignment.ended_at IS NULL",
+      "lineage": {
+        "base_table": "hr_assignment",
+        "tables": [
+          "hr_assignment"
+        ],
+        "joins": [],
+        "measures": [
+          "count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "hr_assignment.ended_at is_null"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(*) over hr_assignment; where hr_assignment.ended_at is_null",
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "count": 27
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "hours_by_dept_two_paths",
+      "question": "各部門的每週總工時",
+      "expected_status": "unsupported",
+      "accepted_statuses": [
+        "clarify",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 24.877,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "bonus_by_month_2025",
+      "question": "2025年每月發放的獎金總額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 24.854,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "store_with_most_staff_no_fk",
+      "question": "哪個門市的員工最多",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "unsupported",
+      "correct": true,
+      "elapsed_seconds": 4.301,
+      "plan": {
+        "base_table": "employee",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "employee_count"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "order": [
+          {
+            "field": "employee_count",
+            "direction": "desc"
+          }
+        ],
+        "having": [],
+        "limit": 1
+      },
+      "reason": "plan_grain_conflict",
+      "detail": "store",
+      "status_without_coverage": "unsupported"
+    },
+    {
+      "case_id": "unsafe_delete_zh",
+      "question": "把2025年12月的交易全部刪掉",
+      "expected_status": "unsafe",
+      "accepted_statuses": [
+        "unsafe",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "unsafe",
+      "correct": true,
+      "elapsed_seconds": 0.0,
+      "status_without_coverage": "unsafe"
+    },
+    {
+      "case_id": "forecast_feb",
+      "question": "預估2026年2月的營業額",
+      "expected_status": "unsupported",
+      "accepted_statuses": [
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "unsupported",
+      "correct": true,
+      "elapsed_seconds": 3.072,
+      "reason": "unsupported",
+      "clarification": "The system cannot perform forecasting or predictions (預估); it can only query historical data.",
+      "status_without_coverage": "unsupported"
+    },
+    {
+      "case_id": "empty_window_feb",
+      "question": "2026年2月的營業額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 24.855,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "cross_domain_no_path",
+      "question": "各門市的薪資總額",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 24.923,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    }
+  ]
+}
