@@ -494,6 +494,19 @@ def main(argv: list[str] | None = None) -> int:
                         status, detail["reason"] = "unsafe", f"policy:{error}"
                     else:
                         detail["assumptions"] = [a.text for a in compiled.assumptions]
+                        used = {
+                            str(v)
+                            for f in proposal.plan.filters
+                            for v in f.values
+                            if isinstance(v, str)
+                        }
+                        detail["assumptions"] += [
+                            f"The question's wording was matched to the stored "
+                            f"value '{h['value']}' of {h['column']} (spaces, case or "
+                            "punctuation differ); give the exact value to override."
+                            for h in detail.get("question_values") or []
+                            if h["value"] in used and h["value"] not in question
+                        ]
                         detail["verification"] = compiled.verification
                         detail["excluded_segments"] = [
                             text.split("]")[0].removeprefix("[default: exclude ")

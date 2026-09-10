@@ -57,7 +57,19 @@ Deliberately not adopted: free-text instructions or question-to-SQL pairs
 shown to the model (Wren AI). The model never writes SQL, and prompt knowledge
 carried as data is prompt tuning by another name.
 
-Also for the next phase, raised by the owner on 2026-09-09: a way to let an
+Also for the next phase, raised by the owner on 2026-09-10: the q29 class,
+where a hint or any payload change flips the planner's base table (a
+deterministic model at temperature 0 is still brittle across inputs). Two
+candidate remedies to measure against each other: a deterministic base
+repair when a measure column sits on a child of the chosen base (swap the
+base to the measure's table, state it as an assumption), and Best-of-N or
+self-consistency with a deterministic selector (compile success, no
+grain conflict, majority plan). The deterministic repair is tried first.
+And the verdict workflow: the build side pre-fills every verdict it can
+derive (carried, exact match, refusal by policy, structural) and flags only
+new numbers for the owner.
+
+Also raised by the owner on 2026-09-09: a way to let an
 LLM propose a datasource onboarding (table and column aliases, candidate
 metrics, absent concepts, column policies, default time columns) from the
 introspected schema and the ask log, as a draft a reviewer approves; the
