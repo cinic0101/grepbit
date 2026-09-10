@@ -53,16 +53,15 @@ class ColumnRef(DomainModel):
         return f"{self.table}.{self.column}"
 
 
-class Measure(DomainModel):
-    """Either a raw aggregate over a column or a reference to a reviewed metric."""
+class Operand(DomainModel):
+    """One aggregate: a raw aggregate over a column, or a reviewed metric."""
 
     aggregate: Aggregate | None = None
     column: ColumnRef | None = None
     metric: str | None = Field(default=None, pattern=_IDENTIFIER)
-    alias: str | None = Field(default=None, pattern=_IDENTIFIER)
 
     @model_validator(mode="after")
-    def metric_or_aggregate(self) -> Measure:
+    def metric_or_aggregate(self) -> Operand:
         if self.metric is not None:
             if self.aggregate is not None or self.column is not None:
                 raise ValueError("plan_measure_metric_excludes_aggregate")
@@ -74,15 +73,55 @@ class Measure(DomainModel):
         return self
 
     @property
-    def output_name(self) -> str:
-        if self.alias:
-            return self.alias
+    def default_name(self) -> str:
         if self.metric is not None:
             return self.metric
         if self.column is None:
             return "row_count"
         assert self.aggregate is not None
         return f"{self.aggregate.value}_{self.column.column}"
+
+
+class Ratio(DomainModel):
+    """One aggregate divided by another over the same rows (客單價, 退貨率)."""
+
+    numerator: Operand
+    denominator: Operand
+
+
+class Measure(Operand):
+    """An operand, a ratio of two operands, or either as a share of the total.
+
+    ``share_of_total`` divides the measure by the same measure over every
+    group (within each period when the plan has a grain); ``ratio`` divides two
+    operands. Both are derived arithmetic the server computes in the same
+    statement; the model never computes numbers.
+    """
+
+    alias: str | None = Field(default=None, pattern=_IDENTIFIER)
+    ratio: Ratio | None = None
+    share_of_total: bool = False
+
+    @model_validator(mode="after")
+    def metric_or_aggregate(self) -> Measure:  # type: ignore[override]
+        if self.ratio is not None:
+            if self.aggregate is not None or self.column is not None or self.metric:
+                raise ValueError("plan_measure_ratio_excludes_aggregate")
+            return self
+        return super().metric_or_aggregate()  # type: ignore[return-value]
+
+    @property
+    def output_name(self) -> str:
+        if self.alias:
+            return self.alias
+        if self.ratio is not None:
+            base = (
+                f"{self.ratio.numerator.default_name}_per_"
+                f"{self.ratio.denominator.default_name}"
+            )
+        else:
+            base = self.default_name
+        return f"{base}_share" if self.share_of_total else base
 
 
 class Filter(DomainModel):
@@ -111,7 +150,7 @@ class TimeSpec(DomainModel):
     a plain filter; a grain without a window is a plain breakdown.
     """
 
-    column: ColumnRef
+    column: ColumnRef | None = None
     scope: TimeScope | None = None
     grain: TimeGrain | None = None
 
@@ -125,6 +164,16 @@ class TimeSpec(DomainModel):
 class OrderSpec(DomainModel):
     field: str = Field(pattern=_IDENTIFIER)
     direction: Literal["asc", "desc"] = "desc"
+
+
+class GrowthSpec(DomainModel):
+    """Period-over-period change of a measure: (m - previous m) / previous m.
+
+    Needs a time grain; the previous period is the previous bucket for the
+    same group (LAG over period_start, partitioned by the dimensions).
+    """
+
+    measure: str = Field(pattern=_IDENTIFIER)
 
 
 class HavingSpec(DomainModel):
@@ -141,13 +190,17 @@ class HavingSpec(DomainModel):
 
 
 class QueryPlan(DomainModel):
-    base_table: str = Field(pattern=_IDENTIFIER)
+    """One aggregate query. ``base_table`` may be omitted when the measure
+    columns or metrics determine it; the compiler derives it then."""
+
+    base_table: str | None = Field(default=None, pattern=_IDENTIFIER)
     measures: list[Measure] = Field(min_length=1, max_length=4)
     dimensions: list[ColumnRef] = Field(default_factory=list, max_length=3)
     filters: list[Filter] = Field(default_factory=list, max_length=6)
     time: TimeSpec | None = None
     order: list[OrderSpec] = Field(default_factory=list, max_length=2)
     having: list[HavingSpec] = Field(default_factory=list, max_length=2)
+    growth: list[GrowthSpec] = Field(default_factory=list, max_length=2)
     limit: int | None = Field(default=None, ge=1, le=MAX_PLAN_LIMIT)
 
     @model_validator(mode="after")
@@ -165,6 +218,18 @@ class QueryPlan(DomainModel):
         for item in self.having:
             if item.field not in measure_names:
                 raise ValueError("plan_having_field_not_a_measure")
+            measure = next(m for m in self.measures if m.output_name == item.field)
+            if measure.share_of_total or measure.ratio is not None:
+                raise ValueError("plan_having_on_derived_measure")
+        for item in self.growth:
+            if item.measure not in measure_names:
+                raise ValueError("plan_growth_field_not_a_measure")
+            if self.time is None or self.time.grain is None:
+                raise ValueError("plan_growth_requires_grain")
+        if self.base_table is None and not any(
+            m.metric or m.column or m.ratio for m in self.measures
+        ):
+            raise ValueError("plan_base_table_required")
         return self
 
 
@@ -209,6 +274,10 @@ _PLAN_ERROR_CODES = frozenset(
         # a past relative window whose end lies beyond the current unit (for
         # example unit week, offset -1, length 7: the model meant days)
         "relative_window_reaches_future",
+        # base_table omitted and the measures name several unrelated tables
+        "base_table_undetermined",
+        # time.column omitted and the base table has no default time column
+        "time_column_required",
     }
 )
 

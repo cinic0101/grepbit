@@ -77,7 +77,9 @@ REVIEWED_FUNCTIONS = frozenset(
 )
 # Tier-0 plans may aggregate any column kind the compiler admits; these are
 # the only additional functions the plan compiler can emit.
-PLAN_AGGREGATE_FUNCTIONS = frozenset({"count", "avg", "min", "max", "distinct"})
+PLAN_AGGREGATE_FUNCTIONS = frozenset(
+    {"count", "avg", "min", "max", "distinct", "lag", "filter"}
+)
 
 
 class PostgresSqlPolicy:

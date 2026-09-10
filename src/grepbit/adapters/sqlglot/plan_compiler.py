@@ -11,6 +11,7 @@ templates. It also derives the lineage and the assumptions the caller sees.
 
 from __future__ import annotations
 
+import json
 from collections.abc import Sequence
 from datetime import datetime
 
@@ -37,6 +38,7 @@ from grepbit.domain.plan import (
     FilterOp,
     Lineage,
     Measure,
+    Operand,
     PlanError,
     QueryPlan,
 )
@@ -86,49 +88,82 @@ class PlanCompiler:
         exclude_segments: Sequence[Segment] = (),
     ) -> CompiledPlan:
         schema = self._schema
-        base = schema.table(plan.base_table)
-        if base is None or not self._visible(plan.base_table):
-            raise PlanError("unknown_table", plan.base_table)
-        joins: dict[str, ForeignKey] = {}
         assumptions: list[Assumption] = []
+        base_name = plan.base_table or self._derive_base_table(plan, assumptions)
+        base = schema.table(base_name)
+        if base is None or not self._visible(base_name):
+            raise PlanError("unknown_table", base_name)
+        joins: dict[str, ForeignKey] = {}
 
-        # Reviewed metrics expand into their aggregate, their defining filters,
-        # and possibly the time column the definition prescribes.
-        effective: list[tuple[Measure, ReviewedMetric | None]] = []
-        metric_filters: list[tuple[str, Filter]] = []
+        # Every operand (a measure, or a ratio's numerator and denominator)
+        # resolves to an aggregate, its own defining filters (from a reviewed
+        # metric) and the metric itself. A metric may prescribe the time column.
         time_override: ColumnRef | None = None
-        for measure in plan.measures:
-            if measure.metric is None:
-                effective.append((measure, None))
-                continue
-            metric = self._overlay.metric(measure.metric) if self._overlay else None
+
+        def resolve_operand(operand: Operand) -> tuple[Operand, ReviewedMetric | None]:
+            nonlocal time_override
+            if operand.metric is None:
+                return operand, None
+            metric = self._overlay.metric(operand.metric) if self._overlay else None
             if metric is None:
-                raise PlanError("unknown_metric", measure.metric)
+                raise PlanError("unknown_metric", operand.metric)
             if metric.base_table != base.name:
-                raise PlanError("metric_base_table_mismatch", measure.metric)
+                raise PlanError("metric_base_table_mismatch", operand.metric)
             if metric.time_column is not None:
                 if time_override is not None and time_override != metric.time_column:
-                    raise PlanError("metric_conflict", measure.metric)
+                    raise PlanError("metric_conflict", operand.metric)
                 time_override = metric.time_column
-            effective.append(
-                (
-                    measure.model_copy(
-                        update={
-                            "aggregate": metric.aggregate,
-                            "column": metric.column,
-                            "metric": None,
-                            "alias": measure.alias or metric.id,
-                        }
-                    ),
-                    metric,
-                )
+            expanded = Operand(aggregate=metric.aggregate, column=metric.column)
+            return expanded, metric
+
+        # effective: one entry per plan measure, with the resolved operands.
+        effective: list[tuple[Measure, list[tuple[Operand, ReviewedMetric | None]]]]
+        effective = []
+        for measure in plan.measures:
+            if measure.ratio is not None:
+                parts = [
+                    resolve_operand(measure.ratio.numerator),
+                    resolve_operand(measure.ratio.denominator),
+                ]
+            else:
+                parts = [resolve_operand(measure)]
+            effective.append((measure, parts))
+        # Metric filters: when every operand carries the same filters they go in
+        # WHERE (one metric, the common case); when operands differ (a ratio
+        # of a filtered metric over an unfiltered total, two metrics) each
+        # aggregate gets its own FILTER (WHERE ...) so the rows stay shared.
+        operand_filters = [
+            tuple(
+                json.dumps(f.model_dump(mode="json"), sort_keys=True)
+                for f in metric.filters
             )
-            metric_filters.extend((metric.id, item) for item in metric.filters)
+            if metric
+            else ()
+            for _, parts in effective
+            for _, metric in parts
+        ]
+        shared_filters = len(set(operand_filters)) == 1
+        metric_filters: list[tuple[str, Filter]] = []
+        if shared_filters:
+            for _, parts in effective:
+                for _, metric in parts:
+                    if metric is not None:
+                        metric_filters = [(metric.id, f) for f in metric.filters]
+                        break
+                if metric_filters:
+                    break
+        all_metric_filters = [
+            (metric.id, f)
+            for _, parts in effective
+            for _, metric in parts
+            if metric is not None
+            for f in metric.filters
+        ]
         # Default-excluded segments: applied when the segment's table is the base
         # table or reachable from it, and nothing in the plan already filters on
         # the segment's column (a return metric must keep its own rows).
         referenced = {f.column.id for f in plan.filters} | {
-            f.column.id for _, f in metric_filters
+            f.column.id for _, f in all_metric_filters
         }
         segment_filters: list[tuple[Segment, Filter]] = []
         for segment in exclude_segments:
@@ -142,6 +177,22 @@ class PlanCompiler:
             segment_filters.append((segment, segment.inverse()))
 
         time_spec = plan.time
+        if time_spec is not None and time_spec.column is None:
+            default = self._overlay.time_default(base.name) if self._overlay else None
+            if default is None and time_override is None:
+                raise PlanError("time_column_required", base.name)
+            chosen = time_override or default
+            time_spec = time_spec.model_copy(update={"column": chosen})
+            assumptions.append(
+                Assumption(
+                    text=(
+                        f"Time is measured on {chosen.id}, the default time column "
+                        f"of {base.name}; no column was named."
+                    ),
+                    source=AssumptionSource.REVIEWED,
+                    definition_ref=f"overlay.time_defaults.{base.name}",
+                )
+            )
         if (
             time_spec is not None
             and time_override is not None
@@ -158,6 +209,7 @@ class PlanCompiler:
                     definition_ref="overlay.metrics.time_column",
                 )
             )
+        assert time_spec is None or time_spec.column is not None
 
         def resolve(ref: ColumnRef) -> SchemaColumn:
             table = schema.table(ref.table)
@@ -243,9 +295,63 @@ class PlanCompiler:
             group_by.append(expression)
             output.append(dimension.column)
 
-        for measure, _metric in effective:
-            selects.append(self._aggregate(measure, resolve).as_(measure.output_name))
+        def operand_expression(
+            operand: Operand, metric: ReviewedMetric | None
+        ) -> exp.Expression:
+            aggregate = self._aggregate(operand, resolve)
+            if metric is not None and metric.filters and not shared_filters:
+                clauses = []
+                for item in metric.filters:
+                    clauses.append(self._condition(item, resolve(item.column), bind))
+                aggregate = exp.Filter(
+                    this=aggregate, expression=exp.Where(this=exp.and_(*clauses))
+                )
+            return aggregate
+
+        measure_expressions: dict[str, exp.Expression] = {}
+        for measure, parts in effective:
+            if measure.ratio is not None:
+                numerator = operand_expression(*parts[0])
+                denominator = operand_expression(*parts[1])
+                expression: exp.Expression = exp.Div(
+                    this=exp.paren(numerator),
+                    expression=exp.func("NULLIF", denominator, exp.Literal.number(0)),
+                )
+            else:
+                expression = operand_expression(*parts[0])
+            if measure.share_of_total:
+                total = exp.Window(
+                    this=exp.Sum(this=expression.copy()),
+                    partition_by=[time_bucket.copy()]
+                    if time_bucket is not None
+                    else [],
+                )
+                expression = exp.Div(
+                    this=exp.paren(expression),
+                    expression=exp.func("NULLIF", total, exp.Literal.number(0)),
+                )
+            measure_expressions[measure.output_name] = expression
+            selects.append(expression.as_(measure.output_name))
             output.append(measure.output_name)
+        growth_names: list[str] = []
+        for item in plan.growth:
+            assert time_bucket is not None  # validated: growth requires a grain
+            current = measure_expressions[item.measure]
+            previous = exp.Window(
+                this=exp.func("LAG", current.copy()),
+                partition_by=[
+                    exp.column(d.column, table=d.table) for d in plan.dimensions
+                ],
+                order=exp.Order(expressions=[exp.Ordered(this=time_bucket.copy())]),
+            )
+            growth = exp.Div(
+                this=exp.paren(exp.Sub(this=current.copy(), expression=previous)),
+                expression=exp.func("NULLIF", previous.copy(), exp.Literal.number(0)),
+            )
+            name = f"{item.measure}_growth"
+            selects.append(growth.as_(name))
+            output.append(name)
+            growth_names.append(name)
 
         conditions: list[exp.Expression] = []
         filter_texts: list[str] = []
@@ -307,13 +413,9 @@ class PlanCompiler:
             query = query.group_by(*group_by)
         having_texts: list[str] = []
         if plan.having:
-            aggregates = {
-                measure.output_name: self._aggregate(measure, resolve)
-                for measure, _ in effective
-            }
             conditions_having = []
             for item in plan.having:
-                expression = aggregates[item.field]
+                expression = measure_expressions[item.field].copy()
                 placeholder = bind("h_", item.value, "numeric")
                 conditions_having.append(
                     {
@@ -335,7 +437,7 @@ class PlanCompiler:
                 )
         elif group_by:
             for name in output:
-                if name in {measure.output_name for measure, _ in effective}:
+                if name in measure_expressions or name in growth_names:
                     continue
                 query = query.order_by(exp.column(name).asc())
         if plan.limit is not None:
@@ -366,7 +468,8 @@ class PlanCompiler:
                         ),
                     )
                 )
-        for measure, metric in effective:
+        operands = [(m, op, metric) for m, parts in effective for op, metric in parts]
+        for measure, operand, metric in operands:
             if metric is not None:
                 assumptions.append(
                     Assumption(
@@ -378,7 +481,7 @@ class PlanCompiler:
                     )
                 )
                 continue
-            if measure.aggregate in {
+            if operand.aggregate in {
                 Aggregate.SUM,
                 Aggregate.AVG,
                 Aggregate.MIN,
@@ -388,8 +491,8 @@ class PlanCompiler:
                     Assumption(
                         text=(
                             f"{measure.output_name} = "
-                            f"{measure.aggregate.value.upper()} of "
-                            f"{measure.column.id if measure.column else base.name}; "
+                            f"{operand.aggregate.value.upper()} of "
+                            f"{operand.column.id if operand.column else base.name}; "
                             "NULL values are ignored by the aggregate."
                         ),
                         source=AssumptionSource.DEFAULT,
@@ -434,8 +537,47 @@ class PlanCompiler:
                     definition_ref=f"plan.base_table.{base.name}",
                 )
             )
-        metrics_used = [metric for _, metric in effective if metric is not None]
-        if metrics_used and len(metrics_used) == len(effective):
+        for measure, _parts in effective:
+            if measure.ratio is not None:
+                assumptions.append(
+                    Assumption(
+                        text=(
+                            f"{measure.output_name} divides two aggregates over the "
+                            "same rows; a zero denominator yields NULL."
+                        ),
+                        source=AssumptionSource.DEFAULT,
+                        definition_ref="plan.measures.ratio",
+                    )
+                )
+            if measure.share_of_total:
+                assumptions.append(
+                    Assumption(
+                        text=(
+                            f"{measure.output_name} is the share of the total over all "
+                            + (
+                                "groups within the same period."
+                                if time_bucket is not None
+                                else "groups after the filters."
+                            )
+                        ),
+                        source=AssumptionSource.DEFAULT,
+                        definition_ref="plan.measures.share_of_total",
+                    )
+                )
+        for item in plan.growth:
+            assumptions.append(
+                Assumption(
+                    text=(
+                        f"{item.measure}_growth compares each period with the previous "
+                        "period of the same group; the first period has no previous "
+                        "value and is NULL."
+                    ),
+                    source=AssumptionSource.DEFAULT,
+                    definition_ref="plan.growth",
+                )
+            )
+        metrics_used = [metric for _, _, metric in operands if metric is not None]
+        if metrics_used and len(metrics_used) == len(operands):
             all_verified = all(
                 m.review_state is ReviewState.VERIFIED for m in metrics_used
             )
@@ -475,12 +617,8 @@ class PlanCompiler:
                 link.id + (" (inferred)" if link.inferred else "")
                 for link in joins.values()
             ),
-            measures=tuple(
-                f"{m.output_name} = {m.aggregate.value}"
-                f"({m.column.id if m.column else '*'})"
-                + (f" [{metric.id}]" if metric else "")
-                for m, metric in effective
-            ),
+            measures=tuple(_measure_text(m, parts) for m, parts in effective)
+            + tuple(f"{name} = period-over-period change" for name in growth_names),
             dimensions=tuple(d.id for d in plan.dimensions),
             filters=tuple(filter_texts),
             having=tuple(having_texts),
@@ -488,10 +626,10 @@ class PlanCompiler:
         )
         semantic_refs = sorted(
             {
-                *(m.column.id for m, _ in effective if m.column),
+                *(op.column.id for _, op, _ in operands if op.column),
                 *(d.id for d in plan.dimensions),
                 *(f.column.id for f in plan.filters),
-                *(f.column.id for _, f in metric_filters),
+                *(f.column.id for _, f in all_metric_filters),
                 *([time_spec.column.id] if time_spec else []),
             }
         )
@@ -527,8 +665,54 @@ class PlanCompiler:
             return self._overlay.table_visible(table)
         return self._overlay.visible_column(table, column)
 
+    def _derive_base_table(self, plan: QueryPlan, assumptions: list[Assumption]) -> str:
+        """The base is the table the measures aggregate; a parent of it never is.
+
+        Candidates are the tables of the operand columns and the base tables of
+        the metrics. With several candidates the one that reaches all the others
+        through foreign keys (the child) is the base. Otherwise the plan cannot
+        say what it counts.
+        """
+
+        candidates: set[str] = set()
+        for measure in plan.measures:
+            ops = (
+                [measure.ratio.numerator, measure.ratio.denominator]
+                if measure.ratio is not None
+                else [measure]
+            )
+            for op in ops:
+                if op.metric is not None:
+                    metric = self._overlay.metric(op.metric) if self._overlay else None
+                    if metric is None:
+                        raise PlanError("unknown_metric", op.metric)
+                    candidates.add(metric.base_table)
+                elif op.column is not None:
+                    candidates.add(op.column.table)
+        if len(candidates) == 1:
+            [base] = candidates
+        else:
+            reaching = [
+                t
+                for t in candidates
+                if all(t == o or _reaches(self._schema, t, o) for o in candidates)
+            ]
+            if len(reaching) != 1:
+                raise PlanError(
+                    "base_table_undetermined", ", ".join(sorted(candidates))
+                )
+            [base] = reaching
+        assumptions.append(
+            Assumption(
+                text=f"The base table {base} was derived from the measure columns.",
+                source=AssumptionSource.DEFAULT,
+                definition_ref="plan.base_table",
+            )
+        )
+        return base
+
     @staticmethod
-    def _aggregate(measure: Measure, resolve) -> exp.Expression:
+    def _aggregate(measure: Operand, resolve) -> exp.Expression:
         assert measure.aggregate is not None  # metrics were expanded already
         if measure.column is None:
             return exp.Count(this=exp.Star())
@@ -569,6 +753,41 @@ class PlanCompiler:
             FilterOp.LT: reference < placeholder,
             FilterOp.LTE: reference <= placeholder,
         }[item.op]
+
+
+def _reaches(schema: SchemaModel, start: str, target: str, hops: int = 3) -> bool:
+    frontier, seen = {start}, {start}
+    for _ in range(hops):
+        step = {
+            fk.referenced_table
+            for fk in schema.foreign_keys
+            if fk.table in frontier and fk.referenced_table not in seen
+        }
+        if target in step:
+            return True
+        seen |= step
+        frontier = step
+        if not frontier:
+            break
+    return False
+
+
+def _operand_text(op: Operand, metric: ReviewedMetric | None) -> str:
+    if metric is not None:
+        column = metric.column.id if metric.column else "*"
+        return f"{metric.aggregate.value}({column}) [{metric.id}]"
+    column = op.column.id if op.column else "*"
+    return f"{op.aggregate.value}({column})"  # type: ignore[union-attr]
+
+
+def _measure_text(measure: Measure, parts) -> str:
+    if measure.ratio is not None:
+        body = f"{_operand_text(*parts[0])} / {_operand_text(*parts[1])}"
+    else:
+        body = _operand_text(*parts[0])
+    if measure.share_of_total:
+        body = f"share of total of {body}"
+    return f"{measure.output_name} = {body}"
 
 
 def _parent_path(schema: SchemaModel, base: str, target: str) -> list[ForeignKey]:
@@ -627,15 +846,29 @@ def _filter_text(item: Filter) -> str:
 
 
 def _interpretation(plan: QueryPlan, periods: tuple[ResolvedPeriod, ...]) -> str:
-    parts = [
-        ", ".join(
-            f"metric {m.metric}"
-            if m.metric
-            else f"{m.aggregate.value}({m.column.id if m.column else '*'})"  # type: ignore[union-attr]
-            for m in plan.measures
+    def measure_words(m: Measure) -> str:
+        def op_words(o: Operand) -> str:
+            if o.metric:
+                return f"metric {o.metric}"
+            return f"{o.aggregate.value}({o.column.id if o.column else '*'})"  # type: ignore[union-attr]
+
+        words = (
+            f"{op_words(m.ratio.numerator)} / {op_words(m.ratio.denominator)}"
+            if m.ratio is not None
+            else op_words(m)
         )
-        + f" over {plan.base_table}"
+        return f"share of total of {words}" if m.share_of_total else words
+
+    parts = [
+        ", ".join(measure_words(m) for m in plan.measures)
+        + f" over {plan.base_table or "the measures' table"}"
     ]
+    if plan.growth:
+        parts.append(
+            "growth of "
+            + ", ".join(g.measure for g in plan.growth)
+            + " versus the previous period"
+        )
     if plan.dimensions:
         parts.append("by " + ", ".join(d.id for d in plan.dimensions))
     if plan.time is not None and plan.time.grain is not None:
