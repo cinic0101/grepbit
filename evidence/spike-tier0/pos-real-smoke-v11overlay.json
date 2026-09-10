@@ -1,0 +1,552 @@
+{
+  "summary": {
+    "datasource_id": "pos_real",
+    "cases_file": "evals/cases/tier0/pos_real_smoke.yaml",
+    "prompt_revision": "plan-classify-json-v11",
+    "output_mode": "json_object",
+    "overlay_revision": "pos-real-overlay-v11",
+    "perturbation": null,
+    "as_of": "2026-02-10T12:00:00+08:00",
+    "cases": 7,
+    "judged": 7,
+    "unjudged": 0,
+    "correct": 7,
+    "answerable_correct": 6,
+    "answerable_total": 6,
+    "answered_but_wrong_rows": 0,
+    "refusals_correct": 1,
+    "refusals_total": 1,
+    "false_answers_on_refusal_cases": 0,
+    "model_failures": 0,
+    "model_retries": 0,
+    "p50_seconds": 5.727,
+    "p95_seconds": 6.065,
+    "introspection_seconds": 0.035,
+    "schema": {
+      "tables": 9,
+      "columns": 33,
+      "foreign_keys": 8,
+      "inferred_foreign_keys": [],
+      "enum_distinct_limit": 0,
+      "sampled_columns": 0,
+      "enum_columns": 1
+    },
+    "status_counts": {
+      "answered": 6,
+      "semantic_gap": 1
+    },
+    "rows_redacted": true,
+    "incorrect_case_ids": [],
+    "verification_counts": {
+      "verified": 2,
+      "partially_verified": 3,
+      "unverified_semantics": 1
+    },
+    "shape_repairs": 0,
+    "base_repairs": 0,
+    "plan_error_counts": {},
+    "zero_call_refusals": 0,
+    "shape_gate_refusals": 0,
+    "per_period_clarifies": 0,
+    "literal_checks": 3,
+    "literal_misses": 0,
+    "grounding": {
+      "columns": [
+        "category.category_name",
+        "pos_payment.payment_method",
+        "product.product_name",
+        "store.store_name",
+        "transfer_status.status"
+      ],
+      "values": 753,
+      "skipped_for_size": [],
+      "hinted_cases": 1,
+      "resolved_cases": 0,
+      "ambiguous_cases": 0
+    },
+    "empty_result_warnings": 0,
+    "negative_share_warnings": 0,
+    "segment_exclusions": 4
+  },
+  "results": [
+    {
+      "case_id": "payments_by_method",
+      "question": "各付款方式的付款總金額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.963,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "metric": "paid_amount",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "pos_payment",
+            "column": "payment_method"
+          }
+        ],
+        "filters": [],
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT pos_payment.payment_method AS payment_method, SUM(pos_payment.payment_amount) AS paid_amount FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL GROUP BY pos_payment.payment_method ORDER BY payment_method NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_payment.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "paid_amount = sum(pos_payment.payment_amount) [paid_amount]"
+        ],
+        "dimensions": [
+          "pos_payment.payment_method"
+        ],
+        "filters": [
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "metric paid_amount over pos_payment; by pos_payment.payment_method",
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_payment rows are joined to pos_sale through pos_payment.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "paid_amount = Sum of pos_payment.payment_amount. Payments carry no status: every pos_payment row is a completed payment, so 'paid' means every payment. Time is the sale_date of the paid transaction. Signed by the owner on 2026-09-09.",
+        "No row filter was applied beyond the time window; every pos_payment row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count."
+      ],
+      "verification": "verified",
+      "excluded_segments": [
+        "returns"
+      ],
+      "literal_checks": 0,
+      "row_count": 12,
+      "rows_truncated": false,
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "credit_card_total",
+      "question": "信用卡付款的總金額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.764,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "metric": "paid_amount",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "pos_payment",
+              "column": "payment_method"
+            },
+            "op": "eq",
+            "values": [
+              "credit_card"
+            ]
+          }
+        ],
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT SUM(pos_payment.payment_amount) AS paid_amount FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE CAST(pos_payment.payment_method AS TEXT) = %(f_0)s AND pos_sale.origin_transaction_no IS NULL",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_payment.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "paid_amount = sum(pos_payment.payment_amount) [paid_amount]"
+        ],
+        "dimensions": [],
+        "filters": [
+          "pos_payment.payment_method eq credit_card",
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "metric paid_amount over pos_payment; where pos_payment.payment_method eq credit_card",
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_payment rows are joined to pos_sale through pos_payment.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "paid_amount = Sum of pos_payment.payment_amount. Payments carry no status: every pos_payment row is a completed payment, so 'paid' means every payment. Time is the sale_date of the paid transaction. Signed by the owner on 2026-09-09.",
+        "No time window was applied; all rows count.",
+        "Measures follow reviewed definitions; the extra filters taken from the question are checked for structure only."
+      ],
+      "verification": "partially_verified",
+      "excluded_segments": [
+        "returns"
+      ],
+      "literal_checks": 1,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "line_pay_count",
+      "question": "用LINE Pay付款的筆數",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.727,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "metric": "paid_transaction_count",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "pos_payment",
+              "column": "payment_method"
+            },
+            "op": "eq",
+            "values": [
+              "line_pay"
+            ]
+          }
+        ],
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "question_values": [
+        {
+          "column": "pos_payment.payment_method",
+          "value": "line_pay"
+        }
+      ],
+      "sql": "SELECT COUNT(DISTINCT pos_payment.transaction_no) AS paid_transaction_count FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE CAST(pos_payment.payment_method AS TEXT) = %(f_0)s AND pos_sale.origin_transaction_no IS NULL",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_payment.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "paid_transaction_count = count_distinct(pos_payment.transaction_no) [paid_transaction_count]"
+        ],
+        "dimensions": [],
+        "filters": [
+          "pos_payment.payment_method eq line_pay",
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "metric paid_transaction_count over pos_payment; where pos_payment.payment_method eq line_pay",
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_payment rows are joined to pos_sale through pos_payment.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "paid_transaction_count = Count of distinct pos_payment.transaction_no: transactions with at least one payment row, counted once even when paid in several parts. Zero-amount service transactions (SIM renewals, service fees, memberships) carry no payment row and are not counted here; transaction_count over pos_sale counts them. Signed by the owner on 2026-09-10.",
+        "No time window was applied; all rows count.",
+        "Measures follow reviewed definitions; the extra filters taken from the question are checked for structure only.",
+        "The question's wording was matched to the stored value 'line_pay' of pos_payment.payment_method (spaces, case or punctuation differ); give the exact value to override."
+      ],
+      "verification": "partially_verified",
+      "excluded_segments": [
+        "returns"
+      ],
+      "literal_checks": 1,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "cash_payments_jan",
+      "question": "2026年1月現金付款的金額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 6.065,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "metric": "paid_amount",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "pos_payment",
+              "column": "payment_method"
+            },
+            "op": "eq",
+            "values": [
+              "cash"
+            ]
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-01"
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT SUM(pos_payment.payment_amount) AS paid_amount FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE CAST(pos_payment.payment_method AS TEXT) = %(f_0)s AND pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= %(p1_start_1)s AND pos_sale.sale_date < %(p1_end_2)s)",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_payment.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "paid_amount = sum(pos_payment.payment_amount) [paid_amount]"
+        ],
+        "dimensions": [],
+        "filters": [
+          "pos_payment.payment_method eq cash",
+          "[default: exclude returns] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric paid_amount over pos_payment; for 2026-01; where pos_payment.payment_method eq cash",
+      "assumptions": [
+        "Rows of segment 'returns' (transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09) are excluded by default; say '退貨' to include them.",
+        "pos_payment rows are joined to pos_sale through pos_payment.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "paid_amount = Sum of pos_payment.payment_amount. Payments carry no status: every pos_payment row is a completed payment, so 'paid' means every payment. Time is the sale_date of the paid transaction. Signed by the owner on 2026-09-09.",
+        "2026-01 is [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Measures follow reviewed definitions; the extra filters taken from the question are checked for structure only."
+      ],
+      "verification": "partially_verified",
+      "excluded_segments": [
+        "returns"
+      ],
+      "literal_checks": 1,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "sales_by_store_jan",
+      "question": "2026年1月各門市的營業額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.745,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "gross_sales",
+            "alias": "gross_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-01"
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS gross_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s) GROUP BY store.store_name ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "gross_sales = sum(pos_sale.total_amount) [gross_sales]"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [
+          "[gross_sales] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric gross_sales over pos_sale; by store.store_name; for 2026-01",
+      "assumptions": [
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "gross_sales = Sum of pos_sale.total_amount over sales that are not returns (origin_transaction_no is null): gross sales, the denominator of return ratios by retail convention. Signed by the owner on 2026-09-10. Per product or per category sales are line_sales over pos_saleitem, not this metric.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2026-01 is [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 5,
+      "rows_truncated": false,
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "transfer_status_counts",
+      "question": "各調撥狀態的筆數",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.358,
+      "plan": {
+        "base_table": "transfer_status",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "count",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "transfer_status",
+            "column": "status"
+          }
+        ],
+        "filters": [],
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT transfer_status.status AS status, COUNT(*) AS count FROM public.transfer_status GROUP BY transfer_status.status ORDER BY status NULLS FIRST",
+      "lineage": {
+        "base_table": "transfer_status",
+        "tables": [
+          "transfer_status"
+        ],
+        "joins": [],
+        "measures": [
+          "count = count(*)"
+        ],
+        "dimensions": [
+          "transfer_status.status"
+        ],
+        "filters": [],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(*) over transfer_status; by transfer_status.status",
+      "assumptions": [
+        "No row filter was applied beyond the time window; every transfer_status row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 4,
+      "rows_truncated": false,
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "gross_margin_gap",
+      "question": "2026年1月的毛利率",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 4.259,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain cost data (e.g., cost of goods sold or unit cost), which is required to calculate the gross profit margin (毛利率).",
+      "status_without_coverage": "semantic_gap"
+    }
+  ]
+}
