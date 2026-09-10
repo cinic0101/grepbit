@@ -298,6 +298,26 @@ def _anchor_relative_window(plan: dict[str, Any], repairs: list[str]) -> None:
     )
 
 
+def _unit_from_grain(plan: dict[str, Any], repairs: list[str]) -> None:
+    """A relative window that names no unit takes the grain written beside it.
+
+    本月截至今天 came back as {"grain": "month", "scope": {"kind": "relative",
+    "offset": 0, "length": 1, "to_date": true}}: the unit is the grain.
+    Without a grain nothing is guessed and validation fails as before.
+    """
+
+    time = plan.get("time")
+    if not isinstance(time, dict):
+        return
+    scope, grain = time.get("scope"), time.get("grain")
+    if not isinstance(scope, dict) or scope.get("kind") != "relative":
+        return
+    if "unit" in scope or not isinstance(grain, str):
+        return
+    scope["unit"] = grain
+    repairs.append(f"relative window without unit -> unit {grain} (from grain)")
+
+
 def _drop_aggregate_beside_ratio(plan: dict[str, Any], repairs: list[str]) -> None:
     """A ratio measure that also names a bare aggregate keeps only the ratio.
 
@@ -343,6 +363,7 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
         # a time column named without a window or a grain constrains nothing
         del plan["time"]
         repairs.append("dropped time without scope or grain")
+    _unit_from_grain(plan, repairs)
     _anchor_relative_window(plan, repairs)
     _drop_aggregate_beside_ratio(plan, repairs)
     base_table = plan.get("base_table")

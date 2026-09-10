@@ -60,3 +60,44 @@ malformed-output failure, a shape slip (missing `unit` beside a `grain`).
 
 Which of the constructs to build first is the roadmap question; this run
 gives each of them two or three real questions to be measured on.
+
+## Run 2: the guards, no new algebra
+
+Built the same evening, all deterministic (`../knowledge/tier0-contract.md`,
+"Deterministic repairs and rules"): a growth plan whose window is one unit of
+its grain is widened one unit backwards; growth on a to-date window is
+refused (`growth_to_date_unsupported`); a relative window without `unit`
+takes the grain; `HAVING count = 0` over the base table's own rows is
+refused (`anti_join_required`) with the reason. Same prompt, overlay and
+`as_of`.
+
+| Status | Run 1 | Run 2 |
+|---|---|---|
+| answered | 5 | 3 |
+| unsupported | 8 | 11 |
+| semantic_gap | 1 | 1 |
+| failed | 1 | 0 |
+
+What moved: the month-to-date growth question went from a malformed model
+answer to a typed refusal (unit repaired, then refused as to-date growth);
+the two anti-joins went from 0 rows to a refusal that says why; the
+last-week growth per store now covers two weeks and, checked directly
+against the database at the owner's suggestion (transactions per store in
+the week of 2026-01-19 and the week of 2026-01-26), every growth value
+matches: 106 to 97 (-8.5%), 56 to 39 (-30.4%), 77 to 83 (+7.8%), 63 to 70
+(+11.1%), 78 to 85 (+9.0%). The first week's rows carry NULL growth, which
+the assumption announces.
+
+What did not move, by design: the two 7-day spans compared per salesperson
+still compile as daily growth inside the last 7 days (the fix is the
+previous-window growth construct, not a guard), and "latest business day"
+still means as_of's day. The nine structural refusals stand.
+
+Run 2 tallied (`evidence/pos-real-holdout3-02-tally.json`): 14 of 15, the
+one miss being the two-span comparison computed as daily growth (exposed in
+the interpretation), 0 silent wrong numbers, refusal rate 80%. The verdicts
+were filled by the build side under the owner's delegation: the two answers
+were checked in the database (per-store weekly counts; the store's last day
+with sales and its gross that day), the refusals are of constructs the
+algebra does not have.
+

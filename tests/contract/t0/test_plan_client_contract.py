@@ -338,3 +338,32 @@ def test_repair_drops_a_bare_aggregate_written_beside_a_ratio() -> None:
     ]
     untouched, repairs = repair_column_refs(payload, iot_schema())
     assert untouched["plan"]["measures"][0]["aggregate"] == "sum" and repairs == []
+
+
+def test_repair_takes_a_missing_relative_unit_from_the_grain() -> None:
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count"}],
+            "time": {
+                "column": {"table": "alerts", "column": "raised_at"},
+                "grain": "month",
+                "scope": {
+                    "kind": "relative",
+                    "offset": 0,
+                    "length": 1,
+                    "to_date": True,
+                },
+            },
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    assert repaired["plan"]["time"]["scope"]["unit"] == "month"
+    assert repairs == ["relative window without unit -> unit month (from grain)"]
+    del payload["plan"]["time"]["grain"]
+    del payload["plan"]["time"]["scope"]["unit"]
+    _, repairs = repair_column_refs(payload, iot_schema())
+    assert (
+        repairs == []
+    )  # nothing to take the unit from: validation will fail as before

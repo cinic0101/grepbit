@@ -90,6 +90,8 @@ work item, not a surprise (the regression summary counts them as
 | `time_scope_requires_grain` | `unsupported`; recurrence would argue for deriving grain from a multi-period scope |
 | `relative_window_reaches_future` | `unsupported` with the window in the detail. Since 2026-09-10 it also fires for a window anchored on the current unit (offset 0) that is longer than one unit; the planner adapter re-anchors that shape first (`relative window` repair below), so the gate is the safety net behind it |
 | `unknown_metric`, `metric_base_table_mismatch`, `metric_conflict` | `unsupported`; overlay definitions are the fix, not code |
+| `growth_to_date_unsupported` | `unsupported`: growth on a period-to-date window would compare a whole previous period with a partial one (holdout 3 q01) |
+| `anti_join_required` | `unsupported` with the reason: `HAVING count = 0` over the base table's own rows can never match, the question wants entities with no rows at all (holdout 3 q10, q11); the anti-join construct is on the roadmap |
 
 `PlanCompiler.compile(plan, as_of=..., exclude_segments=[...],
 named_segments=[...])` also takes the overlay segments the caller wants
@@ -108,6 +110,8 @@ one leaves a trace: a `shape_repairs` entry, an assumption, or both.
 |---|---|---|
 | `repair_column_refs` (planner adapter) | string column references resolved to one table; a sibling `table` key folded in; `null` extra keys dropped; `t.c` inside a column stripped; an empty `time` object dropped | `shape_repairs` |
 | `repair_column_refs` | a relative window `offset 0, length L > 1` (not "to date") becomes `offset -L`: 最近 30 天 written as today plus the next 29 days has no data, the last 30 complete days is the only reading with data | `shape_repairs` (`relative window ...`) and an assumption |
+| `repair_column_refs` | a relative window without `unit` takes the `grain` written beside it (本月截至今天 came back unit-less with grain month) | `shape_repairs` (`relative window without unit ...`) |
+| compiler | a growth plan whose window is one unit of its grain (上週 with grain week; a calendar month with grain month) is widened one unit backwards so the previous bucket exists; the first bucket's growth is NULL | assumption (`widened by one ...`) |
 | `repair_column_refs` | a bare `aggregate` written beside a `ratio` on the same measure is dropped (the operands carry their own aggregates; the validator would reject the pair); an aggregate with a column or a metric beside a ratio is left to fail | `shape_repairs` (`dropped aggregate ...`) |
 | `repair_base_table` (application) | the base moves to the child table holding every measure column, or to a metric's base | assumption |
 | `single_period_misread` (application) | a per-period word (`period_words` of the shape pack) answered with the single current unit is a `clarify`, never a rewrite | `per_period_single_window` |

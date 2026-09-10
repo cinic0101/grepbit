@@ -310,3 +310,135 @@ def test_a_current_window_longer_than_its_unit_is_refused_as_future() -> None:
             }
         )
     assert error.value.code == "relative_window_reaches_future"
+
+
+def test_growth_on_a_single_period_window_widens_it_to_include_the_previous_one():
+    """上週各門市成長率: the window is last week alone, so LAG has nothing;
+    the compiler widens it by one grain unit and says so."""
+
+    compiled = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count", "alias": "alerts_n"}],
+            "dimensions": [{"table": "devices", "column": "model"}],
+            "time": {
+                "column": {"table": "alerts", "column": "raised_at"},
+                "scope": {
+                    "kind": "relative",
+                    "unit": "week",
+                    "offset": -1,
+                    "length": 1,
+                },
+                "grain": "week",
+            },
+            "growth": [{"measure": "alerts_n"}],
+        }
+    )
+    params = {p.name: p.value for p in compiled.compiled.execution_parameters}
+    # AS_OF is a Tuesday in the fixture helpers: last week plus the one before
+    assert params["p1_start_0"] < params["p1_end_1"]
+    assert compiled.periods[0].label.endswith("..") is False
+    assert any("widened by one week" in a.text for a in compiled.assumptions)
+    start, end = compiled.periods[0].start, compiled.periods[0].end_exclusive
+    assert (end - start).days == 14
+    # a calendar month with grain month is widened the same way, as a range
+    monthly = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count", "alias": "alerts_n"}],
+            "time": {
+                "column": {"table": "alerts", "column": "raised_at"},
+                "scope": {"kind": "month", "month": "2026-07"},
+                "grain": "month",
+            },
+            "growth": [{"measure": "alerts_n"}],
+        }
+    )
+    assert (
+        monthly.periods[0].start.month == 6
+        and monthly.periods[0].end_exclusive.month == 8
+    )
+    # a window that already spans two units is left alone
+    two = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count", "alias": "alerts_n"}],
+            "time": {
+                "column": {"table": "alerts", "column": "raised_at"},
+                "scope": {
+                    "kind": "relative",
+                    "unit": "month",
+                    "offset": -2,
+                    "length": 2,
+                },
+                "grain": "month",
+            },
+            "growth": [{"measure": "alerts_n"}],
+        }
+    )
+    assert not any("widened" in a.text for a in two.assumptions)
+
+
+def test_growth_on_a_to_date_window_is_refused() -> None:
+    with pytest.raises(PlanError) as error:
+        compile_plan(
+            {
+                "base_table": "alerts",
+                "measures": [{"aggregate": "count", "alias": "alerts_n"}],
+                "time": {
+                    "column": {"table": "alerts", "column": "raised_at"},
+                    "scope": {
+                        "kind": "relative",
+                        "unit": "month",
+                        "offset": 0,
+                        "length": 1,
+                        "to_date": True,
+                    },
+                    "grain": "month",
+                },
+                "growth": [{"measure": "alerts_n"}],
+            }
+        )
+    assert error.value.code == "growth_to_date_unsupported"
+
+
+def test_having_count_zero_over_base_rows_is_an_anti_join_refusal() -> None:
+    """哪些商品從未出現在銷售明細: every group has a row, so COUNT(*) = 0 never
+    matches; refuse with the reason instead of returning nothing."""
+
+    plan = {
+        "base_table": "alerts",
+        "measures": [{"aggregate": "count", "alias": "alerts_n"}],
+        "dimensions": [{"table": "devices", "column": "model"}],
+        "having": [{"field": "alerts_n", "op": "eq", "value": 0}],
+    }
+    with pytest.raises(PlanError) as error:
+        compile_plan(plan)
+    assert error.value.code == "anti_join_required"
+    assert "anti-join" in (error.value.detail or "")
+    # counting a nullable column can legitimately be zero for a group
+    nullable = dict(plan)
+    nullable["measures"] = [
+        {
+            "aggregate": "count",
+            "column": {"table": "alerts", "column": "resolved_at"},
+            "alias": "acked",
+        }
+    ]
+    nullable["having"] = [{"field": "acked", "op": "eq", "value": 0}]
+    compile_plan(nullable)
+    # a non-nullable base column counts every row too: refused like COUNT(*)
+    non_null = dict(plan)
+    non_null["measures"] = [
+        {
+            "aggregate": "count",
+            "column": {"table": "alerts", "column": "raised_at"},
+            "alias": "raised",
+        }
+    ]
+    non_null["having"] = [{"field": "raised", "op": "lte", "value": 0}]
+    with pytest.raises(PlanError, match="anti_join_required"):
+        compile_plan(non_null)
+    # and a threshold other than zero is an ordinary HAVING
+    plan["having"] = [{"field": "alerts_n", "op": "lt", "value": 5}]
+    compile_plan(plan)

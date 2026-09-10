@@ -53,6 +53,7 @@ from grepbit.domain.structured_query import (
     ResolvedPeriod,
     current_unit_end,
     resolve_time_scope,
+    widened_for_previous_period,
 )
 
 COMPILER_REVISION = "plan-compiler-sqlglot-v1"
@@ -268,6 +269,28 @@ class PlanCompiler:
             if time_column.kind not in {ColumnKind.TIMESTAMP, ColumnKind.DATE}:
                 raise PlanError("time_column_kind_mismatch", time_spec.column.id)
             scope = time_spec.scope
+            if plan.growth and scope is not None and time_spec.grain is not None:
+                if isinstance(scope, RelativeScope) and scope.to_date:
+                    raise PlanError(
+                        "growth_to_date_unsupported",
+                        f"{scope.unit.value} to date: the previous period would be a "
+                        "whole unit against a partial one",
+                    )
+                widened = widened_for_previous_period(scope, time_spec.grain)
+                if widened is not None:
+                    scope = widened
+                    assumptions.append(
+                        Assumption(
+                            text=(
+                                "The window was widened by one "
+                                f"{time_spec.grain.value} so the previous period the "
+                                "growth compares against is included; the first "
+                                "period's growth is NULL."
+                            ),
+                            source=AssumptionSource.DEFAULT,
+                            definition_ref="plan.growth",
+                        )
+                    )
             if scope is not None:
                 periods = tuple(
                     resolve_time_scope(
@@ -499,6 +522,7 @@ class PlanCompiler:
             conditions_having = []
             for item in plan.having:
                 expression = measure_expressions[item.field].copy()
+                self._reject_impossible_zero_count(item, expression, base, resolve)
                 placeholder = bind("h_", item.value, "numeric")
                 conditions_having.append(
                     {
@@ -742,6 +766,38 @@ class PlanCompiler:
                     + [segment.id for segment, _ in segment_filters]
                 )
             ),
+        )
+
+    @staticmethod
+    def _reject_impossible_zero_count(item, expression, base, resolve) -> None:
+        """HAVING count = 0 over the base table's own rows can never match.
+
+        Every group of an aggregate query has at least one base row, so a
+        plain COUNT(*) (or a count of a non-nullable base column) is never 0
+        and the question ("products never sold", "stores without sales") is an
+        anti-join. Refusing it with the reason beats returning zero rows.
+        A count under a FILTER clause or of a nullable column can be 0 and is
+        left alone.
+        """
+
+        asks_zero = (item.op, item.value) in {("eq", 0), ("lt", 1), ("lte", 0)}
+        if not asks_zero or not isinstance(expression, exp.Count):
+            return
+        target = expression.this
+        if isinstance(target, exp.Column):
+            if target.table != base.name:
+                return
+            column = base.column(target.name)
+            if column is None or column.nullable:
+                return
+        elif not isinstance(target, exp.Star):
+            return
+        raise PlanError(
+            "anti_join_required",
+            f"{item.field} counts {base.name} rows and every group here has at "
+            f"least one, so no group can have {item.op} {item.value}. Entities "
+            "with no rows at all need an anti-join, which the plan algebra does "
+            "not have yet.",
         )
 
     def _visible(self, table: str, column: str | None = None) -> bool:

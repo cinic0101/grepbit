@@ -281,3 +281,30 @@ def _month_period(month: str, zone: ZoneInfo) -> ResolvedPeriod:
 def _add_months(year: int, month: int, delta: int) -> tuple[int, int]:
     index = year * 12 + (month - 1) + delta
     return index // 12, index % 12 + 1
+
+
+def widened_for_previous_period(
+    scope: MonthScope | RangeScope | RelativeScope | PeriodsScope,
+    grain: TimeGrain,
+) -> MonthScope | RangeScope | RelativeScope | PeriodsScope | None:
+    """The scope extended one grain unit backwards so growth has a previous bucket.
+
+    Only the two shapes that plainly cover a single bucket are widened: a
+    relative window of one unit equal to the grain (上週 with grain week) and a
+    calendar month with grain month. Anything else already spans several
+    buckets or cannot be reasoned about here; ``None`` means leave it.
+    """
+
+    if isinstance(scope, RelativeScope):
+        if scope.unit.value != grain.value or scope.length != 1 or scope.to_date:
+            return None
+        return RelativeScope(unit=scope.unit, offset=scope.offset - 1, length=2)
+    if isinstance(scope, MonthScope) and grain is TimeGrain.MONTH:
+        year, month = (int(part) for part in scope.month.split("-"))
+        prev_year, prev_month = _add_months(year, month, -1)
+        next_year, next_month = _add_months(year, month, 1)
+        return RangeScope(
+            start=date(prev_year, prev_month, 1),
+            end_exclusive=date(next_year, next_month, 1),
+        )
+    return None

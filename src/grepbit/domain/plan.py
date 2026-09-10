@@ -278,6 +278,12 @@ _PLAN_ERROR_CODES = frozenset(
         "base_table_undetermined",
         # time.column omitted and the base table has no default time column
         "time_column_required",
+        # growth asked on a period-to-date window: the previous bucket would be a
+        # whole period against a partial one
+        "growth_to_date_unsupported",
+        # HAVING count = 0 over the base table's own rows: every group has at
+        # least one row, so the question is an anti-join the algebra lacks
+        "anti_join_required",
     }
 )
 

@@ -67,7 +67,10 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
    resolves time windows in the business time zone from `as_of` (rejecting a
    relative window that reaches the future), takes a share over all groups
    even when the question filters on the grouped column (the filter selects
-   rows after the share), places `having` conditions on the
+   rows after the share), widens a growth window by one unit when it covers
+   a single bucket and refuses growth on a to-date window, refuses a
+   `HAVING count = 0` over the base rows as an anti-join it cannot express,
+   places `having` conditions on the
    aggregate expressions, builds the SQL as a sqlglot AST with bound
    placeholders, and emits lineage, assumptions, interpretation and the
    verification level.
