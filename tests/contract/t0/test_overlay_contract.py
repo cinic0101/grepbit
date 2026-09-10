@@ -274,7 +274,9 @@ def test_absent_concept_all_of_matches_split_phrasings_in_any_order() -> None:
     )
     assert match_absent_concept("訂單筆數最多的狀態是哪一種？", overlay) is not None
     assert (
-        match_absent_concept("What is the status of most orders?", overlay) is not None
+        match_absent_concept("What is the status of each order?", overlay) is not None
     )
+    # Latin words keep their boundaries: "orders" is not "order"
+    assert match_absent_concept("What is the status of most orders?", overlay) is None
     assert match_absent_concept("各門市的訂單筆數", overlay) is None  # 狀態 absent
     assert match_absent_concept("各運送狀態的紀錄筆數", overlay) is None  # 訂單 absent
