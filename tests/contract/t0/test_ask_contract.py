@@ -320,3 +320,39 @@ def test_capabilities_list_the_bound_datasources_and_name_the_unbound_by_reason(
     assert payload["unavailable"]["pos_test"] == "dsn_env_missing:GREPBIT_POS_TEST_DSN"
     assert payload["unavailable"]["pos_real"] == "bind_failed:ConnectionError"
     assert "secret" not in str(payload) and "db.internal" not in str(payload)
+
+
+def test_a_negative_share_is_flagged_as_a_net_total() -> None:
+    from decimal import Decimal
+
+    from grepbit.application.ask import negative_share_warning
+    from grepbit.domain.plan import QueryPlan
+
+    plan = QueryPlan.model_validate(
+        {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "aggregate": "sum",
+                    "column": {"table": "alerts", "column": "downtime_minutes"},
+                    "share_of_total": True,
+                    "alias": "downtime_share",
+                }
+            ],
+            "dimensions": [{"table": "devices", "column": "model"}],
+        }
+    )
+    rows = [
+        {"model": "A", "downtime_share": 1.02},
+        {"model": "B", "downtime_share": -0.02},
+    ]
+    warning = negative_share_warning(plan, rows)
+    assert warning is not None and warning.startswith("downtime_share is negative")
+    assert negative_share_warning(plan, [{"model": "A", "downtime_share": 1.0}]) is None
+    assert (
+        negative_share_warning(plan, [{"model": "A", "downtime_share": None}]) is None
+    )
+    assert (
+        negative_share_warning(plan, [{"model": "A", "downtime_share": Decimal("0.5")}])
+        is None
+    )

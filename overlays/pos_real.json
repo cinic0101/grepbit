@@ -1,6 +1,6 @@
 {
   "datasource_id": "pos_real",
-  "revision": "pos-real-overlay-v10",
+  "revision": "pos-real-overlay-v11",
   "metrics": [
     {
       "id": "return_amount",
@@ -241,7 +241,7 @@
         "line sales",
         "product sales"
       ],
-      "description": "Sum of pos_saleitem.amount over line items whose sale is not a return (pos_sale.origin_transaction_no is null): sales at product or category grain, the counterpart of gross_sales for questions grouped by product or category. Signed by the owner on 2026-09-10.",
+      "description": "Sum of pos_saleitem.amount over line items whose sale is not a return (pos_sale.origin_transaction_no is null): sales at product or category grain, the counterpart of gross_sales for questions grouped by product or category. The sum is the net of every line: trade-ins, revenue adjustments and commissions are booked as negative amounts, so a category made of them shows a negative total (and a negative share) and the other categories' shares are measured against the net. Signed by the owner on 2026-09-10; the net reading confirmed by the owner the same day.",
       "base_table": "pos_saleitem",
       "aggregate": "sum",
       "column": {

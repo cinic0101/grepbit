@@ -42,10 +42,13 @@ reader expects 退貨率 4.4%. The algebra has no negation; a metric-level
    question names them. Puts three category names into the overlay, which
    the owner has so far kept out of it.
 
-Recommendation: option 1 now with the assumption made explicit ("the total is
-the net of every line, including trade-ins and adjustments booked as negative
-amounts"), and option 3 if the owner wants the merchandise-only reading to be
-the default. Not decided here.
+The owner chose option 1 (2026-09-10). Two things carry it: the reviewed
+definition of `line_sales` in overlay v11 now says the sum is the net of
+every line and names the negative bookings, so every answer over it states
+that; and the ask core adds a warning whenever a share comes out negative
+for some group (`negative_share_warning`), so any datasource with the same
+pattern says so without an overlay edit. Verified on the ratio set
+(`run-04`) and batch 1 (`pos-real-batch1-14.json`).
 
 ## After the fixes
 

@@ -141,6 +141,47 @@ stage 3.
 Exit: a reviewer can turn a logged gap into a verified answer without an
 engineer; the derived-metric probes that failed in `pos_features.yaml` pass.
 
+## Open items and the proposed order (build side, 2026-09-10, for discussion)
+
+Stage 1's callable surface exists (ask core, stdio MCP, registry) and stage 2
+has run twice on the real database (80 judged questions, 0 silent wrong
+numbers on the last judged runs, one wrong-window answer marked verified
+caught by the owner's ratio review and since gated). What is open, in the
+order the build side would take it, with the cost and the risk of skipping.
+
+### Owner's queue
+
+1. Verdicts: 9 ratio cases (`.artifacts/ratios-01/verdicts-03.yaml`, or
+   `-04` after the overlay v11 rerun) and holdout-2 q23/q25 (same SQL).
+   Then the build side settles the 7 batch-1 ratio cases into references and
+   tallies holdout-2 run 11.
+2. Return-ratio sign: returns are stored negative, so 退貨率 reads -4.4%.
+   Options: a metric-level `negate` in the overlay (one algebra addition),
+   or leave the stored sign and say so in the assumption.
+3. `--verify-coverage`: remove the no-op flag or keep it.
+4. Next batch of real questions: growth rates (deferred so far), latest-row
+   questions (訂單狀態, 最近一筆交易), weekday or hour breakdowns,
+   anti-joins (沒有交易的門市), rolling averages; two or three of each.
+
+### Proposed order
+
+| # | Item | Why now | Cost | Risk of skipping |
+|---|---|---|---|---|
+| 1 | Close batch 1 and holdout 2 (verdicts, settle, tally) | the regression guard for ratios and shares is 7 unsettled cases | owner's reading time plus an hour | every later change is measured against a set with holes |
+| 2 | Second real datasource of a different kind (not POS), blind run of 30 to 50 questions | the only way to learn which of the constructs generalize and which are POS habits; the metrics, aliases and segments are local by design, the algebra and gates claim to be general | a database and a question file from the owner; the build side runs the proposer and drafts the overlay; about a week | we keep tuning to one schema and call it general |
+| 3 | Overlay onboarding by proposal (stage 3 `overlay draft`): the proposer drafts metrics from column names and types, aliases, time defaults, policies, absent concepts; the reviewer approves; revisions recorded | item 2 needs an overlay from zero and is the first honest test of the proposer; the policies proposer already exists | 3 to 5 days, done inside item 2 | onboarding stays an engineer's job |
+| 4 | Latest row per entity in the algebra (an order's status is the latest shipment status): `latest` construct compiled as a window row_number or DISTINCT ON, defined in the overlay | 2 of the 50 questions and the whole 訂單狀態 family are refused today; the construct is generic (latest reading per device, latest price per product) | 2 to 3 days plus a rerun | a common question class stays a refusal |
+| 5 | Malformed model output: feed the validation error back once (a repair turn), measured like the transport retry | `invalid_structured_output` is the one failure that recurs at a fixed revision (h2_q21 in 4 of 5 runs, 會員交易佔比 in 2 runs); shape repairs cover known slips only | a day, plus a rerun of every set | one question in thirty fails for no reason the user can act on |
+| 6 | Variance measurement: run batch 1 and the author sets three times, count plan differences beyond aliases | we keep meeting variance case by case; a number tells whether temperature, the server or the prompt is the lever | an afternoon of runs | we argue from single samples |
+| 7 | Overlay organization for people who are not engineers: one file per concern (metrics, vocabulary, policies, segments), a validator with readable errors, a `grepbit overlay check` command | the owner asked how a user adjusts the overlay; the format is stable enough now | 2 to 3 days | the overlay stays a JSON file only the build side edits |
+| 8 | Vocabulary gate (unmapped concept in the question becomes a clarify) | the coverage audit is gone; silent wrong numbers are the failure the owner fears most; the last judged runs show zero, so this waits for evidence | 2 days | a new schema may bring back silent misses |
+| 9 | Schema size: a 50-plus table schema, accuracy and latency, decide on retrieval | pos_real has 9 tables; the payload grows with every table and column | depends on a schema to test on | the first large schema breaks the prompt budget |
+| 10 | Served surface beyond MCP: registration command, ask log, a review list of refusals and unmapped concepts | needed once someone other than the build side runs it | a week | none until there is a user |
+
+Deferred with a reason: derived dimensions (CASE labels) until a question
+needs them twice; constrained decoding stays a negative result; charts and
+narrative belong to the parent agent.
+
 ## Deferred until there is a user
 
 Charts and narrative (parent agent), row-level security, multi-engine

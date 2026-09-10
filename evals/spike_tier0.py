@@ -662,7 +662,16 @@ def main(argv: list[str] | None = None) -> int:
                 1 for r in results if r.get("reason") == "filter_value_ambiguous"
             ),
         },
-        "empty_result_warnings": sum(1 for r in results if r.get("warnings")),
+        "empty_result_warnings": sum(
+            1
+            for r in results
+            if any("select" in w and "nothing" in w for w in r.get("warnings") or [])
+        ),
+        "negative_share_warnings": sum(
+            1
+            for r in results
+            if any("is negative for some groups" in w for w in r.get("warnings") or [])
+        ),
         "segment_exclusions": sum(1 for r in results if r.get("excluded_segments")),
     }
     if arguments.verify_coverage:

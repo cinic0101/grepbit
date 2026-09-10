@@ -122,6 +122,27 @@ def empty_result_warning(rows: list[dict[str, Any]]) -> str | None:
     return None
 
 
+def negative_share_warning(plan: QueryPlan, rows: list[dict[str, Any]]) -> str | None:
+    """A share below zero means the total is a net of positive and negative rows."""
+
+    names = [m.output_name for m in plan.measures if m.share_of_total]
+    negative = sorted(
+        {
+            name
+            for row in rows
+            for name in names
+            if isinstance(row.get(name), (int, float)) and row[name] < 0
+        }
+    )
+    if not negative:
+        return None
+    return (
+        f"{', '.join(negative)} is negative for some groups: the total is the net of "
+        "positive and negative rows, so those groups reduce it and the other shares "
+        "are measured against the net."
+    )
+
+
 def _clarify_missing(result: AskResult, misses: list[LiteralCheck]) -> None:
     result.status = "clarify"
     result.reason = "filter_value_not_found"
@@ -283,9 +304,12 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
     result.status = "answered"
     result.rows = [dict(r) for r in execution.rows]
     result.row_count, result.rows_truncated = execution.row_count, execution.truncated
-    warning = empty_result_warning(result.rows)
-    if warning:
-        result.warnings.append(warning)
+    for warning in (
+        empty_result_warning(result.rows),
+        negative_share_warning(plan, result.rows),
+    ):
+        if warning:
+            result.warnings.append(warning)
 
 
 def _describe(result, compiled, question, base_repair, plan) -> None:
