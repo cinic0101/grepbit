@@ -61,7 +61,7 @@ side does not open (`../plan/next-phase.md`).
 ```sh
 .venv/bin/python evals/spike_tier0.py --dsn-env <ENV_VAR_WITH_DSN> \
   --datasource-id <id> --cases <file.yaml> --output <dir>/<name>.json \
-  --live [--infer-joins] [--overlay <overlay.json>] [--verify-coverage] \
+  --live [--infer-joins] [--overlay <overlay.json>] \
   [--enum-distinct-limit N] [--redact-rows] \
   [--review-sheet <dir>/<name>.md] [--verdicts <dir>/<name>.yaml] \
   [--no-shape-gate] [--no-literal-check] [--no-grounding] \
@@ -76,8 +76,7 @@ number measured here is a number the served path would produce
 the move: a row's `excluded_segments` lists the segments that shaped the SQL
 (`CompiledPlan.applied_segments`, query-wide or per operand), and
 `question_values` hints are recorded for every case, refusals included.
-`--verify-coverage` is accepted for old command lines but does nothing (the
-coverage audit was not carried onto the core; the runner prints a notice).
+The coverage audit and its `--verify-coverage` flag were removed with the move (across 163 recorded artifacts it changed 2 of 3512 case statuses; old artifacts still carry `status_without_coverage`).
 
 The deterministic gates are on by default; `--no-shape-gate`,
 `--no-literal-check` and `--no-grounding` exist for ablations. With an

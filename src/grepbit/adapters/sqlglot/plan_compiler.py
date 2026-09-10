@@ -482,7 +482,9 @@ class PlanCompiler:
         having_texts: list[str] = []
         if selection_filters:
             inner = query
-            query = exp.select(exp.Star()).from_(inner.subquery("shares"))
+            query = exp.select(*(exp.column(name) for name in output)).from_(
+                inner.subquery("shares")
+            )
             selected = [
                 self._condition(
                     item,

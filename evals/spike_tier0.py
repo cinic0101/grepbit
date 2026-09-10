@@ -305,7 +305,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--live", action="store_true")
     parser.add_argument("--infer-joins", action="store_true")
-    parser.add_argument("--verify-coverage", action="store_true")
     parser.add_argument("--overlay", type=Path)
     parser.add_argument(
         "--enum-distinct-limit",
@@ -483,8 +482,6 @@ def main(argv: list[str] | None = None) -> int:
         if client is not None
         else None
     )
-    if arguments.verify_coverage:
-        print("coverage audit: not available on the ask core; flag ignored")
     for case in document["cases"]:
         question = case["question"]
         previous = None
@@ -674,40 +671,6 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "segment_exclusions": sum(1 for r in results if r.get("excluded_segments")),
     }
-    if arguments.verify_coverage:
-        flagged = [
-            r
-            for r in results
-            if r.get("status_without_coverage") == "answered"
-            and (r.get("coverage") or {}).get("uncovered")
-        ]
-        summary["coverage"] = {
-            "audited": sum(1 for r in results if "coverage" in r),
-            "flagged_case_ids": [r["case_id"] for r in flagged],
-            "false_flags": [
-                r["case_id"]
-                for r in flagged
-                if r["expected_status"] == "answered"
-                and r.get("rows_match_reference", True)
-            ],
-            "planner_drops": [
-                r["case_id"]
-                for r in results
-                if r["expected_status"] != "answered"
-                and r.get("status_without_coverage") == "answered"
-            ],
-            "drops_caught": [
-                r["case_id"] for r in flagged if r["expected_status"] != "answered"
-            ],
-            "audit_p95_seconds": (
-                sorted(
-                    r["coverage"]["seconds"]
-                    for r in results
-                    if r.get("coverage", {}).get("seconds") is not None
-                )
-                or [0.0]
-            )[-1],
-        }
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     reported = [redact_rows(r) for r in results] if arguments.redact_rows else results
     arguments.output.write_text(

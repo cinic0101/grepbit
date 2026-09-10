@@ -158,7 +158,7 @@ order the build side would take it, with the cost and the risk of skipping.
 2. Return-ratio sign: returns are stored negative, so 退貨率 reads -4.4%.
    Options: a metric-level `negate` in the overlay (one algebra addition),
    or leave the stored sign and say so in the assumption.
-3. `--verify-coverage`: remove the no-op flag or keep it.
+3. `--verify-coverage`: removed 2026-09-10 (the owner: no longer used).
 4. Next batch of real questions: growth rates (deferred so far), latest-row
    questions (訂單狀態, 最近一筆交易), weekday or hour breakdowns,
    anti-joins (沒有交易的門市), rolling averages; two or three of each.

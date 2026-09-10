@@ -284,7 +284,9 @@ def test_share_filtered_on_its_own_dimension_is_the_subset_share_of_the_whole():
     assert "devices.model = " not in inner  # the population keeps every model
     assert "alerts.severity = " in inner  # other filters still shape the population
     assert outer.strip().startswith("WHERE model = %(f_")
-    assert sql.startswith("SELECT * FROM (SELECT devices.model AS model")
+    assert sql.startswith(
+        "SELECT model, row_count_share FROM (SELECT devices.model AS model"
+    )
     assert "[after share] devices.model eq X1" in compiled.lineage.filters
     assert any("subset's share of the whole" in a.text for a in compiled.assumptions)
     assert compiled.output_columns == ("model", "row_count_share")
