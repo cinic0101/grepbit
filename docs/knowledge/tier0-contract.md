@@ -61,6 +61,20 @@ the same length), `aggregate_kind_mismatch`, `filter_kind_mismatch`,
 `relative_window_reaches_future`, `unknown_metric`,
 `metric_base_table_mismatch`, `metric_conflict`.
 
+Every code has a remedy, decided 2026-09-10 so that a recurring code is a
+work item, not a surprise (the regression summary counts them as
+`plan_error_counts`):
+
+| Code | Remedy |
+|---|---|
+| `unknown_table`, `unknown_column` | shape repair when the name resolves to one table (`repair_column_refs`); hidden identifiers stay unknown by design; otherwise `unsupported` |
+| `grain_conflict` | base repair when every raw measure column sits on one child table that reaches the base (`repair_base_table`); otherwise `unsupported`, the plan would fan out |
+| `ambiguous_join_path` | `unsupported` today; the candidate remedy is a typed `clarify` naming the two paths |
+| `aggregate_kind_mismatch`, `filter_kind_mismatch`, `time_column_kind_mismatch` | `unsupported`; the planner payload already states kinds, a recurrence is a prompt matter |
+| `time_scope_requires_grain` | `unsupported`; recurrence would argue for deriving grain from a multi-period scope |
+| `relative_window_reaches_future` | `unsupported` with the window in the detail; the model wrote length in days |
+| `unknown_metric`, `metric_base_table_mismatch`, `metric_conflict` | `unsupported`; overlay definitions are the fix, not code |
+
 `PlanCompiler.compile(plan, as_of=..., exclude_segments=[...])` also takes
 the overlay segments the caller wants excluded by default; each applied one is
 a `reviewed` assumption (see `overlay-format.md`).

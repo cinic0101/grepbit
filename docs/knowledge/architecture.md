@@ -49,7 +49,9 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
    `question_values`, so a name is not cut at a segmentation boundary. Hidden
    tables and columns and withheld samples follow the overlay's policies.
    String-shaped column references are repaired only when they resolve to
-   exactly one table. One deterministic check runs on the proposal before
+   exactly one table; a base table that is merely the parent of the table
+   holding every measure column is moved there (`repair_base_table`, stated
+   as an assumption). One deterministic check runs on the proposal before
    compilation: a per-period question (每天, monthly; language pack
    `period_words`) answered with a single current-period window is a
    `clarify` (`single_period_misread`), never a rewritten plan.

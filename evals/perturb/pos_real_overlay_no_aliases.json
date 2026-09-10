@@ -1,0 +1,377 @@
+{
+  "datasource_id": "pos_real",
+  "revision": "pos-real-overlay-v5+no-aliases",
+  "metrics": [
+    {
+      "id": "return_amount",
+      "names": [
+        "退貨金額",
+        "退貨總金額",
+        "退款金額",
+        "return amount",
+        "refund amount"
+      ],
+      "description": "Sum of pos_sale.total_amount over transactions that reference an origin transaction (pos_sale.origin_transaction_no is set); the owner confirmed on 2026-09-09 that such a transaction is a return. Signed by the owner on 2026-09-09.",
+      "base_table": "pos_sale",
+      "aggregate": "sum",
+      "column": {
+        "table": "pos_sale",
+        "column": "total_amount"
+      },
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "origin_transaction_no"
+          },
+          "op": "not_null"
+        }
+      ],
+      "time_column": {
+        "table": "pos_sale",
+        "column": "sale_date"
+      },
+      "review_state": "verified"
+    },
+    {
+      "id": "return_count",
+      "names": [
+        "退貨筆數",
+        "退貨交易筆數",
+        "退貨交易數",
+        "幾筆退貨",
+        "return count",
+        "number of returns"
+      ],
+      "description": "Count of pos_sale rows that reference an origin transaction (origin_transaction_no is set). Signed by the owner on 2026-09-09.",
+      "base_table": "pos_sale",
+      "aggregate": "count",
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "origin_transaction_no"
+          },
+          "op": "not_null"
+        }
+      ],
+      "time_column": {
+        "table": "pos_sale",
+        "column": "sale_date"
+      },
+      "review_state": "verified"
+    },
+    {
+      "id": "return_quantity",
+      "names": [
+        "退貨數量",
+        "退貨件數",
+        "return quantity",
+        "returned units"
+      ],
+      "description": "Sum of pos_saleitem.quantity over line items whose transaction references an origin transaction (pos_sale.origin_transaction_no is set). Signed by the owner on 2026-09-09.",
+      "base_table": "pos_saleitem",
+      "aggregate": "sum",
+      "column": {
+        "table": "pos_saleitem",
+        "column": "quantity"
+      },
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "origin_transaction_no"
+          },
+          "op": "not_null"
+        }
+      ],
+      "time_column": {
+        "table": "pos_sale",
+        "column": "sale_date"
+      },
+      "review_state": "verified"
+    },
+    {
+      "id": "paid_amount",
+      "names": [
+        "已付款金額",
+        "已付款訂單的總金額",
+        "已付款總額",
+        "付款總額",
+        "paid amount",
+        "total payments"
+      ],
+      "description": "Sum of pos_payment.payment_amount. Payments carry no status: every pos_payment row is a completed payment, so 'paid' means every payment. Time is the sale_date of the paid transaction. Signed by the owner on 2026-09-09.",
+      "base_table": "pos_payment",
+      "aggregate": "sum",
+      "column": {
+        "table": "pos_payment",
+        "column": "payment_amount"
+      },
+      "time_column": {
+        "table": "pos_sale",
+        "column": "sale_date"
+      },
+      "review_state": "verified"
+    },
+    {
+      "id": "average_ticket",
+      "names": [
+        "客單價",
+        "平均客單價",
+        "平均交易金額",
+        "average ticket",
+        "average order value",
+        "AOV"
+      ],
+      "description": "Average of pos_sale.total_amount per sales transaction (one pos_sale row is one transaction, so this equals total sales divided by transaction count). Returns are excluded by the default returns segment unless the question includes them. Valid only over pos_sale; a per-category ticket needs the ratio metric planned for the next phase. Signed by the owner on 2026-09-09.",
+      "base_table": "pos_sale",
+      "aggregate": "avg",
+      "column": {
+        "table": "pos_sale",
+        "column": "total_amount"
+      },
+      "time_column": {
+        "table": "pos_sale",
+        "column": "sale_date"
+      },
+      "review_state": "verified"
+    }
+  ],
+  "absent_concepts": [
+    {
+      "names": [
+        "訂單狀態",
+        "交易狀態",
+        "order status"
+      ],
+      "note": "This datasource records no order status: a pos_sale row is either a normal sale or a return (origin_transaction_no set). transfer_status.status is the status of a stock transfer order, not of a sale."
+    },
+    {
+      "names": [
+        "取消的訂單",
+        "取消訂單",
+        "已取消",
+        "cancelled order",
+        "canceled order"
+      ],
+      "note": "Cancellations are not recorded; only returns (origin_transaction_no set) exist."
+    },
+    {
+      "names": [
+        "未付款",
+        "付款狀態",
+        "unpaid",
+        "payment status"
+      ],
+      "note": "Payments carry no status; every pos_payment row is a completed payment, so unpaid or pending payments cannot be identified."
+    }
+  ],
+  "column_aliases": [],
+  "table_aliases": [],
+  "value_aliases": [
+    {
+      "column": {
+        "table": "pos_payment",
+        "column": "payment_method"
+      },
+      "values": [
+        {
+          "value": "cash",
+          "names": [
+            "現金"
+          ]
+        },
+        {
+          "value": "credit_card",
+          "names": [
+            "信用卡",
+            "刷卡"
+          ]
+        },
+        {
+          "value": "line_pay",
+          "names": [
+            "LINE Pay",
+            "LinePay"
+          ]
+        },
+        {
+          "value": "jko_pay",
+          "names": [
+            "街口支付",
+            "街口"
+          ]
+        },
+        {
+          "value": "easy_wallet",
+          "names": [
+            "悠遊付"
+          ]
+        },
+        {
+          "value": "taiwan_pay",
+          "names": [
+            "台灣Pay",
+            "台灣 Pay"
+          ]
+        },
+        {
+          "value": "pxpay",
+          "names": [
+            "全支付"
+          ]
+        },
+        {
+          "value": "pi_wallet",
+          "names": [
+            "Pi 拍錢包",
+            "Pi錢包",
+            "拍錢包"
+          ]
+        },
+        {
+          "value": "easy_card",
+          "names": [
+            "悠遊卡"
+          ]
+        },
+        {
+          "value": "installment_zero_card",
+          "names": [
+            "零卡分期",
+            "分期"
+          ]
+        },
+        {
+          "value": "used_phone_tradein",
+          "names": [
+            "舊機折抵",
+            "二手機折抵"
+          ]
+        },
+        {
+          "value": "used_phone_tradein_chunghwa",
+          "names": [
+            "中華電信舊機折抵",
+            "中華舊機折抵"
+          ]
+        },
+        {
+          "value": "unknown",
+          "names": [
+            "未知",
+            "其他"
+          ]
+        }
+      ]
+    }
+  ],
+  "time_defaults": [
+    {
+      "table": "pos_sale",
+      "column": {
+        "table": "pos_sale",
+        "column": "sale_date"
+      }
+    },
+    {
+      "table": "pos_saleitem",
+      "column": {
+        "table": "pos_sale",
+        "column": "sale_date"
+      }
+    },
+    {
+      "table": "pos_payment",
+      "column": {
+        "table": "pos_sale",
+        "column": "sale_date"
+      }
+    },
+    {
+      "table": "transfer_status",
+      "column": {
+        "table": "transfer_status",
+        "column": "status_time"
+      }
+    }
+  ],
+  "segments": [
+    {
+      "id": "returns",
+      "names": [
+        "退貨",
+        "退款",
+        "退貨交易",
+        "含退貨",
+        "return",
+        "returns",
+        "refund",
+        "refunds"
+      ],
+      "table": "pos_sale",
+      "filter": {
+        "column": {
+          "table": "pos_sale",
+          "column": "origin_transaction_no"
+        },
+        "op": "not_null"
+      },
+      "default_exclude": true,
+      "note": "transactions that reference an origin transaction are returns; rule and default exclusion confirmed by the owner on 2026-09-09"
+    }
+  ],
+  "column_policies": [
+    {
+      "column": {
+        "table": "category",
+        "column": "category_name"
+      },
+      "sensitivity": "public"
+    },
+    {
+      "column": {
+        "table": "pos_payment",
+        "column": "payment_method"
+      },
+      "sensitivity": "public"
+    },
+    {
+      "column": {
+        "table": "pos_sale",
+        "column": "member_id"
+      },
+      "sensitivity": "personal"
+    },
+    {
+      "column": {
+        "table": "product",
+        "column": "product_name"
+      },
+      "sensitivity": "public"
+    },
+    {
+      "column": {
+        "table": "salesperson",
+        "column": "sales_name"
+      },
+      "sensitivity": "personal"
+    },
+    {
+      "column": {
+        "table": "store",
+        "column": "store_name"
+      },
+      "sensitivity": "public"
+    },
+    {
+      "column": {
+        "table": "transfer_status",
+        "column": "status"
+      },
+      "sensitivity": "public"
+    }
+  ],
+  "_perturbation": "no_aliases: column and table aliases removed"
+}

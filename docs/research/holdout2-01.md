@@ -126,3 +126,17 @@ answers correct (the owner confirmed q10, whose only line item is a return
 and which therefore answers NULL with the empty-result warning, and q28,
 whose group threshold no store meets), 9 accepted refusals, 0 wrong
 numbers; clarify rate 10%, refusal rate 30%.
+
+## Fourth run, after the deterministic base repair
+
+`.artifacts/holdout2/run-04.json`, tally `pos-real-holdout2-04-tally.json`
+(SHA-256 recorded). Only q29 changed: the model again chose `category` as
+base for a product measure, the repair moved the base to `product` and the
+answer (2 categories with a maximum price above 3000, HAVING) was confirmed
+by the owner. 30/30 judged, 22 answers, 0 wrong numbers, clarify rate 10%,
+refusal rate 27% (6 ratio questions by the shape gate, 2 personal-name
+literals by policy). The base repair fired on no author case (156/160
+unchanged), so it repairs without over-reaching on the sets measured so far.
+Transport failures (`model_call_failed`) appeared in clusters during the
+evening runs; the runner now retries such a call once and counts it as
+`model_retries` (features 32/32 and batch 1 rerun clean).

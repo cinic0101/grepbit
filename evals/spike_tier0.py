@@ -123,6 +123,26 @@ def normalize_rows(rows: list[dict[str, Any]] | list[tuple]) -> list[tuple[str, 
     return sorted(normalized)
 
 
+def perturb_schema(schema, kind: str):
+    """Reorder what the planner sees without changing what it means.
+
+    A plan that flips under a reordering was chosen for the order, not the
+    question; the compiler and the references are untouched, so a flip shows
+    up as a changed plan core or a wrong answer against the same reference.
+    """
+
+    import random
+
+    tables = list(schema.tables)
+    if kind == "tables_reversed":
+        tables = tables[::-1]
+    elif kind == "tables_shuffled":
+        random.Random(20260910).shuffle(tables)
+    elif kind == "columns_reversed":
+        tables = [t.model_copy(update={"columns": t.columns[::-1]}) for t in tables]
+    return schema.model_copy(update={"tables": tables})
+
+
 class _Skip(Exception):
     """Leave the compile-and-execute block after a deterministic clarify."""
 
@@ -268,6 +288,11 @@ def main(argv: list[str] | None = None) -> int:
         help="ablation: do not check eq/in text literals against the column",
     )
     parser.add_argument(
+        "--perturb",
+        choices=["tables_reversed", "columns_reversed", "tables_shuffled"],
+        help="metamorphic perturbation of the schema payload (meaning unchanged)",
+    )
+    parser.add_argument(
         "--no-grounding",
         action="store_true",
         help="ablation: no value index, no question hints, no literal resolution",
@@ -319,6 +344,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     if arguments.infer_joins:
         schema = infer_foreign_keys(connect, schema)
+    if arguments.perturb:
+        schema = perturb_schema(schema, arguments.perturb)
     introspection_seconds = round(time.monotonic() - started_intro, 3)
     inferred_keys = [fk.id for fk in schema.foreign_keys if fk.inferred]
     if inferred_keys:
@@ -439,16 +466,35 @@ def main(argv: list[str] | None = None) -> int:
                     {"column": m.column, "value": m.value} for m in hints
                 ]
             try:
-                proposal = client.propose(
-                    question,
-                    schema,
-                    as_of=as_of.isoformat(),
-                    overlay=overlay,
-                    previous=previous,
-                    question_values=detail.get("question_values"),
-                )
+                proposal = None
+                for attempt in range(2):
+                    try:
+                        proposal = client.propose(
+                            question,
+                            schema,
+                            as_of=as_of.isoformat(),
+                            overlay=overlay,
+                            previous=previous,
+                            question_values=detail.get("question_values"),
+                        )
+                        break
+                    except GroundingModelError as error:
+                        # One retry on a transport failure only; a malformed
+                        # answer is the model's and is reported as such.
+                        if error.code != "model_call_failed" or attempt == 1:
+                            raise
+                        detail["model_retries"] = attempt + 1
+                assert proposal is not None
             except GroundingModelError as error:
-                status, detail = "failed", {"reason": error.code}
+                status = "failed"
+                detail = {
+                    "reason": error.code,
+                    **(
+                        {"model_retries": detail["model_retries"]}
+                        if "model_retries" in detail
+                        else {}
+                    ),
+                }
             else:
                 if proposal.decision == "none":
                     status = {"ambiguous": "clarify"}.get(
@@ -705,6 +751,7 @@ def main(argv: list[str] | None = None) -> int:
         "cases_file": str(arguments.cases),
         "prompt_revision": PLAN_PROMPT_REVISION if arguments.live else None,
         "overlay_revision": overlay.revision if overlay is not None else None,
+        "perturbation": arguments.perturb,
         "as_of": as_of.isoformat(),
         "cases": len(results),
         "judged": len(judged),
@@ -723,6 +770,7 @@ def main(argv: list[str] | None = None) -> int:
             1 for r in refusals if r["status"] == "answered"
         ),
         "model_failures": sum(1 for r in results if r["status"] == "failed"),
+        "model_retries": sum(r.get("model_retries", 0) for r in results),
         "p50_seconds": latencies[len(latencies) // 2],
         "p95_seconds": latencies[
             min(len(latencies) - 1, int(round(0.95 * (len(latencies) - 1))))
@@ -756,6 +804,17 @@ def main(argv: list[str] | None = None) -> int:
         },
         "shape_repairs": sum(1 for r in results if r.get("shape_repairs")),
         "base_repairs": sum(1 for r in results if r.get("base_repair")),
+        # Which compile-time refusals recur decides the next deterministic repair.
+        "plan_error_counts": {
+            code: sum(1 for r in results if r.get("reason") == code)
+            for code in sorted(
+                {
+                    r["reason"]
+                    for r in results
+                    if str(r.get("reason") or "").startswith("plan_")
+                }
+            )
+        },
         "zero_call_refusals": sum(
             1
             for r in results

@@ -1,0 +1,276 @@
+# Perturbation of pos_real_batch1.yaml: a space is inserted in the middle of every
+# stored value that occurs verbatim in the question. References unchanged. Only the
+# 2 questions that name a value differ from batch 1.
+datasource_id: pos_real
+as_of: '2026-02-04T18:00:00+08:00'
+cases:
+- case_id: q01
+  question: 銷售交易總共有幾筆？
+  expected:
+    status: answered
+  reference_sql: SELECT COUNT(*) AS row_count FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL
+- case_id: q02
+  question: 所有銷售交易的總金額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT SUM(pos_sale.total_amount) AS sum_total_amount FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL
+- case_id: q03
+  question: 已付款訂單的總金額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT SUM(pos_payment.payment_amount) AS paid_amount FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL
+- case_id: q04
+  question: 取消的訂單有幾筆？
+  expected:
+    status: semantic_gap
+  accept_statuses: &id001
+  - semantic_gap
+  - clarify
+  - unsupported
+  note: 'run 4 reason: absent_concept'
+- case_id: q05
+  question: 各訂單狀態的交易筆數是多少？
+  expected:
+    status: semantic_gap
+  accept_statuses: *id001
+  note: 'run 4 reason: absent_concept'
+- case_id: q06
+  question: 訂單筆數最多的狀態是哪一種？若同數，請依狀態名稱由小到大取第一個。
+  expected:
+    status: semantic_gap
+  accept_statuses: *id001
+  note: 'run 4 reason: semantic_gap'
+- case_id: q07
+  question: 每筆訂單的平均金額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT AVG(pos_sale.total_amount) AS average_ticket FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL
+- case_id: q08
+  question: 各付款方式的付款總額是多少？請依付款方式名稱由小到大排列。
+  expected:
+    status: answered
+  reference_sql: SELECT pos_payment.payment_method AS payment_method, SUM(pos_payment.payment_amount) AS paid_amount FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL GROUP BY pos_payment.payment_method ORDER BY payment_method NULLS FIRST
+- case_id: q09
+  question: 各付款方式的交易筆數是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT pos_payment.payment_method AS payment_method, COUNT(*) AS transaction_count FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL GROUP BY pos_payment.payment_method ORDER BY payment_method NULLS FIRST
+- case_id: q10
+  question: 各付款方式的付款金額占同期總付款金額的比例是多少？
+  expected:
+    status: unsupported
+  accept_statuses: *id001
+  note: 'run 4 reason: unsupported_shape:share_of_total'
+- case_id: q11
+  question: 各門市的銷售總額是多少？請依銷售總額由高到低排列；若同額，依門市名稱由小到大排列。
+  expected:
+    status: answered
+  reference_sql: SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS total_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY store.store_name ORDER BY total_sales DESC NULLS LAST, store_name NULLS FIRST
+- case_id: q12
+  question: 各門市的銷售交易筆數是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT store.store_name AS store_name, COUNT(*) AS transaction_count FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY store.store_name ORDER BY store_name NULLS FIRST
+- case_id: q13
+  question: 各門市的平均客單價是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT store.store_name AS store_name, AVG(pos_sale.total_amount) AS average_ticket FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY store.store_name ORDER BY store_name NULLS FIRST
+- case_id: q14
+  question: 各門市的最低單筆交易金額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT store.store_name AS store_name, MIN(pos_sale.total_amount) AS min_transaction_amount FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY store.store_name ORDER BY store_name NULLS FIRST
+- case_id: q15
+  question: 各門市的最高單筆交易金額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT store.store_name AS store_name, MAX(pos_sale.total_amount) AS max_transaction_amount FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY store.store_name ORDER BY store_name NULLS FIRST
+- case_id: q16
+  question: 銷售總額最高的門市是哪一間？若同額，請依門市名稱由小到大取第一間。
+  expected:
+    status: answered
+  reference_sql: SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS total_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY store.store_name ORDER BY total_sales DESC NULLS LAST, store_name NULLS FIRST LIMIT 1
+- case_id: q17
+  question: 各門市的銷售額占同期全部銷售額的比例是多少？
+  expected:
+    status: unsupported
+  accept_statuses: *id001
+  note: 'run 4 reason: unsupported_shape:share_of_total'
+- case_id: q18
+  question: 各銷售員的銷售總額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT salesperson.sales_name AS sales_name, SUM(pos_sale.total_amount) AS total_sales FROM public.pos_sale LEFT JOIN public.salesperson ON pos_sale.sales_id = salesperson.sales_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY salesperson.sales_name ORDER BY sales_name NULLS FIRST
+- case_id: q19
+  question: 各銷售員的交易筆數是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT salesperson.sales_name AS sales_name, COUNT(*) AS transaction_count FROM public.pos_sale LEFT JOIN public.salesperson ON pos_sale.sales_id = salesperson.sales_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY salesperson.sales_name ORDER BY sales_name NULLS FIRST
+- case_id: q20
+  question: 銷售額最高的前 3 位銷售員是誰？若同額，請依銷售員名稱由小到大排列。
+  expected:
+    status: answered
+  reference_sql: SELECT salesperson.sales_name AS sales_name, SUM(pos_sale.total_amount) AS total_sales FROM public.pos_sale LEFT JOIN public.salesperson ON pos_sale.sales_id = salesperson.sales_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY salesperson.sales_name ORDER BY total_sales DESC NULLS LAST, sales_name NULLS FIRST LIMIT 3
+- case_id: q21
+  question: 各銷售員的銷售額占同期全部銷售額的比例是多少？
+  expected:
+    status: unsupported
+  accept_statuses: *id001
+  note: 'run 4 reason: unsupported_shape:share_of_total'
+- case_id: q22
+  question: 每天的銷售總額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT DATE_TRUNC('DAY', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') AS period_start, SUM(pos_sale.total_amount) AS total_sales FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL GROUP BY DATE_TRUNC('DAY', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') ORDER BY period_start NULLS FIRST
+- case_id: q23
+  question: 每天的銷售交易筆數是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT DATE_TRUNC('DAY', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') AS period_start, COUNT(*) AS transaction_count FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL GROUP BY DATE_TRUNC('DAY', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') ORDER BY period_start NULLS FIRST
+- case_id: q24
+  question: 每天的平均客單價是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT DATE_TRUNC('DAY', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') AS period_start, AVG(pos_sale.total_amount) AS average_ticket FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL GROUP BY DATE_TRUNC('DAY', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') ORDER BY period_start NULLS FIRST
+- case_id: q25
+  question: 2026 年 1 月的銷售總額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT SUM(pos_sale.total_amount) AS sum_total_amount FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= '2026-01-01T00:00:00+08:00'::timestamptz AND pos_sale.sale_date < '2026-02-01T00:00:00+08:00'::timestamptz)
+- case_id: q26
+  question: 2026 年 1 月 5 日至 1 月 6 日（含首尾兩天）的銷售交易筆數是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT COUNT(*) AS transaction_count FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= '2026-01-05T00:00:00+08:00'::timestamptz AND pos_sale.sale_date < '2026-01-07T00:00:00+08:00'::timestamptz)
+- case_id: q27
+  question: 各月份的銷售總額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT DATE_TRUNC('MONTH', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') AS period_start, SUM(pos_sale.total_amount) AS total_sales FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL GROUP BY DATE_TRUNC('MONTH', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') ORDER BY period_start NULLS FIRST
+- case_id: q28
+  question: 2026 年 1 月各門市的銷售總額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS total_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= '2026-01-01T00:00:00+08:00'::timestamptz AND pos_sale.sale_date < '2026-02-01T00:00:00+08:00'::timestamptz) GROUP BY store.store_name ORDER BY store_name NULLS FIRST
+- case_id: q29b
+  replaces: q29
+  question: 特約永 和中正在這禮拜的銷售總額是多少？
+  expected:
+    status: answered
+  accept_statuses:
+  - answered
+  - clarify
+  reference_sql: SELECT SUM(s.total_amount) FROM pos_sale s LEFT JOIN store st ON st.store_id = s.store_id WHERE st.store_name = '特約永和中正' AND s.origin_transaction_no IS NULL AND s.sale_date >= '2026-02-02T00:00:00+08:00'::timestamptz AND s.sale_date < '2026-02-09T00:00:00+08:00'::timestamptz
+  note: 'known gap: the model segments 特約永和中正在 as 特約永和中; clarify accepted until server-side value grounding perturbation: a space inserted inside a named value'
+- case_id: q30
+  question: 前天到今天（含首尾兩天）的銷售總額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT SUM(pos_sale.total_amount) AS sum_total_amount FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= '2026-02-02T00:00:00+08:00'::timestamptz AND pos_sale.sale_date < '2026-02-05T00:00:00+08:00'::timestamptz)
+- case_id: q31
+  question: 上週（週一至週日）每天的銷售交易筆數是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT DATE_TRUNC('DAY', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') AS period_start, COUNT(*) AS transaction_count FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= '2026-01-26T00:00:00+08:00'::timestamptz AND pos_sale.sale_date < '2026-02-02T00:00:00+08:00'::timestamptz) GROUP BY DATE_TRUNC('DAY', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') ORDER BY period_start NULLS FIRST
+- case_id: q32
+  question: 上週（週一至週日）各門市的銷售總額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS total_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= '2026-01-26T00:00:00+08:00'::timestamptz AND pos_sale.sale_date < '2026-02-02T00:00:00+08:00'::timestamptz) GROUP BY store.store_name ORDER BY store_name NULLS FIRST
+- case_id: q33
+  question: 本月截至今天的銷售總額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT SUM(pos_sale.total_amount) AS sum_total_amount FROM public.pos_sale WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= '2026-02-01T00:00:00+08:00'::timestamptz AND pos_sale.sale_date < '2026-02-05T00:00:00+08:00'::timestamptz)
+- case_id: q34
+  question: 最近 30 天的退貨金額占同期銷售總額的比例是多少？
+  expected:
+    status: unsupported
+  accept_statuses: *id001
+  note: 'run 4 reason: unsupported_shape:share_of_total'
+- case_id: q35
+  question: 單價高於 1000 元的商品有幾項？
+  expected:
+    status: answered
+  reference_sql: SELECT COUNT(*) AS count FROM public.product WHERE product.price > 1000
+- case_id: q36
+  question: 各商品分類有幾項商品？
+  expected:
+    status: answered
+  reference_sql: SELECT category.category_name AS category_name, COUNT(*) AS product_count FROM public.product LEFT JOIN public.category ON product.category_id = category.category_id GROUP BY category.category_name ORDER BY category_name NULLS FIRST
+- case_id: q37
+  question: 各商品分類的銷售總額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT category.category_name AS category_name, SUM(pos_saleitem.amount) AS total_sales FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id LEFT JOIN public.category ON product.category_id = category.category_id LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL GROUP BY category.category_name ORDER BY category_name NULLS FIRST
+- case_id: q38
+  question: 各商品分類的最低商品單價是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT category.category_name AS category_name, MIN(product.price) AS min_price FROM public.product LEFT JOIN public.category ON product.category_id = category.category_id GROUP BY category.category_name ORDER BY category_name NULLS FIRST
+- case_id: q39
+  question: 各商品分類的最高商品單價是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT category.category_name AS category_name, MAX(product.price) AS max_price FROM public.product LEFT JOIN public.category ON product.category_id = category.category_id GROUP BY category.category_name ORDER BY category_name NULLS FIRST
+- case_id: q40
+  question: 各商品的銷售數量是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT product.product_name AS product_name, SUM(pos_saleitem.quantity) AS total_quantity FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL GROUP BY product.product_name ORDER BY product_name NULLS FIRST
+- case_id: q41
+  question: 各商品分類的銷售額占同期全部銷售額的比例是多少？
+  expected:
+    status: unsupported
+  accept_statuses: *id001
+  note: 'run 4 reason: unsupported_shape:share_of_total'
+- case_id: q42
+  question: 銷售金額最高的前 10 項商品有哪些？若同額，請依商品名稱由小到大排列。
+  expected:
+    status: answered
+  reference_sql: SELECT product.product_name AS product_name, SUM(pos_saleitem.amount) AS total_sales FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL GROUP BY product.product_name ORDER BY total_sales DESC NULLS LAST, product_name NULLS FIRST LIMIT 10
+- case_id: q43
+  question: 銷售數量最高的前 10 項商品有哪些？若同數，請依商品名稱由小到大排列。
+  expected:
+    status: answered
+  reference_sql: SELECT product.product_name AS product_name, SUM(pos_saleitem.quantity) AS total_quantity FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL GROUP BY product.product_name ORDER BY total_quantity DESC NULLS LAST, product_name NULLS FIRST LIMIT 10
+- case_id: q44b
+  replaces: q44
+  question: 中華電信舊號 續約SIM卡在1月銷售總額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT SUM(pos_saleitem.amount) AS total_sales FROM public.pos_saleitem LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id WHERE product.product_name = '中華電信舊號續約SIM卡' AND pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= '2026-01-01T00:00:00+08:00'::timestamptz AND pos_sale.sale_date < '2026-02-01T00:00:00+08:00'::timestamptz)
+  note: 'perturbation: a space inserted inside a named value'
+- case_id: q45
+  question: 退貨交易總共有幾筆？
+  expected:
+    status: answered
+  reference_sql: SELECT COUNT(*) AS return_count FROM public.pos_sale WHERE NOT pos_sale.origin_transaction_no IS NULL
+- case_id: q46
+  question: 各門市的退貨總金額是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS return_amount FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE NOT pos_sale.origin_transaction_no IS NULL GROUP BY store.store_name ORDER BY store_name NULLS FIRST
+- case_id: q47
+  question: 每日的退貨筆數是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT DATE_TRUNC('DAY', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') AS period_start, COUNT(*) AS return_count FROM public.pos_sale WHERE NOT pos_sale.origin_transaction_no IS NULL GROUP BY DATE_TRUNC('DAY', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') ORDER BY period_start NULLS FIRST
+- case_id: q48
+  question: 各商品的退貨數量是多少？
+  expected:
+    status: answered
+  reference_sql: SELECT product.product_name AS product_name, SUM(pos_saleitem.quantity) AS return_quantity FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no WHERE NOT pos_sale.origin_transaction_no IS NULL GROUP BY product.product_name ORDER BY product_name NULLS FIRST
+- case_id: q49
+  question: 以退貨數量除以銷售數量計算，哪些商品的退貨率最高？若同率，請依商品名稱由小到大排列。
+  expected:
+    status: semantic_gap
+  accept_statuses: *id001
+  note: 'run 4 reason: semantic_gap'
+- case_id: q50
+  question: 退貨金額占同期銷售總額的比例是多少？
+  expected:
+    status: unsupported
+  accept_statuses: *id001
+  note: 'run 4 reason: unsupported_shape:share_of_total'

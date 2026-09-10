@@ -69,6 +69,15 @@ And the verdict workflow: the build side pre-fills every verdict it can
 derive (carried, exact match, refusal by policy, structural) and flags only
 new numbers for the owner.
 
+Decided 2026-09-10: before the ratio work, a metamorphic perturbation suite
+over batch 1 (hints on and off, schema table and column order, an added
+unrelated table, spacing inside a named value) measures plan stability and
+lists the q29-class weaknesses systematically instead of case by case
+(method after Dr.Spider, 2023). Also decided: derive what the schema
+already determines instead of letting the planner choose it (base table,
+default time column), and give every PlanError code a remedy, mechanical
+repair or typed clarify; the regression summary now counts PlanError codes.
+
 Also raised by the owner on 2026-09-09: a way to let an
 LLM propose a datasource onboarding (table and column aliases, candidate
 metrics, absent concepts, column policies, default time columns) from the

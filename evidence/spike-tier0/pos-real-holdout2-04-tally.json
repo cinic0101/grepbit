@@ -1,0 +1,33 @@
+{
+  "report": ".artifacts/holdout2/run-04.json (kept out of git at the owner's request)",
+  "datasource_id": "pos_real",
+  "prompt_revision": "plan-classify-json-v9",
+  "cases": 30,
+  "judged": 30,
+  "unsure": 0,
+  "correct": 30,
+  "correctness": 1.0,
+  "wrong_numbers_without_exposed_assumption": 0,
+  "wrong_numbers_with_exposed_assumption": 0,
+  "refusals_that_should_have_answered": 0,
+  "clarify_count": 3,
+  "clarify_rate": 0.1,
+  "refusal_rate": 0.2667,
+  "status_counts": {
+    "answered": 22,
+    "clarify": 3,
+    "unsupported": 5
+  },
+  "verdict_counts": {
+    "correct": 22,
+    "wrong_exposed": 0,
+    "wrong_silent": 0,
+    "refusal_ok": 8,
+    "refusal_bad": 0,
+    "unsure": 0
+  },
+  "p50_seconds": 5.246,
+  "p95_seconds": 6.731,
+  "report_sha256": "e89bd8be30409aa02a9c00dc4ce63a631423319c602de65d81a74072997853a5",
+  "verdicts_sha256": "75332cef1c7608b9021a0c75a4b59827adca9b140df591ac729c9471b2479ebf"
+}
