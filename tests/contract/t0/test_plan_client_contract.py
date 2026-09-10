@@ -250,3 +250,26 @@ def test_response_format_follows_the_output_mode_setting() -> None:
         fmt["json_schema"]["schema"]["$defs"]["QueryPlan"]["additionalProperties"]
         is False
     )
+
+
+def test_repair_strips_a_qualified_column_and_drops_an_empty_time_object() -> None:
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "aggregate": "sum",
+                    "column": {"table": "alerts", "column": "alerts.downtime_minutes"},
+                }
+            ],
+            "dimensions": [{"table": "devices", "column": "devices.model"}],
+            "time": {"column": {"table": "alerts", "column": "raised_at"}},
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    assert repaired["plan"]["measures"][0]["column"]["column"] == "downtime_minutes"
+    assert repaired["plan"]["dimensions"][0]["column"] == "model"
+    assert "time" not in repaired["plan"]
+    assert "dropped time without scope or grain" in repairs
+    assert "devices.model -> model" in repairs

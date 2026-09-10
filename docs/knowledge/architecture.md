@@ -58,7 +58,10 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
 4. Compile: `PlanCompiler.compile` validates every identifier and kind, walks
    foreign keys away from the base table only (up to three hops, ambiguous
    paths rejected), expands reviewed metrics, applies the overlay segments the
-   question did not lift (`excluded_segments`) as reviewed default filters,
+   question did not lift (`excluded_segments`) as reviewed default filters
+   and keeps a segment the question named out of the operands that do not
+   select it (`named_segments`; the ids that shaped the SQL come back as
+   `CompiledPlan.applied_segments`),
    resolves time windows in the business time zone from `as_of` (rejecting a
    past window that reaches the future), places `having` conditions on the
    aggregate expressions, builds the SQL as a sqlglot AST with bound
@@ -111,8 +114,9 @@ supported shapes, relay rules; no values) and `ask` (status or typed refusal,
 SQL with bound parameters, lineage, assumptions, verification, up to 200
 rows, warnings, hints and resolutions). Run it with
 `.venv/bin/python -m grepbit.adapters.mcp_server` or the `grepbit-mcp`
-script after `uv sync`. The runner `evals/spike_tier0.py` is being moved
-onto the same core so measurements and the served path cannot drift.
+script after `uv sync`. The runner `evals/spike_tier0.py` calls the same
+`ask()` per case and maps the `AskResult` onto its report, so measurements
+and the served path cannot drift (`../research/runner-on-ask-01.md`).
 
 ## What is not here yet
 

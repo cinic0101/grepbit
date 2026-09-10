@@ -68,6 +68,17 @@ side does not open (`../plan/next-phase.md`).
   [--propose-policies <file.json>]
 ```
 
+Since 2026-09-10 the runner is a loop over `application.ask.ask()`, the
+same function the MCP server serves: it builds the `AskServices` once, calls
+`ask()` per case and maps the `AskResult` onto the report keys below, so a
+number measured here is a number the served path would produce
+(`../research/runner-on-ask-01.md`). Two report fields changed meaning with
+the move: a row's `excluded_segments` lists the segments that shaped the SQL
+(`CompiledPlan.applied_segments`, query-wide or per operand), and
+`question_values` hints are recorded for every case, refusals included.
+`--verify-coverage` is accepted for old command lines but does nothing (the
+coverage audit was not carried onto the core; the runner prints a notice).
+
 The deterministic gates are on by default; `--no-shape-gate`,
 `--no-literal-check` and `--no-grounding` exist for ablations. With an
 overlay that lists groundable columns the runner builds the value index at
@@ -135,6 +146,14 @@ exposed assumption, clarify rate, refusal rate, P50 and P95. The tally holds
 counts only and belongs under `evidence/`. The build side never opens the
 question file before the run, never changes prompts between runs of the same
 holdout, and reports which run was the first (blind) one.
+
+Repeated runs of the same questions do not need a fresh judgment for every
+case: `evals/carry_verdicts.py --report <new-run.json> --verdicts
+<new-skeleton.yaml> --from <judged-run.json>:<filled.yaml> [--from ...]`
+copies a human's earlier verdict onto a case whose status, plan, SQL and
+row count are byte-identical to the judged run, notes which run it came
+from, and leaves everything else `null`. The judge then reads only the
+open cases; `unsure` verdicts are never carried.
 
 Settling a judged batch: `evals/settle_batch.py --report <run.json>
 --verdicts <filled.yaml> --cases <judged.yaml> --dsn-env <ENV> --datasource-id

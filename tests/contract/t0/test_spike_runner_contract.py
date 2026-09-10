@@ -234,3 +234,60 @@ def test_questions_to_cases_strips_numbering_and_blank_lines() -> None:
     assert cases[0] == {"case_id": "q01", "question": "各門市營業額"}
     assert cases[-1]["case_id"] == "q04"
     assert all("expected" not in c for c in cases)
+
+
+def test_carry_copies_a_verdict_only_onto_byte_identical_output() -> None:
+    carry_spec = importlib.util.spec_from_file_location(
+        "carry_verdicts", ROOT / "evals" / "carry_verdicts.py"
+    )
+    carry = importlib.util.module_from_spec(carry_spec)
+    assert carry_spec.loader is not None
+    carry_spec.loader.exec_module(carry)
+
+    def row(case_id, sql, status="answered", rows=1):
+        return {
+            "case_id": case_id,
+            "status": status,
+            "plan": {"measures": [{"aggregate": "count"}]},
+            "sql": sql,
+            "row_count": rows,
+        }
+
+    judged_report = {
+        "results": [
+            row("q1", "SELECT 1 AS n"),
+            row("q2", "SELECT 2"),
+            row("q3", "SELECT 3"),
+        ]
+    }
+    judged = {
+        "verdicts": [
+            {"case_id": "q1", "verdict": "correct"},
+            {"case_id": "q2", "verdict": "correct"},
+            {"case_id": "q3", "verdict": "unsure"},
+        ]
+    }
+    new_report = {
+        "results": [
+            row("q1", "SELECT 1 AS renamed"),
+            row("q2", "SELECT 2 WHERE x"),
+            row("q3", "SELECT 3"),
+        ]
+    }
+    skeleton = {
+        "verdicts": [
+            {"case_id": "q1", "verdict": None, "note": ""},
+            {"case_id": "q2", "verdict": None, "note": ""},
+            {"case_id": "q3", "verdict": None, "note": ""},
+        ]
+    }
+    filled, counts = carry.carry(
+        new_report, skeleton, [("run-1.json", judged_report, judged)]
+    )
+    by_id = {v["case_id"]: v for v in filled["verdicts"]}
+    assert by_id["q1"]["verdict"] == "correct"
+    assert by_id["q1"]["note"].startswith("carried from run-1.json")
+    assert "up to output column names" in by_id["q1"]["note"]
+    assert by_id["q2"]["verdict"] is None  # the SQL changed: judge again
+    assert by_id["q3"]["verdict"] is None  # unsure is never carried
+    assert counts == {"carried": 1, "open": 2}

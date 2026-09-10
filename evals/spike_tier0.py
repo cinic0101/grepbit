@@ -38,7 +38,6 @@ from typing import Any
 import yaml
 
 from grepbit.adapters.language_pack_store import load_shape_pack
-from grepbit.adapters.litellm.coverage_client import ChatCompletionsCoverageClient
 from grepbit.adapters.litellm.grounding_client import GroundingModelSettings
 from grepbit.adapters.litellm.plan_client import (
     PLAN_PROMPT_REVISION,
@@ -56,19 +55,14 @@ from grepbit.adapters.sqlglot.policy import (
     PostgresSqlPolicy,
 )
 from grepbit.application.active_queries import ActiveQueryRegistry
-from grepbit.application.grounding import ValueIndex, resolve_plan_literals
-from grepbit.application.literals import text_literal_checks
+from grepbit.application.ask import AskServices, AskSettings, ask
+from grepbit.application.grounding import ValueIndex
 from grepbit.application.overlay import (
-    excluded_segments,
-    match_absent_concept,
     overlay_problems,
 )
-from grepbit.application.plan_repair import repair_base_table
 from grepbit.application.policies import PROPOSER_REVISION, propose_policies
-from grepbit.application.shapes import match_unsupported_shape, single_period_misread
 from grepbit.domain.grounding import normalize_question
-from grepbit.domain.plan import PlanError, PreviousTurn, QueryPlan
-from grepbit.ports.grounding import GroundingModelError
+from grepbit.domain.plan import PreviousTurn, QueryPlan
 
 ROOT = Path(__file__).resolve().parents[1]
 # Language-pack style policy list; deliberately catalog independent.
@@ -141,6 +135,48 @@ def perturb_schema(schema, kind: str):
     elif kind == "columns_reversed":
         tables = [t.model_copy(update={"columns": t.columns[::-1]}) for t in tables]
     return schema.model_copy(update={"tables": tables})
+
+
+def report_detail(result) -> dict[str, Any]:
+    """Map an AskResult onto the report's historical keys (no bound values)."""
+
+    detail: dict[str, Any] = {}
+    if result.reason:
+        detail["reason"] = result.reason
+    if result.clarification:
+        detail["clarification"] = result.clarification
+    if result.plan is not None:
+        detail["plan"] = result.plan.model_dump(mode="json", exclude_none=True)
+    if result.shape_repairs:
+        detail["shape_repairs"] = list(result.shape_repairs)
+    if result.base_repair:
+        detail["base_repair"] = result.base_repair
+    if result.question_values:
+        detail["question_values"] = list(result.question_values)
+    if result.sql is not None:
+        detail["sql"] = result.sql
+        detail["lineage"] = result.lineage
+        detail["interpretation"] = result.interpretation
+        detail["assumptions"] = list(result.assumptions)
+        detail["verification"] = result.verification
+        detail["excluded_segments"] = list(result.excluded_segments)
+        detail["literal_checks"] = result.literal_checks
+    if result.grounding:
+        detail["grounding"] = [g.model_dump(mode="json") for g in result.grounding]
+    if result.missing_literals:
+        detail["missing_literals"] = list(result.missing_literals)
+    if result.model_retries:
+        detail["model_retries"] = result.model_retries
+    if result.status == "answered":
+        detail["row_count"] = result.row_count
+        detail["rows_truncated"] = result.rows_truncated
+        if result.warnings:
+            detail["warnings"] = list(result.warnings)
+        detail["rows"] = [
+            {k: (str(v) if not isinstance(v, (int, str)) else v) for k, v in r.items()}
+            for r in result.rows[:20]
+        ]
+    return detail
 
 
 class _Skip(Exception):
@@ -407,12 +443,9 @@ def main(argv: list[str] | None = None) -> int:
         connection_factory=connect, active_queries=ActiveQueryRegistry()
     )
     client = None
-    verifier = None
     if arguments.live:
         settings = GroundingModelSettings.from_environment()
         client = ChatCompletionsPlanClient(settings)
-        if arguments.verify_coverage:
-            verifier = ChatCompletionsCoverageClient(settings)
 
     def reference_rows(sql: str) -> list[tuple[str, ...]]:
         with connect() as connection:
@@ -424,6 +457,34 @@ def main(argv: list[str] | None = None) -> int:
 
     results: list[dict[str, Any]] = []
     answered_plans: dict[str, tuple[str, QueryPlan]] = {}
+    ask_settings = AskSettings(
+        as_of=as_of,
+        max_rows=1000,  # evaluation fetches whole results for reference comparison
+        statement_timeout_seconds=10,
+        shape_gate=not arguments.no_shape_gate,
+        literal_check=not arguments.no_literal_check,
+        grounding=not arguments.no_grounding,
+    )
+    services = (
+        AskServices(
+            schema=schema,
+            planner=client,
+            compiler=compiler,
+            policy=policy,
+            executor=executor,
+            literal_checker=lambda checks: missing_literals(
+                connect, schema.schema_name, checks
+            ),
+            unsafe=unsafe,
+            overlay=overlay,
+            shape_pack=shape_pack,
+            value_index=index,
+        )
+        if client is not None
+        else None
+    )
+    if arguments.verify_coverage:
+        print("coverage audit: not available on the ask core; flag ignored")
     for case in document["cases"]:
         question = case["question"]
         previous = None
@@ -440,288 +501,40 @@ def main(argv: list[str] | None = None) -> int:
             "accepted_statuses": sorted(accepted),
             "follow_up_of": case.get("follow_up_of"),
         }
-        started = time.monotonic()
-        status = "not_run"
         detail: dict[str, Any] = {}
-        absent = match_absent_concept(question, overlay) if overlay else None
-        shape = match_unsupported_shape(question, shape_pack) if shape_pack else None
-        if unsafe(question):
-            status = "unsafe"
-        elif absent is not None:
-            status = "semantic_gap"
-            detail = {"reason": "absent_concept", "clarification": absent.note}
-        elif shape is not None:
-            status = "unsupported"
-            detail = {
-                "reason": f"unsupported_shape:{shape[0].id}",
-                "matched_name": shape[1],
-                "clarification": shape[0].clarification,
-            }
-        elif client is None:
-            status = "not_run"
+        if services is None:
+            status, elapsed = "not_run", 0.0
         else:
-            hints = index.mentions(question) if index is not None else []
-            if hints:
-                detail["question_values"] = [
-                    {"column": m.column, "value": m.value} for m in hints
-                ]
-            try:
-                proposal = None
-                for attempt in range(2):
-                    try:
-                        proposal = client.propose(
-                            question,
-                            schema,
-                            as_of=as_of.isoformat(),
-                            overlay=overlay,
-                            previous=previous,
-                            question_values=detail.get("question_values"),
-                        )
-                        break
-                    except GroundingModelError as error:
-                        # One retry on a transport failure only; a malformed
-                        # answer is the model's and is reported as such.
-                        if error.code != "model_call_failed" or attempt == 1:
-                            raise
-                        detail["model_retries"] = attempt + 1
-                assert proposal is not None
-            except GroundingModelError as error:
-                status = "failed"
-                detail = {
-                    "reason": error.code,
-                    **(
-                        {"model_retries": detail["model_retries"]}
-                        if "model_retries" in detail
-                        else {}
-                    ),
-                }
-            else:
-                if proposal.decision == "none":
-                    status = {"ambiguous": "clarify"}.get(
-                        proposal.reason, proposal.reason
-                    )
-                    detail = {
-                        "reason": proposal.reason,
-                        "clarification": proposal.clarification,
-                    }
-                else:
-                    assert proposal.plan is not None
-                    repaired, base_repair = repair_base_table(
-                        proposal.plan, schema, overlay
-                    )
-                    if base_repair is not None:
-                        proposal = proposal.model_copy(update={"plan": repaired})
-                        detail["base_repair"] = base_repair
-                    detail["plan"] = proposal.plan.model_dump(
-                        mode="json", exclude_none=True
-                    )
-                    answered_plans[case["case_id"]] = (question, proposal.plan)
-                    if client.last_repairs:
-                        detail["shape_repairs"] = list(client.last_repairs)
-                    exclusions = excluded_segments(question, overlay) if overlay else []
-                    misread = (
-                        single_period_misread(question, proposal.plan, shape_pack)
-                        if shape_pack
-                        else None
-                    )
-                    if misread is not None:
-                        status = "clarify"
-                        detail["reason"] = "per_period_single_window"
-                        detail["matched_name"] = misread
-                        detail["clarification"] = shape_pack.period_clarification
-                    try:
-                        if misread is not None:
-                            raise _Skip()
-                        compiled = compiler.compile(
-                            proposal.plan, as_of=as_of, exclude_segments=exclusions
-                        )
-                        policy.assert_safe_select_statement(
-                            compiled.compiled.physical_sql
-                        )
-                    except _Skip:
-                        pass
-                    except PlanError as error:
-                        status, detail["reason"] = "unsupported", f"plan_{error.code}"
-                        detail["detail"] = error.detail
-                    except ValueError as error:
-                        status, detail["reason"] = "unsafe", f"policy:{error}"
-                    else:
-                        detail["assumptions"] = [a.text for a in compiled.assumptions]
-                        if detail.get("base_repair"):
-                            detail["assumptions"].append(
-                                "The base table was moved to the table holding the "
-                                f"measure columns ({detail['base_repair']}); the "
-                                "grouping and filters are unchanged."
-                            )
-                        used = {
-                            str(v)
-                            for f in proposal.plan.filters
-                            for v in f.values
-                            if isinstance(v, str)
-                        }
-                        detail["assumptions"] += [
-                            f"The question's wording was matched to the stored "
-                            f"value '{h['value']}' of {h['column']} (spaces, case or "
-                            "punctuation differ); give the exact value to override."
-                            for h in detail.get("question_values") or []
-                            if h["value"] in used and h["value"] not in question
-                        ]
-                        detail["verification"] = compiled.verification
-                        detail["excluded_segments"] = [
-                            text.split("]")[0].removeprefix("[default: exclude ")
-                            for text in compiled.lineage.filters
-                            if text.startswith("[default: exclude ")
-                        ]
-                        detail["sql"] = compiled.compiled.physical_sql
-                        detail["lineage"] = compiled.lineage.as_dict()
-                        detail["interpretation"] = compiled.interpretation
-                        checks = (
-                            []
-                            if arguments.no_literal_check
-                            else text_literal_checks(proposal.plan, schema)
-                        )
-                        misses = missing_literals(connect, schema.schema_name, checks)
-                        detail["literal_checks"] = len(checks)
-                        if misses and index is not None:
-                            resolved_plan, resolutions = resolve_plan_literals(
-                                proposal.plan,
-                                [(m.table + "." + m.column, m.value) for m in misses],
-                                index,
-                            )
-                            detail["grounding"] = [
-                                r.model_dump(mode="json") for r in resolutions
-                            ]
-                            if resolved_plan is not proposal.plan:
-                                # unique resolutions substituted: recompile and recheck
-                                compiled = compiler.compile(
-                                    resolved_plan,
-                                    as_of=as_of,
-                                    exclude_segments=exclusions,
-                                )
-                                policy.assert_safe_select_statement(
-                                    compiled.compiled.physical_sql
-                                )
-                                detail["plan"] = resolved_plan.model_dump(
-                                    mode="json", exclude_none=True
-                                )
-                                detail["sql"] = compiled.compiled.physical_sql
-                                detail["lineage"] = compiled.lineage.as_dict()
-                                detail["interpretation"] = compiled.interpretation
-                                detail["assumptions"] = [
-                                    a.text for a in compiled.assumptions
-                                ] + [
-                                    f"'{r.literal}' was read as the stored value "
-                                    f"'{r.value}' of {r.column} (similarity "
-                                    f"{r.candidates[0].score}); give the exact "
-                                    "value to override."
-                                    for r in resolutions
-                                    if r.kind == "unique"
-                                ]
-                                checks = text_literal_checks(resolved_plan, schema)
-                                misses = missing_literals(
-                                    connect, schema.schema_name, checks
-                                )
-                            ambiguous = [
-                                r for r in resolutions if r.kind == "ambiguous"
-                            ]
-                            if misses and ambiguous:
-                                status = "clarify"
-                                detail["reason"] = "filter_value_ambiguous"
-                                detail["clarification"] = "; ".join(
-                                    f"{r.column}: did you mean "
-                                    + ", ".join(f"'{c.value}'" for c in r.candidates)
-                                    + f" for '{r.literal}'?"
-                                    for r in ambiguous
-                                )
-                        if misses and detail.get("reason") != "filter_value_ambiguous":
-                            status = "clarify"
-                            detail["reason"] = "filter_value_not_found"
-                            detail["missing_literals"] = [
-                                f"{m.table}.{m.column} = {m.value!r}" for m in misses
-                            ]
-                            detail["clarification"] = (
-                                "No row matches "
-                                + "; ".join(detail["missing_literals"])
-                                + ". Check the spelling or give the stored value."
-                            )
-                        if verifier is not None and not misses:
-                            started_audit = time.monotonic()
-                            try:
-                                report = verifier.verify(question, compiled, schema)
-                            except GroundingModelError as error:
-                                detail["coverage"] = {"error": error.code}
-                            else:
-                                detail["coverage"] = {
-                                    "concepts": [
-                                        c.model_dump() for c in report.concepts
-                                    ],
-                                    "uncovered": report.uncovered,
-                                    "seconds": round(
-                                        time.monotonic() - started_audit, 3
-                                    ),
-                                }
-                        if misses:
-                            execution = None
-                        else:
-                            # Evaluation fetches up to 1000 rows so a reference
-                            # comparison is not cut short; the served contract
-                            # keeps its own bound (200 rows, truncated flag).
-                            execution = executor.execute(
-                                compiled.compiled,
-                                max_rows=1000,
-                                preview_rows=1000,
-                                statement_timeout_seconds=10,
-                                run_id=f"spike-{case['case_id']}",
-                            )
-                        if execution is None:
-                            pass
-                        elif execution.error_code is not None:
-                            status, detail["reason"] = "failed", execution.error_code
-                        else:
-                            status = "answered"
-                            detail["row_count"] = execution.row_count
-                            detail["rows_truncated"] = execution.truncated
-                            warning = empty_result_warning(execution.rows)
-                            if warning:
-                                detail["warnings"] = [warning]
-                            detail["rows"] = [
-                                {
-                                    k: (str(v) if not isinstance(v, (int, str)) else v)
-                                    for k, v in r.items()
-                                }
-                                for r in execution.rows[:20]
-                            ]
-                            if "reference_sql" in case:
-                                actual = normalize_rows(list(execution.rows))
-                                references = [
-                                    reference_rows(sql)
-                                    for sql in (
-                                        case["reference_sql"],
-                                        *case.get("reference_sql_alternatives", []),
-                                    )
-                                ]
-                                matched = next(
-                                    (
-                                        i
-                                        for i, r in enumerate(references)
-                                        if r == actual
-                                    ),
-                                    None,
-                                )
-                                detail["rows_match_reference"] = matched is not None
-                                detail["matched_reference_index"] = matched
-                                if matched is None:
-                                    detail["reference_rows"] = references[0][:10]
-        detail["status_without_coverage"] = status
-        uncovered = (detail.get("coverage") or {}).get("uncovered") or []
-        if status == "answered" and uncovered:
-            status = "clarify"
-            detail["clarification"] = "Not expressed by the plan: " + ", ".join(
-                uncovered
+            result = ask(
+                question,
+                services,
+                ask_settings,
+                previous=previous,
+                run_id=f"spike-{case['case_id']}",
             )
-        elif status == "answered":
+            status, elapsed = result.status, result.elapsed_seconds
+            detail = report_detail(result)
+            if result.plan is not None:
+                answered_plans[case["case_id"]] = (question, result.plan)
+            if status == "answered" and "reference_sql" in case:
+                actual = normalize_rows(result.rows)
+                references = [
+                    reference_rows(sql)
+                    for sql in (
+                        case["reference_sql"],
+                        *case.get("reference_sql_alternatives", []),
+                    )
+                ]
+                matched = next(
+                    (i for i, r in enumerate(references) if r == actual), None
+                )
+                detail["rows_match_reference"] = matched is not None
+                detail["matched_reference_index"] = matched
+                if matched is None:
+                    detail["reference_rows"] = references[0][:10]
+        detail["status_without_coverage"] = status
+        if status == "answered":
             detail.setdefault("verification", "unverified_semantics")
-        elapsed = round(time.monotonic() - started, 3)
         correct: bool | None
         if expected is None:
             correct = None
