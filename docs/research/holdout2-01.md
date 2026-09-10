@@ -140,3 +140,13 @@ unchanged), so it repairs without over-reaching on the sets measured so far.
 Transport failures (`model_call_failed`) appeared in clusters during the
 evening runs; the runner now retries such a call once and counts it as
 `model_retries` (features 32/32 and batch 1 rerun clean).
+
+## Fifth judged run, overlay v7 (transaction-count metrics, shipment aliases)
+
+`.artifacts/holdout2/run-06.json`, tally `pos-real-holdout2-06-tally.json`
+(the intervening run-05 was the constrained-decoding experiment and is not
+judged). 30/30, 0 wrong numbers; 27 verdicts carried, q02 and q30 now go
+through the verified `transaction_count` metric with the same SQL, q19 stays a
+policy clarify. Batch 1 under v7: 49/50, verified answers 9 to 16, q09 pinned
+to `paid_transaction_count`; the miss is q06, the deferred wobble, which
+answered over the shipment tables again despite the new aliases.
