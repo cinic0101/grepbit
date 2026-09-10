@@ -5,6 +5,9 @@
 # inlined: a regression guard, not an independent truth. Refusal cases accept any
 # typed refusal. q29 and q44 are the owner's value-grounded rewrites (q29b, q44b).
 # Returns (origin_transaction_no set) are excluded by default per the overlay.
+# The seven ratio and share questions (q10, q17, q21, q34, q41, q49, q50) were refusals
+# until prompt v10; their references come from the run the owner judged on 2026-09-10
+# (docs/research/ratios-01.md).
 # Run with --enum-distinct-limit 0 --redact-rows --overlay overlays/pos_real.json.
 datasource_id: pos_real
 as_of: '2026-02-04T18:00:00+08:00'
@@ -63,9 +66,9 @@ cases:
 - case_id: q10
   question: 各付款方式的付款金額占同期總付款金額的比例是多少？
   expected:
-    status: unsupported
-  accept_statuses: *id001
-  note: 'run 4 reason: unsupported_shape:share_of_total'
+    status: answered
+  reference_sql: SELECT pos_payment.payment_method AS payment_method, CAST((SUM(pos_payment.payment_amount)) AS DOUBLE PRECISION) / NULLIF(SUM(SUM(pos_payment.payment_amount)) OVER (), 0) AS paid_amount_share FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL GROUP BY pos_payment.payment_method ORDER BY payment_method NULLS FIRST
+  note: 'ratio or share question: refused until prompt v10; answered form judged correct by the owner on 2026-09-10 (docs/research/ratios-01.md); reference from pos-real-batch1-14.json'
 - case_id: q11
   question: 各門市的銷售總額是多少？請依銷售總額由高到低排列；若同額，依門市名稱由小到大排列。
   expected:
@@ -99,9 +102,9 @@ cases:
 - case_id: q17
   question: 各門市的銷售額占同期全部銷售額的比例是多少？
   expected:
-    status: unsupported
-  accept_statuses: *id001
-  note: 'run 4 reason: unsupported_shape:share_of_total'
+    status: answered
+  reference_sql: SELECT store.store_name AS store_name, CAST((SUM(pos_sale.total_amount)) AS DOUBLE PRECISION) / NULLIF(SUM(SUM(pos_sale.total_amount)) OVER (), 0) AS gross_sales_share FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY store.store_name ORDER BY store_name NULLS FIRST
+  note: 'ratio or share question: refused until prompt v10; answered form judged correct by the owner on 2026-09-10 (docs/research/ratios-01.md); reference from pos-real-batch1-14.json'
 - case_id: q18
   question: 各銷售員的銷售總額是多少？
   expected:
@@ -120,9 +123,9 @@ cases:
 - case_id: q21
   question: 各銷售員的銷售額占同期全部銷售額的比例是多少？
   expected:
-    status: unsupported
-  accept_statuses: *id001
-  note: 'run 4 reason: unsupported_shape:share_of_total'
+    status: answered
+  reference_sql: SELECT salesperson.sales_name AS sales_name, CAST((SUM(pos_sale.total_amount)) AS DOUBLE PRECISION) / NULLIF(SUM(SUM(pos_sale.total_amount)) OVER (), 0) AS gross_sales_share FROM public.pos_sale LEFT JOIN public.salesperson ON pos_sale.sales_id = salesperson.sales_id WHERE pos_sale.origin_transaction_no IS NULL GROUP BY salesperson.sales_name ORDER BY sales_name NULLS FIRST
+  note: 'ratio or share question: refused until prompt v10; answered form judged correct by the owner on 2026-09-10 (docs/research/ratios-01.md); reference from pos-real-batch1-14.json'
 - case_id: q22
   question: 每天的銷售總額是多少？
   expected:
@@ -191,9 +194,9 @@ cases:
 - case_id: q34
   question: 最近 30 天的退貨金額占同期銷售總額的比例是多少？
   expected:
-    status: unsupported
-  accept_statuses: *id001
-  note: 'run 4 reason: unsupported_shape:share_of_total'
+    status: answered
+  reference_sql: SELECT CAST((SUM(pos_sale.total_amount) FILTER(WHERE NOT pos_sale.origin_transaction_no IS NULL)) AS DOUBLE PRECISION) / NULLIF(SUM(pos_sale.total_amount) FILTER(WHERE pos_sale.origin_transaction_no IS NULL), 0) AS return_rate FROM public.pos_sale WHERE pos_sale.sale_date >= '2026-01-05T00:00:00+08:00'::timestamptz AND pos_sale.sale_date < '2026-02-04T00:00:00+08:00'::timestamptz
+  note: 'ratio or share question: refused until prompt v10; answered form judged correct by the owner on 2026-09-10 (docs/research/ratios-01.md); reference from pos-real-batch1-14.json'
 - case_id: q35
   question: 單價高於 1000 元的商品有幾項？
   expected:
@@ -227,9 +230,9 @@ cases:
 - case_id: q41
   question: 各商品分類的銷售額占同期全部銷售額的比例是多少？
   expected:
-    status: unsupported
-  accept_statuses: *id001
-  note: 'run 4 reason: unsupported_shape:share_of_total'
+    status: answered
+  reference_sql: SELECT category.category_name AS category_name, CAST((SUM(pos_saleitem.amount)) AS DOUBLE PRECISION) / NULLIF(SUM(SUM(pos_saleitem.amount)) OVER (), 0) AS line_sales_share FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id LEFT JOIN public.category ON product.category_id = category.category_id LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL GROUP BY category.category_name ORDER BY category_name NULLS FIRST
+  note: 'ratio or share question: refused until prompt v10; answered form judged correct by the owner on 2026-09-10 (docs/research/ratios-01.md); reference from pos-real-batch1-14.json'
 - case_id: q42
   question: 銷售金額最高的前 10 項商品有哪些？若同額，請依商品名稱由小到大排列。
   expected:
@@ -269,12 +272,12 @@ cases:
 - case_id: q49
   question: 以退貨數量除以銷售數量計算，哪些商品的退貨率最高？若同率，請依商品名稱由小到大排列。
   expected:
-    status: semantic_gap
-  accept_statuses: *id001
-  note: 'run 4 reason: semantic_gap'
+    status: answered
+  reference_sql: SELECT product.product_name AS product_name, CAST((SUM(pos_saleitem.quantity) FILTER(WHERE NOT pos_sale.origin_transaction_no IS NULL)) AS DOUBLE PRECISION) / NULLIF(SUM(pos_saleitem.quantity) FILTER(WHERE pos_sale.origin_transaction_no IS NULL), 0) AS return_rate FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no GROUP BY product.product_name ORDER BY return_rate DESC NULLS LAST, product_name NULLS FIRST
+  note: 'ratio or share question: refused until prompt v10; answered form judged correct by the owner on 2026-09-10 (docs/research/ratios-01.md); reference from pos-real-batch1-14.json'
 - case_id: q50
   question: 退貨金額占同期銷售總額的比例是多少？
   expected:
-    status: unsupported
-  accept_statuses: *id001
-  note: 'run 4 reason: unsupported_shape:share_of_total'
+    status: answered
+  reference_sql: SELECT CAST((SUM(pos_sale.total_amount) FILTER(WHERE NOT pos_sale.origin_transaction_no IS NULL)) AS DOUBLE PRECISION) / NULLIF(SUM(pos_sale.total_amount) FILTER(WHERE pos_sale.origin_transaction_no IS NULL), 0) AS return_rate FROM public.pos_sale
+  note: 'ratio or share question: refused until prompt v10; answered form judged correct by the owner on 2026-09-10 (docs/research/ratios-01.md); reference from pos-real-batch1-14.json'

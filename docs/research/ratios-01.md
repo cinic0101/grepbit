@@ -81,3 +81,18 @@ revision. One new shape slip surfaced twice in the no-sample POS set
 `ratio` for 會員交易佔比, which the validator rejects; a repair drops the
 bare aggregate and the case answers again (`pos-nosample-15`, 25/26 with the
 standing partial-name miss). 170 tests.
+
+## Closure (2026-09-10 evening)
+
+The owner confirmed the build side's reading of the nine open cases, so the
+ratio set stands at 12 of 12 judged correct (10 answers, 2 policy refusals;
+`evidence/pos-real-ratios-07-tally.json`), holdout 2 at 30 of 30 on run 12
+(25 answers, 4 clarify, 1 unsupported, 0 wrong numbers;
+`evidence/pos-real-holdout2-12-tally.json`; q21, q23 and q25 carry the same
+SQL as their ratio-set twins), and the seven batch-1 ratio questions are
+settled into `pos_real_batch1.yaml` with references from
+`pos-real-batch1-14.json` (`settle_batch.py`, which now passes named
+segments to the compiler exactly as the ask core does, otherwise q49's
+denominator would have drifted). Batch 1 is a 50-case regression set with
+47 references and 4 accepted refusals again.
+

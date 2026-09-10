@@ -151,10 +151,8 @@ order the build side would take it, with the cost and the risk of skipping.
 
 ### Owner's queue
 
-1. Verdicts: 9 ratio cases (`.artifacts/ratios-01/verdicts-03.yaml`, or
-   `-04` after the overlay v11 rerun) and holdout-2 q23/q25 (same SQL).
-   Then the build side settles the 7 batch-1 ratio cases into references and
-   tallies holdout-2 run 11.
+1. Verdicts: done 2026-09-10 (ratio set 12/12, holdout 2 run 12 30/30, the
+   seven batch-1 ratio cases settled; `../research/ratios-01.md`).
 2. Return-ratio sign: decided 2026-09-10, the stored negative sign stays and
    the `return_amount` definition (overlay v12) says so; no `negate`.
 3. `--verify-coverage`: removed 2026-09-10 (the owner: no longer used).

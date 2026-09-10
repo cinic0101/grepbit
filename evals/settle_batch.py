@@ -31,7 +31,7 @@ import yaml
 from grepbit.adapters.overlay_store import load_semantic_overlay
 from grepbit.adapters.postgres.introspect import introspect_schema
 from grepbit.adapters.sqlglot.plan_compiler import PlanCompiler
-from grepbit.application.overlay import excluded_segments
+from grepbit.application.overlay import excluded_segments, named_segments
 from grepbit.domain.models import QueryParameter
 from grepbit.domain.plan import QueryPlan
 
@@ -81,7 +81,17 @@ def settle(
             exclusions = (
                 excluded_segments(source["question"], overlay) if overlay else []
             )
-            compiled = compiler.compile(plan, as_of=as_of, exclude_segments=exclusions)
+            named_ids = (
+                set(named_segments(source["question"], overlay)) if overlay else set()
+            )
+            named = [
+                seg
+                for seg in (overlay.segments if overlay else [])
+                if seg.id in named_ids
+            ]
+            compiled = compiler.compile(
+                plan, as_of=as_of, exclude_segments=exclusions, named_segments=named
+            )
             if compiled.compiled.physical_sql != result["sql"]:
                 raise ValueError(f"settle_sql_drift:{case_id}")
             case["expected"] = {"status": "answered"}
