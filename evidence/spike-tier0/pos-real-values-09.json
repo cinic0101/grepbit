@@ -1,0 +1,253 @@
+{
+  "summary": {
+    "datasource_id": "pos_real",
+    "cases_file": "evals/cases/tier0/pos_real_values_01.yaml",
+    "prompt_revision": "plan-classify-json-v12",
+    "output_mode": "json_object",
+    "overlay_revision": "pos-real-overlay-v12",
+    "perturbation": null,
+    "as_of": "2026-02-04T18:00:00+08:00",
+    "cases": 2,
+    "judged": 0,
+    "unjudged": 2,
+    "correct": 0,
+    "answerable_correct": 0,
+    "answerable_total": 0,
+    "answered_but_wrong_rows": 0,
+    "refusals_correct": 0,
+    "refusals_total": 0,
+    "false_answers_on_refusal_cases": 0,
+    "model_failures": 0,
+    "model_retries": 0,
+    "p50_seconds": 7.935,
+    "p95_seconds": 7.935,
+    "introspection_seconds": 0.033,
+    "schema": {
+      "tables": 9,
+      "columns": 33,
+      "foreign_keys": 8,
+      "inferred_foreign_keys": [],
+      "enum_distinct_limit": 0,
+      "sampled_columns": 0,
+      "enum_columns": 1
+    },
+    "status_counts": {
+      "answered": 2
+    },
+    "rows_redacted": true,
+    "incorrect_case_ids": [],
+    "verification_counts": {
+      "verified": 0,
+      "partially_verified": 2,
+      "unverified_semantics": 0
+    },
+    "shape_repairs": 0,
+    "base_repairs": 0,
+    "plan_error_counts": {},
+    "zero_call_refusals": 0,
+    "shape_gate_refusals": 0,
+    "per_period_clarifies": 0,
+    "literal_checks": 2,
+    "literal_misses": 0,
+    "grounding": {
+      "columns": [
+        "category.category_name",
+        "pos_payment.payment_method",
+        "product.product_name",
+        "store.store_name",
+        "transfer_status.status"
+      ],
+      "values": 753,
+      "skipped_for_size": [],
+      "hinted_cases": 2,
+      "resolved_cases": 0,
+      "ambiguous_cases": 0
+    },
+    "empty_result_warnings": 0,
+    "negative_share_warnings": 0,
+    "segment_exclusions": 0
+  },
+  "results": [
+    {
+      "case_id": "q29b",
+      "question": "特約永和中正在這禮拜的銷售總額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 7.935,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "gross_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "store",
+              "column": "store_name"
+            },
+            "op": "eq",
+            "values": [
+              "特約永和中正"
+            ]
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "week",
+            "offset": 0,
+            "length": 1,
+            "to_date": false
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "question_values": [
+        {
+          "column": "store.store_name",
+          "value": "特約永和中正"
+        }
+      ],
+      "sql": "SELECT SUM(pos_sale.total_amount) AS gross_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE store.store_name = %(f_0)s AND pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= %(p1_start_1)s AND pos_sale.sale_date < %(p1_end_2)s)",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "gross_sales = sum(pos_sale.total_amount) [gross_sales]"
+        ],
+        "dimensions": [],
+        "filters": [
+          "store.store_name eq 特約永和中正",
+          "[gross_sales] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [2026-02-02T00:00:00+08:00, 2026-02-09T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric gross_sales over pos_sale; for 2026-02-02; where store.store_name eq 特約永和中正",
+      "assumptions": [
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "gross_sales = Sum of pos_sale.total_amount over sales that are not returns (origin_transaction_no is null): gross sales, the denominator of return ratios by retail convention. Signed by the owner on 2026-09-10. Per product or per category sales are line_sales over pos_saleitem, not this metric.",
+        "Relative period resolved from as_of 2026-02-04T18:00:00+08:00: 2026-02-02 is [2026-02-02T00:00:00+08:00, 2026-02-09T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Measures follow reviewed definitions; the extra filters taken from the question are checked for structure only."
+      ],
+      "verification": "partially_verified",
+      "excluded_segments": [],
+      "literal_checks": 1,
+      "row_count": 1,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "q44b",
+      "question": "中華電信舊號續約SIM卡在1月銷售總額是多少？",
+      "expected_status": null,
+      "accepted_statuses": [],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": null,
+      "elapsed_seconds": 6.584,
+      "plan": {
+        "base_table": "pos_saleitem",
+        "measures": [
+          {
+            "metric": "line_sales",
+            "alias": "total_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "product",
+              "column": "product_name"
+            },
+            "op": "eq",
+            "values": [
+              "中華電信舊號續約SIM卡"
+            ]
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-01"
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "question_values": [
+        {
+          "column": "product.product_name",
+          "value": "中華電信舊號續約SIM卡"
+        }
+      ],
+      "sql": "SELECT SUM(pos_saleitem.amount) AS total_sales FROM public.pos_saleitem LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id WHERE product.product_name = %(f_0)s AND pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date >= %(p1_start_1)s AND pos_sale.sale_date < %(p1_end_2)s)",
+      "lineage": {
+        "base_table": "pos_saleitem",
+        "tables": [
+          "pos_saleitem",
+          "pos_sale",
+          "product"
+        ],
+        "joins": [
+          "pos_saleitem.transaction_no -> pos_sale.transaction_no",
+          "pos_saleitem.product_id -> product.product_id"
+        ],
+        "measures": [
+          "total_sales = sum(pos_saleitem.amount) [line_sales]"
+        ],
+        "dimensions": [],
+        "filters": [
+          "product.product_name eq 中華電信舊號續約SIM卡",
+          "[line_sales] pos_sale.origin_transaction_no is_null"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric line_sales over pos_saleitem; for 2026-01; where product.product_name eq 中華電信舊號續約SIM卡",
+      "assumptions": [
+        "pos_saleitem rows are joined to pos_sale through pos_saleitem.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "pos_saleitem rows are joined to product through pos_saleitem.product_id; rows without a matching product row keep NULL there.",
+        "total_sales = Sum of pos_saleitem.amount over line items whose sale is not a return (pos_sale.origin_transaction_no is null): sales at product or category grain, the counterpart of gross_sales for questions grouped by product or category. The sum is the net of every line: trade-ins, revenue adjustments and commissions are booked as negative amounts, so a category made of them shows a negative total (and a negative share) and the other categories' shares are measured against the net. Signed by the owner on 2026-09-10; the net reading confirmed by the owner the same day.",
+        "2026-01 is [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Measures follow reviewed definitions; the extra filters taken from the question are checked for structure only."
+      ],
+      "verification": "partially_verified",
+      "excluded_segments": [],
+      "literal_checks": 1,
+      "row_count": 1,
+      "rows_truncated": false,
+      "status_without_coverage": "answered"
+    }
+  ]
+}
