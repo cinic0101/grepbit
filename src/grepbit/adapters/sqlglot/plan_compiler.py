@@ -86,6 +86,7 @@ class PlanCompiler:
         *,
         as_of: datetime,
         exclude_segments: Sequence[Segment] = (),
+        named_segments: Sequence[Segment] = (),
     ) -> CompiledPlan:
         schema = self._schema
         assumptions: list[Assumption] = []
@@ -159,22 +160,41 @@ class PlanCompiler:
             if metric is not None
             for f in metric.filters
         ]
-        # Default-excluded segments: applied when the segment's table is the base
-        # table or reachable from it, and nothing in the plan already filters on
-        # the segment's column (a return metric must keep its own rows).
-        referenced = {f.column.id for f in plan.filters} | {
-            f.column.id for _, f in all_metric_filters
-        }
+        # Default-excluded segments are an operand-level default. A segment
+        # whose column the plan itself filters is left alone; a segment that some
+        # operand's metric filters reference (a return metric) is excluded from
+        # the other operands only, as FILTER clauses, so a ratio of returns over
+        # sales keeps gross sales in its denominator; a segment the question names
+        # without any operand referencing it is lifted for the whole query;
+        # otherwise the exclusion is a WHERE condition. Only segments on the base
+        # table or on a table reachable from it apply.
+        plan_filter_columns = {f.column.id for f in plan.filters}
+        operand_columns = [
+            {f.column.id for f in metric.filters} if metric else set()
+            for _, parts in effective
+            for _, metric in parts
+        ]
         segment_filters: list[tuple[Segment, Filter]] = []
-        for segment in exclude_segments:
-            if segment.filter.column.id in referenced:
+        operand_segment_filters: list[tuple[Segment, Filter, set[int]]] = []
+        named_ids = {seg.id for seg in named_segments}
+        for segment in list(exclude_segments) + list(named_segments):
+            column_id = segment.filter.column.id
+            if column_id in plan_filter_columns:
                 continue
             if segment.table != base.name:
                 try:
                     _parent_path(schema, base.name, segment.table)
                 except PlanError:
                     continue
-            segment_filters.append((segment, segment.inverse()))
+            referencing = {
+                i for i, cols in enumerate(operand_columns) if column_id in cols
+            }
+            if referencing:
+                others = set(range(len(operand_columns))) - referencing
+                if others:
+                    operand_segment_filters.append((segment, segment.inverse(), others))
+            elif segment.id not in named_ids:
+                segment_filters.append((segment, segment.inverse()))
 
         time_spec = plan.time
         if time_spec is not None and time_spec.column is None:
@@ -295,14 +315,22 @@ class PlanCompiler:
             group_by.append(expression)
             output.append(dimension.column)
 
+        operand_position = {"i": 0}
+
         def operand_expression(
             operand: Operand, metric: ReviewedMetric | None
         ) -> exp.Expression:
+            position = operand_position["i"]
+            operand_position["i"] += 1
             aggregate = self._aggregate(operand, resolve)
+            clauses = []
             if metric is not None and metric.filters and not shared_filters:
-                clauses = []
                 for item in metric.filters:
                     clauses.append(self._condition(item, resolve(item.column), bind))
+            for _segment, item, others in operand_segment_filters:
+                if position in others:
+                    clauses.append(self._condition(item, resolve(item.column), bind))
+            if clauses:
                 aggregate = exp.Filter(
                     this=aggregate, expression=exp.Where(this=exp.and_(*clauses))
                 )
@@ -363,6 +391,22 @@ class PlanCompiler:
             column = resolve(item.column)
             conditions.append(self._condition(item, column, bind))
             filter_texts.append(f"[{metric_id}] {_filter_text(item)}")
+        for segment, item, _others in operand_segment_filters:
+            filter_texts.append(
+                f"[default: exclude {segment.id} from the measures that do not "
+                f"reference it] {_filter_text(item)}"
+            )
+            assumptions.append(
+                Assumption(
+                    text=(
+                        f"Rows of segment '{segment.id}' ({segment.note}) are excluded "
+                        "from every measure that does not itself select them, so a "
+                        "ratio keeps its denominator free of them."
+                    ),
+                    source=AssumptionSource.REVIEWED,
+                    definition_ref=f"overlay.segments.{segment.id}",
+                )
+            )
         for segment, item in segment_filters:
             column = resolve(item.column)
             conditions.append(self._condition(item, column, bind))

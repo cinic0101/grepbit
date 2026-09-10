@@ -74,8 +74,13 @@ cases:
     accept_statuses: [semantic_gap, clarify, unsupported]
   - case_id: member_ratio_gap
     question: "會員交易佔比是多少"
-    expected: {status: semantic_gap}
-    accept_statuses: [semantic_gap, unsupported, clarify]
+    note: >-
+      answerable since the ratio algebra (prompt v11): the share of member transactions among all
+      transactions is a ratio with a restricted numerator, not a per-member share. A clarify is
+      still accepted because the question does not say member of what.
+    expected: {status: answered}
+    accept_statuses: [answered, clarify]
+    reference_sql: "SELECT CAST(COUNT(member_id) AS DOUBLE PRECISION) / NULLIF(COUNT(*), 0) FROM pos_sale"
   - case_id: payroll_by_dept_2025
     question: "2025年各部門的薪資總額"
     expected: {status: answered}

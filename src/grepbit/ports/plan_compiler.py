@@ -19,6 +19,7 @@ class PlanCompilerPort(Protocol):
         *,
         as_of: datetime,
         exclude_segments: Sequence[Segment] = (),
+        named_segments: Sequence[Segment] = (),
     ) -> CompiledPlan:
         """Validate ``plan`` against the schema and render parameterized SQL.
 

@@ -4,7 +4,7 @@ cases:
   - {case_id: cov_discounted_sales, question: "2025年12月的折扣後營業額", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
   - {case_id: cov_new_members, question: "2025年12月新會員的交易數", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
   - {case_id: cov_overtime_pay, question: "2025年的加班費總額", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
-  - {case_id: cov_attrition_rate, question: "業務部的離職率", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
+  - {case_id: cov_attrition_rate, question: "業務部的離職率", note: "answerable since the ratio algebra: terminated employees over all employees of the department", expected: {status: answered}, accept_statuses: [answered, semantic_gap, clarify], reference_sql: "SELECT CAST(COUNT(e.terminated_at) AS DOUBLE PRECISION) / NULLIF(COUNT(*), 0) FROM hr_employee e LEFT JOIN hr_dept d ON d.dept_id = e.dept_id WHERE d.dept_name = '業務部'"}
   - {case_id: cov_online_sales, question: "2025年12月線上訂單的營業額", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
   - {case_id: cov_contractors, question: "外包人員有幾位", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}
   - {case_id: cov_installments, question: "2025年12月分期付款的交易數", expected: {status: semantic_gap}, accept_statuses: [semantic_gap, clarify, unsupported]}

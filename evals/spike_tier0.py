@@ -506,7 +506,9 @@ def main(argv: list[str] | None = None) -> int:
                     }
                 else:
                     assert proposal.plan is not None
-                    repaired, base_repair = repair_base_table(proposal.plan, schema)
+                    repaired, base_repair = repair_base_table(
+                        proposal.plan, schema, overlay
+                    )
                     if base_repair is not None:
                         proposal = proposal.model_copy(update={"plan": repaired})
                         detail["base_repair"] = base_repair

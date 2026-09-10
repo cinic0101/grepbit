@@ -1,6 +1,6 @@
 {
   "datasource_id": "pos_real",
-  "revision": "pos-real-overlay-v8",
+  "revision": "pos-real-overlay-v9",
   "metrics": [
     {
       "id": "return_amount",
@@ -176,6 +176,60 @@
         "column": "sale_date"
       },
       "review_state": "verified"
+    },
+    {
+      "id": "gross_sales",
+      "names": [
+        "銷售總額",
+        "營業額",
+        "銷售額",
+        "銷售毛額",
+        "gross sales",
+        "sales total",
+        "revenue"
+      ],
+      "description": "Sum of pos_sale.total_amount over sales that are not returns (origin_transaction_no is null): gross sales, the denominator of return ratios by retail convention. Signed by the owner on 2026-09-10.",
+      "base_table": "pos_sale",
+      "aggregate": "sum",
+      "column": {
+        "table": "pos_sale",
+        "column": "total_amount"
+      },
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "origin_transaction_no"
+          },
+          "op": "is_null"
+        }
+      ],
+      "time_column": {
+        "table": "pos_sale",
+        "column": "sale_date"
+      },
+      "review_state": "verified"
+    },
+    {
+      "id": "net_sales",
+      "names": [
+        "淨銷售額",
+        "含退貨營業額",
+        "淨營業額",
+        "net sales"
+      ],
+      "description": "Sum of pos_sale.total_amount over every sale including returns (which are negative): net sales. Ask for it by name; 銷售總額 alone means gross sales. Signed by the owner on 2026-09-10.",
+      "base_table": "pos_sale",
+      "aggregate": "sum",
+      "column": {
+        "table": "pos_sale",
+        "column": "total_amount"
+      },
+      "time_column": {
+        "table": "pos_sale",
+        "column": "sale_date"
+      },
+      "review_state": "verified"
     }
   ],
   "absent_concepts": [
@@ -228,12 +282,8 @@
         "column": "total_amount"
       },
       "names": [
-        "營業額",
-        "銷售總額",
-        "銷售額",
         "交易金額",
-        "sales amount",
-        "revenue"
+        "transaction amount"
       ]
     },
     {

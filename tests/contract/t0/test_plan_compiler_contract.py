@@ -703,3 +703,41 @@ def test_base_repair_moves_the_base_to_the_child_holding_the_measures() -> None:
         }
     )
     assert repair_base_table(unrelated, iot_schema())[1] is None
+
+
+def test_base_repair_also_follows_a_metric_whose_base_is_a_child_of_the_plan_base():
+    from grepbit.application.plan_repair import repair_base_table
+    from grepbit.domain.overlay import SemanticOverlay
+
+    overlay = SemanticOverlay.model_validate(
+        {
+            "datasource_id": "iot_test",
+            "revision": "t",
+            "metrics": [
+                {
+                    "id": "alert_count",
+                    "names": ["告警數"],
+                    "description": "count of alerts",
+                    "base_table": "alerts",
+                    "aggregate": "count",
+                }
+            ],
+        }
+    )
+    plan = QueryPlan.model_validate(
+        {
+            "base_table": "devices",
+            "measures": [{"metric": "alert_count"}],
+            "filters": [
+                {
+                    "column": {"table": "devices", "column": "status"},
+                    "op": "eq",
+                    "values": ["offline"],
+                }
+            ],
+        }
+    )
+    repaired, note = repair_base_table(plan, iot_schema(), overlay)
+    assert repaired.base_table == "alerts" and "devices -> alerts" in note
+    # without the overlay the metric cannot be resolved: no repair
+    assert repair_base_table(plan, iot_schema())[1] is None

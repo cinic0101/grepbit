@@ -69,12 +69,19 @@ def overlay_problems(overlay: SemanticOverlay, schema: SchemaModel) -> list[str]
 def excluded_segments(question: str, overlay: SemanticOverlay) -> list[Segment]:
     """Default-excluded segments the question does not name (script-aware match)."""
 
+    named = set(named_segments(question, overlay))
+    return [s for s in overlay.segments if s.default_exclude and s.id not in named]
+
+
+def named_segments(question: str, overlay: SemanticOverlay) -> list[str]:
+    """Ids of default-excluded segments whose names occur in the question."""
+
     normalized = normalize_question(question)
     return [
-        segment
+        segment.id
         for segment in overlay.segments
         if segment.default_exclude
-        and not any(
+        and any(
             phrase_in(normalized, normalize_question(name)) for name in segment.names
         )
     ]

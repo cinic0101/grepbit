@@ -300,3 +300,84 @@ def test_grain_without_a_scope_buckets_all_data_without_a_window() -> None:
                 "time": {"column": {"table": "alerts", "column": "raised_at"}},
             }
         )
+
+
+def test_default_segment_becomes_operand_level_when_one_operand_selects_it() -> None:
+    """A ratio of a segment metric over a plain total keeps the total free of
+    the segment: the exclusion moves into FILTER clauses on the other operands."""
+
+    from grepbit.domain.plan import PlanError as _PlanError  # noqa: F401
+
+    overlay = SemanticOverlay.model_validate(
+        {
+            "datasource_id": "iot_test",
+            "revision": "t",
+            "metrics": [
+                {
+                    "id": "test_alert_count",
+                    "names": ["測試告警數"],
+                    "description": "count of test alerts",
+                    "base_table": "alerts",
+                    "aggregate": "count",
+                    "filters": [
+                        {
+                            "column": {"table": "alerts", "column": "severity"},
+                            "op": "eq",
+                            "values": ["test"],
+                        }
+                    ],
+                }
+            ],
+            "segments": [
+                {
+                    "id": "test_alerts",
+                    "names": ["測試"],
+                    "table": "alerts",
+                    "filter": {
+                        "column": {"table": "alerts", "column": "severity"},
+                        "op": "eq",
+                        "values": ["test"],
+                    },
+                    "default_exclude": True,
+                    "note": "alerts raised by the test harness",
+                }
+            ],
+        }
+    )
+    compiler = PlanCompiler(iot_schema(), overlay=overlay)
+    ratio = QueryPlan.model_validate(
+        {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "ratio": {
+                        "numerator": {"metric": "test_alert_count"},
+                        "denominator": {"aggregate": "count"},
+                    },
+                    "alias": "test_share",
+                }
+            ],
+        }
+    )
+    # the question names the segment (測試), so it arrives as a named segment
+    compiled = compiler.compile(
+        ratio, as_of=AS_OF, exclude_segments=[], named_segments=overlay.segments
+    )
+    sql = compiled.compiled.physical_sql
+    assert "COUNT(*) FILTER(WHERE alerts.severity = %(f_0)s)" in sql  # numerator
+    assert (
+        "NULLIF(COUNT(*) FILTER(WHERE alerts.severity <> %(f_1)s), 0)" in sql
+    )  # denominator
+    assert "WHERE alerts.severity" not in sql.split("FROM")[1]  # nothing query-wide
+    assert any("free of them" in a.text for a in compiled.assumptions)
+    # the question names the segment and no operand selects it: lifted entirely
+    plain = QueryPlan.model_validate(
+        {"base_table": "alerts", "measures": [{"aggregate": "count"}]}
+    )
+    lifted = compiler.compile(
+        plain, as_of=AS_OF, exclude_segments=[], named_segments=overlay.segments
+    )
+    assert "severity" not in lifted.compiled.physical_sql
+    # not named at all: the exclusion is a WHERE condition as before
+    excluded = compiler.compile(plain, as_of=AS_OF, exclude_segments=overlay.segments)
+    assert "WHERE alerts.severity <> %(f_0)s" in excluded.compiled.physical_sql

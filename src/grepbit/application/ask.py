@@ -20,7 +20,11 @@ from typing import Any
 
 from grepbit.application.grounding import Resolution, ValueIndex, resolve_plan_literals
 from grepbit.application.literals import LiteralCheck, text_literal_checks
-from grepbit.application.overlay import excluded_segments, match_absent_concept
+from grepbit.application.overlay import (
+    excluded_segments,
+    match_absent_concept,
+    named_segments,
+)
 from grepbit.application.plan_repair import repair_base_table
 from grepbit.application.shapes import match_unsupported_shape, single_period_misread
 from grepbit.domain.language_pack import ShapePack
@@ -181,7 +185,7 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
         result.reason, result.clarification = proposal.reason, proposal.clarification
         return
     assert proposal.plan is not None
-    plan, base_repair = repair_base_table(proposal.plan, services.schema)
+    plan, base_repair = repair_base_table(proposal.plan, services.schema, overlay)
     result.plan, result.base_repair = plan, base_repair
     if pack is not None:
         misread = single_period_misread(question, plan, pack)
@@ -191,11 +195,16 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
             return
 
     exclusions = excluded_segments(question, overlay) if overlay else []
+    named_ids = set(named_segments(question, overlay)) if overlay else set()
+    named = [s for s in (overlay.segments if overlay else []) if s.id in named_ids]
     result.excluded_segments = [s.id for s in exclusions]
 
     def compile_plan(current: QueryPlan) -> CompiledPlan:
         compiled = services.compiler.compile(
-            current, as_of=settings.as_of, exclude_segments=exclusions
+            current,
+            as_of=settings.as_of,
+            exclude_segments=exclusions,
+            named_segments=named,
         )
         services.policy.assert_safe_select_statement(compiled.compiled.physical_sql)
         return compiled

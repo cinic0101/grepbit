@@ -16,7 +16,7 @@ from grepbit.domain.plan import Filter, Measure, PlanProposal, PreviousTurn, Que
 from grepbit.domain.schema_model import SchemaModel
 from grepbit.ports.grounding import GroundingModelError
 
-PLAN_PROMPT_REVISION = "plan-classify-json-v10"
+PLAN_PROMPT_REVISION = "plan-classify-json-v11"
 
 _RULES = (
     "You translate one analytics question into ONE aggregate query plan over the "
@@ -28,7 +28,11 @@ _RULES = (
     "count without a column counts rows. sum and avg need numeric columns. A "
     "share or percentage of the total (佔比, 比例, share of) is the same measure "
     'with "share_of_total": true; the server divides each group by the total over '
-    "all groups (within each period when there is a grain). A rate or ratio of "
+    "all groups (within each period when there is a grain). Use it only when the "
+    "question groups by something (each store's share); the share of a subset "
+    "in the whole (member transactions among all transactions) is a ratio whose "
+    "numerator is a metric or an aggregate the question restricts and whose "
+    "denominator is the same aggregate unrestricted. A rate or ratio of "
     "two aggregates (退貨率, 客單價 as amount per transaction, conversion rate) is "
     '{"ratio": {"numerator": {aggregate/column or metric}, "denominator": {...}}} '
     "over the same base table. base_table may be omitted when the measure columns "
@@ -49,9 +53,10 @@ _RULES = (
     "unit quarter offset 0; last 7 days is unit day offset -7 length 7), or "
     '{"kind":"periods","periods":[{"kind":"month","month":"YYYY-MM"},...]}. '
     "Set grain (day, week, month, quarter, or year) when the question wants a "
-    "trend or compares periods. Growth or change versus the previous period "
-    '(成長率, 增長, month over month) is "growth": [{"measure": <output name>}] '
-    "with a grain; the server computes (current - previous) / previous. time.column "
+    "trend or compares periods. Only when the question asks for growth, a rate of "
+    'change or 成長率 add "growth": [{"measure": <output name>}] with a grain; the '
+    "server computes (current - previous) / previous. A question that merely "
+    "compares periods wants the per-period values, no growth. time.column "
     "may be omitted when the table lists a default_time_column. A question that "
     "asks for a value per period "
     "(每天, 每日, daily, 各月份, monthly, per week) sets grain; give it a scope "
