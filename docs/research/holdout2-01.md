@@ -121,5 +121,8 @@ threshold and carries the empty-result warning. The two value-grounded
 rewrites (`pos-real-values-02.json`): q29b now answers with the full store
 name and the right week, q44b as before.
 
-The owner judges run 3 from `.artifacts/holdout2/review-03.md`; 13 verdicts
-are carried from run 2, 17 are open.
+Run 3 judged (`pos-real-holdout2-03-tally.json`): 30/30 over 30 judged, 21
+answers correct (the owner confirmed q10, whose only line item is a return
+and which therefore answers NULL with the empty-result warning, and q28,
+whose group threshold no store meets), 9 accepted refusals, 0 wrong
+numbers; clarify rate 10%, refusal rate 30%.
