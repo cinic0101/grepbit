@@ -509,6 +509,46 @@ def test_without_compiles_an_anti_join_with_window_filters_and_segments() -> Non
     assert any("NOT EXISTS" in a.text for a in compiled.assumptions)
     assert any("do not count as activity" in a.text for a in compiled.assumptions)
     assert compiled.interpretation.endswith("with no alerts rows")
+    # a default segment on a table the child reaches applies inside the test too:
+    # sites with no alerts, where alerts of decommissioned devices are not activity
+    parent_segment = SemanticOverlay.model_validate(
+        {
+            "datasource_id": "iot_test",
+            "revision": "t",
+            "segments": [
+                {
+                    "id": "decommissioned",
+                    "names": ["已除役"],
+                    "table": "devices",
+                    "filter": {
+                        "column": {"table": "devices", "column": "status"},
+                        "op": "eq",
+                        "values": ["decommissioned"],
+                    },
+                    "default_exclude": True,
+                    "note": "devices taken out of service",
+                }
+            ],
+        }
+    )
+    reached = PlanCompiler(iot_schema(), overlay=parent_segment).compile(
+        QueryPlan.model_validate(
+            {
+                "base_table": "sites",
+                "measures": [{"aggregate": "count"}],
+                "without": {"table": "alerts"},
+            }
+        ),
+        as_of=AS_OF,
+        exclude_segments=parent_segment.segments,
+    )
+    reached_sql = reached.compiled.physical_sql
+    assert (
+        "NOT EXISTS(SELECT 1 FROM public.alerts INNER JOIN public.devices ON"
+        in reached_sql
+    )
+    assert "devices.status <> %(f_0)s" in reached_sql
+    assert "devices.site_id = sites.site_id" in reached_sql
     # a without filter on the segment column lifts the default, as in the main query
     lifted = PlanCompiler(iot_schema(), overlay=overlay).compile(
         QueryPlan.model_validate(

@@ -840,11 +840,37 @@ class PlanCompiler:
                 raise PlanError("unknown_column", item.column.id)
             clauses.append(self._condition(item, column, bind))
             texts.append(_filter_text(item))
+        # Default-excluded segments on the child, or on a table the child reaches
+        # through foreign keys, apply inside the test as they would in a plan over
+        # the child: a return line is not sales activity.
+        inner_joined = {link.referenced_table for link in path[:-1]}
         for segment in exclude_segments:
-            if segment.table != child.name or segment.filter.column.id in filtered:
+            if segment.filter.column.id in filtered:
                 continue
+            if segment.table != child.name:
+                try:
+                    segment_path = _parent_path(schema, child.name, segment.table)
+                except PlanError:
+                    continue
+                if segment.table == base.name or base.name in {
+                    link.referenced_table for link in segment_path
+                }:
+                    continue  # the base itself is not "activity" of the child
+                for link in segment_path:
+                    if link.referenced_table not in inner_joined:
+                        inner = inner.join(
+                            exp.table_(link.referenced_table, db=schema.schema_name),
+                            on=exp.column(link.column, table=link.table).eq(
+                                exp.column(
+                                    link.referenced_column, table=link.referenced_table
+                                )
+                            ),
+                            join_type="inner",
+                        )
+                        inner_joined.add(link.referenced_table)
+            segment_table = schema.table(segment.table)
             item = segment.inverse()
-            column = child.column(item.column.column)
+            column = segment_table.column(item.column.column) if segment_table else None
             if column is None:
                 continue
             clauses.append(self._condition(item, column, bind))

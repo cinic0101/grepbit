@@ -34,7 +34,9 @@
   (從未出現在銷售明細的商品, 沒有任何交易的門市). Compiled as a correlated
   `NOT EXISTS` whose inner query carries the child's own filters, its window
   (a scope, never a grain; the child's default time column when none is
-  named) and the default-excluded segments on the child, each stated in the
+  named) and the default-excluded segments on the child or on a table the
+  child reaches through foreign keys (a return line is not sales activity;
+  the segment's table is joined inside), each stated in the
   lineage (`[no rows in <child>]`) and as assumptions. `base_table` is
   required with it; filters or time columns outside the child are
   `without_filter_outside_child`; a table that does not reach the base is
