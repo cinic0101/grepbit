@@ -565,6 +565,5 @@
       "table": "transfer_status",
       "visible": false
     }
-  ],
-  "_perturbation": "hidden_transfer: transfer and transfer_status hidden from the planner"
+  ]
 }

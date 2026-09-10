@@ -202,3 +202,33 @@ def test_string_column_references_are_repaired_only_when_unambiguous() -> None:
     )
     with pytest.raises(GroundingModelError):
         client.propose("q", iot_schema(), as_of="2026-08-15T12:00:00+08:00")
+
+
+def test_repair_drops_null_valued_extra_keys_the_model_adds_to_a_plan() -> None:
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count", "alias": "n", "column": None}],
+            "dimensions": [{"table": "devices", "column": "model"}],
+            "reason": None,
+            "clarification": None,
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    assert "reason" not in repaired["plan"] and "clarification" not in repaired["plan"]
+    assert "column" not in repaired["plan"]["measures"][0]
+    assert (
+        "dropped null keys: plan.reason, plan.clarification, measures.column" in repairs
+    )
+    # a null that is not an extra key (a real field left empty) is left alone
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count"}],
+            "time": None,
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    assert repaired["plan"]["time"] is None and repairs == []

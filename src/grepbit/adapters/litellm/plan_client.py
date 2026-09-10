@@ -12,7 +12,7 @@ from grepbit.adapters.litellm.grounding_client import (
     GroundingModelSettings,
 )
 from grepbit.domain.overlay import SemanticOverlay
-from grepbit.domain.plan import PlanProposal, PreviousTurn
+from grepbit.domain.plan import Filter, Measure, PlanProposal, PreviousTurn, QueryPlan
 from grepbit.domain.schema_model import SchemaModel
 from grepbit.ports.grounding import GroundingModelError
 
@@ -194,6 +194,38 @@ def schema_payload(
     return payload
 
 
+_PLAN_KEYS = set(QueryPlan.model_fields)
+_MEASURE_KEYS = set(Measure.model_fields)
+_FILTER_KEYS = set(Filter.model_fields)
+
+
+def _drop_null_extras(plan: dict[str, Any], repairs: list[str]) -> None:
+    """Remove null-valued keys the model added that are not plan fields.
+
+    The model sometimes copies a decline field ("reason": null) into a plan or
+    writes "column": null on a count measure; the strict schema rejects the
+    whole answer. A null carries no meaning, so dropping such a key changes
+    nothing but the shape. Nulls on real fields are left for validation.
+    """
+
+    dropped: list[str] = []
+    for key in [k for k, v in plan.items() if v is None and k not in _PLAN_KEYS]:
+        del plan[key]
+        dropped.append(f"plan.{key}")
+    for section, allowed in (("measures", _MEASURE_KEYS), ("filters", _FILTER_KEYS)):
+        for item in plan.get(section) or []:
+            if not isinstance(item, dict):
+                continue
+            for key in [k for k, v in item.items() if v is None and k not in allowed]:
+                del item[key]
+                dropped.append(f"{section}.{key}")
+            if section == "measures" and item.get("column", "x") is None:
+                del item["column"]  # count(*) written with an explicit null column
+                dropped.append("measures.column")
+    if dropped:
+        repairs.append("dropped null keys: " + ", ".join(dropped))
+
+
 def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]]:
     """Coerce column references the model wrote as strings into ColumnRef dicts.
 
@@ -210,6 +242,7 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
     if not isinstance(payload, dict) or not isinstance(payload.get("plan"), dict):
         return payload, repairs
     plan = payload["plan"]
+    _drop_null_extras(plan, repairs)
     base_table = plan.get("base_table")
 
     def coerce(value: Any) -> Any:

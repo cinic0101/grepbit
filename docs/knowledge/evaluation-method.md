@@ -75,7 +75,10 @@ start (printed as `value index: N columns, M values`), records
 `question_values` hints and `grounding` resolutions per case, and the summary
 carries a `grounding` block (columns, values, columns skipped for size,
 hinted, resolved and ambiguous cases). `--propose-policies` writes the
-column-policy draft and continues. The summary counts
+column-policy draft and continues. `--perturb tables_reversed|tables_shuffled|columns_reversed`
+reorders the schema payload without changing its meaning, for the
+metamorphic suite (`../research/perturbations-01.md`); data-only variants
+live in `evals/perturb/`. The summary counts
 `shape_gate_refusals`, `literal_checks` (literals checked) and
 `literal_misses` (cases turned into `clarify` by a literal that matched no
 row); a row carries `matched_name` or `missing_literals` when a gate fired.

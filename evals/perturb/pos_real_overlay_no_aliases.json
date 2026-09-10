@@ -372,6 +372,5 @@
       },
       "sensitivity": "public"
     }
-  ],
-  "_perturbation": "no_aliases: column and table aliases removed"
+  ]
 }
