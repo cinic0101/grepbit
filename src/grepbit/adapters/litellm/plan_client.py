@@ -242,6 +242,36 @@ def _drop_null_extras(plan: dict[str, Any], repairs: list[str]) -> None:
         repairs.append("dropped null keys: " + ", ".join(dropped))
 
 
+def _strip_qualified_columns(plan: dict[str, Any], repairs: list[str]) -> None:
+    """{"table": "t", "column": "t.c"} -> {"table": "t", "column": "c"}: the model
+    qualified the column name inside a reference that already names the table."""
+
+    def fix(ref: Any) -> None:
+        if (
+            isinstance(ref, dict)
+            and isinstance(ref.get("table"), str)
+            and isinstance(ref.get("column"), str)
+            and ref["column"].startswith(ref["table"] + ".")
+        ):
+            repairs.append(f"{ref['column']} -> {ref['column'].split('.', 1)[1]}")
+            ref["column"] = ref["column"].split(".", 1)[1]
+
+    for item in plan.get("dimensions") or []:
+        fix(item)
+    for section in ("measures", "filters"):
+        for item in plan.get(section) or []:
+            if isinstance(item, dict):
+                fix(item.get("column"))
+                ratio = item.get("ratio")
+                if isinstance(ratio, dict):
+                    for side in ("numerator", "denominator"):
+                        if isinstance(ratio.get(side), dict):
+                            fix(ratio[side].get("column"))
+    time = plan.get("time")
+    if isinstance(time, dict):
+        fix(time.get("column"))
+
+
 def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]]:
     """Coerce column references the model wrote as strings into ColumnRef dicts.
 
@@ -259,6 +289,16 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
         return payload, repairs
     plan = payload["plan"]
     _drop_null_extras(plan, repairs)
+    _strip_qualified_columns(plan, repairs)
+    time = plan.get("time")
+    if (
+        isinstance(time, dict)
+        and time.get("scope") is None
+        and time.get("grain") is None
+    ):
+        # a time column named without a window or a grain constrains nothing
+        del plan["time"]
+        repairs.append("dropped time without scope or grain")
     base_table = plan.get("base_table")
 
     def coerce(value: Any) -> Any:
