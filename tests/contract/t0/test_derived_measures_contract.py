@@ -880,17 +880,40 @@ def test_a_share_with_no_groups_is_the_filtered_part_over_the_whole() -> None:
         "count(*) where alerts.device_id not_null over all rows"
     )
 
-    # through a reviewed metric: its filters shape the part, never the WHERE clause
+    # a reviewed metric's defining filters do not make a part: gross_sales
+    # excludes returns, and over net sales the "share" came out 1.232
+    # (holdout 2 q21); such a plan is refused like an unfiltered one
+    with pytest.raises(PlanError) as info:
+        compile_plan(
+            {
+                "base_table": "alerts",
+                "measures": [{"metric": "critical_alerts", "share_of_total": True}],
+            }
+        )
+    assert info.value.code == "share_requires_groups"
+    # a metric operand with a filter of its own is the part over that metric
     compiled = compile_plan(
         {
             "base_table": "alerts",
-            "measures": [{"metric": "critical_alerts", "share_of_total": True}],
+            "measures": [
+                {
+                    "metric": "critical_alerts",
+                    "share_of_total": True,
+                    "filters": [
+                        {
+                            "column": {"table": "devices", "column": "model"},
+                            "op": "eq",
+                            "values": ["AP-300"],
+                        }
+                    ],
+                }
+            ],
         }
     )
     sql = compiled.compiled.physical_sql
-    assert sql.count("FILTER(WHERE alerts.severity = ") == 1
+    assert "FILTER(WHERE devices.model = %(f_0)s)" in sql
     assert ") / NULLIF(COUNT(*), 0) AS critical_alerts_share" in sql
-    assert " WHERE alerts.severity" not in sql.replace("FILTER(WHERE", "FILTER(")
+    assert sql.endswith("WHERE alerts.severity = %(f_1)s")
 
     # a share with groups keeps the window total; with a grain, each period's total
     grouped = compile_plan(

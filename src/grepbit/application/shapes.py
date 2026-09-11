@@ -94,7 +94,10 @@ def constant_dimensions(plan: QueryPlan) -> list[str]:
     2026-09-11): ``by store_name`` beside ``store_name = X`` would return the
     same value on every row. Returns their ids; latest-row plans are left alone."""
 
-    if plan.latest is not None:
+    if plan.latest is not None or any(m.share_of_total for m in plan.measures):
+        # a share asked for one group keeps its dimension: the after-share
+        # selection divides by every group (holdout 2 q21 answered 1.232 when
+        # the dimension was dropped and the whole-share rule took over)
         return []
     fixed = {
         f.column.id for f in plan.filters if f.op.value == "eq" and len(f.values) == 1

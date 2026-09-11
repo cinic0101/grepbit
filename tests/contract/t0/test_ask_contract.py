@@ -419,3 +419,33 @@ def test_a_dimension_fixed_by_an_equality_filter_is_dropped_with_an_assumption()
     assert any(
         "devices.status is not returned as a column" in a for a in result.assumptions
     )
+
+
+def test_a_share_asked_for_one_group_keeps_its_dimension() -> None:
+    # holdout 2 q21: by store, share of total, where store = X. Dropping the
+    # constant dimension left an ungrouped share and answered 1.232; the
+    # after-share selection over every store is the reading
+    plan = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "devices",
+            "dimensions": [{"table": "devices", "column": "status"}],
+            "measures": [{"aggregate": "count", "alias": "n", "share_of_total": True}],
+            "filters": [
+                {
+                    "column": {"table": "devices", "column": "status"},
+                    "op": "eq",
+                    "values": ["offline"],
+                }
+            ],
+        },
+    }
+    result = ask(
+        "offline 的裝置佔比",
+        services(_Planner(plan), _Executor([{"status": "offline", "n": 0.4}])),
+        AskSettings(as_of=AS_OF),
+    )
+    assert result.status == "answered" and result.plan is not None
+    assert [d.id for d in result.plan.dimensions] == ["devices.status"]
+    assert result.constant_dimensions_dropped == []
+    assert "[after share]" in " ".join(result.lineage["filters"])

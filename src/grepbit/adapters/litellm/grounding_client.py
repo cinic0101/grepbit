@@ -26,6 +26,8 @@ TEMPERATURE_ENV = "GREPBIT_MODEL_TEMPERATURE"
 MAX_TOKENS_ENV = "GREPBIT_MODEL_MAX_TOKENS"
 OUTPUT_MODE_ENV = "GREPBIT_MODEL_OUTPUT_MODE"
 REPAIR_TURNS_ENV = "GREPBIT_MODEL_REPAIR_TURNS"
+THINKING_ENV = "GREPBIT_MODEL_THINKING"
+THINKING_TIMEOUT_ENV = "GREPBIT_MODEL_THINKING_TIMEOUT_SECONDS"
 DEFAULT_CREDENTIAL_ENV = "LITELLM_API_KEY"
 
 _SYSTEM_RULES = (
@@ -63,6 +65,13 @@ _SYSTEM_RULES = (
 )
 
 
+def _thinking_mode(value: str) -> Literal["off", "on", "repair"]:
+    mode = value.strip() or "off"
+    if mode not in ("off", "on", "repair"):
+        raise GroundingModelError("model_settings_missing", 0)
+    return mode  # type: ignore[return-value]
+
+
 @dataclass(frozen=True)
 class GroundingModelSettings:
     base_url: str
@@ -75,6 +84,11 @@ class GroundingModelSettings:
     # follow-up calls allowed when the plan fails validation: the validation
     # errors go back to the model once (0 disables, for the ablation)
     repair_turns: int = 1
+    # the model's own thinking mode (chat_template_kwargs.enable_thinking):
+    # "off", "on" for every planner call, or "repair" for the repair turn only.
+    # A thinking call takes 18 to 47 s against 4 to 8 s, so it has its own budget.
+    thinking: Literal["off", "on", "repair"] = "off"
+    thinking_timeout_seconds: float = 120.0
 
     @classmethod
     def from_environment(
@@ -101,6 +115,8 @@ class GroundingModelSettings:
                 max_tokens=int(source.get(MAX_TOKENS_ENV, "512")),
                 structured_output_mode=mode,  # type: ignore[arg-type]
                 repair_turns=int(source.get(REPAIR_TURNS_ENV, "1")),
+                thinking=_thinking_mode(source.get(THINKING_ENV, "off")),
+                thinking_timeout_seconds=float(source.get(THINKING_TIMEOUT_ENV, "120")),
             )
         except ValueError:
             raise GroundingModelError("model_settings_missing", 0) from None

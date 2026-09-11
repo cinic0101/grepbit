@@ -615,6 +615,7 @@ def main(argv: list[str] | None = None) -> int:
         "model": client.settings.model if client else None,
         "output_mode": client.settings.structured_output_mode if client else None,
         "repair_turns_allowed": client.settings.repair_turns if client else None,
+        "thinking": client.settings.thinking if client else None,
         "overlay_revision": overlay.revision if overlay is not None else None,
         "perturbation": arguments.perturb,
         "as_of": as_of.isoformat(),

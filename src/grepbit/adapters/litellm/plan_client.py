@@ -766,6 +766,8 @@ class ChatCompletionsPlanClient:
     last_repair_output: str | None = None
     # 1 when the plan came from the repair turn or the repair turn also failed
     last_model_repair_turns: int = 0
+    # whether the last completed call ran with the model's thinking mode
+    last_thinking: bool = False
 
     def __init__(
         self,
@@ -860,7 +862,9 @@ class ChatCompletionsPlanClient:
             previous=previous,
             question_values=question_values,
         )
-        content = self._complete(client, messages)
+        content = self._complete(
+            client, messages, thinking=self._settings.thinking == "on"
+        )
         try:
             return self._validate(content, model)
         except _InvalidOutput as first:
@@ -876,31 +880,51 @@ class ChatCompletionsPlanClient:
             {"role": "user", "content": _REPAIR_INSTRUCTION.format(errors=errors)},
         ]
         self.last_model_repair_turns = 1
-        repaired = self._complete(client, repair_messages)
+        repaired = self._complete(
+            client,
+            repair_messages,
+            thinking=self._settings.thinking in ("on", "repair"),
+        )
         try:
             return self._validate(repaired, model)
         except _InvalidOutput:
             self.last_repair_output = repaired
             raise GroundingModelError("invalid_structured_output", 2) from None
 
-    def _complete(self, client: Any, messages: list[dict[str, str]]) -> str | None:
+    def _complete(
+        self, client: Any, messages: list[dict[str, str]], *, thinking: bool = False
+    ) -> str | None:
+        extra: dict[str, Any] = {}
+        if thinking:
+            # vLLM's chat template switch; the reasoning comes back in
+            # reasoning_content and the answer stays in content
+            extra = {
+                "extra_body": {"chat_template_kwargs": {"enable_thinking": True}},
+                "timeout": self._settings.thinking_timeout_seconds,
+            }
         try:
             response = client.chat.completions.create(
                 model=self._settings.model,
                 messages=messages,
                 temperature=self._settings.temperature,
-                max_tokens=max(self._settings.max_tokens, 768),
+                max_tokens=max(self._settings.max_tokens, 2048 if thinking else 768),
                 response_format=self.response_format(),
+                **extra,
             )
         except Exception:
             raise GroundingModelError("model_call_failed", 1) from None
+        self.last_thinking = thinking
         return _content(response)
 
     def _validate(self, content: str | None, model: SchemaModel) -> PlanProposal:
         if content is None:
             raise _InvalidOutput("empty response")
+        text = content.strip()
+        fenced = re.match(r"^```(?:json)?\s*(.*?)\s*```$", text, re.DOTALL)
+        if fenced:
+            text = fenced.group(1)
         try:
-            payload = json.loads(content)
+            payload = json.loads(text)
         except ValueError as error:
             raise _InvalidOutput(f"not valid JSON: {error}") from None
         try:

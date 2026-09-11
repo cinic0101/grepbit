@@ -165,11 +165,12 @@ class PlanCompiler:
         # aggregate gets its own FILTER (WHERE ...) so the rows stay shared.
         # A share of total with no groups and no periods has nothing to be a
         # share of: the window total equals the value and every share is 1.
-        # When the operand carries a filter of its own (or its metric does),
-        # the question is the part over the whole (會員交易佔比 = member
-        # transactions over all transactions): the filter shapes the part and
-        # the total is the same aggregate without it. Without such a filter
-        # the plan is refused.
+        # When the operand carries a filter of its own, the question is the
+        # part over the whole (會員交易佔比 = member transactions over all
+        # transactions): the filter shapes the part and the total is the same
+        # aggregate without it. A metric's defining filters do not make a part
+        # (gross_sales excludes returns: over net sales it gave 1.232), so
+        # without an operand filter the plan is refused.
         ungrouped = not plan.dimensions and (
             plan.time is None or plan.time.grain is None
         )
@@ -178,9 +179,7 @@ class PlanCompiler:
             if not (measure.share_of_total and ungrouped):
                 continue
             operand, metric = parts[0]
-            if measure.ratio is not None or not (
-                operand.filters or (metric is not None and metric.filters)
-            ):
+            if measure.ratio is not None or not operand.filters:
                 raise PlanError(
                     "share_requires_groups",
                     f"{measure.output_name}: a share of total with no groups and no "
@@ -198,8 +197,7 @@ class PlanCompiler:
             for _, parts in effective
             for _, metric in parts
         ]
-        # a whole share needs its metric's filters on the part alone, never in WHERE
-        shared_filters = len(set(operand_filters)) == 1 and not whole_shares
+        shared_filters = len(set(operand_filters)) == 1
         metric_filters: list[tuple[str, Filter]] = []
         if shared_filters:
             for _, parts in effective:
@@ -420,12 +418,10 @@ class PlanCompiler:
                 operand_position["i"] += 1
             aggregate = self._aggregate(operand, resolve)
             clauses = []
+            if metric is not None and metric.filters and not shared_filters:
+                for item in metric.filters:
+                    clauses.append(self._condition(item, resolve(item.column), bind))
             if own_filters:
-                if metric is not None and metric.filters and not shared_filters:
-                    for item in metric.filters:
-                        clauses.append(
-                            self._condition(item, resolve(item.column), bind)
-                        )
                 for item in operand.filters:
                     clauses.append(self._condition(item, resolve(item.column), bind))
             for _segment, item, others in operand_segment_filters:
