@@ -1,0 +1,25 @@
+{
+  "datasource_id": "pos_test",
+  "engine": "postgres",
+  "instances": 1,
+  "overlay_revision": "pos-overlay-experiment-v1",
+  "examples_requested": 400,
+  "as_of": "2026-02-10T12:00:00+08:00",
+  "outcomes": {
+    "generated": 291,
+    "typed_refusal": 79,
+    "agree": 212
+  },
+  "typed_refusals": {
+    "share_requires_groups": 55,
+    "ambiguous_join_path": 9,
+    "aggregate_kind_mismatch": 5,
+    "growth_to_date_unsupported": 4,
+    "time_scope_requires_grain": 2,
+    "ratio_operands_identical": 2,
+    "relative_window_reaches_future": 1,
+    "anti_join_required": 1
+  },
+  "disagreements": [],
+  "errors": []
+}

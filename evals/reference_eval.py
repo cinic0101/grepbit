@@ -289,6 +289,19 @@ def evaluate(
             else [measure]
         )
         resolved.append([resolve(op) for op in parts])
+    defining_sets = [
+        tuple(sorted(f.model_dump_json() for f in defining))
+        for parts in resolved
+        for (_, _, defining, _) in parts
+    ]
+    shared_defining: list[Filter] = []
+    if defining_sets and len(set(defining_sets)) == 1 and defining_sets[0]:
+        # one reviewed definition for every operand: its filters act on the rows
+        # (the contract: a single metric keeps its filters in WHERE)
+        shared_defining = list(resolved[0][0][2])
+        resolved = [
+            [(agg, col, [], own) for (agg, col, _, own) in parts] for parts in resolved
+        ]
     metric_time = None
     for parts in resolved:
         for op in [plan.measures[resolved.index(parts)]] if False else []:
@@ -360,8 +373,10 @@ def evaluate(
     row_filters = [f for f in plan.filters if f not in share_selection]
 
     def base_rows_pass(row: Row) -> bool:
-        return _all_true(row_filters, row, kinds) and _all_true(
-            row_segment_filters, row, kinds
+        return (
+            _all_true(row_filters, row, kinds)
+            and _all_true(shared_defining, row, kinds)
+            and _all_true(row_segment_filters, row, kinds)
         )
 
     candidate = [r for r in rows if base_rows_pass(r)]

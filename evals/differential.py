@@ -268,13 +268,15 @@ def main(argv: list[str] | None = None) -> int:
         def run_pg(compiled_query):
             result = executor.execute(
                 compiled_query,
-                max_rows=2000,
-                preview_rows=2000,
+                max_rows=20000,
+                preview_rows=20000,
                 statement_timeout_seconds=10,
                 run_id="differential",
             )
             if result.error_code:
                 return list(result.columns), [], result.error_code
+            if result.truncated:
+                return list(result.columns), [], "truncated_result"
             return list(result.columns), [tuple(r.values()) for r in result.rows], None
 
         for payload, plan, exclude, compiled in compiled_plans:

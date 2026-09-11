@@ -83,3 +83,20 @@ differential can run against `t2s_8c2b8bbc_6d072f83` with `--redact`),
 literals the value index would resolve, and multi-hop `without` plans on
 the real schema.
 
+## The real database, with its segment
+
+The fixture overlay has no segment, so the returns default exclusion had
+never been in the loop. A run against the real POS test database
+(`--redact`: plans and SQL in the report, no cell values) with the real
+overlay: 334 plans, 262 agree, 2 disagree, 70 typed refusals. One
+disagreement was the driver truncating a 2,245-row result at 2,000 (now a
+skipped outcome, not a comparison). The other was the evaluator's: the
+contract says a single reviewed metric keeps its defining filters in
+`WHERE`, so a plan grouping by the very column the metric filters
+(`line_sales` by `origin_transaction_no`) has no group for the excluded
+value; the evaluator had applied the definition per aggregate and kept the
+group with a NULL sum. Mirrored; the second run (370 plans, 259 agree, 0
+disagree) and the fixture reruns (iot random 442/0, pos 212/0) close phase 2
+at 0 disagreements everywhere the generator reaches: two engines, five data
+sets, about 3,900 checks.
+

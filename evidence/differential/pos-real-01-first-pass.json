@@ -1,0 +1,116 @@
+{
+  "datasource_id": "pos_real",
+  "engine": "postgres",
+  "instances": 1,
+  "overlay_revision": "pos-real-overlay-v12",
+  "examples_requested": 500,
+  "as_of": "2026-02-04T18:00:00+08:00",
+  "outcomes": {
+    "generated": 334,
+    "typed_refusal": 70,
+    "agree": 262,
+    "disagree": 2
+  },
+  "typed_refusals": {
+    "share_requires_groups": 49,
+    "growth_to_date_unsupported": 5,
+    "aggregate_kind_mismatch": 5,
+    "without_filter_outside_child": 4,
+    "time_scope_requires_grain": 3,
+    "anti_join_required": 3,
+    "relative_window_reaches_future": 1
+  },
+  "disagreements": [
+    {
+      "instance": "postgres",
+      "plan": {
+        "base_table": "pos_sale",
+        "dimensions": [
+          {
+            "table": "pos_sale",
+            "column": "receipt_no"
+          }
+        ],
+        "latest": {
+          "order_by": [
+            {
+              "column": {
+                "table": "pos_sale",
+                "column": "sale_date"
+              },
+              "direction": "desc"
+            }
+          ],
+          "take": [
+            {
+              "table": "pos_sale",
+              "column": "transaction_no"
+            }
+          ]
+        },
+        "filters": []
+      },
+      "exclude_segments": [],
+      "sql": "SELECT receipt_no, transaction_no FROM (SELECT pos_sale.receipt_no AS receipt_no, pos_sale.transaction_no AS transaction_no, ROW_NUMBER() OVER (PARTITION BY pos_sale.receipt_no ORDER BY pos_sale.sale_date DESC NULLS LAST, pos_sale.transaction_no DESC NULLS LAST) AS latest_rank FROM public.pos_sale) AS latest WHERE latest_rank = 1 ORDER BY receipt_no NULLS FIRST",
+      "columns": [
+        "receipt_no",
+        "transaction_no"
+      ],
+      "actual_rows": 2000,
+      "reference_rows": 2245
+    },
+    {
+      "instance": "postgres",
+      "plan": {
+        "base_table": "pos_saleitem",
+        "measures": [
+          {
+            "metric": "line_sales",
+            "filters": [
+              {
+                "column": {
+                  "table": "pos_sale",
+                  "column": "total_amount"
+                },
+                "op": "ne",
+                "values": [
+                  1
+                ]
+              }
+            ],
+            "alias": "m0"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "pos_sale",
+            "column": "receipt_no"
+          },
+          {
+            "table": "pos_sale",
+            "column": "origin_transaction_no"
+          }
+        ],
+        "time": {
+          "scope": {
+            "kind": "latest",
+            "unit": "week"
+          }
+        },
+        "filters": []
+      },
+      "exclude_segments": [
+        "returns"
+      ],
+      "sql": "SELECT pos_sale.receipt_no AS receipt_no, pos_sale.origin_transaction_no AS origin_transaction_no, SUM(pos_saleitem.amount) FILTER(WHERE pos_sale.total_amount <> %(f_0)s) AS m0 FROM public.pos_saleitem LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL AND (pos_sale.sale_date AT TIME ZONE 'Asia/Taipei' >= DATE_TRUNC('WEEK', (SELECT MAX(pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') FROM public.pos_saleitem LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL)) AND pos_sale.sale_date AT TIME ZONE 'Asia/Taipei' < (DATE_TRUNC('WEEK', (SELECT MAX(pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') FROM public.pos_saleitem LEFT JOIN public.pos_sale ON pos_saleitem.transaction_no = pos_sale.transaction_no WHERE pos_sale.origin_transaction_no IS NULL)) + INTERVAL '1 week')) GROUP BY pos_sale.receipt_no, pos_sale.origin_transaction_no ORDER BY receipt_no NULLS FIRST, origin_transaction_no NULLS FIRST",
+      "columns": [
+        "receipt_no",
+        "origin_transaction_no",
+        "m0"
+      ],
+      "actual_rows": 132,
+      "reference_rows": 154
+    }
+  ],
+  "errors": []
+}

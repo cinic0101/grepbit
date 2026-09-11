@@ -1,0 +1,22 @@
+{
+  "datasource_id": "pos_real",
+  "engine": "postgres",
+  "instances": 1,
+  "overlay_revision": "pos-real-overlay-v12",
+  "examples_requested": 600,
+  "as_of": "2026-02-04T18:00:00+08:00",
+  "outcomes": {
+    "generated": 370,
+    "typed_refusal": 111,
+    "agree": 259
+  },
+  "typed_refusals": {
+    "share_requires_groups": 87,
+    "growth_to_date_unsupported": 10,
+    "time_scope_requires_grain": 10,
+    "without_filter_outside_child": 3,
+    "relative_window_reaches_future": 1
+  },
+  "disagreements": [],
+  "errors": []
+}
