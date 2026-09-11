@@ -457,3 +457,76 @@ def test_differential_limit_comparison_respects_order_and_ties() -> None:
     with_null = [("AP", None), ("GW", 3)]
     assert diff.compare(plan, columns, [("GW", 3)], with_null, zone)
     assert not diff.compare(plan, columns, [("AP", None)], with_null, zone)
+
+
+def test_differential_redaction_and_replay_rules() -> None:
+    """A review found --redact left plan literals in the records and the replay
+    had no way to tell a redacted plan from a real one. With sampling off no
+    literal comes from the database, so plans stay as they are; a report whose
+    plans were scrubbed says so, and its plans are not replayed (the seed is)."""
+
+    spec = importlib.util.spec_from_file_location(
+        "differential", ROOT / "evals" / "differential.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+
+    assert module.plans_carry_data(0) is False
+    assert module.plans_carry_data(20) is True
+    plan = {
+        "base_table": "t",
+        "measures": [{"aggregate": "count", "alias": "n"}],
+        "filters": [
+            {"column": {"table": "t", "column": "c"}, "op": "in", "values": ["a", "b"]},
+            {"column": {"table": "t", "column": "d"}, "op": "is_null", "values": []},
+        ],
+    }
+    scrubbed = module.scrub(plan)
+    assert scrubbed["filters"][0]["values"] == ["<redacted>", "<redacted>"]
+    assert scrubbed["filters"][1]["values"] == []
+    kept, redacted = module.replayable([plan, scrubbed, plan])
+    assert kept == [plan, plan] and redacted == 1
+
+
+def test_generator_literals_are_constants_when_sampling_is_off() -> None:
+    """The redaction rule above rests on this: without sample_values every text
+    literal the generator draws is one of its own constants."""
+
+    from hypothesis import HealthCheck, given, settings
+    from hypothesis import strategies as st
+    from t0_helpers import iot_schema
+
+    spec = importlib.util.spec_from_file_location(
+        "plan_generator", ROOT / "evals" / "plan_generator.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    schema = iot_schema()
+    for table in schema.tables:
+        for column in table.columns:
+            column.sample_values = []
+    shape = module.SchemaShape(schema, None)
+    seen: list[str] = []
+
+    @settings(max_examples=200, suppress_health_check=list(HealthCheck), deadline=None)
+    @given(st.data())
+    def draw(data):
+        payload = module.draw_plan(data, shape)
+
+        def walk(o):
+            if isinstance(o, dict):
+                if "values" in o and isinstance(o["values"], list):
+                    seen.extend(v for v in o["values"] if isinstance(v, str))
+                for v in o.values():
+                    walk(v)
+            elif isinstance(o, list):
+                for v in o:
+                    walk(v)
+
+        walk(payload)
+
+    draw()
+    assert seen, "the generator drew no text literal at all"
+    assert set(seen) <= set(module.FALLBACK_TEXT)

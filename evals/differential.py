@@ -103,13 +103,46 @@ def generate_plans(
     return payloads
 
 
+REDACTED = "<redacted>"
+
+
+def plans_carry_data(enum_distinct_limit: int) -> bool:
+    """Whether a generated plan can hold a value read from the database.
+
+    The generator's only channel from the data to a plan is the introspected
+    ``sample_values`` of text columns; numbers, dates and the fallback texts
+    are constants of ``plan_generator``. With sampling off (``0``, the real-DB
+    setting) a plan carries no data, so a redacted report keeps its plans as
+    they are and stays replayable.
+    """
+
+    return enum_distinct_limit > 0
+
+
+def replayable(payloads: list[dict]) -> tuple[list[dict], int]:
+    """Plans from an earlier report that can be re-checked, and the count of
+    those whose literals were redacted (they compile to a kind mismatch, not
+    to the original plan; regenerate from the report's seed instead)."""
+
+    def redacted(payload: Any) -> bool:
+        if isinstance(payload, dict):
+            return any(redacted(v) for v in payload.values())
+        if isinstance(payload, list):
+            return any(redacted(v) for v in payload)
+        return payload == REDACTED
+
+    kept = [p for p in payloads if not redacted(p)]
+    return kept, len(payloads) - len(kept)
+
+
 def scrub(payload: Any) -> Any:
-    """The plan with every filter literal replaced, for reports on real data."""
+    """The plan with every filter literal replaced, for reports on real data
+    where literals were sampled from the database."""
 
     if isinstance(payload, dict):
         return {
             k: (
-                ["<redacted>"] * len(v)
+                [REDACTED] * len(v)
                 if k == "values" and isinstance(v, list)
                 else scrub(v)
             )
@@ -277,10 +310,24 @@ def main(argv: list[str] | None = None) -> int:
     ]
     rng = random.Random(arguments.seed)
 
+    replay_note: dict[str, Any] = {}
     if arguments.replay is not None:
-        payloads = json.loads(arguments.replay.read_text(encoding="utf-8"))["plans"]
+        earlier = json.loads(arguments.replay.read_text(encoding="utf-8"))
+        payloads, redacted_count = replayable(earlier["plans"])
+        replay_note = {
+            "replayed_from": str(arguments.replay),
+            "replay_schema_digest_matches": earlier.get("schema_digest")
+            == schema.digest(),
+            "redacted_not_replayed": redacted_count,
+        }
+        if redacted_count:
+            print(
+                f"NOTE {redacted_count} plans carry redacted literals and are not"
+                f" replayed; regenerate with --seed {earlier.get('seed')} instead"
+            )
     else:
         payloads = generate_plans(shape, arguments.examples, arguments.seed)
+    redact_plans = arguments.redact and plans_carry_data(arguments.enum_distinct_limit)
     outcomes: Counter = Counter({"generated": len(payloads)})
     refusals: Counter = Counter()
     disagreements: list[dict[str, Any]] = []
@@ -304,7 +351,7 @@ def main(argv: list[str] | None = None) -> int:
             errors.append(
                 {
                     "kind": "compiler_exception",
-                    "plan": scrub(payload) if arguments.redact else payload,
+                    "plan": scrub(payload) if redact_plans else payload,
                     "error": repr(error)[:300],
                 }
             )
@@ -319,7 +366,7 @@ def main(argv: list[str] | None = None) -> int:
                 {
                     "kind": "database_error",
                     "instance": label,
-                    "plan": scrub(payload) if arguments.redact else payload,
+                    "plan": scrub(payload) if redact_plans else payload,
                     "sql": compiled.compiled.physical_sql,
                     "error": error,
                 }
@@ -339,7 +386,7 @@ def main(argv: list[str] | None = None) -> int:
                 {
                     "kind": "evaluator_exception",
                     "instance": label,
-                    "plan": scrub(payload) if arguments.redact else payload,
+                    "plan": scrub(payload) if redact_plans else payload,
                     "error": repr(error)[:300],
                 }
             )
@@ -352,7 +399,7 @@ def main(argv: list[str] | None = None) -> int:
         outcomes["disagree"] += 1
         record: dict[str, Any] = {
             "instance": label,
-            "plan": scrub(payload) if arguments.redact else payload,
+            "plan": scrub(payload) if redact_plans else payload,
             "exclude_segments": [s.id for s in exclude],
             "sql": compiled.compiled.physical_sql,
             "columns": out_columns,
@@ -423,8 +470,9 @@ def main(argv: list[str] | None = None) -> int:
         "seed": arguments.seed,
         "schema_digest": schema.digest(),
         "enum_distinct_limit": arguments.enum_distinct_limit,
-        "replayed_from": str(arguments.replay) if arguments.replay else None,
-        "plans": [scrub(p) if arguments.redact else p for p in payloads],
+        "plans_redacted": redact_plans,
+        **replay_note,
+        "plans": [scrub(p) if redact_plans else p for p in payloads],
         "instances": arguments.instances if arguments.engine == "duckdb" else 1,
         "overlay_revision": overlay.revision if overlay else None,
         "examples_requested": arguments.examples,
