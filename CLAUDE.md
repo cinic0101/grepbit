@@ -20,8 +20,9 @@ validation counts, known gaps, git state.
   changes what a user sees, a trade-off the evidence does not settle) and
   discuss or verify with the owner before choosing. Routine engineering is
   delegated.
-- **Freeze new algebra constructs until shape repairs are under 5% of cases**
-  (decision of 2026-09-11, `docs/plan/root-cause-program.md`).
+- **Freeze new algebra constructs until `shape_variants` stay under 5% of
+  cases on every set** (decision of 2026-09-11, `docs/plan/root-cause-program.md`;
+  the metric excludes meaning normalisations, which are intended rules).
 
 ## Evidence and process
 

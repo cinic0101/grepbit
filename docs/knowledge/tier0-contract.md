@@ -252,6 +252,8 @@ superset and rewrites it to the domain models without guessing meaning:
 |---|---|---|
 | `numerator` / `denominator` beside a missing or partial `ratio` (batch 1 q49, five runs) | `ratio: {numerator, denominator}` | nothing: it is the shown form |
 | `{"table": t, "column": c}` objects (the v1 form) | kept | nothing |
+| an alias in the question's language (銷售總額), or any quotable text up to 63 bytes; the `order`, `having`, `growth` fields that name it | kept; the compiler quotes it, so the column comes back under that name (owner's decision 2026-09-11) | nothing |
+| a qualified output name in `order`, `having` or `growth` (`product.product_name`), or a qualified column inside its own reference | the bare name | nothing (unambiguous, owner's decision 2026-09-11) |
 | a bare column name that resolves to one table (or the base table) | `table.column` | `shape_repairs` (`c -> t.c`) |
 | `{"column": "c", "table": t}` | `t.c` when `t` owns `c` | `shape_repairs` |
 | `{"column": {"table": t, "column": c}, "table": t}` on a measure, filter or operand (fu_base_payment) | the reference alone | `shape_repairs` (`dropped table beside the column reference`); a sibling naming another table is left to fail |
@@ -260,12 +262,19 @@ superset and rewrites it to the domain models without guessing meaning:
 | `ratio` on the plan beside its operands as measures | one ratio measure | `shape_repairs` |
 | `numerator` and `denominator` on the plan beside the operands spelled out as measures (holdout 2 q23) | one ratio measure, the spelled-out operands dropped | `shape_repairs` |
 | an `aggregate` and `column` beside `numerator`/`denominator` that restate one operand (the repair turn on q23) | the ratio alone | `shape_repairs` |
-| an alias that is not an SQL identifier (付款總額) | `measure_N`, and the `order`, `having`, `growth` items that named it follow | `shape_repairs` |
+| an alias that cannot be quoted at all (a quote or control character inside, more than 63 bytes) | its ASCII part, or `measure_N`; the `order`, `having`, `growth` items that named it follow | `shape_variants` |
 | a share measure whose own filter names a grouped column (holdout 2 q25: 1.0 for that group, 0 elsewhere) | the filter moves to the plan's filters, so the after-share selection applies | `shape_repairs` |
 | a month (`YYYY-MM`), day or year written as a filter literal on a date or timestamp column when the plan has no window (the 12B control: `sale_date IN ('2025-12')`, PostgreSQL 22007) | the time window it can only mean; the time column taken from the filter when the plan names none | `shape_repairs` (`date literal ...`) and an assumption |
 
-`shape_repairs` therefore keeps its meaning as the health metric: how often
-the model leaves the shown form. Rules 8 to 10 (entities with no activity,
+The repair list is read two ways (`ports/ask.py`, `is_meaning_repair`):
+`shape_variants` are departures from the shown form that were rewritten
+(the wire contract's health metric; the freeze on new constructs lifts when
+they stay under 5% of cases on every set), and `meaning_normalisations` are
+the rules that change what the plan means and say so in an assumption
+(relative window re-anchored, unit from grain, date literal as a window,
+share filter to the after-share selection, unrequested grain dropped,
+constant dimension dropped). `shape_repairs` stays as their union in the
+reports. Rules 8 to 10 (entities with no activity,
 the latest row per entity, the latest period with data) enter the prompt
 only when the question carries one of their trigger words
 (`resources/unsupported_shapes.json`, `rule_triggers`, pack v5); the other

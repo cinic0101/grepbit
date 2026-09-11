@@ -124,7 +124,10 @@ be classified after the run instead of reproduced; a case the repair turn
 rescued carries `model_repair_turns: 1` and its first text as `raw_output`
 too, and a case the repair turn lost also carries `raw_output_repair`. The
 summary records `model`, `repair_turns_allowed`, `model_repair_turns` and
-`repaired_cases`. No credentials, no bindings.
+`repaired_cases`, and since 5872cca splits the repair count into
+`shape_variants` (cases whose plan left the shown wire form) and
+`meaning_normalisations` (cases where a stated rule changed the plan's
+meaning); `shape_repairs` remains their union. No credentials, no bindings.
 
 `--redact-rows` drops result rows and reference rows from the report (row
 counts, SQL, lineage and assumptions stay), so an artifact taken on a real
