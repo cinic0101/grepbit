@@ -485,8 +485,14 @@ def test_differential_redaction_and_replay_rules() -> None:
     scrubbed = module.scrub(plan)
     assert scrubbed["filters"][0]["values"] == ["<redacted>", "<redacted>"]
     assert scrubbed["filters"][1]["values"] == []
-    kept, redacted = module.replayable([plan, scrubbed, plan])
-    assert kept == [plan, plan] and redacted == 1
+    kept, redacted = module.replayable(
+        [
+            plan,
+            {"plan": scrubbed, "exclude_segments": []},
+            {"plan": plan, "exclude_segments": ["returns"]},
+        ]
+    )
+    assert kept == [(plan, None), (plan, ["returns"])] and redacted == 1
 
 
 def test_generator_literals_are_constants_when_sampling_is_off() -> None:

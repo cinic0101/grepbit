@@ -107,22 +107,28 @@ REDACTED = "<redacted>"
 
 
 def plans_carry_data(enum_distinct_limit: int) -> bool:
-    """Whether a generated plan can hold a value read from the database.
+    """Whether a generated plan can hold a value read from the rows.
 
-    The generator's only channel from the data to a plan is the introspected
-    ``sample_values`` of text columns; numbers, dates and the fallback texts
-    are constants of ``plan_generator``. With sampling off (``0``, the real-DB
-    setting) a plan carries no data, so a redacted report keeps its plans as
-    they are and stays replayable.
+    The generator's only channel from the database to a plan is the
+    introspected ``sample_values`` of text columns; numbers, dates and the
+    fallback texts are constants of ``plan_generator``. With sampling off
+    (``0``, the real-DB setting) ``sample_values`` holds only the labels of
+    PostgreSQL enum types, which are schema, not data; a redacted report then
+    keeps its plans as they are and stays replayable.
     """
 
     return enum_distinct_limit > 0
 
 
-def replayable(payloads: list[dict]) -> tuple[list[dict], int]:
-    """Plans from an earlier report that can be re-checked, and the count of
-    those whose literals were redacted (they compile to a kind mismatch, not
-    to the original plan; regenerate from the report's seed instead)."""
+Entry = tuple[dict, list[str] | None]  # plan payload, recorded segment exclusion
+
+
+def replayable(recorded: list[dict]) -> tuple[list[Entry], int]:
+    """Plans from an earlier report that can be re-checked, with the segment
+    exclusion drawn for each (reports before 0a40a98 recorded bare plans; the
+    exclusion is then drawn again), and the count of plans whose literals were
+    redacted (they compile to a kind mismatch, not to the original plan;
+    regenerate from the report's seed instead)."""
 
     def redacted(payload: Any) -> bool:
         if isinstance(payload, dict):
@@ -131,8 +137,14 @@ def replayable(payloads: list[dict]) -> tuple[list[dict], int]:
             return any(redacted(v) for v in payload)
         return payload == REDACTED
 
-    kept = [p for p in payloads if not redacted(p)]
-    return kept, len(payloads) - len(kept)
+    entries: list[Entry] = []
+    for item in recorded:
+        if "plan" in item and "exclude_segments" in item:
+            entries.append((item["plan"], list(item["exclude_segments"])))
+        else:
+            entries.append((item, None))
+    kept = [entry for entry in entries if not redacted(entry[0])]
+    return kept, len(entries) - len(kept)
 
 
 def scrub(payload: Any) -> Any:
@@ -313,7 +325,7 @@ def main(argv: list[str] | None = None) -> int:
     replay_note: dict[str, Any] = {}
     if arguments.replay is not None:
         earlier = json.loads(arguments.replay.read_text(encoding="utf-8"))
-        payloads, redacted_count = replayable(earlier["plans"])
+        entries, redacted_count = replayable(earlier["plans"])
         replay_note = {
             "replayed_from": str(arguments.replay),
             "replay_schema_digest_matches": earlier.get("schema_digest")
@@ -326,18 +338,31 @@ def main(argv: list[str] | None = None) -> int:
                 f" replayed; regenerate with --seed {earlier.get('seed')} instead"
             )
     else:
-        payloads = generate_plans(shape, arguments.examples, arguments.seed)
+        entries = [
+            (payload, None)
+            for payload in generate_plans(shape, arguments.examples, arguments.seed)
+        ]
     redact_plans = arguments.redact and plans_carry_data(arguments.enum_distinct_limit)
-    outcomes: Counter = Counter({"generated": len(payloads)})
+    outcomes: Counter = Counter({"generated": len(entries)})
     refusals: Counter = Counter()
     disagreements: list[dict[str, Any]] = []
     errors: list[dict[str, Any]] = []
 
     # compile once per plan; execution and evaluation run per data set
     compiled_plans = []
-    for payload in payloads:
+    records: list[dict[str, Any]] = []  # every plan with its exclusion, for --replay
+    for payload, recorded_exclusion in entries:
         plan = QueryPlan.model_validate(payload)
-        exclude = [s for s in default_segments if rng.random() < 0.7]
+        if recorded_exclusion is None:
+            exclude = [s for s in default_segments if rng.random() < 0.7]
+        else:
+            exclude = [s for s in default_segments if s.id in recorded_exclusion]
+        records.append(
+            {
+                "plan": scrub(payload) if redact_plans else payload,
+                "exclude_segments": [s.id for s in exclude],
+            }
+        )
         try:
             compiled = compiler.compile(
                 plan, as_of=as_of, exclude_segments=exclude, named_segments=[]
@@ -472,7 +497,7 @@ def main(argv: list[str] | None = None) -> int:
         "enum_distinct_limit": arguments.enum_distinct_limit,
         "plans_redacted": redact_plans,
         **replay_note,
-        "plans": [scrub(p) if redact_plans else p for p in payloads],
+        "plans": records,
         "instances": arguments.instances if arguments.engine == "duckdb" else 1,
         "overlay_revision": overlay.revision if overlay else None,
         "examples_requested": arguments.examples,
