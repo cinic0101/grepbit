@@ -696,3 +696,38 @@ def test_a_malformed_plan_gets_one_repair_turn_with_the_validation_errors() -> N
     with pytest.raises(GroundingModelError):
         client.propose("q", iot_schema(), as_of="2026-08-15T12:00:00+08:00")
     assert len(fake.calls) == 1
+
+
+def test_a_to_date_window_longer_than_one_unit_is_re_anchored_too() -> None:
+    # ft_last_30_days, 2026-09-11: offset 0, length 30, to_date collapsed to as_of's day
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count"}],
+            "time": {
+                "column": {"table": "alerts", "column": "raised_at"},
+                "scope": {
+                    "kind": "relative",
+                    "unit": "day",
+                    "offset": 0,
+                    "length": 30,
+                    "to_date": True,
+                },
+            },
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    scope = repaired["plan"]["time"]["scope"]
+    assert scope == {"kind": "relative", "unit": "day", "offset": -30, "length": 30}
+    assert repairs == ["relative window offset 0 length 30 to_date -> offset -30"]
+    # one unit to date (本月截至今天) is the legitimate form and stays
+    payload["plan"]["time"]["scope"] = {
+        "kind": "relative",
+        "unit": "month",
+        "offset": 0,
+        "length": 1,
+        "to_date": True,
+    }
+    untouched, repairs = repair_column_refs(payload, iot_schema())
+    assert untouched["plan"]["time"]["scope"]["to_date"] is True and repairs == []

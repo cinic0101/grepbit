@@ -320,7 +320,11 @@ def _anchor_relative_window(plan: dict[str, Any], repairs: list[str]) -> None:
     into the future, where no data can be (最近 30 天 written as offset 0
     length 30 covered today and the next 29 days). The only reading with data
     is the past one, offset -L, the encoding the prompt gives for "last L
-    units"; "to date" windows are left alone.
+    units". A "to date" window of one unit (本月截至今天) is left alone; "to
+    date" with a length above one (最近 30 天 written as offset 0, length 30,
+    to_date) is the same forward slip wearing another flag: the flag is
+    dropped and the window re-anchored the same way (ft_last_30_days answered
+    as_of's day alone on 2026-09-11 when the flag made the repair skip it).
     """
 
     time = plan.get("time")
@@ -330,11 +334,11 @@ def _anchor_relative_window(plan: dict[str, Any], repairs: list[str]) -> None:
     offset, length = scope.get("offset"), scope.get("length")
     if offset != 0 or not isinstance(length, int) or length <= 1:
         return
-    if scope.get("to_date"):
-        return
+    flagged = " to_date" if scope.pop("to_date", False) else ""
     scope["offset"] = -length
     repairs.append(
-        f"{RELATIVE_WINDOW_REPAIR} offset 0 length {length} -> offset {-length}"
+        f"{RELATIVE_WINDOW_REPAIR} offset 0 length {length}{flagged} "
+        f"-> offset {-length}"
     )
 
 
