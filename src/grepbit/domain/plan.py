@@ -11,6 +11,7 @@ from pydantic import Field, model_validator
 from grepbit.domain.assumptions import Assumption
 from grepbit.domain.models import CompiledQuery, DomainModel
 from grepbit.domain.structured_query import (
+    LatestScope,
     ResolvedPeriod,
     TimeGrain,
     TimeScope,
@@ -90,6 +91,14 @@ class Ratio(DomainModel):
 
     numerator: Operand
     denominator: Operand
+
+    @model_validator(mode="after")
+    def operands_differ(self) -> Ratio:
+        # count / count is 1 for every row; found by the generated-plan
+        # properties, refused here instead of by the serve-time self-check
+        if self.numerator == self.denominator:
+            raise ValueError("plan_ratio_operands_identical")
+        return self
 
 
 class Measure(Operand):
@@ -209,6 +218,11 @@ class Absence(DomainModel):
     def window_only(self) -> Absence:
         if self.time is not None and self.time.grain is not None:
             raise ValueError("plan_without_takes_a_window_not_a_grain")
+        if self.time is not None and isinstance(self.time.scope, LatestScope):
+            # the latest unit with data is resolved against the base rows; inside
+            # the absence test there are no rows to resolve it against (found by
+            # the generated-plan properties as an untyped error)
+            raise ValueError("plan_without_takes_no_latest_scope")
         return self
 
 
@@ -347,6 +361,9 @@ _PLAN_ERROR_CODES = frozenset(
         # asked for is missing, a ratio divides an expression by itself, a
         # window without groups): refused rather than served
         "self_check_failed",
+        # a ratio whose operands resolve to the same aggregate once a reviewed
+        # metric is expanded (count(*) over all_alerts = count(*)): 1 for every row
+        "ratio_operands_identical",
         # share_of_total with no groups and no periods: every share would be 1
         # unless the operand carries a filter of its own (the part over the whole)
         "share_requires_groups",

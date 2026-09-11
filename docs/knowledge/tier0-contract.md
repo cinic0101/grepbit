@@ -122,11 +122,12 @@ work item, not a surprise (the regression summary counts them as
 | `unknown_table`, `unknown_column` | shape repair when the name resolves to one table (`repair_column_refs`); hidden identifiers stay unknown by design; otherwise `unsupported` |
 | `grain_conflict` | base repair when every raw measure column sits on one child table that reaches the base (`repair_base_table`); otherwise `unsupported`, the plan would fan out |
 | `ambiguous_join_path` | `unsupported` today; the candidate remedy is a typed `clarify` naming the two paths |
-| `aggregate_kind_mismatch`, `filter_kind_mismatch`, `time_column_kind_mismatch` | `unsupported`; the planner payload already states kinds, a recurrence is a prompt matter |
+| `aggregate_kind_mismatch`, `filter_kind_mismatch`, `time_column_kind_mismatch` | `unsupported`; the planner payload already states kinds, a recurrence is a prompt matter. Since 2026-09-11 `filter_kind_mismatch` also fires for a literal on a date or timestamp column that does not parse as one, with the literal in the detail, instead of PostgreSQL 22007 at execution |
 | `time_scope_requires_grain` | `unsupported`; recurrence would argue for deriving grain from a multi-period scope |
 | `relative_window_reaches_future` | `unsupported` with the window in the detail. Since 2026-09-10 it also fires for a window anchored on the current unit (offset 0) that is longer than one unit; the planner adapter re-anchors that shape first (`relative window` repair below), so the gate is the safety net behind it |
 | `unknown_metric`, `metric_base_table_mismatch`, `metric_conflict` | `unsupported`; overlay definitions are the fix, not code |
 | `growth_to_date_unsupported` | `unsupported`: growth on a period-to-date window would compare a whole previous period with a partial one (holdout 3 q01) |
+| `ratio_operands_identical` | `unsupported`: the numerator and denominator resolve to the same aggregate once a reviewed metric is expanded (`count(*)` over `all_alerts`), so the ratio is 1 for every row; the plan-level twin (two literally identical operands) is refused at validation as `plan_ratio_operands_identical`, and a `latest` scope inside `without` as `plan_without_takes_no_latest_scope`. All three were found by the generated-plan properties on 2026-09-11 |
 | `share_requires_groups` | `unsupported` with the remedy in the detail: a `share_of_total` with no groups and no periods, whose operand carries no filter of its own, would be 1 for every row (the window total is the value itself); name the groups or ask for the part over the whole |
 | `self_check_failed` | `unsupported` with the broken invariants in the detail: after compiling, the SQL is parsed back and checked against the plan (`adapters/sqlglot/plan_check.py`): every plan, operand and `without` filter is a predicate of its kind on its column; every filter literal is bound; no ratio divides an expression by itself; no window function without groups, a grain or growth; GROUP BY lists exactly the dimensions; a plan `having` is a SQL HAVING; `verified` only without question filters. Replays of the two 2026-09-11 wrong numbers are the tests |
 | `without_table_not_a_child`, `without_filter_outside_child` | `unsupported`; the plan named a `without` table that does not reference the base, or a filter outside the child |
@@ -154,6 +155,7 @@ one leaves a trace: a `shape_repairs` entry, an assumption, or both.
 | `repair_column_refs` | a bare `aggregate` written beside a `ratio` on the same measure is dropped (the operands carry their own aggregates; the validator would reject the pair); an aggregate with a column or a metric beside a ratio is left to fail | `shape_repairs` (`dropped aggregate ...`) |
 | `repair_column_refs` | a `ratio` written on the plan instead of inside a measure moves into `measures`; a measure that is exactly one of its operands (alias aside) is dropped as the same thing spelled twice. Nothing moves when a measure already carries a ratio | `shape_repairs` (`lifted plan-level ratio ...`, `dropped measure ... spelled inside the ratio`) |
 | `repair_base_table` (application) | the base moves to the child table holding every measure column, or to a metric's base | assumption |
+| `constant_dimensions` (application) | a dimension the plan's own equality filter fixes to one value (`by store_name` beside `store_name = X`) is not returned: it would repeat on every row; the filter still applies. Owner's decision 2026-09-11; latest-row plans are left alone | `shape_repairs` (`dropped constant dimensions ...`) and an assumption |
 | `single_period_misread` (application) | a per-period word (`period_words` of the shape pack) answered with the single current unit is a `clarify`, never a rewrite | `per_period_single_window` |
 | `unrequested_grain` (application) | a grain without a window when the question has no per-period or trend word is dropped: 同期 with no period word means one whole-window value per group | `shape_repairs` (`dropped grain ...`) and an assumption naming the words that ask for a breakdown |
 | after-share selection (compiler) | with a `share_of_total` measure, a filter on a grouped column selects rows after the share (outer `WHERE` over the grouped subquery), so 特約永和中正 佔全部門市 divides by every store; filters on other columns still shape the population | lineage `[after share] ...` and an assumption |
@@ -180,12 +182,14 @@ invariants hold) and closed one by one with a value test.
 | raw aggregate | `test_enum_filters_compare_as_text...`, `test_null_checks_and_count_distinct...` | `test_an_operand_may_carry_its_own_filters...` | `test_default_exclusion_adds_the_inverse_filter...` | `test_excluded_segments_are_lifted_when_the_question_names_them` | `test_count_with_month_window_binds_boundaries...` | `test_monthly_grain_buckets_in_business_timezone...` | excluded: `plan_latest_excludes_aggregates` | `test_without_compiles_an_anti_join...` |
 | reviewed metric | `test_extra_question_filters_or_candidate_metrics_are_only_partially_verified` | `test_a_metric_operand_keeps_its_own_filters` | `test_default_segment_becomes_operand_level_when_one_operand_selects_it` | **gap** | `test_time_column_defaults_to_the_overlay_time_default_of_the_base` | **gap** | excluded: `plan_latest_excludes_aggregates` | **gap** (a metric on the entity table) |
 | ratio | **gap** | `test_an_operand_may_carry_its_own_filters...`, `test_a_metric_operand_keeps_its_own_filters` | `test_default_segment_becomes_operand_level...` (return ratio keeps gross sales) | **gap** | **gap** (b1_q34 is an eval case only) | **gap** | excluded | **gap** |
-| share_of_total | `test_share_filtered_on_its_own_dimension_is_the_subset_share_of_the_whole` (after-share selection) | `test_a_share_with_no_groups_is_the_filtered_part_over_the_whole`, `test_grouped_share_and_growth_keep_their_windows` | **gap** (batch 1 q17 is an eval case only) | **gap** | `test_share_of_total_divides_by_the_window_total_over_all_groups` | `test_share_within_each_period_when_the_plan_has_a_grain` | excluded | **gap** |
+| share_of_total | `test_share_filtered_on_its_own_dimension_is_the_subset_share_of_the_whole` (after-share selection) | `test_a_share_with_no_groups_is_the_filtered_part_over_the_whole`, `test_grouped_share_and_growth_keep_their_windows`, `test_share_filter_on_a_grouped_column_becomes_the_after_share_selection` | **gap** (batch 1 q17 is an eval case only) | **gap** | `test_share_of_total_divides_by_the_window_total_over_all_groups` | `test_share_within_each_period_when_the_plan_has_a_grain` | excluded | **gap** |
 | growth | **gap** | **gap** | **gap** | **gap** | `test_growth_on_a_single_period_window_widens...`, `test_growth_on_a_to_date_window_is_refused` | `test_growth_compares_each_period_with_the_previous_one_per_group` (required: `plan_growth_requires_grain`) | excluded | **gap** |
 | having | `test_having_compares_the_aggregate_expression_with_a_bound_value` | **gap** | **gap** | **gap** | **gap** | **gap** | excluded | `count = 0` excluded: `anti_join_required`; other thresholds **gap** |
 
 Having on a ratio or share is excluded (`plan_having_on_derived_measure`,
-`test_having_cannot_target_a_derived_measure`). Twenty-two gap cells on
+`test_having_cannot_target_a_derived_measure`); a ratio of identical operands
+is excluded at validation (`plan_ratio_operands_identical`, found by the
+generated-plan properties on their first run). Twenty-two gap cells on
 2026-09-11; the generated-plan properties cover them for structure the same
 day, the value tests follow.
 
@@ -248,6 +252,11 @@ superset and rewrites it to the domain models without guessing meaning:
 | a dimension wrapped like an `order_by` item, or carrying `alias`, `description`, `label`, `name` | the reference alone | `shape_repairs` |
 | `grain` on the plan (the 12B control model) | `time.grain` | `shape_repairs` |
 | `ratio` on the plan beside its operands as measures | one ratio measure | `shape_repairs` |
+| `numerator` and `denominator` on the plan beside the operands spelled out as measures (holdout 2 q23) | one ratio measure, the spelled-out operands dropped | `shape_repairs` |
+| an `aggregate` and `column` beside `numerator`/`denominator` that restate one operand (the repair turn on q23) | the ratio alone | `shape_repairs` |
+| an alias that is not an SQL identifier (付款總額) | `measure_N`, and the `order`, `having`, `growth` items that named it follow | `shape_repairs` |
+| a share measure whose own filter names a grouped column (holdout 2 q25: 1.0 for that group, 0 elsewhere) | the filter moves to the plan's filters, so the after-share selection applies | `shape_repairs` |
+| a month (`YYYY-MM`), day or year written as a filter literal on a date or timestamp column when the plan has no window (the 12B control: `sale_date IN ('2025-12')`, PostgreSQL 22007) | the time window it can only mean; the time column taken from the filter when the plan names none | `shape_repairs` (`date literal ...`) and an assumption |
 
 `shape_repairs` therefore keeps its meaning as the health metric: how often
 the model leaves the shown form. Rules 8 to 10 (entities with no activity,

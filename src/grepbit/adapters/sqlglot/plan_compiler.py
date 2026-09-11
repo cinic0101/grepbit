@@ -139,6 +139,23 @@ class PlanCompiler:
                     resolve_operand(measure.ratio.numerator),
                     resolve_operand(measure.ratio.denominator),
                 ]
+                # count(*) over the all-rows metric is count(*) over count(*):
+                # the same aggregate on both sides once the metric is expanded
+                resolved = [
+                    (
+                        operand.aggregate,
+                        operand.column,
+                        tuple(operand.filters),
+                        tuple(metric.filters) if metric is not None else (),
+                    )
+                    for operand, metric in parts
+                ]
+                if resolved[0] == resolved[1]:
+                    raise PlanError(
+                        "ratio_operands_identical",
+                        f"{measure.output_name}: numerator and denominator are the "
+                        "same aggregate, so the ratio is 1 for every row",
+                    )
             else:
                 parts = [resolve_operand(measure)]
             effective.append((measure, parts))
@@ -1410,10 +1427,18 @@ def _bind_type(column: SchemaColumn, values: list[object]) -> str:
         return "boolean"
     if not all(isinstance(v, str) for v in values):
         raise PlanError("filter_kind_mismatch", column.name)
-    if column.kind is ColumnKind.TIMESTAMP:
-        return "timestamptz"
-    if column.kind is ColumnKind.DATE:
-        return "date"
+    if column.kind in (ColumnKind.TIMESTAMP, ColumnKind.DATE):
+        # a literal PostgreSQL would reject with 22007 is refused here, typed,
+        # instead of failing at execution
+        for value in values:
+            try:
+                datetime.fromisoformat(str(value))
+            except ValueError:
+                raise PlanError(
+                    "filter_kind_mismatch",
+                    f"{column.name}: {value!r} is not a date or timestamp",
+                ) from None
+        return "timestamptz" if column.kind is ColumnKind.TIMESTAMP else "date"
     return "text"
 
 

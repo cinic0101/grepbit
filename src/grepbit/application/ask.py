@@ -27,6 +27,8 @@ from grepbit.application.overlay import (
 )
 from grepbit.application.plan_repair import repair_base_table
 from grepbit.application.shapes import (
+    constant_dimensions,
+    drop_dimensions,
     drop_grain,
     match_unsupported_shape,
     single_period_misread,
@@ -37,6 +39,7 @@ from grepbit.domain.overlay import SemanticOverlay
 from grepbit.domain.plan import CompiledPlan, PlanError, PreviousTurn, QueryPlan
 from grepbit.domain.schema_model import SchemaModel
 from grepbit.ports.ask import (
+    DATE_LITERAL_REPAIR,
     RELATIVE_WINDOW_REPAIR,
     LiteralCheckPort,
     PlannerPort,
@@ -100,6 +103,8 @@ class AskResult:
     missing_literals: list[str] = field(default_factory=list)
     shape_repairs: list[str] = field(default_factory=list)
     grain_dropped: str | None = None
+    # dimensions the plan's own equality filters fixed to one value, not returned
+    constant_dimensions_dropped: list[str] = field(default_factory=list)
     base_repair: str | None = None
     excluded_segments: list[str] = field(default_factory=list)
     literal_checks: int = 0
@@ -249,6 +254,14 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
             result.plan = plan
             result.shape_repairs.append(f"dropped grain {grain}: no per-period word")
             result.grain_dropped = grain
+    constants = constant_dimensions(plan)
+    if constants:
+        plan = drop_dimensions(plan, constants)
+        result.plan = plan
+        result.constant_dimensions_dropped = constants
+        result.shape_repairs.append(
+            "dropped constant dimensions: " + ", ".join(constants)
+        )
 
     exclusions = excluded_segments(question, overlay) if overlay else []
     named_ids = set(named_segments(question, overlay)) if overlay else set()
@@ -346,12 +359,23 @@ def _describe(result, compiled, question, base_repair, plan) -> None:
             "The base table was moved to the table holding the measure columns "
             f"({base_repair}); the grouping and filters are unchanged."
         )
+    for column in result.constant_dimensions_dropped:
+        result.assumptions.append(
+            f"{column} is not returned as a column: the question fixes it to one "
+            "value, so it would repeat on every row; the filter still applies."
+        )
     if result.grain_dropped:
         result.assumptions.append(
             f"Values are totals over the whole window, not per {result.grain_dropped}; "
             "the question named no period, say 每月 (or 每天, 每週) for a breakdown."
         )
     for repair in result.shape_repairs:
+        if repair.startswith(DATE_LITERAL_REPAIR):
+            result.assumptions.append(
+                "A month, day or year was written as a filter value on a date "
+                f"column ({repair}); it was read as that time window, the only "
+                "reading such a literal has."
+            )
         if repair.startswith(RELATIVE_WINDOW_REPAIR):
             result.assumptions.append(
                 "The relative window was written as starting today and running "

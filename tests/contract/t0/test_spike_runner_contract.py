@@ -291,3 +291,54 @@ def test_carry_copies_a_verdict_only_onto_byte_identical_output() -> None:
     assert by_id["q2"]["verdict"] is None  # the SQL changed: judge again
     assert by_id["q3"]["verdict"] is None  # unsure is never carried
     assert counts == {"carried": 1, "open": 2}
+
+
+def test_reference_match_allows_an_extra_related_dimension_but_not_a_measure() -> None:
+    from grepbit.domain.plan import QueryPlan
+
+    # owner's decision, 2026-09-11: an extra column that leaves the result
+    # unchanged passes; an unrelated one (a measure) or one that changes the
+    # rows does not
+    plan = QueryPlan.model_validate(
+        {
+            "base_table": "devices",
+            "dimensions": [
+                {"table": "devices", "column": "device_id"},
+                {"table": "devices", "column": "model"},
+            ],
+            "measures": [{"aggregate": "count", "alias": "n"}],
+        }
+    )
+    reference = spike.normalize_rows([("AP-300", 2), ("GW-10", 1)])
+    rows = [
+        {"device_id": "d1", "model": "AP-300", "n": 2},
+        {"device_id": "d2", "model": "GW-10", "n": 1},
+    ]
+    assert spike.match_reference(rows, plan, [reference]) == (0, ["device_id"])
+    exact = [{"model": "AP-300", "n": 2}, {"model": "GW-10", "n": 1}]
+    assert spike.match_reference(exact, plan, [reference]) == (0, [])
+    finer = [
+        {"device_id": "d1", "model": "AP-300", "n": 1},
+        {"device_id": "d3", "model": "AP-300", "n": 1},
+        {"device_id": "d2", "model": "GW-10", "n": 1},
+    ]
+    assert spike.match_reference(finer, plan, [reference]) == (None, [])
+    with_measure = QueryPlan.model_validate(
+        {
+            "base_table": "devices",
+            "dimensions": [{"table": "devices", "column": "model"}],
+            "measures": [
+                {"aggregate": "count", "alias": "n"},
+                {
+                    "aggregate": "sum",
+                    "column": {"table": "devices", "column": "monthly_fee"},
+                    "alias": "fee",
+                },
+            ],
+        }
+    )
+    rows = [
+        {"model": "AP-300", "n": 2, "fee": 10},
+        {"model": "GW-10", "n": 1, "fee": 5},
+    ]
+    assert spike.match_reference(rows, with_measure, [reference]) == (None, [])

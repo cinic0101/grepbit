@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from pydantic import ValidationError
@@ -17,7 +18,7 @@ from grepbit.application.text import phrase_in
 from grepbit.domain.overlay import SemanticOverlay
 from grepbit.domain.plan import Filter, Measure, PlanProposal, PreviousTurn, QueryPlan
 from grepbit.domain.schema_model import SchemaModel
-from grepbit.ports.ask import RELATIVE_WINDOW_REPAIR
+from grepbit.ports.ask import DATE_LITERAL_REPAIR, RELATIVE_WINDOW_REPAIR
 from grepbit.ports.grounding import GroundingModelError
 
 PLAN_PROMPT_REVISION = "plan-classify-json-v14"
@@ -491,6 +492,122 @@ def _repair_refs(node: Any, model: SchemaModel, base_table, repairs, coerce, key
         _repair_refs(value, model, base_table, repairs, coerce, child_key)
 
 
+_MONTH_LITERAL = re.compile(r"^(\d{4})-(\d{2})$")
+_DAY_LITERAL = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+_YEAR_LITERAL = re.compile(r"^(\d{4})$")
+
+
+def _date_literals_to_scope(
+    plan: dict[str, Any], model: SchemaModel, repairs: list[str]
+) -> None:
+    """A month, day or year written as a filter literal on a date column becomes
+    the time window it can only mean (the 12B control wrote
+    ``sale_date IN ('2025-12')``, which PostgreSQL rejects with 22007).
+
+    Only when the plan has no time scope yet: the filter is removed, the scope
+    is set (a month, one day as a range, a calendar year as a range) and the
+    time column taken from the filter when the plan names none. A literal that
+    is not one of these three shapes is left for the compiler's kind check.
+    """
+
+    filters = plan.get("filters")
+    if not isinstance(filters, list):
+        return
+    time = plan.get("time")
+    if isinstance(time, dict) and time.get("scope") is not None:
+        return
+    kept: list[Any] = []
+    for item in filters:
+        if not (
+            isinstance(item, dict)
+            and item.get("op") in ("eq", "in")
+            and isinstance(item.get("values"), list)
+            and len(item["values"]) == 1
+            and isinstance(item["values"][0], str)
+            and _is_column_ref(item.get("column"))
+        ):
+            kept.append(item)
+            continue
+        table = model.table(item["column"]["table"])
+        column = table.column(item["column"]["column"]) if table else None
+        literal = item["values"][0].strip()
+        scope: dict[str, Any] | None = None
+        if column is not None and column.kind.value in ("date", "timestamp"):
+            if _MONTH_LITERAL.match(literal) is not None:
+                scope = {"kind": "month", "month": literal}
+            elif _DAY_LITERAL.match(literal) is not None:
+                from datetime import date, timedelta
+
+                try:
+                    day = date.fromisoformat(literal)
+                except ValueError:
+                    day = None
+                if day is not None:
+                    scope = {
+                        "kind": "range",
+                        "start": literal,
+                        "end_exclusive": (day + timedelta(days=1)).isoformat(),
+                    }
+            elif (year := _YEAR_LITERAL.match(literal)) is not None:
+                scope = {
+                    "kind": "range",
+                    "start": f"{year.group(1)}-01-01",
+                    "end_exclusive": f"{int(year.group(1)) + 1}-01-01",
+                }
+        if scope is None or (isinstance(time, dict) and time.get("scope") is not None):
+            kept.append(item)
+            continue
+        if not isinstance(time, dict):
+            time = plan["time"] = {}
+        time["scope"] = scope
+        time.setdefault("column", item["column"])
+        reference = f"{item['column']['table']}.{item['column']['column']}"
+        repairs.append(f"{DATE_LITERAL_REPAIR} {reference} = {literal!r} -> time scope")
+    plan["filters"] = kept
+
+
+def _share_filters_on_grouped_columns(plan: dict[str, Any], repairs: list[str]) -> None:
+    """A share measure whose own filter names a grouped column (holdout 2 q25:
+    count where category = X, share of total, by category) would be 1 for that
+    group and 0 elsewhere. The only reading with a number is the after-share
+    selection the plan-filter form already has, so the filter moves to the
+    plan's filters."""
+
+    dimensions = {
+        json.dumps(d, sort_keys=True)
+        for d in plan.get("dimensions") or []
+        if isinstance(d, dict)
+    }
+    if not dimensions:
+        return
+    for item in plan.get("measures") or []:
+        if not (
+            isinstance(item, dict)
+            and item.get("share_of_total")
+            and isinstance(item.get("filters"), list)
+        ):
+            continue
+        kept = []
+        for f in item["filters"]:
+            if (
+                isinstance(f, dict)
+                and json.dumps(f.get("column"), sort_keys=True) in dimensions
+            ):
+                plan.setdefault("filters", [])
+                if isinstance(plan["filters"], list) and f not in plan["filters"]:
+                    plan["filters"].append(f)
+                repairs.append(
+                    "share filter on a grouped column -> plan filter "
+                    "(after-share selection)"
+                )
+            else:
+                kept.append(f)
+        if kept:
+            item["filters"] = kept
+        else:
+            item.pop("filters", None)
+
+
 def _output_names(plan: dict[str, Any]) -> set[str]:
     """Output names a plan can be ordered or filtered by, read from the dict."""
 
@@ -601,6 +718,8 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
             del without["time"]
             repairs.append("dropped without.time without scope")
     _repair_refs(plan, model, base_table, repairs, coerce)
+    _share_filters_on_grouped_columns(plan, repairs)
+    _date_literals_to_scope(plan, model, repairs)
     _strip_qualified_fields(plan, repairs)
     return payload, repairs
 

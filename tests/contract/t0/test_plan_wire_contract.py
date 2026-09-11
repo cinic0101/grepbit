@@ -245,3 +245,159 @@ def test_rule_packs_enter_the_prompt_only_on_their_trigger_words() -> None:
     assert "(8) Entities with no activity" in english
     # 'no' inside a longer word does not trigger
     assert "(8) Entities" not in rules_for("monthly sales by store")
+
+
+def test_share_filter_on_a_grouped_column_becomes_the_after_share_selection() -> None:
+    # holdout 2 q25 under v14: count where category = X, share of total, by
+    # category: 1.0 for X and 0 elsewhere; the after-share selection is the reading
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "dimensions": ["devices.model"],
+            "measures": [
+                {
+                    "aggregate": "count",
+                    "alias": "n",
+                    "share_of_total": True,
+                    "filters": [
+                        {"column": "devices.model", "op": "eq", "values": ["AP-300"]}
+                    ],
+                }
+            ],
+        },
+    }
+    out, repairs = repair_column_refs(payload, iot_schema())
+    plan = PlanProposal.model_validate(out).plan
+    assert plan is not None and plan.measures[0].filters == []
+    assert [f.column.id for f in plan.filters] == ["devices.model"]
+    assert repairs == [
+        "share filter on a grouped column -> plan filter (after-share selection)"
+    ]
+
+
+def test_plan_level_operands_and_a_restating_aggregate_are_folded() -> None:
+    critical = {"column": "alerts.severity", "op": "eq", "values": ["critical"]}
+    # holdout 2 q23, first text: operands spelled out as measures, the ratio on the plan
+    q23 = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "aggregate": "sum",
+                    "alias": "a",
+                    "column": "alerts.downtime_minutes",
+                    "filters": [critical],
+                },
+                {"aggregate": "sum", "alias": "b", "column": "alerts.downtime_minutes"},
+            ],
+            "numerator": {
+                "aggregate": "sum",
+                "column": "alerts.downtime_minutes",
+                "filters": [critical],
+            },
+            "denominator": {"aggregate": "sum", "column": "alerts.downtime_minutes"},
+        },
+    }
+    out, repairs = repair_column_refs(q23, iot_schema())
+    plan = PlanProposal.model_validate(out).plan
+    assert (
+        plan is not None
+        and len(plan.measures) == 1
+        and plan.measures[0].ratio is not None
+    )
+    assert repairs == [
+        "dropped measures spelled inside the plan-level ratio",
+        "lifted plan-level numerator/denominator into a measure",
+    ]
+    # the repair turn's text: aggregate and column beside numerator/denominator
+    # that restate the denominator
+    again = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "aggregate": "sum",
+                    "alias": "share",
+                    "column": "alerts.downtime_minutes",
+                    "numerator": {
+                        "aggregate": "sum",
+                        "column": "alerts.downtime_minutes",
+                        "filters": [critical],
+                    },
+                    "denominator": {
+                        "aggregate": "sum",
+                        "column": "alerts.downtime_minutes",
+                    },
+                }
+            ],
+        },
+    }
+    out, repairs = repair_column_refs(again, iot_schema())
+    plan = PlanProposal.model_validate(out).plan
+    assert plan is not None and plan.measures[0].ratio is not None
+    assert repairs == ["dropped aggregate restating a ratio operand"]
+
+
+def test_a_non_identifier_alias_becomes_one_and_its_references_follow() -> None:
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "dimensions": ["devices.model"],
+            "measures": [{"aggregate": "count", "alias": "告警數"}],
+            "order": [{"field": "告警數", "direction": "desc"}],
+            "having": [{"field": "告警數", "op": "gt", "value": 3}],
+        },
+    }
+    out, repairs = repair_column_refs(payload, iot_schema())
+    plan = PlanProposal.model_validate(out).plan
+    assert plan is not None and plan.measures[0].alias == "measure_1"
+    assert plan.order[0].field == "measure_1" and plan.having[0].field == "measure_1"
+    assert repairs == ["alias '告警數' -> measure_1 (not an identifier)"]
+
+
+def test_a_month_day_or_year_literal_on_a_date_column_becomes_the_window() -> None:
+    # gemma-4-12b-it: sale_date IN ('2025-12'), which PostgreSQL rejects with 22007
+    def plan_with(values, op="in", column="alerts.raised_at", time=None):
+        plan = {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count", "alias": "n"}],
+            "filters": [{"column": column, "op": op, "values": values}],
+        }
+        if time:
+            plan["time"] = time
+        out, repairs = repair_column_refs(
+            {"decision": "plan", "plan": plan}, iot_schema()
+        )
+        return PlanProposal.model_validate(out).plan, repairs
+
+    plan, repairs = plan_with(["2026-07"])
+    assert plan is not None and plan.filters == [] and plan.time is not None
+    assert plan.time.scope is not None and plan.time.scope.model_dump(mode="json") == {
+        "kind": "month",
+        "month": "2026-07",
+    }
+    assert plan.time.column is not None and plan.time.column.id == "alerts.raised_at"
+    assert repairs == ["date literal alerts.raised_at = '2026-07' -> time scope"]
+    plan, _ = plan_with(["2026-07-15"], op="eq")
+    assert plan.time.scope.model_dump(mode="json") == {
+        "kind": "range",
+        "start": "2026-07-15",
+        "end_exclusive": "2026-07-16",
+    }
+    plan, _ = plan_with(["2026"], op="eq")
+    assert plan.time.scope.model_dump(mode="json") == {
+        "kind": "range",
+        "start": "2026-01-01",
+        "end_exclusive": "2027-01-01",
+    }
+    # a time column named by the plan is kept; a text column is untouched
+    plan, _ = plan_with(
+        ["2026-07"], time={"column": "alerts.resolved_at", "grain": "day"}
+    )
+    assert plan.time.column.id == "alerts.resolved_at" and plan.time.grain == "day"
+    plan, repairs = plan_with(["2026-07"], op="eq", column="alerts.severity")
+    assert len(plan.filters) == 1 and repairs == []

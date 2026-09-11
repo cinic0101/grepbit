@@ -970,3 +970,40 @@ def test_a_metric_operand_keeps_its_own_filters() -> None:
     )
     # the plan added filters of its own, so the answer is no longer fully verified
     assert compiled.verification == "partially_verified"
+
+
+def test_a_literal_that_is_not_a_date_on_a_date_column_is_refused_before_execution():
+    with pytest.raises(PlanError) as info:
+        compile_plan(
+            {
+                "base_table": "alerts",
+                "measures": [{"aggregate": "count"}],
+                "filters": [
+                    {
+                        "column": {"table": "alerts", "column": "raised_at"},
+                        "op": "eq",
+                        "values": ["last week"],
+                    }
+                ],
+            }
+        )
+    assert info.value.code == "filter_kind_mismatch"
+    assert "'last week'" in (info.value.detail or "")
+
+
+def test_a_ratio_of_identical_operands_is_refused_at_validation() -> None:
+    # found by the generated-plan properties: count / count is 1 for every row
+    with pytest.raises(ValueError, match="plan_ratio_operands_identical"):
+        QueryPlan.model_validate(
+            {
+                "base_table": "alerts",
+                "measures": [
+                    {
+                        "ratio": {
+                            "numerator": {"aggregate": "count"},
+                            "denominator": {"aggregate": "count"},
+                        }
+                    }
+                ],
+            }
+        )

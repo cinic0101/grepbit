@@ -50,3 +50,6 @@ class SqlPolicyPort(Protocol):
 # window ("offset 0 length L" read as offset -L); the ask core states it as an
 # assumption when it sees the label.
 RELATIVE_WINDOW_REPAIR = "relative window"
+# a month, day or year written as a filter literal on a date column, read as
+# the time window it can only mean
+DATE_LITERAL_REPAIR = "date literal"

@@ -87,3 +87,25 @@ def drop_grain(plan: QueryPlan) -> QueryPlan:
     return plan.model_copy(
         update={"time": plan.time.model_copy(update={"grain": None})}
     )
+
+
+def constant_dimensions(plan: QueryPlan) -> list[str]:
+    """Dimensions the plan's own filters fix to one value (owner's decision,
+    2026-09-11): ``by store_name`` beside ``store_name = X`` would return the
+    same value on every row. Returns their ids; latest-row plans are left alone."""
+
+    if plan.latest is not None:
+        return []
+    fixed = {
+        f.column.id for f in plan.filters if f.op.value == "eq" and len(f.values) == 1
+    }
+    return [d.id for d in plan.dimensions if d.id in fixed]
+
+
+def drop_dimensions(plan: QueryPlan, ids: list[str]) -> QueryPlan:
+    """The plan without those dimensions and without order items naming them."""
+
+    kept = [d for d in plan.dimensions if d.id not in ids]
+    dropped_names = {d.column for d in plan.dimensions if d.id in ids}
+    order = [o for o in plan.order if o.field not in dropped_names]
+    return plan.model_copy(update={"dimensions": kept, "order": order})

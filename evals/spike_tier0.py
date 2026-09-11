@@ -117,6 +117,47 @@ def normalize_rows(rows: list[dict[str, Any]] | list[tuple]) -> list[tuple[str, 
     return sorted(normalized)
 
 
+def match_reference(
+    rows: list[dict[str, Any]], plan, references: list[list[tuple[str, ...]]]
+) -> tuple[int | None, list[str]]:
+    """Which reference the answer matches, and which extra columns were set aside.
+
+    Exact match first. Otherwise an answer may carry extra columns and still
+    pass when (owner's decision, 2026-09-11) the extras are dimensions of the
+    plan (a key beside the name it groups by, a column the question fixed to
+    one value) and the rows agree once those columns are projected away. An
+    extra measure, or an extra dimension that changes the row set, still
+    fails: those change the result.
+    """
+
+    from itertools import combinations
+
+    actual = normalize_rows(rows)
+    for index, reference in enumerate(references):
+        if reference == actual:
+            return index, []
+    if not rows or plan is None:
+        return None, []
+    names = list(rows[0].keys())
+    dimensions = [d.column for d in plan.dimensions]
+    if plan.time is not None and plan.time.grain is not None:
+        dimensions.append("period_start")
+    droppable = [n for n in names if n in dimensions]
+    for index, reference in enumerate(references):
+        if not reference or len(reference) != len(actual):
+            continue
+        extra = len(names) - len(reference[0])
+        if extra <= 0 or extra > len(droppable):
+            continue
+        for drop in combinations(droppable, extra):
+            projected = normalize_rows(
+                [{k: v for k, v in row.items() if k not in drop} for row in rows]
+            )
+            if projected == reference:
+                return index, list(drop)
+    return None, []
+
+
 def perturb_schema(schema, kind: str):
     """Reorder what the planner sees without changing what it means.
 
@@ -151,6 +192,8 @@ def report_detail(result) -> dict[str, Any]:
         detail["shape_repairs"] = list(result.shape_repairs)
     if result.base_repair:
         detail["base_repair"] = result.base_repair
+    if result.constant_dimensions_dropped:
+        detail["constant_dimensions_dropped"] = list(result.constant_dimensions_dropped)
     if result.question_values:
         detail["question_values"] = list(result.question_values)
     if result.sql is not None:
@@ -520,7 +563,6 @@ def main(argv: list[str] | None = None) -> int:
             if result.plan is not None:
                 answered_plans[case["case_id"]] = (question, result.plan)
             if status == "answered" and "reference_sql" in case:
-                actual = normalize_rows(result.rows)
                 references = [
                     reference_rows(sql)
                     for sql in (
@@ -528,11 +570,13 @@ def main(argv: list[str] | None = None) -> int:
                         *case.get("reference_sql_alternatives", []),
                     )
                 ]
-                matched = next(
-                    (i for i, r in enumerate(references) if r == actual), None
+                matched, extra_columns = match_reference(
+                    result.rows, result.plan, references
                 )
                 detail["rows_match_reference"] = matched is not None
                 detail["matched_reference_index"] = matched
+                if extra_columns:
+                    detail["matched_with_extra_columns"] = extra_columns
                 if matched is None:
                     detail["reference_rows"] = references[0][:10]
         detail["status_without_coverage"] = status
@@ -631,6 +675,12 @@ def main(argv: list[str] | None = None) -> int:
         },
         "shape_repairs": sum(1 for r in results if r.get("shape_repairs")),
         "base_repairs": sum(1 for r in results if r.get("base_repair")),
+        "matched_with_extra_columns": sum(
+            1 for r in results if r.get("matched_with_extra_columns")
+        ),
+        "constant_dimensions_dropped": sum(
+            1 for r in results if r.get("constant_dimensions_dropped")
+        ),
         # Which compile-time refusals recur decides the next deterministic repair.
         "plan_error_counts": {
             code: sum(1 for r in results if r.get("reason") == code)

@@ -649,7 +649,10 @@ def test_a_malformed_plan_gets_one_repair_turn_with_the_validation_errors() -> N
                     {
                         "alias": "r",
                         "ratio": {
-                            "numerator": {"aggregate": "count"},
+                            "numerator": {
+                                "aggregate": "count_distinct",
+                                "column": "alerts.device_id",
+                            },
                             "denominator": {"aggregate": "count"},
                         },
                     }

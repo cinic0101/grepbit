@@ -110,7 +110,14 @@ report holds a summary (correct, answerable correct, refusals correct, false
 answers on refusal cases, model failures, P50 and P95, schema size, inferred
 joins, verification counts, shape repairs) and one row per case with status,
 plan, SQL with placeholders, lineage, assumptions, interpretation, first rows,
-whether rows matched a reference, and latency. A case the model answered
+whether rows matched a reference, and latency. Since 2026-09-11 (owner's
+decision) an answer with extra columns still matches when the extras are
+dimensions of the plan (a key beside the name it groups by) and the rows
+agree once those columns are set aside; the row records them as
+`matched_with_extra_columns` and the summary counts such cases. An extra
+measure, or an extra dimension that changes the row set, still fails. A
+dimension the plan's own filter fixed to one value is dropped before
+compiling (`constant_dimensions_dropped`, counted in the summary). A case the model answered
 with text that failed validation (`status` failed, `reason`
 `invalid_structured_output`) keeps that text as `raw_output`, so the slip can
 be classified after the run instead of reproduced; a case the repair turn

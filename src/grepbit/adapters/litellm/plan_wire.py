@@ -16,6 +16,7 @@ the domain models. Deviations from the shown form are still counted
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 WIRE_REVISION = "wire-v2"
@@ -203,6 +204,7 @@ def shown_schema_text() -> str:
 
 
 _REFERENCE_KEYS = {"table", "column"}
+_IDENTIFIER = re.compile(r"^[A-Za-z_][A-Za-z0-9_$]*$")
 _DIMENSION_EXTRAS = {"alias", "description", "label", "name"}
 
 
@@ -231,9 +233,72 @@ def normalize_variants(plan: dict[str, Any], repairs: list[str]) -> None:
         time.setdefault("grain", grain)
         repairs.append("plan.grain moved into time.grain")
 
-    for item in plan.get("measures") or []:
+    # numerator and denominator written on the plan beside spelled-out measures
+    # (holdout 2 q23): the ratio is the measure asked for, the spelled-out
+    # operands are the same thing twice
+    if isinstance(plan.get("numerator"), dict) and isinstance(
+        plan.get("denominator"), dict
+    ):
+        numerator, denominator = plan.pop("numerator"), plan.pop("denominator")
+        measures = plan.get("measures")
+        if not isinstance(measures, list):
+            measures = plan["measures"] = []
+        kept = [
+            m
+            for m in measures
+            if not (
+                isinstance(m, dict)
+                and _core(m) in (_core(numerator), _core(denominator))
+            )
+        ]
+        if len(kept) != len(measures):
+            repairs.append("dropped measures spelled inside the plan-level ratio")
+        kept.append({"numerator": numerator, "denominator": denominator})
+        plan["measures"] = kept
+        repairs.append("lifted plan-level numerator/denominator into a measure")
+
+    for index, item in enumerate(plan.get("measures") or []):
         if not isinstance(item, dict):
             continue
+        # an aggregate and column beside numerator/denominator that merely restate
+        # one operand (the repair turn on q23) are dropped
+        if (
+            "numerator" in item
+            and "denominator" in item
+            and item.get("aggregate") is not None
+            and any(
+                _core(
+                    {
+                        k: item.get(k)
+                        for k in ("aggregate", "column", "filters")
+                        if k in item
+                    }
+                )
+                == _core(item[side])
+                for side in ("numerator", "denominator")
+                if isinstance(item[side], dict)
+            )
+        ):
+            for key in ("aggregate", "column", "filters"):
+                item.pop(key, None)
+            repairs.append("dropped aggregate restating a ratio operand")
+        # an alias that is not an SQL identifier (付款總額) becomes one; the
+        # order, having and growth items that named it follow
+        alias = item.get("alias")
+        if isinstance(alias, str) and alias and not _IDENTIFIER.match(alias):
+            replacement = re.sub(r"[^A-Za-z0-9_$]", "", alias) or f"measure_{index + 1}"
+            if not re.match(r"^[A-Za-z_]", replacement):
+                replacement = f"m_{replacement}"
+            item["alias"] = replacement
+            for section, key in (
+                ("order", "field"),
+                ("having", "field"),
+                ("growth", "measure"),
+            ):
+                for ref in plan.get(section) or []:
+                    if isinstance(ref, dict) and ref.get(key) == alias:
+                        ref[key] = replacement
+            repairs.append(f"alias {alias!r} -> {replacement} (not an identifier)")
         # numerator and denominator written on the measure (the shown form)
         # become the domain's ratio; a partial ratio beside them is completed
         operands = {k: item.pop(k) for k in ("numerator", "denominator") if k in item}
@@ -281,6 +346,12 @@ def normalize_variants(plan: dict[str, Any], repairs: list[str]) -> None:
         for item in latest.get("order_by") or []:
             if isinstance(item, dict):
                 _drop_redundant_sibling_table(item, repairs, "latest.order_by")
+
+
+def _core(node: dict[str, Any]) -> str:
+    """An operand without its alias, as a comparable string."""
+
+    return json.dumps({k: v for k, v in node.items() if k != "alias"}, sort_keys=True)
 
 
 def _drop_redundant_sibling_table(

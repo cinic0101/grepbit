@@ -385,3 +385,37 @@ def test_a_negative_share_is_flagged_as_a_net_total() -> None:
         negative_share_warning(plan, [{"model": "A", "downtime_share": Decimal("0.5")}])
         is None
     )
+
+
+def test_a_dimension_fixed_by_an_equality_filter_is_dropped_with_an_assumption() -> (
+    None
+):
+    # store_partial_name_jan: by store_name beside store_name = X returns the same
+    # value on every row (owner's decision, 2026-09-11)
+    plan = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "devices",
+            "dimensions": [{"table": "devices", "column": "status"}],
+            "measures": [{"aggregate": "count", "alias": "n"}],
+            "filters": [
+                {
+                    "column": {"table": "devices", "column": "status"},
+                    "op": "eq",
+                    "values": ["offline"],
+                }
+            ],
+        },
+    }
+    result = ask(
+        "offline 的裝置有幾台",
+        services(_Planner(plan), _Executor([{"n": 1}])),
+        AskSettings(as_of=AS_OF),
+    )
+    assert result.status == "answered" and result.plan is not None
+    assert result.plan.dimensions == []
+    assert result.constant_dimensions_dropped == ["devices.status"]
+    assert "GROUP BY" not in (result.sql or "")
+    assert any(
+        "devices.status is not returned as a column" in a for a in result.assumptions
+    )
