@@ -185,3 +185,7 @@ narrative belong to the parent agent.
 Charts and narrative (parent agent), row-level security, multi-engine
 support (sqlglot dialects make transpile feasible; introspection and executor
 are per engine), review UI, evidence ledger beyond the ask log.
+
+A root-cause program covering shape slips, literal rewriting, construct
+interactions and the evaluation oracle is proposed in `root-cause-program.md`
+(2026-09-11); it supersedes the item-by-item repairs of that morning.
