@@ -222,8 +222,31 @@ Other runners: `spike_parent_agent.py` (relay experiment) and
 ```sh
 .venv/bin/python evals/differential.py --dsn-env <ENV> --datasource-id <id> \
   [--overlay <overlay.json>] [--examples 500] [--seed 1] [--as-of <ISO>] \
-  [--redact] --output evidence/differential/<name>.json
+  [--engine postgres | --engine duckdb --instances 3] \
+  [--enum-distinct-limit 0] [--redact] [--replay <report.json>] \
+  --output evidence/differential/<name>.json
 ```
+
+- `--seed` reaches Hypothesis: the same seed over the same schema draws the
+  same plans (the report records `seed` and `schema_digest`).
+- `--replay <report>` re-checks the plans an earlier report recorded, each
+  with the segment exclusion recorded for it, and says whether the schema
+  digest still matches. Plans whose literals were redacted are not replayed
+  (`redacted_not_replayed`); regenerate from the report's seed instead.
+- `--enum-distinct-limit` (default 0) is how many values the introspection
+  samples per text column for the generator's literals. On a real database
+  it stays 0: the generator then draws only its own constants and the labels
+  of enum types, and plans carry no row values.
+- `--redact` keeps cell values out of the report; when literals were sampled
+  it also scrubs them from every recorded plan (`plans_redacted`).
+- `--engine duckdb --instances N` runs each plan on N random instances of
+  the schema (`evals/synthetic.py`) instead of the database's data.
+- Every `LIMIT` plan is compared with SQL's ordering in mind: rows strictly
+  inside the top k must be present, rows on the boundary tie may be any of
+  the tied ones.
+- The evaluator shares `resolve_time_scope` and
+  `widened_for_previous_period` with production; window boundaries are
+  checked by the time-closure golden tests, not by the differential.
 
 Plans are generated over the introspected schema (`evals/plan_generator.py`,
 Hypothesis: raw and reviewed measures with their own filters, ratios,
