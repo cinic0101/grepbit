@@ -176,9 +176,10 @@ class PlanCompiler:
         # table or on a table reachable from it apply.
         plan_filter_columns = {f.column.id for f in plan.filters}
         operand_columns = [
-            {f.column.id for f in metric.filters} if metric else set()
+            ({f.column.id for f in metric.filters} if metric else set())
+            | {f.column.id for f in operand.filters}
             for _, parts in effective
-            for _, metric in parts
+            for operand, metric in parts
         ]
         segment_filters: list[tuple[Segment, Filter]] = []
         operand_segment_filters: list[tuple[Segment, Filter, set[int]]] = []
@@ -367,6 +368,8 @@ class PlanCompiler:
             if metric is not None and metric.filters and not shared_filters:
                 for item in metric.filters:
                     clauses.append(self._condition(item, resolve(item.column), bind))
+            for item in operand.filters:
+                clauses.append(self._condition(item, resolve(item.column), bind))
             for _segment, item, others in operand_segment_filters:
                 if position in others:
                     clauses.append(self._condition(item, resolve(item.column), bind))
@@ -1266,11 +1269,16 @@ def _reaches(schema: SchemaModel, start: str, target: str, hops: int = 3) -> boo
 
 
 def _operand_text(op: Operand, metric: ReviewedMetric | None) -> str:
+    own = (
+        " where " + " and ".join(_filter_text(f) for f in op.filters)
+        if op.filters
+        else ""
+    )
     if metric is not None:
         column = metric.column.id if metric.column else "*"
-        return f"{metric.aggregate.value}({column}) [{metric.id}]"
+        return f"{metric.aggregate.value}({column}) [{metric.id}]{own}"
     column = op.column.id if op.column else "*"
-    return f"{op.aggregate.value}({column})"  # type: ignore[union-attr]
+    return f"{op.aggregate.value}({column}){own}"  # type: ignore[union-attr]
 
 
 def _measure_text(measure: Measure, parts) -> str:
@@ -1341,9 +1349,14 @@ def _filter_text(item: Filter) -> str:
 def _interpretation(plan: QueryPlan, periods: tuple[ResolvedPeriod, ...]) -> str:
     def measure_words(m: Measure) -> str:
         def op_words(o: Operand) -> str:
+            own = (
+                " where " + " and ".join(_filter_text(f) for f in o.filters)
+                if o.filters
+                else ""
+            )
             if o.metric:
-                return f"metric {o.metric}"
-            return f"{o.aggregate.value}({o.column.id if o.column else '*'})"  # type: ignore[union-attr]
+                return f"metric {o.metric}{own}"
+            return f"{o.aggregate.value}({o.column.id if o.column else '*'}){own}"  # type: ignore[union-attr]
 
         words = (
             f"{op_words(m.ratio.numerator)} / {op_words(m.ratio.denominator)}"

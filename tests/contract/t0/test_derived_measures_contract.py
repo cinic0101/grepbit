@@ -778,3 +778,66 @@ def test_latest_period_with_data_is_resolved_against_the_data_not_as_of() -> Non
                 "growth": [{"measure": "alerts_n"}],
             }
         )
+
+
+def test_an_operand_may_carry_its_own_filters_as_a_filter_clause() -> None:
+    """會員交易佔比: count of member transactions over count of all, written
+    as a ratio whose numerator restricts itself."""
+
+    compiled = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "alias": "critical_share",
+                    "ratio": {
+                        "numerator": {
+                            "aggregate": "count",
+                            "filters": [
+                                {
+                                    "column": {"table": "alerts", "column": "severity"},
+                                    "op": "eq",
+                                    "values": ["critical"],
+                                }
+                            ],
+                        },
+                        "denominator": {"aggregate": "count"},
+                    },
+                }
+            ],
+        }
+    )
+    sql = compiled.compiled.physical_sql
+    assert (
+        "CAST((COUNT(*) FILTER(WHERE alerts.severity = %(f_0)s)) AS DOUBLE "
+        "PRECISION) / NULLIF(COUNT(*), 0) AS critical_share"
+    ) in sql
+    assert "WHERE" not in sql.split("FROM")[1]  # the restriction is the operand's alone
+    assert (
+        "count(*) where alerts.severity eq critical / count(*)"
+        in (compiled.lineage.measures[0])
+    )
+    # a plain measure with its own filter is a FILTER clause too
+    single = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "aggregate": "count",
+                    "alias": "critical_n",
+                    "filters": [
+                        {
+                            "column": {"table": "alerts", "column": "severity"},
+                            "op": "eq",
+                            "values": ["critical"],
+                        }
+                    ],
+                },
+                {"aggregate": "count", "alias": "all_n"},
+            ],
+        }
+    )
+    assert (
+        "COUNT(*) FILTER(WHERE alerts.severity = %(f_0)s) AS critical_n, "
+        "COUNT(*) AS all_n" in single.compiled.physical_sql
+    )

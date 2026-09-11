@@ -59,6 +59,9 @@ class Operand(DomainModel):
     aggregate: Aggregate | None = None
     column: ColumnRef | None = None
     metric: str | None = Field(default=None, pattern=_IDENTIFIER)
+    # the operand's own row restriction (會員交易 among all transactions),
+    # compiled as FILTER (WHERE ...) on this aggregate alone
+    filters: list[Filter] = Field(default_factory=list, max_length=2)
 
     @model_validator(mode="after")
     def metric_or_aggregate(self) -> Operand:

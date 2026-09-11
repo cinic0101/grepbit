@@ -27,7 +27,10 @@
   `share_of_total: true` (divided by the same measure summed over all groups,
   within each period when the plan has a grain, via a window function). When
   operands carry different reviewed filters each aggregate gets its own
-  `FILTER (WHERE ...)`; a single metric keeps its filters in `WHERE`.
+  `FILTER (WHERE ...)`; a single metric keeps its filters in `WHERE`. An
+  operand may also carry up to 2 `filters` of its own (會員交易佔比 as
+  `count where member_id not_null / count`), compiled as `FILTER (WHERE ...)`
+  on that aggregate alone and shown in the lineage as `count(*) where ...`.
 - latest: `{"order_by": [{"column", "direction"}...], "take": [<columns>]}`
   returns, per group of the dimensions, the single most recent base row
   ranked by `order_by` (the compiler appends the base table's primary key
