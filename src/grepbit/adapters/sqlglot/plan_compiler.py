@@ -54,6 +54,7 @@ from grepbit.domain.schema_model import (
 )
 from grepbit.domain.structured_query import (
     LatestScope,
+    RangeScope,
     RelativeScope,
     ResolvedPeriod,
     current_unit_end,
@@ -360,7 +361,31 @@ class PlanCompiler:
                 )
             if len(periods) > 1 and time_spec.grain is None:
                 raise PlanError("time_scope_requires_grain")
+            if isinstance(scope, RangeScope) and periods:
+                # a range written past as_of (2025 asked, 2060 written): no data
+                # can lie beyond as_of's day, so the end is clamped there
+                periods, clamped = _clamp_range(
+                    periods, as_of, schema.business_timezone
+                )
+                if clamped:
+                    assumptions.append(
+                        Assumption(
+                            text=(
+                                f"The range ended after as_of ({scope.end_exclusive}); "
+                                "it was clamped to the end of as_of's day, where the "
+                                "data ends."
+                            ),
+                            source=AssumptionSource.DEFAULT,
+                            definition_ref="plan.time.scope",
+                        )
+                    )
             if isinstance(scope, RelativeScope):
+                if scope.to_date and scope.length > 1:
+                    raise PlanError(
+                        "relative_window_reaches_future",
+                        f"{scope.unit.value} offset {scope.offset} length "
+                        f"{scope.length} to date: a to-date window is one unit",
+                    )
                 limit = current_unit_end(as_of, scope.unit, schema.business_timezone)
                 if periods[-1].end_exclusive > limit:
                     raise PlanError(
@@ -1336,6 +1361,30 @@ class PlanCompiler:
             FilterOp.LT: reference < placeholder,
             FilterOp.LTE: reference <= placeholder,
         }[item.op]
+
+
+def _clamp_range(
+    periods: tuple[ResolvedPeriod, ...], as_of: datetime, business_timezone: str
+) -> tuple[tuple[ResolvedPeriod, ...], bool]:
+    """A range whose end lies after as_of's day ends at that day instead."""
+
+    from datetime import time, timedelta
+    from zoneinfo import ZoneInfo
+
+    anchor = as_of.astimezone(ZoneInfo(business_timezone))
+    day_end = datetime.combine(
+        anchor.date() + timedelta(days=1), time(), tzinfo=anchor.tzinfo
+    )
+    last = periods[-1]
+    if last.end_exclusive <= day_end or last.start >= day_end:
+        return periods, False
+    clamped = last.model_copy(
+        update={
+            "end_exclusive": day_end,
+            "label": f"{last.label} to {anchor.date().isoformat()}",
+        }
+    )
+    return (*periods[:-1], clamped), True
 
 
 def _reaches(schema: SchemaModel, start: str, target: str, hops: int = 3) -> bool:

@@ -196,6 +196,8 @@ def report_detail(result) -> dict[str, Any]:
         detail["base_repair"] = result.base_repair
     if result.constant_dimensions_dropped:
         detail["constant_dimensions_dropped"] = list(result.constant_dimensions_dropped)
+    if result.unmapped_concepts:
+        detail["unmapped_concepts"] = list(result.unmapped_concepts)
     if result.question_values:
         detail["question_values"] = list(result.question_values)
     if result.sql is not None:
@@ -710,6 +712,9 @@ def main(argv: list[str] | None = None) -> int:
             1
             for r in results
             if str(r.get("reason") or "").startswith("unsupported_shape:")
+        ),
+        "concept_clarifies": sum(
+            1 for r in results if r.get("reason") == "concept_not_mapped"
         ),
         "per_period_clarifies": sum(
             1 for r in results if r.get("reason") == "per_period_single_window"

@@ -127,7 +127,17 @@ summary records `model`, `repair_turns_allowed`, `model_repair_turns` and
 `repaired_cases`, and since 5872cca splits the repair count into
 `shape_variants` (cases whose plan left the shown wire form) and
 `meaning_normalisations` (cases where a stated rule changed the plan's
-meaning); `shape_repairs` remains their union. No credentials, no bindings.
+meaning); `shape_repairs` remains their union. `concept_clarifies` counts cases turned
+into a clarify by the concept-mapping check (`concept_not_mapped`).
+
+Plan stability: `evals/stability.py --reports <run1.json> <run2.json> ...
+--output <dir>/<name>-stability.json` compares the runs of one case set
+case by case; a plan core is the plan without aliases and with its lists
+in canonical order, so a changed output name is not instability but a
+changed filter, dimension or window is. The output holds `plan_stability`
+(fraction of cases whose core agreed on every run), `status_stability`, and
+for each unstable case the statuses, the number of distinct plans, the keys
+that differed and the correctness of each run. No credentials, no bindings.
 
 `--redact-rows` drops result rows and reference rows from the report (row
 counts, SQL, lineage and assumptions stay), so an artifact taken on a real

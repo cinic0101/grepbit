@@ -32,6 +32,7 @@ from grepbit.application.shapes import (
     drop_grain,
     match_unsupported_shape,
     single_period_misread,
+    unmapped_concepts,
     unrequested_grain,
 )
 from grepbit.domain.language_pack import ShapePack
@@ -108,6 +109,8 @@ class AskResult:
     grain_dropped: str | None = None
     # dimensions the plan's own equality filters fixed to one value, not returned
     constant_dimensions_dropped: list[str] = field(default_factory=list)
+    # concepts the question named that the plan left no trace of (a clarify)
+    unmapped_concepts: list[str] = field(default_factory=list)
     base_repair: str | None = None
     excluded_segments: list[str] = field(default_factory=list)
     literal_checks: int = 0
@@ -282,6 +285,18 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
     exclusions = excluded_segments(question, overlay) if overlay else []
     named_ids = set(named_segments(question, overlay)) if overlay else set()
     named = [s for s in (overlay.segments if overlay else []) if s.id in named_ids]
+    if pack is not None:
+        missing = unmapped_concepts(question, plan, pack, overlay, named_ids)
+        if missing:
+            words = ", ".join(f"'{word}'" for _, word in missing)
+            result.status, result.reason = "clarify", "concept_not_mapped"
+            result.unmapped_concepts = [concept for concept, _ in missing]
+            result.clarification = (
+                f"The question mentions {words}, but the plan has no column, metric "
+                "or segment for it; say which column or definition it means, or "
+                "ask without it."
+            )
+            return
 
     def compile_plan(current: QueryPlan) -> CompiledPlan:
         compiled = services.compiler.compile(

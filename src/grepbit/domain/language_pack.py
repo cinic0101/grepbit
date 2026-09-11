@@ -19,6 +19,17 @@ class UnsupportedShape(DomainModel):
     clarification: str = Field(min_length=1)
 
 
+class ConceptWords(DomainModel):
+    """A business concept the question may name (退貨, 會員, 折扣) and the column
+    name fragments that would show the plan took it into account. A plan that
+    answers a question naming the concept while referencing none of them
+    answered a broader question; the check turns it into a clarify."""
+
+    id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    words: list[str] = Field(min_length=1)
+    column_keywords: list[str] = Field(min_length=1)
+
+
 class ShapePack(DomainModel):
     revision: str = Field(min_length=1)
     shapes: list[UnsupportedShape] = Field(default_factory=list)
@@ -29,6 +40,8 @@ class ShapePack(DomainModel):
     # the latest row per entity, the latest period with data); a rule the
     # question does not need stays out of the prompt.
     rule_triggers: dict[str, list[str]] = Field(default_factory=dict)
+    # Business concepts whose mention must leave a trace in the plan
+    concepts: list[ConceptWords] = Field(default_factory=list)
     period_clarification: str = (
         "The question asks for one value per period, but the plan covered only "
         "the current period."

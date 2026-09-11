@@ -157,6 +157,8 @@ one leaves a trace: a `shape_repairs` entry, an assumption, or both.
 | `repair_base_table` (application) | the base moves to the child table holding every measure column, or to a metric's base | assumption |
 | `constant_dimensions` (application) | a dimension the plan's own equality filter fixes to one value (`by store_name` beside `store_name = X`) is not returned: it would repeat on every row; the filter still applies. Owner's decision 2026-09-11; latest-row plans and plans with a `share_of_total` measure are left alone (there the after-share selection is the reading) | `shape_repairs` (`dropped constant dimensions ...`) and an assumption |
 | `single_period_misread` (application) | a per-period word (`period_words` of the shape pack) answered with the single current unit is a `clarify`, never a rewrite | `per_period_single_window` |
+| `unmapped_concepts` (application) | a business concept the question names (`concepts` of the shape pack, v6: returns, member, discount, cancellation, cost and margin, with their words in zh, ja and en) must leave a trace in the plan: a referenced column whose name carries one of the concept's keywords, a reviewed metric whose id or names carry it, or a default-excluded segment the question named. Otherwise `clarify` naming the word: 2025年12月退貨金額 answered as the month's total sales twice on 2026-09-11 | `concept_not_mapped`, `unmapped_concepts` |
+| range clamp (compiler) | a `range` whose end lies after as_of's day (2025 asked, 2060-01-01 written) ends at as_of's day instead; a `to_date` window longer than one unit is refused (`relative_window_reaches_future`), the planner having re-anchored it first | assumption (`clamped to the end of as_of's day`) |
 | `unrequested_grain` (application) | a grain without a window when the question has no per-period or trend word is dropped: 同期 with no period word means one whole-window value per group | `shape_repairs` (`dropped grain ...`) and an assumption naming the words that ask for a breakdown |
 | after-share selection (compiler) | with a `share_of_total` measure, a filter on a grouped column selects rows after the share (outer `WHERE` over the grouped subquery), so 特約永和中正 佔全部門市 divides by every store; filters on other columns still shape the population | lineage `[after share] ...` and an assumption |
 | whole share (compiler) | a `share_of_total` with no groups and no grain whose operand carries a filter of its own is the part over the whole: the filter shapes the numerator only and the total is the same aggregate over every row of the window (會員交易佔比 came back as a filtered count with `share_of_total`, which the window form made 1.0). A reviewed metric's defining filters do not make a part (gross_sales excludes returns; over net sales holdout 2 q21 came out 1.232 on 2026-09-11), so a metric share with no groups and no operand filter is refused (`share_requires_groups`) | lineage `... / count(*) [the whole]` and an assumption |
@@ -198,6 +200,31 @@ is excluded at validation (`plan_ratio_operands_identical`, found by the
 generated-plan properties on their first run). Twenty-two gap cells on
 2026-09-11; the generated-plan properties cover them for structure the same
 day, the value tests follow.
+
+## Time closure (2026-09-11)
+
+Every time shape a plan can carry and what the compiler does with it
+(`tests/contract/t0/test_time_closure_contract.py`, one test per row;
+as_of 2026-08-15 12:00 Asia/Taipei in the fixture).
+
+| Shape | Outcome |
+|---|---|
+| `month` | that calendar month |
+| `range` | as written; an end after as_of's day is clamped to it, with an assumption |
+| `relative`, offset < 0 | the L complete units before the current one |
+| `relative`, offset 0, length 1 | the current unit (whole) |
+| `relative`, offset 0, length > 1 | refused `relative_window_reaches_future`; the planner re-anchors it to offset -L first, so the refusal is the safety net |
+| `relative`, offset 0, length 1, `to_date` | the current unit up to the end of as_of's day |
+| `relative`, `to_date`, length > 1 | refused `relative_window_reaches_future`; the planner drops the flag and re-anchors first |
+| `relative`, offset -1, length 7, unit week (last week written as seven weeks) | refused `relative_window_reaches_future` |
+| `periods` | one period each; needs a grain (`time_scope_requires_grain`) |
+| `latest` | the most recent unit with rows, resolved in SQL |
+| grain without scope | every row bucketed, no window |
+| growth over a one-unit window | window widened by one unit backwards, with an assumption |
+| growth on `to_date` or `latest` | refused `growth_to_date_unsupported` |
+| growth without grain | rejected at validation `plan_growth_requires_grain` |
+| `without.time` with a grain, or a `latest` scope | rejected at validation |
+| `latest` plan with a grain | rejected at validation |
 
 ## Verification levels (CompiledPlan.verification)
 

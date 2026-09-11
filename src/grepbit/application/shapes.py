@@ -112,3 +112,79 @@ def drop_dimensions(plan: QueryPlan, ids: list[str]) -> QueryPlan:
     dropped_names = {d.column for d in plan.dimensions if d.id in ids}
     order = [o for o in plan.order if o.field not in dropped_names]
     return plan.model_copy(update={"dimensions": kept, "order": order})
+
+
+def unmapped_concepts(
+    question: str,
+    plan: QueryPlan,
+    pack: ShapePack,
+    overlay,
+    named_segment_ids: set[str],
+) -> list[tuple[str, str]]:
+    """Concepts the question names that the plan leaves no trace of.
+
+    A plan answers 2025年12月退貨金額 with the month's total sales when the
+    return concept is dropped (two fixture runs on 2026-09-11). For every
+    concept of the pack whose words occur in the question, the plan must
+    reference a column whose name carries one of the concept's keywords (in
+    a filter, an operand, a dimension, the absence test, the taken columns),
+    or a reviewed metric whose id or names carry it, or a default-excluded
+    segment the question named. Returns ``(concept id, word)`` pairs.
+    """
+
+    if not pack.concepts:
+        return []
+    normalized = normalize_question(question)
+    hits: list[tuple] = []
+    for concept in pack.concepts:
+        word = next(
+            (w for w in concept.words if phrase_in(normalized, normalize_question(w))),
+            None,
+        )
+        if word is not None:
+            hits.append((concept, word))
+    if not hits:
+        return []
+    columns: set[str] = {f.column.column.lower() for f in plan.filters}
+    metric_ids: set[str] = set()
+    for measure in plan.measures:
+        operands = (
+            [measure.ratio.numerator, measure.ratio.denominator]
+            if measure.ratio is not None
+            else [measure]
+        )
+        for operand in operands:
+            if operand.column is not None:
+                columns.add(operand.column.column.lower())
+            if operand.metric is not None:
+                metric_ids.add(operand.metric.lower())
+            columns |= {f.column.column.lower() for f in operand.filters}
+    columns |= {d.column.lower() for d in plan.dimensions}
+    if plan.without is not None:
+        columns.add(plan.without.table.lower())
+        columns |= {f.column.column.lower() for f in plan.without.filters}
+    if plan.latest is not None:
+        columns |= {ref.column.lower() for ref in plan.latest.take}
+    metric_words: set[str] = set()
+    segment_words: set[str] = set()
+    if overlay is not None:
+        for metric in overlay.metrics:
+            if metric.id.lower() in metric_ids:
+                metric_words |= {normalize_question(n) for n in metric.names}
+                columns |= {f.column.column.lower() for f in metric.filters}
+        for segment in overlay.segments:
+            if segment.id in named_segment_ids:
+                segment_words |= {normalize_question(n) for n in segment.names}
+    unmapped: list[tuple[str, str]] = []
+    for concept, word in hits:
+        keys = [k.lower() for k in concept.column_keywords]
+        words = {normalize_question(w) for w in concept.words}
+        mapped = (
+            any(k in c for c in columns for k in keys)
+            or any(k in m for m in metric_ids for k in keys)
+            or any(w in mw or mw in w for w in words for mw in metric_words)
+            or any(w in sw or sw in w for w in words for sw in segment_words)
+        )
+        if not mapped:
+            unmapped.append((concept.id, word))
+    return unmapped

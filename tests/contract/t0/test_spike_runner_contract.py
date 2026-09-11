@@ -342,3 +342,77 @@ def test_reference_match_allows_an_extra_related_dimension_but_not_a_measure() -
         {"model": "GW-10", "n": 1, "fee": 5},
     ]
     assert spike.match_reference(rows, with_measure, [reference]) == (None, [])
+
+
+def test_stability_compares_plan_cores_across_runs_ignoring_aliases() -> None:
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "stability", ROOT / "evals" / "stability.py"
+    )
+    stab = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(stab)
+
+    def report(rows):
+        return {
+            "summary": {"cases_file": "x.yaml", "prompt_revision": "v", "model": "m"},
+            "results": rows,
+        }
+
+    a = report(
+        [
+            {
+                "case_id": "q1",
+                "status": "answered",
+                "plan": {
+                    "base_table": "t",
+                    "measures": [{"aggregate": "count", "alias": "n"}],
+                    "filters": [],
+                },
+            },
+            {
+                "case_id": "q2",
+                "status": "answered",
+                "plan": {
+                    "base_table": "t",
+                    "measures": [
+                        {"aggregate": "sum", "column": {"table": "t", "column": "x"}}
+                    ],
+                },
+                "correct": True,
+            },
+        ]
+    )
+    b = report(
+        [
+            {
+                "case_id": "q1",
+                "status": "answered",
+                "plan": {
+                    "base_table": "t",
+                    "measures": [{"aggregate": "count", "alias": "total"}],
+                },
+            },
+            {
+                "case_id": "q2",
+                "status": "answered",
+                "plan": {
+                    "base_table": "t",
+                    "measures": [
+                        {"aggregate": "sum", "column": {"table": "t", "column": "x"}}
+                    ],
+                    "dimensions": [{"table": "t", "column": "d"}],
+                },
+                "correct": False,
+            },
+        ]
+    )
+    result = stab.stability([a, b])
+    assert (
+        result["cases"] == 2
+        and result["stable_plan"] == 1
+        and result["plan_stability"] == 0.5
+    )
+    [unstable] = result["unstable"]
+    assert unstable["case_id"] == "q2" and unstable["differing_keys"] == ["dimensions"]
+    assert unstable["correct"] == [True, False]

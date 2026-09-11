@@ -478,3 +478,98 @@ def test_repairs_split_into_shape_variants_and_meaning_normalisations() -> None:
     assert result.meaning_normalisations == [
         "dropped constant dimensions: devices.status"
     ]
+
+
+def test_a_named_concept_the_plan_leaves_no_trace_of_is_a_clarify() -> None:
+    """returns_dec_gap, twice on 2026-09-11: 2025年12月退貨金額 answered as the month's
+    total sales. The concept words come from the shape pack; the plan must
+    reference a column, metric or named segment that carries the concept."""
+
+    import dataclasses
+
+    from grepbit.domain.language_pack import ShapePack
+
+    pack = ShapePack.model_validate(
+        {
+            "revision": "t",
+            "concepts": [
+                {
+                    "id": "critical",
+                    "words": ["嚴重", "critical"],
+                    "column_keywords": ["severity", "critical"],
+                }
+            ],
+        }
+    )
+    dropped = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count", "alias": "n"}],
+        },
+    }
+    svc = dataclasses.replace(
+        services(_Planner(dropped), _Executor([{"n": 9}])), shape_pack=pack
+    )
+    result = ask("2026年7月嚴重告警數", svc, AskSettings(as_of=AS_OF))
+    assert result.status == "clarify" and result.reason == "concept_not_mapped"
+    assert result.unmapped_concepts == ["critical"]
+    assert "'嚴重'" in (result.clarification or "")
+    # a filter on a column carrying the keyword maps it
+    filtered = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count", "alias": "n"}],
+            "filters": [
+                {
+                    "column": {"table": "alerts", "column": "severity"},
+                    "op": "eq",
+                    "values": ["critical"],
+                }
+            ],
+        },
+    }
+    svc = dataclasses.replace(
+        services(
+            _Planner(filtered),
+            _Executor([{"n": 2}]),
+            present=("offline", "online", "critical"),
+        ),
+        shape_pack=pack,
+    )
+    assert ask("critical alerts", svc, AskSettings(as_of=AS_OF)).status == "answered"
+    # a reviewed metric whose name carries the concept maps it too (checked on
+    # the function: this file's overlay has no such metric to compile)
+    from grepbit.application.shapes import unmapped_concepts
+    from grepbit.domain.plan import QueryPlan
+
+    named_overlay = SemanticOverlay.model_validate(
+        {
+            "datasource_id": "iot_test",
+            "revision": "t",
+            "metrics": [
+                {
+                    "id": "urgent_count",
+                    "names": ["嚴重告警數"],
+                    "description": "count of critical alerts",
+                    "base_table": "alerts",
+                    "aggregate": "count",
+                }
+            ],
+        }
+    )
+    metric_plan = QueryPlan.model_validate(
+        {"base_table": "alerts", "measures": [{"metric": "urgent_count"}]}
+    )
+    assert (
+        unmapped_concepts("嚴重告警數", metric_plan, pack, named_overlay, set()) == []
+    )
+    assert unmapped_concepts("嚴重告警數", metric_plan, pack, None, set()) == [
+        ("critical", "嚴重")
+    ]
+    # a question without the concept word is untouched
+    svc = dataclasses.replace(
+        services(_Planner(dropped), _Executor([{"n": 9}])), shape_pack=pack
+    )
+    assert ask("告警數", svc, AskSettings(as_of=AS_OF)).status == "answered"

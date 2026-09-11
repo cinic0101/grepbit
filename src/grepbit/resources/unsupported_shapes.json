@@ -1,5 +1,5 @@
 {
-  "revision": "unsupported-shapes-v5",
+  "revision": "unsupported-shapes-v6",
   "shapes": [],
   "period_words": [
     "每天",
@@ -135,5 +135,92 @@
       "latest month",
       "latest week"
     ]
-  }
+  },
+  "concepts": [
+    {
+      "id": "returns",
+      "words": [
+        "退貨",
+        "退款",
+        "退貨金額",
+        "退貨率",
+        "返品",
+        "return",
+        "returns",
+        "returned",
+        "refund",
+        "refunds"
+      ],
+      "column_keywords": [
+        "origin_transaction",
+        "return",
+        "refund"
+      ]
+    },
+    {
+      "id": "member",
+      "words": [
+        "會員",
+        "会员",
+        "会員",
+        "メンバー",
+        "member",
+        "members",
+        "membership"
+      ],
+      "column_keywords": [
+        "member"
+      ]
+    },
+    {
+      "id": "discount",
+      "words": [
+        "折扣",
+        "折讓",
+        "優惠",
+        "割引",
+        "discount",
+        "discounts",
+        "promotion"
+      ],
+      "column_keywords": [
+        "discount",
+        "promo"
+      ]
+    },
+    {
+      "id": "cancellation",
+      "words": [
+        "取消",
+        "作廢",
+        "キャンセル",
+        "cancel",
+        "cancelled",
+        "canceled",
+        "voided"
+      ],
+      "column_keywords": [
+        "cancel",
+        "void",
+        "status"
+      ]
+    },
+    {
+      "id": "cost_margin",
+      "words": [
+        "成本",
+        "毛利",
+        "利潤",
+        "粗利",
+        "cost",
+        "margin",
+        "profit"
+      ],
+      "column_keywords": [
+        "cost",
+        "margin",
+        "profit"
+      ]
+    }
+  ]
 }
