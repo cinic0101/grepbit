@@ -186,6 +186,12 @@ invariants hold) and closed one by one with a value test.
 | growth | **gap** | **gap** | **gap** | **gap** | `test_growth_on_a_single_period_window_widens...`, `test_growth_on_a_to_date_window_is_refused` | `test_growth_compares_each_period_with_the_previous_one_per_group` (required: `plan_growth_requires_grain`) | excluded | **gap** |
 | having | `test_having_compares_the_aggregate_expression_with_a_bound_value` | **gap** | **gap** | **gap** | **gap** | **gap** | excluded | `count = 0` excluded: `anti_join_required`; other thresholds **gap** |
 
+The application-level normalisations are rows of their own: the
+constant-dimension drop is skipped for plans with a share measure (holdout 2
+q21, `test_a_share_asked_for_one_group_keeps_its_dimension`) and for
+latest-row plans; the unrequested-grain drop and the base repair have their
+tests in `test_gates_contract.py` and `test_plan_compiler_contract.py`.
+
 Having on a ratio or share is excluded (`plan_having_on_derived_measure`,
 `test_having_cannot_target_a_derived_measure`); a ratio of identical operands
 is excluded at validation (`plan_ratio_operands_identical`, found by the

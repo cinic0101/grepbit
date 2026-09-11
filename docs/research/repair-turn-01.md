@@ -61,7 +61,16 @@ transport failure in 115 calls on mains power today (`fu_base_top3`), and a
 lost first turn still costs its follow-up (`fu_change_limit` clarified
 without context).
 
-## Questions for the owner
+## Questions for the owner (decided 2026-09-11 afternoon)
+
+Decision 1a (drop an id beside its name) was withdrawn by the build side:
+it is not row-preserving when two names collide. Decision 1b (drop a
+dimension the filter fixes to one value) was taken, with the share case
+excepted after holdout 2 q21 (`contract-v2-01.md`). Decision 2 (date
+literals) was taken, with unambiguous literals rewritten as windows and the
+rest refused before execution. The owner also ruled that an extra column
+that leaves the result unchanged passes the reference match.
+
 
 1. **Redundant dimensions.** Two mechanical rules would have fixed
    `store_partial_name_jan` and 22 of the 12B's 28 misses: drop an id

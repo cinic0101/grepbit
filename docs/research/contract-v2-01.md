@@ -84,3 +84,35 @@ month, day or year written as a filter literal on a date column becomes the
 window it can only mean; any other literal on a date column is refused
 before execution. Dropping an id grouped beside its name was withdrawn: it
 is not row-preserving when two names collide.
+
+## A fourth interaction, from the decisions themselves
+
+The constant-dimension drop (owner's decision) met the whole-share rule
+(the morning's fix) on holdout 2 q21, one store's share of all stores. The
+plan was `by store_name`, `share_of_total`, `where store_name = X`: the
+after-share selection returns one row, 0.185, and had since the ratio
+review of 2026-09-10. Dropping the constant dimension left an ungrouped
+share; the whole-share rule then took the gross_sales metric's own return
+exclusion as "the part" and divided gross sales by net sales: 1.232, marked
+`partially_verified`. `ft_share_one_store` in the features set broke the
+same way, which is what the fixture is for. Two fixes (`72dbf49`): a plan
+with a share measure keeps its constant dimension, and a whole share needs
+the operand's own filter, a metric's defining filters alone refuse as
+`share_requires_groups`. The lesson is the same one twice in a day: a rule
+added at one layer meets every rule at the others, and only the matrix and
+the generated plans make the meeting visible before a user does. The
+constant-dimension drop now has its own row in the matrix.
+
+## Thinking mode
+
+The owner asked whether gemma-4-31b's thinking mode helps on the hard
+cases. A probe through the gateway: `chat_template_kwargs.enable_thinking`
+passes to vLLM, the reasoning comes back in `reasoning_content`, the answer
+stays valid JSON in `content` (in text mode it arrives fenced as ```json,
+now accepted). Cost: 18 to 47 s per call against 4 to 8 s, 340 to 630
+completion tokens against about 80. So it can only be an escalation path,
+not the default. `GREPBIT_MODEL_THINKING = off | on | repair` (default off)
+switches it on every planner call or on the repair turn only, with a 120 s
+budget of its own. The ablation runs holdout 3, batch 1 and the 12B's
+batch 1 with it on; the numbers follow in `thinking-01.md`.
+
