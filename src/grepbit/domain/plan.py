@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 
 from grepbit.domain.assumptions import Assumption
 from grepbit.domain.models import CompiledQuery, DomainModel
@@ -18,6 +18,28 @@ from grepbit.domain.structured_query import (
 )
 
 _IDENTIFIER = r"^[A-Za-z_][A-Za-z0-9_$]*$"
+# An output name (a measure alias, and the order, having and growth fields that
+# name one) may be written in the question's language (銷售總額): the compiler
+# quotes it. It must be quotable and fit PostgreSQL's 63-byte identifier limit,
+# beyond which the server truncates and the row keys stop matching.
+_OUTPUT_NAME_MAX_BYTES = 63
+_OUTPUT_NAME_FORBIDDEN = set('"\\') | {chr(c) for c in range(0x20)} | {chr(0x7F)}
+
+
+def is_output_name(value: object) -> bool:
+    if not isinstance(value, str) or not value.strip() or value != value.strip():
+        return False
+    if any(ch in _OUTPUT_NAME_FORBIDDEN for ch in value):
+        return False
+    return len(value.encode("utf-8")) <= _OUTPUT_NAME_MAX_BYTES
+
+
+def _output_name(value: str) -> str:
+    if not is_output_name(value):
+        raise ValueError("plan_output_name_invalid")
+    return value
+
+
 MAX_PLAN_LIMIT = 200
 
 
@@ -110,7 +132,13 @@ class Measure(Operand):
     statement; the model never computes numbers.
     """
 
-    alias: str | None = Field(default=None, pattern=_IDENTIFIER)
+    alias: str | None = None
+
+    @field_validator("alias")
+    @classmethod
+    def alias_is_an_output_name(cls, value: str | None) -> str | None:
+        return None if value is None else _output_name(value)
+
     ratio: Ratio | None = None
     share_of_total: bool = False
 
@@ -174,7 +202,13 @@ class TimeSpec(DomainModel):
 
 
 class OrderSpec(DomainModel):
-    field: str = Field(pattern=_IDENTIFIER)
+    field: str
+
+    @field_validator("field")
+    @classmethod
+    def field_is_an_output_name(cls, value: str) -> str:
+        return _output_name(value)
+
     direction: Literal["asc", "desc"] = "desc"
 
 
@@ -185,7 +219,12 @@ class GrowthSpec(DomainModel):
     same group (LAG over period_start, partitioned by the dimensions).
     """
 
-    measure: str = Field(pattern=_IDENTIFIER)
+    measure: str
+
+    @field_validator("measure")
+    @classmethod
+    def measure_is_an_output_name(cls, value: str) -> str:
+        return _output_name(value)
 
 
 class HavingSpec(DomainModel):
@@ -196,8 +235,14 @@ class HavingSpec(DomainModel):
     question is never dropped and never mistaken for a row filter.
     """
 
-    field: str = Field(pattern=_IDENTIFIER)
+    field: str
     op: Literal["gt", "gte", "lt", "lte", "eq", "ne"]
+
+    @field_validator("field")
+    @classmethod
+    def field_is_an_output_name(cls, value: str) -> str:
+        return _output_name(value)
+
     value: int | float
 
 

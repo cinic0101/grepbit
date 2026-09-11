@@ -449,3 +449,32 @@ def test_a_share_asked_for_one_group_keeps_its_dimension() -> None:
     assert [d.id for d in result.plan.dimensions] == ["devices.status"]
     assert result.constant_dimensions_dropped == []
     assert "[after share]" in " ".join(result.lineage["filters"])
+
+
+def test_repairs_split_into_shape_variants_and_meaning_normalisations() -> None:
+    plan = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "devices",
+            "dimensions": [{"table": "devices", "column": "status"}],
+            "measures": [{"aggregate": "count", "alias": "n"}],
+            "filters": [
+                {
+                    "column": {"table": "devices", "column": "status"},
+                    "op": "eq",
+                    "values": ["offline"],
+                }
+            ],
+        },
+    }
+    planner = _Planner(plan)
+    planner.last_repairs = ["status -> devices.status"]
+    result = ask(
+        "offline 的裝置有幾台",
+        services(planner, _Executor([{"n": 1}])),
+        AskSettings(as_of=AS_OF),
+    )
+    assert result.shape_variants == ["status -> devices.status"]
+    assert result.meaning_normalisations == [
+        "dropped constant dimensions: devices.status"
+    ]

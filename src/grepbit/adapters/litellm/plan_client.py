@@ -425,12 +425,14 @@ def _is_column_ref(node: dict[str, Any]) -> bool:
 
 
 def _strip_qualifier(ref: dict[str, Any], repairs: list[str]) -> None:
-    """{"table": "t", "column": "t.c"} -> {"table": "t", "column": "c"}: the model
-    qualified the column name inside a reference that already names the table."""
+    """{"table": "devices", "column": "devices.model"}: the qualified column names
+    its own table again; unambiguous, so rewritten without a record."""
 
-    if ref["column"].startswith(ref["table"] + "."):
-        repairs.append(f"{ref['column']} -> {ref['column'].split('.', 1)[1]}")
-        ref["column"] = ref["column"].split(".", 1)[1]
+    column = ref.get("column")
+    if isinstance(column, str) and "." in column:
+        table, bare = column.rsplit(".", 1)
+        if table == ref.get("table"):
+            ref["column"] = bare
 
 
 def _repair_refs(node: Any, model: SchemaModel, base_table, repairs, coerce, key=None):
@@ -652,8 +654,9 @@ def _strip_qualified_fields(plan: dict[str, Any], repairs: list[str]) -> None:
             if isinstance(value, str) and "." in value:
                 bare = value.rsplit(".", 1)[1]
                 if bare in names:
+                    # a qualified output name is an unambiguous way to write it
+                    # (owner's decision 2026-09-11): rewritten, not counted
                     item[key] = bare
-                    repairs.append(f"{section}.{key} {value} -> {bare}")
 
 
 def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]]:

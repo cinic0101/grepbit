@@ -190,6 +190,8 @@ def report_detail(result) -> dict[str, Any]:
         detail["plan"] = result.plan.model_dump(mode="json", exclude_none=True)
     if result.shape_repairs:
         detail["shape_repairs"] = list(result.shape_repairs)
+        detail["shape_variants"] = list(result.shape_variants)
+        detail["meaning_normalisations"] = list(result.meaning_normalisations)
     if result.base_repair:
         detail["base_repair"] = result.base_repair
     if result.constant_dimensions_dropped:
@@ -675,6 +677,10 @@ def main(argv: list[str] | None = None) -> int:
             for level in ("verified", "partially_verified", "unverified_semantics")
         },
         "shape_repairs": sum(1 for r in results if r.get("shape_repairs")),
+        "shape_variants": sum(1 for r in results if r.get("shape_variants")),
+        "meaning_normalisations": sum(
+            1 for r in results if r.get("meaning_normalisations")
+        ),
         "base_repairs": sum(1 for r in results if r.get("base_repair")),
         "matched_with_extra_columns": sum(
             1 for r in results if r.get("matched_with_extra_columns")

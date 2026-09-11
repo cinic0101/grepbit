@@ -53,3 +53,20 @@ RELATIVE_WINDOW_REPAIR = "relative window"
 # a month, day or year written as a filter literal on a date column, read as
 # the time window it can only mean
 DATE_LITERAL_REPAIR = "date literal"
+SHARE_FILTER_REPAIR = "share filter"
+GRAIN_DROP_REPAIR = "dropped grain"
+CONSTANT_DIMENSION_REPAIR = "dropped constant dimensions"
+# Normalisations that change what the plan means (stated as assumptions), as
+# opposed to shape variants (another way of writing the same plan). The health
+# metric of the wire contract counts only the variants.
+MEANING_REPAIR_PREFIXES = (
+    RELATIVE_WINDOW_REPAIR,
+    DATE_LITERAL_REPAIR,
+    SHARE_FILTER_REPAIR,
+    GRAIN_DROP_REPAIR,
+    CONSTANT_DIMENSION_REPAIR,
+)
+
+
+def is_meaning_repair(entry: str) -> bool:
+    return entry.startswith(MEANING_REPAIR_PREFIXES)

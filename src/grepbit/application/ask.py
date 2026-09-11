@@ -39,11 +39,14 @@ from grepbit.domain.overlay import SemanticOverlay
 from grepbit.domain.plan import CompiledPlan, PlanError, PreviousTurn, QueryPlan
 from grepbit.domain.schema_model import SchemaModel
 from grepbit.ports.ask import (
+    CONSTANT_DIMENSION_REPAIR,
     DATE_LITERAL_REPAIR,
+    GRAIN_DROP_REPAIR,
     RELATIVE_WINDOW_REPAIR,
     LiteralCheckPort,
     PlannerPort,
     SqlPolicyPort,
+    is_meaning_repair,
 )
 from grepbit.ports.grounding import GroundingModelError
 from grepbit.ports.plan_compiler import PlanCompilerPort
@@ -121,6 +124,17 @@ class AskResult:
     @property
     def refused(self) -> bool:
         return self.status in REFUSALS
+
+    @property
+    def shape_variants(self) -> list[str]:
+        """Departures from the shown wire form that were rewritten: the contract's
+        health metric."""
+        return [r for r in self.shape_repairs if not is_meaning_repair(r)]
+
+    @property
+    def meaning_normalisations(self) -> list[str]:
+        """Rules that changed what the plan means, each stated as an assumption."""
+        return [r for r in self.shape_repairs if is_meaning_repair(r)]
 
 
 def empty_result_warning(rows: list[dict[str, Any]]) -> str | None:
@@ -252,7 +266,9 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
         if grain is not None:
             plan = drop_grain(plan)
             result.plan = plan
-            result.shape_repairs.append(f"dropped grain {grain}: no per-period word")
+            result.shape_repairs.append(
+                f"{GRAIN_DROP_REPAIR} {grain}: no per-period word"
+            )
             result.grain_dropped = grain
     constants = constant_dimensions(plan)
     if constants:
@@ -260,7 +276,7 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
         result.plan = plan
         result.constant_dimensions_dropped = constants
         result.shape_repairs.append(
-            "dropped constant dimensions: " + ", ".join(constants)
+            f"{CONSTANT_DIMENSION_REPAIR}: " + ", ".join(constants)
         )
 
     exclusions = excluded_segments(question, overlay) if overlay else []

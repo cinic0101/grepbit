@@ -341,7 +341,8 @@ def test_plan_level_operands_and_a_restating_aggregate_are_folded() -> None:
     assert repairs == ["dropped aggregate restating a ratio operand"]
 
 
-def test_a_non_identifier_alias_becomes_one_and_its_references_follow() -> None:
+def test_an_alias_in_the_questions_language_is_kept_and_an_unquotable_one_renamed():
+    # owner's decision 2026-09-11: 告警數 is a fine output name, the compiler quotes it
     payload = {
         "decision": "plan",
         "plan": {
@@ -354,9 +355,21 @@ def test_a_non_identifier_alias_becomes_one_and_its_references_follow() -> None:
     }
     out, repairs = repair_column_refs(payload, iot_schema())
     plan = PlanProposal.model_validate(out).plan
-    assert plan is not None and plan.measures[0].alias == "measure_1"
-    assert plan.order[0].field == "measure_1" and plan.having[0].field == "measure_1"
-    assert repairs == ["alias '告警數' -> measure_1 (not an identifier)"]
+    assert plan is not None and plan.measures[0].alias == "告警數"
+    assert plan.order[0].field == "告警數" and plan.having[0].field == "告警數"
+    assert repairs == []
+    # a quote inside, or more than 63 bytes: not an identifier PostgreSQL keeps whole
+    for bad, renamed in [('say "hi"', "sayhi"), ("很長的中文別名" * 4, "measure_1")]:
+        payload["plan"]["measures"][0]["alias"] = bad
+        payload["plan"]["order"][0]["field"] = bad
+        payload["plan"]["having"][0]["field"] = bad
+        out, repairs = repair_column_refs(
+            __import__("json").loads(__import__("json").dumps(payload)), iot_schema()
+        )
+        plan = PlanProposal.model_validate(out).plan
+        assert plan is not None and plan.measures[0].alias == renamed
+        assert plan.order[0].field == renamed and plan.having[0].field == renamed
+        assert repairs == [f"alias {bad!r} -> {renamed} (not quotable)"]
 
 
 def test_a_month_day_or_year_literal_on_a_date_column_becomes_the_window() -> None:

@@ -281,7 +281,9 @@ def test_repair_strips_a_qualified_column_and_drops_an_empty_time_object() -> No
     assert repaired["plan"]["dimensions"][0]["column"] == "model"
     assert "time" not in repaired["plan"]
     assert "dropped time without scope or grain" in repairs
-    assert "devices.model -> model" in repairs
+    # a qualified column inside its own reference is an unambiguous way to write
+    # it (owner's decision 2026-09-11): rewritten, not counted
+    assert "devices.model -> model" not in repairs
 
 
 def test_repair_reanchors_a_current_window_longer_than_one_unit() -> None:
@@ -530,9 +532,7 @@ def test_repair_mends_references_anywhere_in_the_plan() -> None:
     }
     assert plan["latest"]["take"] == [{"table": "alerts", "column": "severity"}]
     assert set(repairs) == {
-        "devices.model -> model",
         "raised_at + table alerts -> alerts.raised_at",
-        "alerts.severity -> severity",
     }
     payload = {
         "decision": "plan",
@@ -553,7 +553,7 @@ def test_repair_mends_references_anywhere_in_the_plan() -> None:
         "table": "alerts",
         "column": "raised_at",
     }
-    assert repairs == ["alerts.raised_at -> raised_at"]
+    assert repairs == []
     # a ratio operand written as a string column is coerced too
     payload = {
         "decision": "plan",
@@ -612,8 +612,8 @@ def test_repair_strips_a_qualified_output_name_in_order_and_having() -> None:
     plan = repaired["plan"]
     assert plan["order"][1]["field"] == "model"
     assert plan["having"][0]["field"] == "alerts_n"
-    assert "order.field devices.model -> model" in repairs
-    assert "having.field alerts.alerts_n -> alerts_n" in repairs
+    # qualified output names are rewritten without a record (unambiguous)
+    assert not any(r.startswith(("order.field", "having.field")) for r in repairs)
     # a qualified name that is not an output stays for validation to reject
     payload["plan"]["order"] = [{"field": "devices.site_id", "direction": "asc"}]
     _, repairs = repair_column_refs(payload, iot_schema())

@@ -1030,3 +1030,24 @@ def test_a_ratio_of_identical_operands_is_refused_at_validation() -> None:
                 ],
             }
         )
+
+
+def test_an_alias_in_the_questions_language_compiles_quoted() -> None:
+    compiled = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "aggregate": "sum",
+                    "column": {"table": "alerts", "column": "downtime_minutes"},
+                    "alias": "停機分鐘",
+                }
+            ],
+            "dimensions": [{"table": "devices", "column": "model"}],
+            "order": [{"field": "停機分鐘", "direction": "desc"}],
+            "having": [{"field": "停機分鐘", "op": "gt", "value": 10}],
+        }
+    )
+    sql = compiled.compiled.physical_sql
+    assert 'AS "停機分鐘"' in sql and 'ORDER BY "停機分鐘"' in sql
+    assert compiled.output_columns == ("model", "停機分鐘")

@@ -19,6 +19,8 @@ import json
 import re
 from typing import Any
 
+from grepbit.domain.plan import is_output_name
+
 WIRE_REVISION = "wire-v2"
 
 _IDENT = "[A-Za-z_][A-Za-z0-9_$]*"
@@ -52,7 +54,7 @@ _MEASURE = {
     "additionalProperties": False,
     "properties": {
         **_OPERAND_PROPERTIES,
-        "alias": {"type": "string", "pattern": f"^{_IDENT}$"},
+        "alias": {"type": "string", "maxLength": 63},
         "share_of_total": {"type": "boolean"},
         "numerator": _OPERAND,
         "denominator": _OPERAND,
@@ -204,7 +206,6 @@ def shown_schema_text() -> str:
 
 
 _REFERENCE_KEYS = {"table", "column"}
-_IDENTIFIER = re.compile(r"^[A-Za-z_][A-Za-z0-9_$]*$")
 _DIMENSION_EXTRAS = {"alias", "description", "label", "name"}
 
 
@@ -282,10 +283,12 @@ def normalize_variants(plan: dict[str, Any], repairs: list[str]) -> None:
             for key in ("aggregate", "column", "filters"):
                 item.pop(key, None)
             repairs.append("dropped aggregate restating a ratio operand")
-        # an alias that is not an SQL identifier (付款總額) becomes one; the
-        # order, having and growth items that named it follow
+        # an alias is written in the question's language and quoted by the
+        # compiler (owner's decision 2026-09-11); only one that cannot be an
+        # identifier at all (quotes, control characters, over 63 bytes) is
+        # renamed, and the order, having and growth items that named it follow
         alias = item.get("alias")
-        if isinstance(alias, str) and alias and not _IDENTIFIER.match(alias):
+        if isinstance(alias, str) and not is_output_name(alias):
             replacement = re.sub(r"[^A-Za-z0-9_$]", "", alias) or f"measure_{index + 1}"
             if not re.match(r"^[A-Za-z_]", replacement):
                 replacement = f"m_{replacement}"
@@ -298,7 +301,7 @@ def normalize_variants(plan: dict[str, Any], repairs: list[str]) -> None:
                 for ref in plan.get(section) or []:
                     if isinstance(ref, dict) and ref.get(key) == alias:
                         ref[key] = replacement
-            repairs.append(f"alias {alias!r} -> {replacement} (not an identifier)")
+            repairs.append(f"alias {alias!r} -> {replacement} (not quotable)")
         # numerator and denominator written on the measure (the shown form)
         # become the domain's ratio; a partial ratio beside them is completed
         operands = {k: item.pop(k) for k in ("numerator", "denominator") if k in item}
