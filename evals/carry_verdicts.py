@@ -26,7 +26,7 @@ from typing import Any
 import yaml
 
 FINGERPRINT_KEYS = ("status", "sql", "row_count")
-_ALIAS = re.compile(r" AS [A-Za-z_][A-Za-z0-9_]*")
+_ALIAS = re.compile(r' AS (?:[A-Za-z_][A-Za-z0-9_$]*|"[^"]+")')  # quoted: AS "銷售總額"
 
 
 def fingerprint(result: dict[str, Any], *, ignore_aliases: bool = False) -> str:
