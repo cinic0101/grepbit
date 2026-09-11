@@ -731,3 +731,32 @@ def test_a_to_date_window_longer_than_one_unit_is_re_anchored_too() -> None:
     }
     untouched, repairs = repair_column_refs(payload, iot_schema())
     assert untouched["plan"]["time"]["scope"]["to_date"] is True and repairs == []
+
+
+def test_the_forward_window_repair_reaches_into_without() -> None:
+    # holdout 3 q12: the absence window written as offset 0 length 30 inside
+    # without.time was refused as reaching the future (runs 3 to 8 had answered)
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "devices",
+            "dimensions": ["devices.model"],
+            "measures": [{"aggregate": "count", "alias": "device_count"}],
+            "without": {
+                "table": "alerts",
+                "time": {
+                    "column": "alerts.raised_at",
+                    "scope": {
+                        "kind": "relative",
+                        "unit": "day",
+                        "offset": 0,
+                        "length": 30,
+                    },
+                },
+            },
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    scope = repaired["plan"]["without"]["time"]["scope"]
+    assert scope["offset"] == -30 and scope["length"] == 30
+    assert repairs == ["relative window without.offset 0 length 30 -> offset -30"]

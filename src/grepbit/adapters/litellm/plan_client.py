@@ -327,19 +327,20 @@ def _anchor_relative_window(plan: dict[str, Any], repairs: list[str]) -> None:
     as_of's day alone on 2026-09-11 when the flag made the repair skip it).
     """
 
-    time = plan.get("time")
-    scope = time.get("scope") if isinstance(time, dict) else None
-    if not isinstance(scope, dict) or scope.get("kind") != "relative":
-        return
-    offset, length = scope.get("offset"), scope.get("length")
-    if offset != 0 or not isinstance(length, int) or length <= 1:
-        return
-    flagged = " to_date" if scope.pop("to_date", False) else ""
-    scope["offset"] = -length
-    repairs.append(
-        f"{RELATIVE_WINDOW_REPAIR} offset 0 length {length}{flagged} "
-        f"-> offset {-length}"
-    )
+    for holder, where in ((plan, ""), (plan.get("without"), "without.")):
+        time = holder.get("time") if isinstance(holder, dict) else None
+        scope = time.get("scope") if isinstance(time, dict) else None
+        if not isinstance(scope, dict) or scope.get("kind") != "relative":
+            continue
+        offset, length = scope.get("offset"), scope.get("length")
+        if offset != 0 or not isinstance(length, int) or length <= 1:
+            continue
+        flagged = " to_date" if scope.pop("to_date", False) else ""
+        scope["offset"] = -length
+        repairs.append(
+            f"{RELATIVE_WINDOW_REPAIR} {where}offset 0 length {length}{flagged} "
+            f"-> offset {-length}"
+        )
 
 
 def _unit_from_grain(plan: dict[str, Any], repairs: list[str]) -> None:
