@@ -841,3 +841,85 @@ def test_an_operand_may_carry_its_own_filters_as_a_filter_clause() -> None:
         "COUNT(*) FILTER(WHERE alerts.severity = %(f_0)s) AS critical_n, "
         "COUNT(*) AS all_n" in single.compiled.physical_sql
     )
+
+
+def test_a_share_with_no_groups_is_the_filtered_part_over_the_whole() -> None:
+    # 會員交易佔比 came back as a filtered count with share_of_total and no
+    # dimensions: the window total was the same filtered count, so the share
+    # was 1.0 (pos-22, reference 0.4643)
+    compiled = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "aggregate": "count",
+                    "filters": [
+                        {
+                            "column": {"table": "alerts", "column": "device_id"},
+                            "op": "not_null",
+                        }
+                    ],
+                    "share_of_total": True,
+                    "alias": "assigned_share",
+                }
+            ],
+        }
+    )
+    sql = compiled.compiled.physical_sql
+    assert (
+        "CAST((COUNT(*) FILTER(WHERE NOT alerts.device_id IS NULL)) AS DOUBLE "
+        "PRECISION) / NULLIF(COUNT(*), 0) AS assigned_share"
+    ) in sql
+    assert "OVER" not in sql
+    assert any("part over the whole" in a.text for a in compiled.assumptions)
+    assert compiled.lineage.measures == (
+        "assigned_share = count(*) where alerts.device_id not_null"
+        " / count(*) [the whole]",
+    )
+    assert compiled.interpretation.startswith(
+        "count(*) where alerts.device_id not_null over all rows"
+    )
+
+    # through a reviewed metric: its filters shape the part, never the WHERE clause
+    compiled = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [{"metric": "critical_alerts", "share_of_total": True}],
+        }
+    )
+    sql = compiled.compiled.physical_sql
+    assert sql.count("FILTER(WHERE alerts.severity = ") == 1
+    assert ") / NULLIF(COUNT(*), 0) AS critical_alerts_share" in sql
+    assert " WHERE alerts.severity" not in sql.replace("FILTER(WHERE", "FILTER(")
+
+    # a share with groups keeps the window total; with a grain, each period's total
+    grouped = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "aggregate": "count",
+                    "filters": [
+                        {
+                            "column": {"table": "alerts", "column": "device_id"},
+                            "op": "not_null",
+                        }
+                    ],
+                    "share_of_total": True,
+                }
+            ],
+            "dimensions": [{"table": "devices", "column": "model"}],
+        }
+    )
+    assert "OVER ()" in grouped.compiled.physical_sql
+
+    # without a filter every share would be 1: refused with the remedy in the detail
+    with pytest.raises(PlanError) as info:
+        compile_plan(
+            {
+                "base_table": "alerts",
+                "measures": [{"aggregate": "count", "share_of_total": True}],
+            }
+        )
+    assert info.value.code == "share_requires_groups"
+    assert "name the groups" in (info.value.detail or "")

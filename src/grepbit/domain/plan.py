@@ -343,6 +343,9 @@ _PLAN_ERROR_CODES = frozenset(
         # HAVING count = 0 over the base table's own rows: every group has at
         # least one row, so the question is an anti-join the algebra lacks
         "anti_join_required",
+        # share_of_total with no groups and no periods: every share would be 1
+        # unless the operand carries a filter of its own (the part over the whole)
+        "share_requires_groups",
         # without.table does not reference the base table through foreign keys
         "without_table_not_a_child",
         # a without filter names a column outside the child table

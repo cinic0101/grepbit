@@ -139,6 +139,31 @@ class PlanCompiler:
         # WHERE (one metric, the common case); when operands differ (a ratio
         # of a filtered metric over an unfiltered total, two metrics) each
         # aggregate gets its own FILTER (WHERE ...) so the rows stay shared.
+        # A share of total with no groups and no periods has nothing to be a
+        # share of: the window total equals the value and every share is 1.
+        # When the operand carries a filter of its own (or its metric does),
+        # the question is the part over the whole (會員交易佔比 = member
+        # transactions over all transactions): the filter shapes the part and
+        # the total is the same aggregate without it. Without such a filter
+        # the plan is refused.
+        ungrouped = not plan.dimensions and (
+            plan.time is None or plan.time.grain is None
+        )
+        whole_shares: set[str] = set()
+        for measure, parts in effective:
+            if not (measure.share_of_total and ungrouped):
+                continue
+            operand, metric = parts[0]
+            if measure.ratio is not None or not (
+                operand.filters or (metric is not None and metric.filters)
+            ):
+                raise PlanError(
+                    "share_requires_groups",
+                    f"{measure.output_name}: a share of total with no groups and no "
+                    "periods is 1 for every row; name the groups (各門市, 各付款方式) "
+                    "or ask for the part over the whole (會員交易 / 全部交易)",
+                )
+            whole_shares.add(measure.output_name)
         operand_filters = [
             tuple(
                 json.dumps(f.model_dump(mode="json"), sort_keys=True)
@@ -149,7 +174,8 @@ class PlanCompiler:
             for _, parts in effective
             for _, metric in parts
         ]
-        shared_filters = len(set(operand_filters)) == 1
+        # a whole share needs its metric's filters on the part alone, never in WHERE
+        shared_filters = len(set(operand_filters)) == 1 and not whole_shares
         metric_filters: list[tuple[str, Filter]] = []
         if shared_filters:
             for _, parts in effective:
@@ -359,17 +385,25 @@ class PlanCompiler:
         operand_position = {"i": 0}
 
         def operand_expression(
-            operand: Operand, metric: ReviewedMetric | None
+            operand: Operand,
+            metric: ReviewedMetric | None,
+            *,
+            own_filters: bool = True,
+            position: int | None = None,
         ) -> exp.Expression:
-            position = operand_position["i"]
-            operand_position["i"] += 1
+            if position is None:
+                position = operand_position["i"]
+                operand_position["i"] += 1
             aggregate = self._aggregate(operand, resolve)
             clauses = []
-            if metric is not None and metric.filters and not shared_filters:
-                for item in metric.filters:
+            if own_filters:
+                if metric is not None and metric.filters and not shared_filters:
+                    for item in metric.filters:
+                        clauses.append(
+                            self._condition(item, resolve(item.column), bind)
+                        )
+                for item in operand.filters:
                     clauses.append(self._condition(item, resolve(item.column), bind))
-            for item in operand.filters:
-                clauses.append(self._condition(item, resolve(item.column), bind))
             for _segment, item, others in operand_segment_filters:
                 if position in others:
                     clauses.append(self._condition(item, resolve(item.column), bind))
@@ -390,7 +424,15 @@ class PlanCompiler:
                 )
             else:
                 expression = operand_expression(*parts[0])
-            if measure.share_of_total:
+            if measure.share_of_total and measure.output_name in whole_shares:
+                whole = operand_expression(
+                    *parts[0], own_filters=False, position=operand_position["i"] - 1
+                )
+                expression = exp.Div(
+                    this=exp.paren(expression),
+                    expression=exp.func("NULLIF", whole, exp.Literal.number(0)),
+                )
+            elif measure.share_of_total:
                 total = exp.Window(
                     this=exp.Sum(this=expression.copy()),
                     partition_by=[time_bucket.copy()]
@@ -747,7 +789,21 @@ class PlanCompiler:
                         definition_ref="plan.measures.ratio",
                     )
                 )
-            if measure.share_of_total:
+            if measure.share_of_total and measure.output_name in whole_shares:
+                assumptions.append(
+                    Assumption(
+                        text=(
+                            f"{measure.output_name} is the part over the whole: "
+                            "with no groups and no periods a share of total has "
+                            "nothing else to be a share of, so the measure's own "
+                            "filter selects the part and the total is the same "
+                            "aggregate over every row of the window."
+                        ),
+                        source=AssumptionSource.DEFAULT,
+                        definition_ref="plan.measures.share_of_total",
+                    )
+                )
+            elif measure.share_of_total:
                 assumptions.append(
                     Assumption(
                         text=(
@@ -818,7 +874,10 @@ class PlanCompiler:
                 link.id + (" (inferred)" if link.inferred else "")
                 for link in joins.values()
             ),
-            measures=tuple(_measure_text(m, parts) for m, parts in effective)
+            measures=tuple(
+                _measure_text(m, parts, m.output_name in whole_shares)
+                for m, parts in effective
+            )
             + tuple(f"{name} = period-over-period change" for name in growth_names),
             dimensions=tuple(d.id for d in plan.dimensions),
             filters=tuple(filter_texts),
@@ -1281,12 +1340,16 @@ def _operand_text(op: Operand, metric: ReviewedMetric | None) -> str:
     return f"{op.aggregate.value}({column}){own}"  # type: ignore[union-attr]
 
 
-def _measure_text(measure: Measure, parts) -> str:
+def _measure_text(measure: Measure, parts, whole: bool = False) -> str:
     if measure.ratio is not None:
         body = f"{_operand_text(*parts[0])} / {_operand_text(*parts[1])}"
     else:
         body = _operand_text(*parts[0])
-    if measure.share_of_total:
+    if whole:
+        operand, _metric = parts[0]
+        unfiltered = Operand(aggregate=operand.aggregate, column=operand.column)
+        body = f"{body} / {_operand_text(unfiltered, None)} [the whole]"
+    elif measure.share_of_total:
         body = f"share of total of {body}"
     return f"{measure.output_name} = {body}"
 
@@ -1363,6 +1426,12 @@ def _interpretation(plan: QueryPlan, periods: tuple[ResolvedPeriod, ...]) -> str
             if m.ratio is not None
             else op_words(m)
         )
+        if (
+            m.share_of_total
+            and not plan.dimensions
+            and (plan.time is None or plan.time.grain is None)
+        ):
+            return f"{words} over all rows"
         return f"share of total of {words}" if m.share_of_total else words
 
     if plan.latest is not None:

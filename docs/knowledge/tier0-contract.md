@@ -25,7 +25,9 @@
   (`{"ratio": {"numerator": {...}, "denominator": {...}}}`, compiled as
   `CAST(a AS DOUBLE PRECISION) / NULLIF(b, 0)`), and any measure may carry
   `share_of_total: true` (divided by the same measure summed over all groups,
-  within each period when the plan has a grain, via a window function). When
+  within each period when the plan has a grain, via a window function; with
+  no groups and no grain the share is the part over the whole, see the rule
+  table below). When
   operands carry different reviewed filters each aggregate gets its own
   `FILTER (WHERE ...)`; a single metric keeps its filters in `WHERE`. An
   operand may also carry up to 2 `filters` of its own (會員交易佔比 as
@@ -122,6 +124,7 @@ work item, not a surprise (the regression summary counts them as
 | `relative_window_reaches_future` | `unsupported` with the window in the detail. Since 2026-09-10 it also fires for a window anchored on the current unit (offset 0) that is longer than one unit; the planner adapter re-anchors that shape first (`relative window` repair below), so the gate is the safety net behind it |
 | `unknown_metric`, `metric_base_table_mismatch`, `metric_conflict` | `unsupported`; overlay definitions are the fix, not code |
 | `growth_to_date_unsupported` | `unsupported`: growth on a period-to-date window would compare a whole previous period with a partial one (holdout 3 q01) |
+| `share_requires_groups` | `unsupported` with the remedy in the detail: a `share_of_total` with no groups and no periods, whose operand carries no filter of its own, would be 1 for every row (the window total is the value itself); name the groups or ask for the part over the whole |
 | `without_table_not_a_child`, `without_filter_outside_child` | `unsupported`; the plan named a `without` table that does not reference the base, or a filter outside the child |
 | `anti_join_required` | `unsupported` with the reason: `HAVING count = 0` over the base table's own rows can never match, the question wants entities with no rows at all (holdout 3 q10, q11); the anti-join construct is on the roadmap |
 
@@ -150,6 +153,7 @@ one leaves a trace: a `shape_repairs` entry, an assumption, or both.
 | `single_period_misread` (application) | a per-period word (`period_words` of the shape pack) answered with the single current unit is a `clarify`, never a rewrite | `per_period_single_window` |
 | `unrequested_grain` (application) | a grain without a window when the question has no per-period or trend word is dropped: 同期 with no period word means one whole-window value per group | `shape_repairs` (`dropped grain ...`) and an assumption naming the words that ask for a breakdown |
 | after-share selection (compiler) | with a `share_of_total` measure, a filter on a grouped column selects rows after the share (outer `WHERE` over the grouped subquery), so 特約永和中正 佔全部門市 divides by every store; filters on other columns still shape the population | lineage `[after share] ...` and an assumption |
+| whole share (compiler) | a `share_of_total` with no groups and no grain whose operand (or metric) carries a filter of its own is the part over the whole: the filter shapes the numerator only and the total is the same aggregate over every row of the window (會員交易佔比 came back as a filtered count with `share_of_total`, which the window form made 1.0). A metric's filters then compile as `FILTER (WHERE ...)` on the part instead of `WHERE` | lineage `... / count(*) [the whole]` and an assumption |
 
 The share assumption states the 同期 reading explicitly: the total is taken
 over the same window and filters as the group values; with a grain, each
