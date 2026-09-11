@@ -71,7 +71,10 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
    a single bucket and refuses growth on a to-date window, refuses a
    `HAVING count = 0` over the base rows as an anti-join it cannot express,
    adds a correlated `NOT EXISTS` for a `without` (entities with no
-   activity, the child's filters, window and segments inside), places
+   activity, the child's filters, window and segments inside), ranks rows
+   with `ROW_NUMBER()` for a `latest` (the most recent row per group) and
+   resolves a `latest` time scope against the data (the unit of the maximum
+   time value after the filters), places
    `having` conditions on the
    aggregate expressions, builds the SQL as a sqlglot AST with bound
    placeholders, and emits lineage, assumptions, interpretation and the

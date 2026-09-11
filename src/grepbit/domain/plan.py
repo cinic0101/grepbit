@@ -209,12 +209,31 @@ class Absence(DomainModel):
         return self
 
 
+class OrderedColumn(DomainModel):
+    column: ColumnRef
+    direction: Literal["asc", "desc"] = "desc"
+
+
+class LatestSpec(DomainModel):
+    """The single most recent base row per group (每位店員最新一筆交易).
+
+    ``order_by`` ranks the rows inside each group (the time column first, then
+    the tie-breaker the question names; the compiler adds the primary key
+    when only one column is given); ``take`` lists the columns returned from
+    the chosen row. Filters, window and segments apply before the choice.
+    """
+
+    order_by: list[OrderedColumn] = Field(min_length=1, max_length=3)
+    take: list[ColumnRef] = Field(min_length=1, max_length=4)
+
+
 class QueryPlan(DomainModel):
-    """One aggregate query. ``base_table`` may be omitted when the measure
-    columns or metrics determine it; the compiler derives it then."""
+    """One governed query: an aggregate, or the latest row per group.
+    ``base_table`` may be omitted when the measure columns or metrics
+    determine it; the compiler derives it then."""
 
     base_table: str | None = Field(default=None, pattern=_IDENTIFIER)
-    measures: list[Measure] = Field(min_length=1, max_length=4)
+    measures: list[Measure] = Field(default_factory=list, max_length=4)
     dimensions: list[ColumnRef] = Field(default_factory=list, max_length=3)
     filters: list[Filter] = Field(default_factory=list, max_length=6)
     time: TimeSpec | None = None
@@ -224,11 +243,24 @@ class QueryPlan(DomainModel):
     limit: int | None = Field(default=None, ge=1, le=MAX_PLAN_LIMIT)
     # entities with no activity: base rows without matching rows in a child table
     without: Absence | None = None
+    # the latest row per group instead of aggregates
+    latest: LatestSpec | None = None
 
     @model_validator(mode="after")
     def names_are_unique(self) -> QueryPlan:
+        if not self.measures and self.latest is None:
+            raise ValueError("plan_measures_required")
+        if self.latest is not None:
+            if self.measures or self.having or self.growth:
+                raise ValueError("plan_latest_excludes_aggregates")
+            if self.base_table is None:
+                raise ValueError("plan_latest_requires_base_table")
+            if self.time is not None and self.time.grain is not None:
+                raise ValueError("plan_latest_takes_a_window_not_a_grain")
         outputs = [measure.output_name for measure in self.measures]
         outputs += [dimension.column for dimension in self.dimensions]
+        if self.latest is not None:
+            outputs += [ref.column for ref in self.latest.take]
         if self.time is not None and self.time.grain is not None:
             outputs.append("period_start")
         if len(outputs) != len(set(outputs)):
@@ -335,6 +367,7 @@ class Lineage:
     filters: tuple[str, ...]
     time_window: tuple[str, ...]
     having: tuple[str, ...] = ()
+    latest: tuple[str, ...] = ()
 
     def as_dict(self) -> dict[str, object]:
         return {
@@ -346,6 +379,7 @@ class Lineage:
             "filters": list(self.filters),
             "time_window": list(self.time_window),
             "having": list(self.having),
+            **({"latest": list(self.latest)} if self.latest else {}),
         }
 
 

@@ -393,3 +393,25 @@ def test_repair_reaches_into_without() -> None:
         "severity -> alerts.severity",
         "raised_at -> alerts.raised_at",
     }
+
+
+def test_repair_reaches_into_latest() -> None:
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "dimensions": [{"table": "devices", "column": "model"}],
+            "latest": {
+                "order_by": [{"column": "raised_at", "direction": "desc"}],
+                "take": ["severity", "alerts.raised_at"],
+            },
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    latest = repaired["plan"]["latest"]
+    assert latest["order_by"][0]["column"] == {"table": "alerts", "column": "raised_at"}
+    assert latest["take"] == [
+        {"table": "alerts", "column": "severity"},
+        {"table": "alerts", "column": "raised_at"},
+    ]
+    assert len(repairs) == 3

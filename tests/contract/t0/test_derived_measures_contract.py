@@ -623,3 +623,158 @@ def test_without_compiles_an_anti_join_with_window_filters_and_segments() -> Non
                 },
             }
         )
+
+
+def test_latest_row_per_group_ranks_rows_and_returns_the_taken_columns() -> None:
+    """每台裝置最新一筆告警的嚴重度與時間: ROW_NUMBER over the device, the
+    primary key breaks ties when only the time column orders."""
+
+    compiled = compile_plan(
+        {
+            "base_table": "alerts",
+            "dimensions": [{"table": "devices", "column": "model"}],
+            "latest": {
+                "order_by": [{"column": {"table": "alerts", "column": "raised_at"}}],
+                "take": [
+                    {"table": "alerts", "column": "severity"},
+                    {"table": "alerts", "column": "raised_at"},
+                ],
+            },
+            "filters": [
+                {
+                    "column": {"table": "alerts", "column": "severity"},
+                    "op": "ne",
+                    "values": ["test"],
+                }
+            ],
+        }
+    )
+    sql = compiled.compiled.physical_sql
+    assert sql.startswith(
+        "SELECT model, severity, raised_at FROM (SELECT devices.model AS model"
+    )
+    assert (
+        "ROW_NUMBER() OVER (PARTITION BY devices.model ORDER BY alerts.raised_at DESC "
+        "NULLS LAST, alerts.alert_id DESC NULLS LAST) AS latest_rank"
+    ) in sql
+    assert "WHERE alerts.severity <> %(f_0)s" in sql  # filters before the choice
+    assert sql.endswith("AS latest WHERE latest_rank = 1 ORDER BY model NULLS FIRST")
+    assert "GROUP BY" not in sql
+    assert compiled.output_columns == ("model", "severity", "raised_at")
+    assert compiled.lineage.latest == (
+        "latest alerts row per devices.model by alerts.raised_at desc, alerts.alert_id "
+        "desc; taking alerts.severity, alerts.raised_at",
+    )
+    assert any("primary key" in a.text for a in compiled.assumptions)
+    assert compiled.interpretation.startswith(
+        "latest alerts row by alerts.raised_at desc"
+    )
+    assert compiled.verification == "unverified_semantics"
+    # a named tie-breaker is kept as given and no default is added
+    named = compile_plan(
+        {
+            "base_table": "alerts",
+            "dimensions": [{"table": "devices", "column": "model"}],
+            "latest": {
+                "order_by": [
+                    {"column": {"table": "alerts", "column": "raised_at"}},
+                    {"column": {"table": "alerts", "column": "downtime_minutes"}},
+                ],
+                "take": [{"table": "alerts", "column": "severity"}],
+            },
+        }
+    )
+    assert "alerts.downtime_minutes DESC NULLS LAST) AS latest_rank" in (
+        named.compiled.physical_sql
+    )
+    assert not any("primary key" in a.text for a in named.assumptions)
+    # shape rules
+    for bad, message in (
+        ({"measures": [{"aggregate": "count"}]}, "plan_latest_excludes_aggregates"),
+        (
+            {
+                "time": {
+                    "column": {"table": "alerts", "column": "raised_at"},
+                    "grain": "day",
+                }
+            },
+            "plan_latest_takes_a_window_not_a_grain",
+        ),
+    ):
+        with pytest.raises(ValueError, match=message):
+            QueryPlan.model_validate(
+                {
+                    "base_table": "alerts",
+                    "latest": {
+                        "order_by": [
+                            {"column": {"table": "alerts", "column": "raised_at"}}
+                        ],
+                        "take": [{"table": "alerts", "column": "severity"}],
+                    },
+                    **bad,
+                }
+            )
+    with pytest.raises(ValueError, match="plan_measures_required"):
+        QueryPlan.model_validate({"base_table": "alerts"})
+
+
+def test_latest_period_with_data_is_resolved_against_the_data_not_as_of() -> None:
+    """最新營業日的告警數: the day of the maximum raised_at after the same filters."""
+
+    compiled = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count", "alias": "alerts_n"}],
+            "filters": [
+                {
+                    "column": {"table": "devices", "column": "model"},
+                    "op": "eq",
+                    "values": ["X1"],
+                }
+            ],
+            "time": {
+                "column": {"table": "alerts", "column": "raised_at"},
+                "scope": {"kind": "latest", "unit": "day"},
+            },
+        }
+    )
+    sql = compiled.compiled.physical_sql
+    assert (
+        "alerts.raised_at AT TIME ZONE 'Asia/Taipei' >= DATE_TRUNC('DAY', (SELECT "
+        "MAX(alerts.raised_at AT TIME ZONE 'Asia/Taipei') FROM public.alerts LEFT JOIN "
+        "public.devices ON alerts.device_id = devices.device_id WHERE devices.model = "
+        "%(f_0)s))"
+    ) in sql
+    assert "< (DATE_TRUNC('DAY', (SELECT MAX(" in sql and "+ INTERVAL '1 day')" in sql
+    assert compiled.periods == ()
+    assert compiled.lineage.time_window == (
+        "alerts.raised_at in the latest day that has rows after the filters "
+        "(resolved against the data, not as_of)",
+    )
+    assert any("most recent day" in a.text for a in compiled.assumptions)
+    assert "for the latest day with data" in compiled.interpretation
+    # a quarter spans three months; growth cannot look back inside one latest unit
+    quarter = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count", "alias": "alerts_n"}],
+            "time": {
+                "column": {"table": "alerts", "column": "raised_at"},
+                "scope": {"kind": "latest", "unit": "quarter"},
+            },
+        }
+    )
+    assert "+ INTERVAL '3 month'" in quarter.compiled.physical_sql
+    with pytest.raises(PlanError, match="growth_to_date_unsupported"):
+        compile_plan(
+            {
+                "base_table": "alerts",
+                "measures": [{"aggregate": "count", "alias": "alerts_n"}],
+                "time": {
+                    "column": {"table": "alerts", "column": "raised_at"},
+                    "scope": {"kind": "latest", "unit": "month"},
+                    "grain": "month",
+                },
+                "growth": [{"measure": "alerts_n"}],
+            }
+        )

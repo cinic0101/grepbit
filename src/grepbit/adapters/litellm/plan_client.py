@@ -17,7 +17,7 @@ from grepbit.domain.schema_model import SchemaModel
 from grepbit.ports.ask import RELATIVE_WINDOW_REPAIR
 from grepbit.ports.grounding import GroundingModelError
 
-PLAN_PROMPT_REVISION = "plan-classify-json-v12"
+PLAN_PROMPT_REVISION = "plan-classify-json-v13"
 
 _RULES = (
     "You translate one analytics question into ONE aggregate query plan over the "
@@ -93,7 +93,18 @@ _RULES = (
     '"time": {"column": ..., "scope": ...}} carrying the window and filters that '
     "describe the missing activity (time has a scope, no grain). Never express "
     "this as having count = 0; a group that exists always has rows. "
-    "(9) Return only one JSON object."
+    "(9) The latest row per entity (每位店員最新一筆交易的金額與日期, each product's "
+    "last sale date and quantity, 最近一筆): base_table is the table holding the "
+    "rows, dimensions the entity's name column, measures [], and "
+    '"latest": {"order_by": [{"column": <time column>, "direction": "desc"}, '
+    "<the tie-breaker the question names, such as the transaction number>], "
+    '"take": [<columns to return from that row>]}; filters and time still say '
+    "which rows qualify. Do not aggregate for such a question. "
+    "(10) The most recent period that has data (最新營業日, the last month with "
+    'sales) is the time scope {"kind": "latest", "unit": "day"|"week"|"month"|'
+    '"quarter"|"year"}; the server finds the latest unit with rows after the '
+    "filters, so never guess a date for it. "
+    "(11) Return only one JSON object."
 )
 _VALUES_RULE = (
     " (11) question_values lists stored values that occur verbatim in the question, "
@@ -392,6 +403,13 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
         repairs.append(f"{value} -> {candidates[0]}.{column}")
         return {"table": candidates[0], "column": column}
 
+    latest = plan.get("latest")
+    if isinstance(latest, dict):
+        for item in latest.get("order_by") or []:
+            if isinstance(item, dict) and isinstance(item.get("column"), str):
+                item["column"] = coerce(item["column"])
+        if isinstance(latest.get("take"), list):
+            latest["take"] = [coerce(ref) for ref in latest["take"]]
     without = plan.get("without")
     if isinstance(without, dict):
         w_time = without.get("time")

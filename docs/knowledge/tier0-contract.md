@@ -28,6 +28,21 @@
   within each period when the plan has a grain, via a window function). When
   operands carry different reviewed filters each aggregate gets its own
   `FILTER (WHERE ...)`; a single metric keeps its filters in `WHERE`.
+- latest: `{"order_by": [{"column", "direction"}...], "take": [<columns>]}`
+  returns, per group of the dimensions, the single most recent base row
+  ranked by `order_by` (the compiler appends the base table's primary key
+  descending as the tie-breaker when only one column is given, and says so);
+  `take` are the columns returned from that row. `measures` must be empty,
+  `base_table` is required, no grain, no having or growth; filters, window
+  and default segments apply before the choice. Compiled as `ROW_NUMBER()
+  OVER (PARTITION BY dims ORDER BY ...)` in a subquery filtered to rank 1.
+  The first shape whose result is a row's values, not an aggregate; its
+  verification level is `unverified_semantics`.
+- time scope `{"kind": "latest", "unit": day|week|month|quarter|year}` is the
+  most recent unit that has base rows after the plan's other filters: the
+  compiler emits `DATE_TRUNC(unit, (SELECT MAX(col) ... same filters))` as the
+  window start and one unit later as the end, in the business time zone; it
+  never consults `as_of`, and growth over it is refused.
 - without: `{"table": <child>, "filters": [...], "time": {"column"?, "scope"}}`
   keeps only base rows with no matching row in a child table that references
   the base through foreign keys (up to 3 hops): entities with no activity
@@ -173,7 +188,7 @@ does not read NULL as a number.
 
 ## Prompt revisions
 
-`PLAN_PROMPT_REVISION` in `adapters/litellm/plan_client.py` is `plan-classify-json-v12`.
+`PLAN_PROMPT_REVISION` in `adapters/litellm/plan_client.py` is `plan-classify-json-v13`.
 History: v1 baseline; v2 prefer an entity's label column over its key; v3 a
 business concept with no column, sample value or null check must decline;
 v4 reviewed metrics rule (only when an overlay is present); v5 follow-up rule
@@ -196,4 +211,9 @@ share of a subset in the whole (a ratio with a restricted numerator).
 
 v12 (2026-09-10 evening) adds rule (8): entities with no activity are a
 `without` on the entity table, never `having count = 0`; measured in
+`../research/holdout3-01.md`.
+
+v13 (2026-09-11) adds rules (9) and (10): the latest row per entity is a
+`latest` with `order_by` and `take` and no measures; the most recent period
+with data is the time scope `{"kind": "latest", "unit": ...}`; measured in
 `../research/holdout3-01.md`.

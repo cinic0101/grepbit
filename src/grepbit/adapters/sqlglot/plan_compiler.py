@@ -37,6 +37,7 @@ from grepbit.domain.plan import (
     CompiledPlan,
     Filter,
     FilterOp,
+    LatestSpec,
     Lineage,
     Measure,
     Operand,
@@ -51,6 +52,7 @@ from grepbit.domain.schema_model import (
     SchemaTable,
 )
 from grepbit.domain.structured_query import (
+    LatestScope,
     RelativeScope,
     ResolvedPeriod,
     current_unit_end,
@@ -59,6 +61,7 @@ from grepbit.domain.structured_query import (
 )
 
 COMPILER_REVISION = "plan-compiler-sqlglot-v1"
+LATEST_RANK = "latest_rank"
 PERIOD_COLUMN = "period_start"
 _AGGREGATE_FUNCTIONS = {
     Aggregate.SUM: "SUM",
@@ -271,6 +274,11 @@ class PlanCompiler:
             if time_column.kind not in {ColumnKind.TIMESTAMP, ColumnKind.DATE}:
                 raise PlanError("time_column_kind_mismatch", time_spec.column.id)
             scope = time_spec.scope
+            if plan.growth and isinstance(scope, LatestScope):
+                raise PlanError(
+                    "growth_to_date_unsupported",
+                    "latest unit with data: no previous period inside the window",
+                )
             if plan.growth and scope is not None and time_spec.grain is not None:
                 if isinstance(scope, RelativeScope) and scope.to_date:
                     raise PlanError(
@@ -293,7 +301,7 @@ class PlanCompiler:
                             definition_ref="plan.growth",
                         )
                     )
-            if scope is not None:
+            if scope is not None and not isinstance(scope, LatestScope):
                 periods = tuple(
                     resolve_time_scope(
                         scope,
@@ -337,8 +345,15 @@ class PlanCompiler:
             resolve(dimension)
             expression = exp.column(dimension.column, table=dimension.table)
             selects.append(expression.as_(dimension.column))
-            group_by.append(expression)
+            if plan.latest is None:
+                group_by.append(expression)
             output.append(dimension.column)
+
+        latest_texts: list[str] = []
+        if plan.latest is not None:
+            latest_texts = self._latest_selects(
+                plan.latest, plan, base, resolve, selects, output, assumptions
+            )
 
         operand_position = {"i": 0}
 
@@ -490,6 +505,53 @@ class PlanCompiler:
                     f"{period.end_exclusive.isoformat()})"
                 )
             conditions.append(windows[0] if len(windows) == 1 else exp.or_(*windows))
+        elif time_spec is not None and isinstance(time_spec.scope, LatestScope):
+            assert time_column is not None
+            unit = time_spec.scope.unit
+            local = exp.column(time_spec.column.column, table=time_spec.column.table)
+            if time_column.kind is ColumnKind.TIMESTAMP:
+                local = exp.AtTimeZone(
+                    this=local, zone=exp.Literal.string(schema.business_timezone)
+                )
+            anchor = exp.select(exp.Max(this=local.copy())).from_(
+                exp.table_(base.name, db=schema.schema_name)
+            )
+            for parent_name, link in joins.items():
+                anchor = anchor.join(
+                    exp.table_(parent_name, db=schema.schema_name),
+                    on=exp.column(link.column, table=link.table).eq(
+                        exp.column(link.referenced_column, table=parent_name)
+                    ),
+                    join_type="left",
+                )
+            if conditions:
+                anchor = anchor.where(exp.and_(*[c.copy() for c in conditions]))
+            start = exp.func(
+                "DATE_TRUNC",
+                exp.Literal.string(unit.value),
+                anchor.subquery(),
+            )
+            span = {"quarter": "3 month"}.get(unit.value, f"1 {unit.value}")
+            end = exp.Add(
+                this=start.copy(),
+                expression=exp.Interval(this=exp.Literal.string(span)),
+            )
+            conditions.append(exp.and_(local.copy() >= start, local.copy() < end))
+            time_texts.append(
+                f"{time_spec.column.id} in the latest {unit.value} that has rows after "
+                "the filters (resolved against the data, not as_of)"
+            )
+            assumptions.append(
+                Assumption(
+                    text=(
+                        f"The window is the most recent {unit.value} that has "
+                        f"{base.name} rows after the filters (the {unit.value} of "
+                        f"the maximum {time_spec.column.id}), not as_of's."
+                    ),
+                    source=AssumptionSource.DEFAULT,
+                    definition_ref="plan.time.scope.latest",
+                )
+            )
 
         if plan.without is not None:
             conditions.append(
@@ -516,6 +578,13 @@ class PlanCompiler:
             )
         if conditions:
             query = query.where(exp.and_(*conditions))
+        if plan.latest is not None:
+            inner = query
+            query = (
+                exp.select(*(exp.column(name) for name in output))
+                .from_(inner.subquery("latest"))
+                .where(exp.column(LATEST_RANK).eq(exp.Literal.number(1)))
+            )
         if group_by:
             query = query.group_by(*group_by)
         having_texts: list[str] = []
@@ -563,6 +632,9 @@ class PlanCompiler:
                 if name in measure_expressions or name in growth_names:
                     continue
                 query = query.order_by(exp.column(name).asc())
+        elif plan.latest is not None:
+            for dimension in plan.dimensions:
+                query = query.order_by(exp.column(dimension.column).asc())
         if plan.limit is not None:
             query = query.limit(bind("limit_", plan.limit, "integer"))
 
@@ -749,6 +821,7 @@ class PlanCompiler:
             filters=tuple(filter_texts),
             having=tuple(having_texts),
             time_window=tuple(time_texts),
+            latest=tuple(latest_texts),
         )
         semantic_refs = sorted(
             {
@@ -783,6 +856,90 @@ class PlanCompiler:
                 )
             ),
         )
+
+    @staticmethod
+    def _latest_selects(
+        latest: LatestSpec,
+        plan: QueryPlan,
+        base: SchemaTable,
+        resolve,
+        selects: list[exp.Expression],
+        output: list[str],
+        assumptions: list[Assumption],
+    ) -> list[str]:
+        """Rank base rows inside each group and select the taken columns.
+
+        The rank is ROW_NUMBER() over the dimensions ordered by ``order_by``;
+        with a single ordering column the base table's primary key (desc) breaks
+        ties so the choice is deterministic, and the assumption says so.
+        """
+
+        order_terms: list[exp.Ordered] = []
+        for item in latest.order_by:
+            resolve(item.column)
+            order_terms.append(
+                exp.Ordered(
+                    this=exp.column(item.column.column, table=item.column.table),
+                    desc=item.direction == "desc",
+                    nulls_first=False,
+                )
+            )
+        tie_breaker = None
+        if len(latest.order_by) == 1 and base.primary_key:
+            key = base.primary_key[0]
+            if key != latest.order_by[0].column.column:
+                tie_breaker = key
+                order_terms.append(
+                    exp.Ordered(
+                        this=exp.column(key, table=base.name),
+                        desc=True,
+                        nulls_first=False,
+                    )
+                )
+        for ref in latest.take:
+            resolve(ref)
+            selects.append(exp.column(ref.column, table=ref.table).as_(ref.column))
+            output.append(ref.column)
+        selects.append(
+            exp.Window(
+                this=exp.RowNumber(),
+                partition_by=[
+                    exp.column(d.column, table=d.table) for d in plan.dimensions
+                ],
+                order=exp.Order(expressions=order_terms),
+            ).as_(LATEST_RANK)
+        )
+        order_words = ", ".join(
+            f"{o.column.id} {o.direction}" for o in latest.order_by
+        ) + (f", {base.name}.{tie_breaker} desc" if tie_breaker else "")
+        per = ", ".join(d.id for d in plan.dimensions) or "the whole table"
+        assumptions.append(
+            Assumption(
+                text=(
+                    f"For each {per} the single most recent {base.name} row by "
+                    f"{order_words} is returned; rows that the filters, window or "
+                    "default exclusions remove are not candidates."
+                ),
+                source=AssumptionSource.DEFAULT,
+                definition_ref="plan.latest",
+            )
+        )
+        if tie_breaker:
+            assumptions.append(
+                Assumption(
+                    text=(
+                        f"Ties on {latest.order_by[0].column.id} are broken by the "
+                        f"highest {base.name}.{tie_breaker} (the primary key), the "
+                        "default when the question names no tie-breaker."
+                    ),
+                    source=AssumptionSource.DEFAULT,
+                    definition_ref="plan.latest.order_by",
+                )
+            )
+        return [
+            f"latest {base.name} row per {per} by {order_words}; taking "
+            + ", ".join(ref.id for ref in latest.take)
+        ]
 
     def _absence(
         self,
@@ -1195,10 +1352,18 @@ def _interpretation(plan: QueryPlan, periods: tuple[ResolvedPeriod, ...]) -> str
         )
         return f"share of total of {words}" if m.share_of_total else words
 
-    parts = [
-        ", ".join(measure_words(m) for m in plan.measures)
-        + f" over {plan.base_table or "the measures' table"}"
-    ]
+    if plan.latest is not None:
+        parts = [
+            f"latest {plan.base_table} row by "
+            + ", ".join(f"{o.column.id} {o.direction}" for o in plan.latest.order_by)
+            + "; taking "
+            + ", ".join(ref.id for ref in plan.latest.take)
+        ]
+    else:
+        parts = [
+            ", ".join(measure_words(m) for m in plan.measures)
+            + f" over {plan.base_table or "the measures' table"}"
+        ]
     if plan.growth:
         parts.append(
             "growth of "
@@ -1211,6 +1376,8 @@ def _interpretation(plan: QueryPlan, periods: tuple[ResolvedPeriod, ...]) -> str
         parts.append(f"per {plan.time.grain.value}")
     if periods:
         parts.append("for " + ", ".join(p.label for p in periods))
+    elif plan.time is not None and isinstance(plan.time.scope, LatestScope):
+        parts.append(f"for the latest {plan.time.scope.unit.value} with data")
     elif plan.time is not None:
         parts.append("over all data")
     if plan.filters:

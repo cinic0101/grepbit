@@ -80,8 +80,20 @@ class PeriodsScope(DomainModel):
         return self
 
 
+class LatestScope(DomainModel):
+    """The most recent unit that has rows after the plan's filters (最新營業日).
+
+    Resolved by the compiler against the data, not against ``as_of``: the
+    window starts at the unit containing the maximum time value and lasts
+    one unit.
+    """
+
+    kind: Literal["latest"] = "latest"
+    unit: RelativeUnit
+
+
 TimeScope = Annotated[
-    MonthScope | RangeScope | RelativeScope | PeriodsScope,
+    MonthScope | RangeScope | RelativeScope | PeriodsScope | LatestScope,
     Field(discriminator="kind"),
 ]
 
@@ -151,7 +163,7 @@ class ResolvedPeriod(DomainModel):
 
 
 def resolve_time_scope(
-    scope: MonthScope | RangeScope | RelativeScope | PeriodsScope,
+    scope: MonthScope | RangeScope | RelativeScope | PeriodsScope | LatestScope,
     *,
     as_of: datetime,
     business_timezone: str,
@@ -159,6 +171,8 @@ def resolve_time_scope(
     """Return half-open business-timezone periods; the model never does this."""
 
     zone = ZoneInfo(business_timezone)
+    if isinstance(scope, LatestScope):
+        raise ValueError("latest_scope_is_resolved_against_the_data")
     if isinstance(scope, MonthScope):
         return [_month_period(scope.month, zone)]
     if isinstance(scope, PeriodsScope):

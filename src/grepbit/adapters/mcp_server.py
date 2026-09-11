@@ -216,8 +216,9 @@ def capabilities_payload(bound: dict[str, BoundDatasource]) -> dict[str, Any]:
         "shapes": (
             "one aggregate query: sums, counts, averages, min, max, distinct "
             "counts, ratios, shares of total, period-over-period growth, group "
-            "thresholds (having), entities with no activity (without), time "
-            "windows and grains; no free text, no forecasts, no row lookups"
+            "thresholds (having), entities with no activity (without), the latest "
+            "row per entity (latest) and the latest period with data, time "
+            "windows and grains; no free text, no forecasts"
         ),
         "revisions": {
             "ask": ASK_REVISION,
