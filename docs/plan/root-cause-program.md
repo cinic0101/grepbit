@@ -119,6 +119,35 @@ the exit number. Baselines are today's numbers.
 Each sprint ends with the usual: scope, files, counts, gaps, git state; a
 prompt change bumps the revision and reruns every set that could move.
 
+## Status and next order (2026-09-11 night)
+
+Done: sprint 1 (B1, B2, A1, C5, D1), sprint 2 except A4 (A2, A3), sprint 3
+except A5 (B3 10,000 plans clean; B4 the differential, 0 disagreements on two
+engines and five data sets, per-report counts in
+`../research/differential-01.md`; B5 the time-closure table; A6 as a metric
+only: variance sits between sessions, so Best-of-N by repeated calls is
+withdrawn, `../research/stability-01.md`). Waiting on the owner: the growth
+drop rule (withdraw or enable the narrow form), growth over a missing period,
+and confirmation of two defaults (NULL time rows out of a grain; having after
+share and growth).
+
+| Step | Items | Exit | Notes |
+|---|---|---|---|
+| 0 | the three rulings | recorded in `tier0-contract.md`; if zero-fill is chosen: compiler, evaluator, time-closure rows, one differential class | no phase-3 prompt work before this |
+| 1 | A5 literals by reference | `literal_misses` with a candidate 0 on holdout 2 and batch 1; PII columns stay out of the index | prompt change: revision bump, every set rerun |
+| 2 | A4 schema linking with fallback | table recall 100% on the 160 author cases and batch 1; prompt under 3,500 tokens | needed before a wide second schema; the fallback retry counts as a model call |
+| 3 | phase 4, datasource 2 (owner provides) | differential first (needs no questions, seconds), proposer-drafted overlay reviewed by the owner, 20 to 30 smoke cases, then the owner's blind holdout; within 5 points of POS | run with `--enum-distinct-limit 0 --redact-rows` from the first call |
+| 4 | C4 second model, C2 round-trip oracle | model delta reported; agreement per construct pair | separates design from model; C2 gives thousands of cases without a human oracle |
+| 5 | C1 metamorphic round two, C6 judge assist, D2, D3 | as in the tables above | after the second datasource shows where the variance is |
+| 6 | tidy-up | PII column display settings and whitelist (owner: at the end), docs, generator gaps | |
+
+Standing cautions: the differential proves values given the window
+boundaries (the evaluator shares the time functions with production; windows
+are the golden table's job); reports before 586f130 compared ordered and
+limited plans as sets; the generator still cannot draw value-index literals,
+named segments or multi-hop `without` on the real schema; a one-run flip is
+not a regression until it repeats, and regressions run alone on the endpoint.
+
 ## Sources
 
 - Tam et al., "Let Me Speak Freely? A Study on the Impact of Format
