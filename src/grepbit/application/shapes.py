@@ -191,23 +191,29 @@ def unmapped_concepts(
 
 
 def unrequested_growth(question: str, plan: QueryPlan, pack: ShapePack) -> list[str]:
-    """Growth measures to drop when nothing in the question asked for a rate.
+    """Growth measures to drop for a plain comparison of periods.
 
     上個月和前一個月的營業額比較 wants the two months' values; the model adds a
     growth column on alternate runs (ft_compare_last_two_months flapped all
-    day). The prompt's rule 5 says a question that merely compares periods
-    wants the per-period values; this makes it deterministic: growth stays
-    only when the question carries one of the pack's growth words
-    (``rule_triggers.growth``).
+    day). A first version dropped growth whenever no growth word was present
+    and was wrong for 本月告警數比上月多百分之幾 (a review found it). This
+    version fires only when the question carries a comparison word
+    (``rule_triggers.growth_comparison``: 比較, compare, ...) and none of the
+    rate words (``rule_triggers.growth``); with either list empty it is
+    inactive. The default pack leaves the comparison list empty until the
+    owner rules on the semantics.
     """
 
     if not plan.growth:
         return []
-    words = pack.rule_triggers.get("growth", [])
-    if not words:
-        return []
+    comparison = pack.rule_triggers.get("growth_comparison", [])
+    rate_words = pack.rule_triggers.get("growth", [])
+    if not comparison or not rate_words:
+        return []  # inactive: the pack names no comparison words (the owner rules)
     normalized = normalize_question(question)
-    if any(phrase_in(normalized, normalize_question(w)) for w in words):
+    compares = any(phrase_in(normalized, normalize_question(w)) for w in comparison)
+    asks_rate = any(phrase_in(normalized, normalize_question(w)) for w in rate_words)
+    if not compares or asks_rate:
         return []
     return [item.measure for item in plan.growth]
 

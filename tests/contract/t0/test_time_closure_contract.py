@@ -309,3 +309,22 @@ def test_a_period_breakdown_leaves_out_rows_without_a_time_value() -> None:
         {"column": RAISED_AT, "scope": {"kind": "month", "month": "2026-07"}}
     )
     assert "IS NULL" not in windowed.compiled.physical_sql
+
+
+def test_growth_skips_an_empty_bucket_pending_a_decision() -> None:
+    # documented as an open decision in the contract: a period with no rows is
+    # skipped by LAG, so March compares with January when February is empty
+    compiled = compile_time(
+        {
+            "column": RAISED_AT,
+            "scope": {
+                "kind": "range",
+                "start": "2026-01-01",
+                "end_exclusive": "2026-04-01",
+            },
+            "grain": "month",
+        },
+        [{"measure": "n"}],
+    )
+    sql = compiled.compiled.physical_sql
+    assert "LAG(" in sql and "generate_series" not in sql.lower()

@@ -575,8 +575,16 @@ def test_a_named_concept_the_plan_leaves_no_trace_of_is_a_clarify() -> None:
     assert ask("告警數", svc, AskSettings(as_of=AS_OF)).status == "answered"
 
 
-def test_a_growth_nobody_asked_for_is_dropped_but_a_growth_word_keeps_it() -> None:
-    # ft_compare_last_two_months flapped all day on an extra growth column
+def test_growth_drop_is_inactive_by_default_and_narrow_when_enabled() -> None:
+    """ft_compare_last_two_months flapped on an extra growth column; a first
+    rule dropped growth whenever no growth word was present and would have
+    changed 本月告警數比上月多百分之幾. The rule now needs a comparison word
+    and no rate word, and the default pack leaves it inactive."""
+
+    import dataclasses
+
+    from grepbit.domain.language_pack import ShapePack
+
     def plan_with_growth():
         return {
             "decision": "plan",
@@ -597,23 +605,38 @@ def test_a_growth_nobody_asked_for_is_dropped_but_a_growth_word_keeps_it() -> No
             },
         }
 
-    compared = ask(
+    rows = [{"period_start": "x", "n": 1}]
+    # default pack: the model's growth stays, whatever the wording
+    kept = ask(
         "上個月和前一個月的告警數比較",
-        services(
-            _Planner(plan_with_growth()), _Executor([{"period_start": "x", "n": 1}])
-        ),
+        services(_Planner(plan_with_growth()), _Executor(rows)),
         AskSettings(as_of=AS_OF),
     )
-    assert compared.status == "answered" and compared.plan is not None
-    assert compared.plan.growth == [] and compared.growth_dropped == ["n"]
-    assert "LAG(" not in (compared.sql or "")
-    assert compared.meaning_normalisations == ["dropped growth on n: no growth word"]
-    assert any("without a growth rate" in a for a in compared.assumptions)
-    grown = ask(
-        "告警數的月成長率",
-        services(
-            _Planner(plan_with_growth()), _Executor([{"period_start": "x", "n": 1}])
-        ),
-        AskSettings(as_of=AS_OF),
+    assert kept.plan is not None and len(kept.plan.growth) == 1
+    # a pack that names comparison words: a plain comparison loses the growth,
+    # a question asking for a percentage keeps it even without a listed word
+    pack = ShapePack.model_validate(
+        {
+            "revision": "t",
+            "rule_triggers": {
+                "growth_comparison": ["比較", "compare"],
+                "growth": ["成長率", "百分之", "growth"],
+            },
+        }
     )
-    assert grown.plan is not None and len(grown.plan.growth) == 1
+    svc = dataclasses.replace(
+        services(_Planner(plan_with_growth()), _Executor(rows)), shape_pack=pack
+    )
+    compared = ask("上個月和前一個月的告警數比較", svc, AskSettings(as_of=AS_OF))
+    assert compared.plan is not None and compared.plan.growth == []
+    assert compared.growth_dropped == ["n"] and "LAG(" not in (compared.sql or "")
+    svc = dataclasses.replace(
+        services(_Planner(plan_with_growth()), _Executor(rows)), shape_pack=pack
+    )
+    rate = ask("本月告警數比上月多百分之幾", svc, AskSettings(as_of=AS_OF))
+    assert rate.plan is not None and len(rate.plan.growth) == 1
+    svc = dataclasses.replace(
+        services(_Planner(plan_with_growth()), _Executor(rows)), shape_pack=pack
+    )
+    plain_growth = ask("本月告警數的成長", svc, AskSettings(as_of=AS_OF))
+    assert plain_growth.plan is not None and len(plain_growth.plan.growth) == 1
