@@ -140,3 +140,42 @@ two-span growth, which waits for the previous-window growth construct.
 Refusal rate 60%, all nine refusals structural (latest row, time parts,
 rolling averages, to-date growth).
 
+## Runs 5 and 6: the latest row per entity and the latest period with data
+
+Prompt v13 adds two shapes (`../knowledge/tier0-contract.md`): `latest`
+(the most recent base row per group, `ROW_NUMBER` over the dimensions, the
+primary key as the default tie-breaker) and the time scope `latest` (the
+most recent unit that has rows after the filters, resolved in SQL against
+the data instead of `as_of`).
+
+Run 5 exposed a cost of the new prompt before its benefit: the model wrote
+the `latest` fields in three shapes the per-section repairs did not reach
+(a sibling `table` beside a string column inside `order_by`, a qualified
+column inside a `take` reference, a qualified column inside
+`without.time.column`), and both latest-row questions plus one anti-join
+failed as malformed output. Worse, on the fixture sets the model started
+writing ordinary dimensions the way `order_by` items are written
+(`{"column": <ref>, "table": t}`), and grouped questions failed across
+the board. Both are shape, not meaning: the reference repairs now walk the
+whole plan (`e3eafbf`) and unwrap such a dimension (`fef2698`); the fixture
+sets were rerun.
+
+Run 6, same prompt, with the repairs:
+
+| Status | Run 4 | Run 6 |
+|---|---|---|
+| answered | 6 | 8 |
+| unsupported | 8 | 6 |
+| semantic_gap | 1 | 1 |
+
+The two latest-row questions answer and were checked by running their SQL
+directly against the database next to a `DISTINCT ON` reference with the
+same ordering: 25 of 25 salespeople and 591 of 591 products identical.
+The latest business day is now the day of the store's maximum `sale_date`
+(190,852, unchanged) rather than as_of's day. The anti-joins are unchanged
+(129, 0, 3). Tally 14 of 15 (`evidence/pos-real-holdout3-06-tally.json`):
+the one exposed miss is still the two-span growth, which this run read as
+calendar weeks; 0 silent wrong numbers; refusal rate 47% (from 80% on run
+2), every remaining refusal structural: time parts, rolling averages,
+to-date growth.
+
