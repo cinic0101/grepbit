@@ -17,6 +17,7 @@ from datetime import datetime
 
 from sqlglot import exp
 
+from grepbit.adapters.sqlglot.plan_check import check_compiled
 from grepbit.domain.assumptions import Assumption, AssumptionSource
 from grepbit.domain.models import (
     CompiledQuery,
@@ -909,6 +910,13 @@ class PlanCompiler:
             semantic_ref_source=SemanticRefSource.COMPILER_RESOLVED,
             compiler_revision=COMPILER_REVISION,
         )
+        # the independent reader: parse the SQL back and check it against the
+        # plan; a combination this compiler misreads refuses instead of answering
+        violations = check_compiled(
+            plan, compiled.physical_sql, compiled.execution_parameters, verification
+        )
+        if violations:
+            raise PlanError("self_check_failed", "; ".join(violations))
         return CompiledPlan(
             plan=plan,
             compiled=compiled,

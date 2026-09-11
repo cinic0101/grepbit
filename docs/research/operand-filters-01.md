@@ -85,3 +85,21 @@ and this run `bonus_by_month_2025`, whose plan ends its range at
 The transport failed once in 273 calls on mains power
 (`ft_without_sales_in_range`, 42 s after the retry), against three in the
 morning's runs on battery.
+
+## The independent reader
+
+Both wrong numbers would have been refused by a check that reads the SQL
+back and compares it with the plan, so that check now runs at the end of
+every compilation (`adapters/sqlglot/plan_check.py`, error code
+`self_check_failed`; the invariants are listed in
+`../knowledge/tier0-contract.md`). Calibration over every recorded plan and
+SQL pair of the day (312 rows across the 14 author and real sets, holdout 2
+run 19, ratio set run 13, holdout 3 run 6, and the three superseded runs
+that carried the 1.0 answers): exactly three rows flagged, all three the
+known wrong numbers (`filter_not_applied` twice plus
+`ratio_operands_identical` and `verified_with_question_filters` on q22 and
+h2_q22; `window_without_groups` on `member_ratio_gap`), zero flags on the
+309 correct rows. The 193 contract tests compile through the check
+unchanged. This is the first item of the root-cause program
+(`../plan/root-cause-program.md`, B1).
+

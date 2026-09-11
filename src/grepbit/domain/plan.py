@@ -343,6 +343,10 @@ _PLAN_ERROR_CODES = frozenset(
         # HAVING count = 0 over the base table's own rows: every group has at
         # least one row, so the question is an anti-join the algebra lacks
         "anti_join_required",
+        # the compiled SQL broke an invariant of the plan (a filter the plan
+        # asked for is missing, a ratio divides an expression by itself, a
+        # window without groups): refused rather than served
+        "self_check_failed",
         # share_of_total with no groups and no periods: every share would be 1
         # unless the operand carries a filter of its own (the part over the whole)
         "share_requires_groups",
