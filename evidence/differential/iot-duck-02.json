@@ -1,0 +1,22 @@
+{
+  "datasource_id": "iot_spike",
+  "engine": "duckdb",
+  "instances": 3,
+  "overlay_revision": null,
+  "examples_requested": 500,
+  "as_of": "2026-08-15T12:00:00+08:00",
+  "outcomes": {
+    "generated": 367,
+    "typed_refusal": 126,
+    "agree": 723
+  },
+  "typed_refusals": {
+    "share_requires_groups": 64,
+    "aggregate_kind_mismatch": 40,
+    "time_scope_requires_grain": 16,
+    "relative_window_reaches_future": 3,
+    "growth_to_date_unsupported": 3
+  },
+  "disagreements": [],
+  "errors": []
+}

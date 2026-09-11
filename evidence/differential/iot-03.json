@@ -1,0 +1,22 @@
+{
+  "datasource_id": "iot_spike",
+  "engine": "postgres",
+  "instances": 1,
+  "overlay_revision": null,
+  "examples_requested": 500,
+  "as_of": "2026-08-15T12:00:00+08:00",
+  "outcomes": {
+    "generated": 384,
+    "typed_refusal": 98,
+    "agree": 286
+  },
+  "typed_refusals": {
+    "share_requires_groups": 64,
+    "aggregate_kind_mismatch": 20,
+    "time_scope_requires_grain": 8,
+    "relative_window_reaches_future": 5,
+    "growth_to_date_unsupported": 1
+  },
+  "disagreements": [],
+  "errors": []
+}

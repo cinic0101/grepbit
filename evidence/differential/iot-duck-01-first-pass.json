@@ -1,0 +1,1048 @@
+{
+  "datasource_id": "iot_spike",
+  "engine": "duckdb",
+  "instances": 3,
+  "overlay_revision": null,
+  "examples_requested": 400,
+  "as_of": "2026-08-15T12:00:00+08:00",
+  "outcomes": {
+    "generated": 289,
+    "typed_refusal": 75,
+    "agree": 635,
+    "disagree": 7
+  },
+  "typed_refusals": {
+    "share_requires_groups": 37,
+    "aggregate_kind_mismatch": 30,
+    "time_scope_requires_grain": 4,
+    "growth_to_date_unsupported": 2,
+    "relative_window_reaches_future": 2
+  },
+  "disagreements": [
+    {
+      "instance": "duckdb-0",
+      "plan": {
+        "base_table": "alerts",
+        "measures": [
+          {
+            "aggregate": "avg",
+            "column": {
+              "table": "alerts",
+              "column": "downtime_minutes"
+            },
+            "alias": "m0",
+            "share_of_total": true
+          },
+          {
+            "aggregate": "max",
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "alias": "m1"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "alerts",
+            "column": "severity"
+          },
+          {
+            "table": "devices",
+            "column": "model"
+          }
+        ],
+        "filters": [
+          {
+            "column": {
+              "table": "sites",
+              "column": "tz"
+            },
+            "op": "eq",
+            "values": [
+              "Asia/Taipei"
+            ]
+          }
+        ],
+        "having": [
+          {
+            "field": "m1",
+            "op": "gte",
+            "value": 1
+          }
+        ]
+      },
+      "exclude_segments": [],
+      "sql": "SELECT alerts.severity AS severity, devices.model AS model, CAST((AVG(alerts.downtime_minutes)) AS DOUBLE PRECISION) / NULLIF(SUM(AVG(alerts.downtime_minutes)) OVER (), 0) AS m0, MAX(devices.monthly_fee) AS m1 FROM public.alerts LEFT JOIN public.devices ON alerts.device_id = devices.device_id LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE sites.tz = %(f_0)s GROUP BY alerts.severity, devices.model HAVING MAX(devices.monthly_fee) >= %(h_1)s ORDER BY severity NULLS FIRST, model NULLS FIRST",
+      "columns": [
+        "severity",
+        "model",
+        "m0",
+        "m1"
+      ],
+      "actual_rows": 11,
+      "reference_rows": 11,
+      "actual": [
+        [
+          "A",
+          "C",
+          "0.0059",
+          "10"
+        ],
+        [
+          "B",
+          "A",
+          "0.2946",
+          "2.5"
+        ],
+        [
+          "B",
+          "C",
+          "0.2946",
+          "10"
+        ],
+        [
+          "B",
+          "critical",
+          "0.0029",
+          "100"
+        ],
+        [
+          "info",
+          "北區",
+          "0.2946",
+          "1"
+        ],
+        [
+          "offline",
+          "online",
+          "0.0295",
+          "99.99"
+        ],
+        [
+          "online",
+          "online",
+          "0.0295",
+          "99.99"
+        ],
+        [
+          "warning",
+          "A",
+          "0.0162",
+          "10"
+        ]
+      ],
+      "reference": [
+        [
+          "A",
+          "C",
+          "0.0058",
+          "10"
+        ],
+        [
+          "B",
+          "A",
+          "0.2903",
+          "2.5"
+        ],
+        [
+          "B",
+          "C",
+          "0.2903",
+          "10"
+        ],
+        [
+          "B",
+          "critical",
+          "0.0029",
+          "100"
+        ],
+        [
+          "info",
+          "北區",
+          "0.2903",
+          "1"
+        ],
+        [
+          "offline",
+          "online",
+          "0.029",
+          "99.99"
+        ],
+        [
+          "online",
+          "online",
+          "0.029",
+          "99.99"
+        ],
+        [
+          "warning",
+          "A",
+          "0.016",
+          "10"
+        ]
+      ]
+    },
+    {
+      "instance": "duckdb-0",
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "count_distinct",
+            "column": {
+              "table": "devices",
+              "column": "firmware"
+            },
+            "alias": "m0"
+          }
+        ],
+        "dimensions": [],
+        "time": {
+          "column": {
+            "table": "devices",
+            "column": "installed_on"
+          },
+          "grain": "week"
+        },
+        "filters": [
+          {
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "op": "not_null"
+          },
+          {
+            "column": {
+              "table": "sites",
+              "column": "tz"
+            },
+            "op": "not_null"
+          }
+        ],
+        "growth": [
+          {
+            "measure": "m0"
+          }
+        ],
+        "having": [
+          {
+            "field": "m0",
+            "op": "gt",
+            "value": 1
+          }
+        ]
+      },
+      "exclude_segments": [],
+      "sql": "SELECT CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE) AS period_start, COUNT(DISTINCT devices.firmware) AS m0, CAST((COUNT(DISTINCT devices.firmware) - LAG(COUNT(DISTINCT devices.firmware)) OVER (ORDER BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE))) AS DOUBLE PRECISION) / NULLIF(LAG(COUNT(DISTINCT devices.firmware)) OVER (ORDER BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE)), 0) AS m0_growth FROM public.devices LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE NOT devices.installed_on IS NULL AND NOT devices.monthly_fee IS NULL AND NOT sites.tz IS NULL GROUP BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE) HAVING COUNT(DISTINCT devices.firmware) > %(h_0)s ORDER BY period_start NULLS FIRST",
+      "columns": [
+        "period_start",
+        "m0",
+        "m0_growth"
+      ],
+      "actual_rows": 20,
+      "reference_rows": 20,
+      "actual": [
+        [
+          "2025-06-09",
+          "2",
+          "NULL"
+        ],
+        [
+          "2025-07-21",
+          "2",
+          "0"
+        ],
+        [
+          "2025-08-04",
+          "3",
+          "0.5"
+        ],
+        [
+          "2025-08-18",
+          "2",
+          "-0.3333"
+        ],
+        [
+          "2025-09-08",
+          "2",
+          "0"
+        ],
+        [
+          "2025-09-15",
+          "2",
+          "0"
+        ],
+        [
+          "2025-11-03",
+          "2",
+          "0"
+        ],
+        [
+          "2025-11-10",
+          "4",
+          "1"
+        ]
+      ],
+      "reference": [
+        [
+          "2025-06-09",
+          "2",
+          "NULL"
+        ],
+        [
+          "2025-07-21",
+          "2",
+          "1"
+        ],
+        [
+          "2025-08-04",
+          "3",
+          "2"
+        ],
+        [
+          "2025-08-18",
+          "2",
+          "1"
+        ],
+        [
+          "2025-09-08",
+          "2",
+          "1"
+        ],
+        [
+          "2025-09-15",
+          "2",
+          "0"
+        ],
+        [
+          "2025-11-03",
+          "2",
+          "1"
+        ],
+        [
+          "2025-11-10",
+          "4",
+          "1"
+        ]
+      ]
+    },
+    {
+      "instance": "duckdb-0",
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "count_distinct",
+            "column": {
+              "table": "devices",
+              "column": "firmware"
+            },
+            "alias": "m0"
+          }
+        ],
+        "dimensions": [],
+        "time": {
+          "column": {
+            "table": "devices",
+            "column": "installed_on"
+          },
+          "grain": "week"
+        },
+        "filters": [
+          {
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "op": "not_null"
+          },
+          {
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "op": "not_null"
+          }
+        ],
+        "growth": [
+          {
+            "measure": "m0"
+          }
+        ],
+        "having": [
+          {
+            "field": "m0",
+            "op": "gt",
+            "value": 1
+          }
+        ]
+      },
+      "exclude_segments": [],
+      "sql": "SELECT CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE) AS period_start, COUNT(DISTINCT devices.firmware) AS m0, CAST((COUNT(DISTINCT devices.firmware) - LAG(COUNT(DISTINCT devices.firmware)) OVER (ORDER BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE))) AS DOUBLE PRECISION) / NULLIF(LAG(COUNT(DISTINCT devices.firmware)) OVER (ORDER BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE)), 0) AS m0_growth FROM public.devices WHERE NOT devices.installed_on IS NULL AND NOT devices.monthly_fee IS NULL AND NOT devices.monthly_fee IS NULL GROUP BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE) HAVING COUNT(DISTINCT devices.firmware) > %(h_0)s ORDER BY period_start NULLS FIRST",
+      "columns": [
+        "period_start",
+        "m0",
+        "m0_growth"
+      ],
+      "actual_rows": 23,
+      "reference_rows": 23,
+      "actual": [
+        [
+          "2025-06-09",
+          "2",
+          "NULL"
+        ],
+        [
+          "2025-07-21",
+          "2",
+          "0"
+        ],
+        [
+          "2025-08-04",
+          "3",
+          "0.5"
+        ],
+        [
+          "2025-08-18",
+          "2",
+          "-0.3333"
+        ],
+        [
+          "2025-08-25",
+          "2",
+          "0"
+        ],
+        [
+          "2025-09-08",
+          "2",
+          "0"
+        ],
+        [
+          "2025-09-15",
+          "2",
+          "0"
+        ],
+        [
+          "2025-10-06",
+          "2",
+          "0"
+        ]
+      ],
+      "reference": [
+        [
+          "2025-06-09",
+          "2",
+          "NULL"
+        ],
+        [
+          "2025-07-21",
+          "2",
+          "1"
+        ],
+        [
+          "2025-08-04",
+          "3",
+          "2"
+        ],
+        [
+          "2025-08-18",
+          "2",
+          "1"
+        ],
+        [
+          "2025-08-25",
+          "2",
+          "0"
+        ],
+        [
+          "2025-09-08",
+          "2",
+          "1"
+        ],
+        [
+          "2025-09-15",
+          "2",
+          "0"
+        ],
+        [
+          "2025-10-06",
+          "2",
+          "0"
+        ]
+      ]
+    },
+    {
+      "instance": "duckdb-1",
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "count_distinct",
+            "column": {
+              "table": "devices",
+              "column": "firmware"
+            },
+            "alias": "m0"
+          }
+        ],
+        "dimensions": [],
+        "time": {
+          "column": {
+            "table": "devices",
+            "column": "installed_on"
+          },
+          "grain": "week"
+        },
+        "filters": [
+          {
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "op": "not_null"
+          },
+          {
+            "column": {
+              "table": "sites",
+              "column": "tz"
+            },
+            "op": "not_null"
+          }
+        ],
+        "growth": [
+          {
+            "measure": "m0"
+          }
+        ],
+        "having": [
+          {
+            "field": "m0",
+            "op": "gt",
+            "value": 1
+          }
+        ]
+      },
+      "exclude_segments": [],
+      "sql": "SELECT CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE) AS period_start, COUNT(DISTINCT devices.firmware) AS m0, CAST((COUNT(DISTINCT devices.firmware) - LAG(COUNT(DISTINCT devices.firmware)) OVER (ORDER BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE))) AS DOUBLE PRECISION) / NULLIF(LAG(COUNT(DISTINCT devices.firmware)) OVER (ORDER BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE)), 0) AS m0_growth FROM public.devices LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE NOT devices.installed_on IS NULL AND NOT devices.monthly_fee IS NULL AND NOT sites.tz IS NULL GROUP BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE) HAVING COUNT(DISTINCT devices.firmware) > %(h_0)s ORDER BY period_start NULLS FIRST",
+      "columns": [
+        "period_start",
+        "m0",
+        "m0_growth"
+      ],
+      "actual_rows": 7,
+      "reference_rows": 7,
+      "actual": [
+        [
+          "2025-09-15",
+          "2",
+          "NULL"
+        ],
+        [
+          "2025-12-08",
+          "2",
+          "0"
+        ],
+        [
+          "2025-12-15",
+          "2",
+          "0"
+        ],
+        [
+          "2026-02-23",
+          "2",
+          "0"
+        ],
+        [
+          "2026-03-16",
+          "2",
+          "0"
+        ],
+        [
+          "2026-03-23",
+          "2",
+          "0"
+        ],
+        [
+          "2026-07-06",
+          "2",
+          "0"
+        ]
+      ],
+      "reference": [
+        [
+          "2025-09-15",
+          "2",
+          "1"
+        ],
+        [
+          "2025-12-08",
+          "2",
+          "1"
+        ],
+        [
+          "2025-12-15",
+          "2",
+          "0"
+        ],
+        [
+          "2026-02-23",
+          "2",
+          "1"
+        ],
+        [
+          "2026-03-16",
+          "2",
+          "0"
+        ],
+        [
+          "2026-03-23",
+          "2",
+          "0"
+        ],
+        [
+          "2026-07-06",
+          "2",
+          "1"
+        ]
+      ]
+    },
+    {
+      "instance": "duckdb-1",
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "count_distinct",
+            "column": {
+              "table": "devices",
+              "column": "firmware"
+            },
+            "alias": "m0"
+          }
+        ],
+        "dimensions": [],
+        "time": {
+          "column": {
+            "table": "devices",
+            "column": "installed_on"
+          },
+          "grain": "week"
+        },
+        "filters": [
+          {
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "op": "not_null"
+          },
+          {
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "op": "not_null"
+          }
+        ],
+        "growth": [
+          {
+            "measure": "m0"
+          }
+        ],
+        "having": [
+          {
+            "field": "m0",
+            "op": "gt",
+            "value": 1
+          }
+        ]
+      },
+      "exclude_segments": [],
+      "sql": "SELECT CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE) AS period_start, COUNT(DISTINCT devices.firmware) AS m0, CAST((COUNT(DISTINCT devices.firmware) - LAG(COUNT(DISTINCT devices.firmware)) OVER (ORDER BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE))) AS DOUBLE PRECISION) / NULLIF(LAG(COUNT(DISTINCT devices.firmware)) OVER (ORDER BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE)), 0) AS m0_growth FROM public.devices WHERE NOT devices.installed_on IS NULL AND NOT devices.monthly_fee IS NULL AND NOT devices.monthly_fee IS NULL GROUP BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE) HAVING COUNT(DISTINCT devices.firmware) > %(h_0)s ORDER BY period_start NULLS FIRST",
+      "columns": [
+        "period_start",
+        "m0",
+        "m0_growth"
+      ],
+      "actual_rows": 11,
+      "reference_rows": 11,
+      "actual": [
+        [
+          "2025-06-02",
+          "2",
+          "NULL"
+        ],
+        [
+          "2025-09-15",
+          "2",
+          "0"
+        ],
+        [
+          "2025-11-24",
+          "2",
+          "0"
+        ],
+        [
+          "2025-12-08",
+          "2",
+          "0"
+        ],
+        [
+          "2025-12-15",
+          "2",
+          "0"
+        ],
+        [
+          "2026-02-23",
+          "2",
+          "0"
+        ],
+        [
+          "2026-03-16",
+          "2",
+          "0"
+        ],
+        [
+          "2026-03-23",
+          "2",
+          "0"
+        ]
+      ],
+      "reference": [
+        [
+          "2025-06-02",
+          "2",
+          "NULL"
+        ],
+        [
+          "2025-09-15",
+          "2",
+          "1"
+        ],
+        [
+          "2025-11-24",
+          "2",
+          "1"
+        ],
+        [
+          "2025-12-08",
+          "2",
+          "1"
+        ],
+        [
+          "2025-12-15",
+          "2",
+          "0"
+        ],
+        [
+          "2026-02-23",
+          "2",
+          "1"
+        ],
+        [
+          "2026-03-16",
+          "2",
+          "0"
+        ],
+        [
+          "2026-03-23",
+          "2",
+          "0"
+        ]
+      ]
+    },
+    {
+      "instance": "duckdb-2",
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "count_distinct",
+            "column": {
+              "table": "devices",
+              "column": "firmware"
+            },
+            "alias": "m0"
+          }
+        ],
+        "dimensions": [],
+        "time": {
+          "column": {
+            "table": "devices",
+            "column": "installed_on"
+          },
+          "grain": "week"
+        },
+        "filters": [
+          {
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "op": "not_null"
+          },
+          {
+            "column": {
+              "table": "sites",
+              "column": "tz"
+            },
+            "op": "not_null"
+          }
+        ],
+        "growth": [
+          {
+            "measure": "m0"
+          }
+        ],
+        "having": [
+          {
+            "field": "m0",
+            "op": "gt",
+            "value": 1
+          }
+        ]
+      },
+      "exclude_segments": [],
+      "sql": "SELECT CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE) AS period_start, COUNT(DISTINCT devices.firmware) AS m0, CAST((COUNT(DISTINCT devices.firmware) - LAG(COUNT(DISTINCT devices.firmware)) OVER (ORDER BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE))) AS DOUBLE PRECISION) / NULLIF(LAG(COUNT(DISTINCT devices.firmware)) OVER (ORDER BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE)), 0) AS m0_growth FROM public.devices LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE NOT devices.installed_on IS NULL AND NOT devices.monthly_fee IS NULL AND NOT sites.tz IS NULL GROUP BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE) HAVING COUNT(DISTINCT devices.firmware) > %(h_0)s ORDER BY period_start NULLS FIRST",
+      "columns": [
+        "period_start",
+        "m0",
+        "m0_growth"
+      ],
+      "actual_rows": 16,
+      "reference_rows": 16,
+      "actual": [
+        [
+          "2025-06-02",
+          "2",
+          "NULL"
+        ],
+        [
+          "2025-06-09",
+          "2",
+          "0"
+        ],
+        [
+          "2025-09-22",
+          "2",
+          "0"
+        ],
+        [
+          "2025-11-10",
+          "3",
+          "0.5"
+        ],
+        [
+          "2025-11-17",
+          "2",
+          "-0.3333"
+        ],
+        [
+          "2025-11-24",
+          "2",
+          "0"
+        ],
+        [
+          "2026-02-02",
+          "2",
+          "0"
+        ],
+        [
+          "2026-03-02",
+          "2",
+          "0"
+        ]
+      ],
+      "reference": [
+        [
+          "2025-06-02",
+          "2",
+          "1"
+        ],
+        [
+          "2025-06-09",
+          "2",
+          "0"
+        ],
+        [
+          "2025-09-22",
+          "2",
+          "1"
+        ],
+        [
+          "2025-11-10",
+          "3",
+          "2"
+        ],
+        [
+          "2025-11-17",
+          "2",
+          "-0.3333"
+        ],
+        [
+          "2025-11-24",
+          "2",
+          "0"
+        ],
+        [
+          "2026-02-02",
+          "2",
+          "1"
+        ],
+        [
+          "2026-03-02",
+          "2",
+          "1"
+        ]
+      ]
+    },
+    {
+      "instance": "duckdb-2",
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "count_distinct",
+            "column": {
+              "table": "devices",
+              "column": "firmware"
+            },
+            "alias": "m0"
+          }
+        ],
+        "dimensions": [],
+        "time": {
+          "column": {
+            "table": "devices",
+            "column": "installed_on"
+          },
+          "grain": "week"
+        },
+        "filters": [
+          {
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "op": "not_null"
+          },
+          {
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "op": "not_null"
+          }
+        ],
+        "growth": [
+          {
+            "measure": "m0"
+          }
+        ],
+        "having": [
+          {
+            "field": "m0",
+            "op": "gt",
+            "value": 1
+          }
+        ]
+      },
+      "exclude_segments": [],
+      "sql": "SELECT CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE) AS period_start, COUNT(DISTINCT devices.firmware) AS m0, CAST((COUNT(DISTINCT devices.firmware) - LAG(COUNT(DISTINCT devices.firmware)) OVER (ORDER BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE))) AS DOUBLE PRECISION) / NULLIF(LAG(COUNT(DISTINCT devices.firmware)) OVER (ORDER BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE)), 0) AS m0_growth FROM public.devices WHERE NOT devices.installed_on IS NULL AND NOT devices.monthly_fee IS NULL AND NOT devices.monthly_fee IS NULL GROUP BY CAST(DATE_TRUNC('WEEK', devices.installed_on) AS DATE) HAVING COUNT(DISTINCT devices.firmware) > %(h_0)s ORDER BY period_start NULLS FIRST",
+      "columns": [
+        "period_start",
+        "m0",
+        "m0_growth"
+      ],
+      "actual_rows": 20,
+      "reference_rows": 20,
+      "actual": [
+        [
+          "2025-06-02",
+          "2",
+          "NULL"
+        ],
+        [
+          "2025-06-09",
+          "2",
+          "0"
+        ],
+        [
+          "2025-07-28",
+          "2",
+          "0"
+        ],
+        [
+          "2025-09-22",
+          "2",
+          "0"
+        ],
+        [
+          "2025-11-10",
+          "3",
+          "0.5"
+        ],
+        [
+          "2025-11-17",
+          "2",
+          "-0.3333"
+        ],
+        [
+          "2025-11-24",
+          "2",
+          "0"
+        ],
+        [
+          "2026-02-02",
+          "2",
+          "0"
+        ]
+      ],
+      "reference": [
+        [
+          "2025-06-02",
+          "2",
+          "1"
+        ],
+        [
+          "2025-06-09",
+          "2",
+          "0"
+        ],
+        [
+          "2025-07-28",
+          "2",
+          "1"
+        ],
+        [
+          "2025-09-22",
+          "2",
+          "1"
+        ],
+        [
+          "2025-11-10",
+          "3",
+          "2"
+        ],
+        [
+          "2025-11-17",
+          "2",
+          "-0.3333"
+        ],
+        [
+          "2025-11-24",
+          "2",
+          "0"
+        ],
+        [
+          "2026-02-02",
+          "2",
+          "1"
+        ]
+      ]
+    }
+  ],
+  "errors": []
+}

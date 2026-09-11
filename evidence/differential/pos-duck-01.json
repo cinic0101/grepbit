@@ -1,0 +1,21 @@
+{
+  "datasource_id": "pos_test",
+  "engine": "duckdb",
+  "instances": 3,
+  "overlay_revision": "pos-overlay-experiment-v1",
+  "examples_requested": 500,
+  "as_of": "2026-02-10T12:00:00+08:00",
+  "outcomes": {
+    "generated": 337,
+    "typed_refusal": 86,
+    "agree": 753
+  },
+  "typed_refusals": {
+    "share_requires_groups": 60,
+    "aggregate_kind_mismatch": 11,
+    "ambiguous_join_path": 10,
+    "time_scope_requires_grain": 5
+  },
+  "disagreements": [],
+  "errors": []
+}

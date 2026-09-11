@@ -1145,7 +1145,8 @@ def test_growth_on_a_share_is_rejected_at_validation() -> None:
 
 def test_having_sits_inside_the_after_share_subquery() -> None:
     # found by the differential: HAVING on the outer selection query has no
-    # GROUP BY (PostgreSQL 42803)
+    # GROUP BY (PostgreSQL 42803); then, on random data, a threshold before the
+    # share's window total shrank the total, so it now follows the share
     compiled = compile_plan(
         {
             "base_table": "alerts",
@@ -1166,5 +1167,51 @@ def test_having_sits_inside_the_after_share_subquery() -> None:
     )
     sql = compiled.compiled.physical_sql
     inner, outer = sql.split(") AS shares")
-    assert "HAVING COUNT(*) > %(h_" in inner
-    assert "HAVING" not in outer and "WHERE model = %(f_" in outer
+    # beside a share the threshold is applied after it, in the outer WHERE
+    assert "HAVING" not in inner and "HAVING" not in outer
+    assert "WHERE model = %(f_" in outer and "n > %(h_" in outer
+
+
+def test_a_threshold_beside_a_share_or_growth_applies_after_them() -> None:
+    # found by the differential on random data: SQL runs HAVING before window
+    # functions, so the share's total shrank and growth compared with the
+    # previous surviving period
+    shared = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [
+                {"aggregate": "count", "alias": "share", "share_of_total": True},
+                {"aggregate": "count", "alias": "n"},
+            ],
+            "dimensions": [{"table": "devices", "column": "model"}],
+            "having": [{"field": "n", "op": "gt", "value": 5}],
+        }
+    )
+    sql = shared.compiled.physical_sql
+    assert "HAVING" not in sql
+    assert ") AS shares WHERE n > %(h_" in sql
+    assert any(h.startswith("[after share and growth]") for h in shared.lineage.having)
+    grown = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count", "alias": "n"}],
+            "time": {
+                "column": {"table": "alerts", "column": "raised_at"},
+                "grain": "month",
+            },
+            "growth": [{"measure": "n"}],
+            "having": [{"field": "n", "op": "gte", "value": 2}],
+        }
+    )
+    sql = grown.compiled.physical_sql
+    assert "HAVING" not in sql and ") AS shares WHERE n >= %(h_" in sql
+    # a plain threshold stays a HAVING on the grouped query
+    plain = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count", "alias": "n"}],
+            "dimensions": [{"table": "devices", "column": "model"}],
+            "having": [{"field": "n", "op": "gt", "value": 5}],
+        }
+    )
+    assert "HAVING COUNT(*) > %(h_" in plain.compiled.physical_sql

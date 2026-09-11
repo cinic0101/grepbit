@@ -149,9 +149,14 @@ def check_compiled(
         if not grouped and grouped_names:
             violations.append("group_without_dimensions")
 
-    # 6. a HAVING in the plan is a HAVING in the SQL
+    # 6. a HAVING in the plan is a HAVING in the SQL, or, beside a share or a
+    #    growth measure, an outer predicate on the measure's output name
     if plan.having and tree.find(exp.Having) is None:
-        violations.append("having_missing")
+        named = {
+            c.name for p in predicates for c in p.find_all(exp.Column) if not c.table
+        }
+        if not all(item.field in named for item in plan.having):
+            violations.append("having_missing")
 
     # 7. a reviewed answer is fully verified only when the plan added no rows
     #    filters of its own

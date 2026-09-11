@@ -29,7 +29,7 @@ Reports: `evidence/differential/`.
 
 ## What the compiler got wrong
 
-Four classes, none of which 313 hand-written cases had reached.
+Five classes, none of which 313 hand-written cases had reached.
 
 | Finding | PostgreSQL | Fix |
 |---|---|---|
@@ -37,6 +37,7 @@ Four classes, none of which 313 hand-written cases had reached.
 | a ratio, share, growth or having over `min`/`max` of a date or text | 42846, 42883 | refused typed, `aggregate_kind_mismatch` with the reason |
 | `having` with the after-share selection attached to the outer query, which has no `GROUP BY` | 42803 | `having` moves to the inner grouped query |
 | a NULL time value under a grain formed its own bucket and took part in growth as the last period | a result, not an error | a period breakdown leaves out rows without a time value, with an assumption |
+| a threshold (`having`) beside a share or a growth: SQL applies HAVING before window functions, so the share's total shrank to the surviving groups and growth compared with the previous *surviving* period (found only on random data: the fixture had no group the threshold removed) | a result, not an error | the threshold is applied after the share and the growth, as the outer `WHERE` over the grouped query |
 
 ## What the evaluator got wrong
 
@@ -58,3 +59,27 @@ none; `without` plans over the real POS schema; literals the value index
 would resolve). The next step runs the same plans on random instances in
 DuckDB (C3), so that a coincidence of the fixture data (a column with one
 value, an empty month) cannot hide a difference.
+
+## Random instances (C3)
+
+`--engine duckdb --instances 3`: the same plans on three random instances
+of the schema (`evals/synthetic.py`: parents first, children referencing
+random parents, a share of NULLs and a few dangling references), the
+compiled SQL run on DuckDB with its bound parameters. The first pass found
+the fifth compiler class above, which the fixture data could not show: on
+random data a threshold removes groups, on the fixture it did not.
+
+| Run | Schema | Plans | Checks (plans × instances) | Agree | Disagree |
+|---|---|---|---|---|---|
+| iot random, first pass | `grepbit_spike_iot` | 289 | 635 checked | 635 | 7 (all the threshold class) |
+| iot random, after the fix | seed 7 | 367 | 723 | 723 | 0 |
+| pos random | `text2sql_test` with the fixture overlay, seed 8 | 337 | 753 | 753 | 0 |
+| iot PostgreSQL, after the fix | seed 9 | 384 | 286 | 286 | 0 |
+
+Two engines, four data sets, 2,900 checks after the fixes without a
+disagreement. What the generator still cannot reach: default segments
+(the fixture overlay has none; the real POS overlay has one, and the
+differential can run against `t2s_8c2b8bbc_6d072f83` with `--redact`),
+literals the value index would resolve, and multi-hop `without` plans on
+the real schema.
+

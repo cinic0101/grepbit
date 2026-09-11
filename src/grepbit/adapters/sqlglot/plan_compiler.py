@@ -734,27 +734,42 @@ class PlanCompiler:
         if group_by:
             query = query.group_by(*group_by)
         having_texts: list[str] = []
-        # HAVING belongs to the grouped query; with the after-share selection
-        # that is the inner one (found by the differential as PostgreSQL 42803)
+        # SQL evaluates HAVING before window functions, so a threshold beside a
+        # share or a growth would shrink the share's total and make growth
+        # compare with the previous *surviving* period (found by the
+        # differential on random data). With such measures the threshold is
+        # applied after them, as an outer WHERE over the grouped query; a plain
+        # threshold stays a HAVING on the grouped query.
+        late_having = bool(plan.having) and (
+            any(m.share_of_total for m in plan.measures) or bool(plan.growth)
+        )
+        late_conditions: list[exp.Expression] = []
         if plan.having:
             conditions_having = []
             for item in plan.having:
                 expression = measure_expressions[item.field].copy()
                 self._reject_impossible_zero_count(item, expression, base, resolve)
                 placeholder = bind("h_", item.value, "numeric")
-                conditions_having.append(
-                    {
-                        "gt": expression > placeholder,
-                        "gte": expression >= placeholder,
-                        "lt": expression < placeholder,
-                        "lte": expression <= placeholder,
-                        "eq": expression.eq(placeholder),
-                        "ne": expression.neq(placeholder),
-                    }[item.op]
-                )
-                having_texts.append(f"{item.field} {item.op} {item.value}")
-            query = query.having(exp.and_(*conditions_having))
-        if selection_filters:
+                target = exp.column(item.field) if late_having else expression
+                condition = {
+                    "gt": target > placeholder,
+                    "gte": target >= placeholder,
+                    "lt": target < placeholder,
+                    "lte": target <= placeholder,
+                    "eq": target.eq(placeholder),
+                    "ne": target.neq(placeholder),
+                }[item.op]
+                if late_having:
+                    late_conditions.append(condition)
+                    having_texts.append(
+                        f"[after share and growth] {item.field} {item.op} {item.value}"
+                    )
+                else:
+                    conditions_having.append(condition)
+                    having_texts.append(f"{item.field} {item.op} {item.value}")
+            if conditions_having:
+                query = query.having(exp.and_(*conditions_having))
+        if selection_filters or late_conditions:
             inner = query
             query = exp.select(*(exp.column(name) for name in output)).from_(
                 inner.subquery("shares")
@@ -767,7 +782,7 @@ class PlanCompiler:
                     reference=exp.column(item.column.column),
                 )
                 for item in selection_filters
-            ]
+            ] + late_conditions
             query = query.where(exp.and_(*selected))
         if plan.order:
             for item in plan.order:
