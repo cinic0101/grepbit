@@ -19,9 +19,9 @@
     "false_answers_on_refusal_cases": 0,
     "model_failures": 1,
     "model_retries": 0,
-    "p50_seconds": 5.987,
-    "p95_seconds": 8.873,
-    "introspection_seconds": 0.044,
+    "p50_seconds": 5.923,
+    "p95_seconds": 9.352,
+    "introspection_seconds": 0.038,
     "schema": {
       "tables": 13,
       "columns": 58,
@@ -80,7 +80,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 7.709,
+      "elapsed_seconds": 7.777,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -163,7 +163,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 5.245,
+      "elapsed_seconds": 5.215,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -242,7 +242,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 5.061,
+      "elapsed_seconds": 5.026,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -318,7 +318,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 6.049,
+      "elapsed_seconds": 6.111,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -423,7 +423,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 5.376,
+      "elapsed_seconds": 5.419,
       "plan": {
         "base_table": "pos_payment",
         "measures": [
@@ -503,7 +503,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 5.596,
+      "elapsed_seconds": 5.459,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -591,7 +591,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 6.283,
+      "elapsed_seconds": 6.215,
       "plan": {
         "base_table": "hr_payroll",
         "measures": [
@@ -680,7 +680,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 6.316,
+      "elapsed_seconds": 6.287,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -767,7 +767,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 6.549,
+      "elapsed_seconds": 6.525,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -859,7 +859,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 6.876,
+      "elapsed_seconds": 6.941,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -966,7 +966,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 5.987,
+      "elapsed_seconds": 6.117,
       "plan": {
         "base_table": "pos_saleitem",
         "measures": [
@@ -1060,7 +1060,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 6.465,
+      "elapsed_seconds": 6.431,
       "plan": {
         "base_table": "hr_payroll",
         "measures": [
@@ -1175,7 +1175,7 @@
       "follow_up_of": null,
       "status": "unsupported",
       "correct": true,
-      "elapsed_seconds": 5.355,
+      "elapsed_seconds": 5.231,
       "reason": "plan_metric_base_table_mismatch",
       "clarification": "transaction_count",
       "plan": {
@@ -1220,7 +1220,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 5.06,
+      "elapsed_seconds": 5.096,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -1294,7 +1294,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 6.978,
+      "elapsed_seconds": 6.851,
       "plan": {
         "base_table": "pos_payment",
         "measures": [
@@ -1389,7 +1389,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 4.637,
+      "elapsed_seconds": 4.733,
       "plan": {
         "base_table": "pos_payment",
         "measures": [
@@ -1465,7 +1465,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 6.654,
+      "elapsed_seconds": 6.727,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -1564,7 +1564,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 6.899,
+      "elapsed_seconds": 6.958,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -1657,7 +1657,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 5.643,
+      "elapsed_seconds": 5.649,
       "plan": {
         "base_table": "pos_payment",
         "measures": [
@@ -1744,7 +1744,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 5.678,
+      "elapsed_seconds": 5.667,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -1832,7 +1832,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 5.73,
+      "elapsed_seconds": 5.508,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -1909,7 +1909,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 5.189,
+      "elapsed_seconds": 5.191,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -2002,7 +2002,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 9.351,
+      "elapsed_seconds": 9.352,
       "plan": {
         "base_table": "salesperson",
         "measures": [
@@ -2103,7 +2103,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 4.784,
+      "elapsed_seconds": 4.711,
       "plan": {
         "base_table": "product",
         "measures": [
@@ -2178,7 +2178,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 6.073,
+      "elapsed_seconds": 5.923,
       "plan": {
         "base_table": "pos_sale",
         "measures": [],
@@ -2283,7 +2283,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 4.976,
+      "elapsed_seconds": 4.797,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -2356,7 +2356,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 5.776,
+      "elapsed_seconds": 5.778,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -2458,7 +2458,7 @@
       "follow_up_of": "fu_base_store_dec",
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 8.873,
+      "elapsed_seconds": 8.395,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -2552,8 +2552,9 @@
       "follow_up_of": null,
       "status": "failed",
       "correct": false,
-      "elapsed_seconds": 6.06,
+      "elapsed_seconds": 5.602,
       "reason": "invalid_structured_output",
+      "raw_output": "{\"decision\": \"plan\", \"plan\": {\"base_table\": \"pos_payment\", \"dimensions\": [{\"column\": {\"table\": \"pos_payment\", \"column\": \"payment_method\"}, \"table\": \"pos_payment\"}], \"measures\": [{\"aggregate\": \"sum\", \"alias\": \"total_collection\", \"column\": {\"table\": \"pos_payment\", \"column\": \"payment_amount\"}, \"table\": \"pos_payment\"}]}}",
       "status_without_coverage": "failed"
     },
     {
@@ -2566,7 +2567,7 @@
       "follow_up_of": "fu_base_payment",
       "status": "semantic_gap",
       "correct": false,
-      "elapsed_seconds": 5.003,
+      "elapsed_seconds": 13.892,
       "reason": "semantic_gap",
       "clarification": "The request \"只看2025年12月\" (Only look at December 2025) specifies a time filter but does not specify what metric or data to retrieve (e.g., sales, transaction count, or a list of records).",
       "status_without_coverage": "semantic_gap"
@@ -2581,7 +2582,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 4.578,
+      "elapsed_seconds": 4.554,
       "plan": {
         "base_table": "hr_employee",
         "measures": [
@@ -2667,7 +2668,7 @@
       "follow_up_of": "fu_base_headcount",
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 6.366,
+      "elapsed_seconds": 8.945,
       "plan": {
         "base_table": "hr_employee",
         "measures": [
@@ -2763,7 +2764,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 6.017,
+      "elapsed_seconds": 6.076,
       "plan": {
         "base_table": "pos_saleitem",
         "measures": [
@@ -2859,7 +2860,7 @@
       "follow_up_of": "fu_base_top3",
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 8.954,
+      "elapsed_seconds": 9.626,
       "plan": {
         "base_table": "pos_saleitem",
         "measures": [
@@ -2960,7 +2961,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 5.29,
+      "elapsed_seconds": 5.272,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -3034,7 +3035,7 @@
       "follow_up_of": "fu_base_total",
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 6.785,
+      "elapsed_seconds": 6.797,
       "plan": {
         "base_table": "pos_sale",
         "measures": [
@@ -3136,7 +3137,7 @@
       "follow_up_of": null,
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 4.859,
+      "elapsed_seconds": 4.793,
       "plan": {
         "base_table": "hr_employee",
         "measures": [
@@ -3208,7 +3209,7 @@
       "follow_up_of": "fu_base_active",
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 6.554,
+      "elapsed_seconds": 6.451,
       "plan": {
         "base_table": "hr_employee",
         "measures": [
@@ -3304,7 +3305,7 @@
       "follow_up_of": "fu_base_active",
       "status": "answered",
       "correct": true,
-      "elapsed_seconds": 5.021,
+      "elapsed_seconds": 5.001,
       "plan": {
         "base_table": "pos_payment",
         "measures": [
