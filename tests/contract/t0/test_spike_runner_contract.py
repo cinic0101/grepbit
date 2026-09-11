@@ -416,3 +416,44 @@ def test_stability_compares_plan_cores_across_runs_ignoring_aliases() -> None:
     [unstable] = result["unstable"]
     assert unstable["case_id"] == "q2" and unstable["differing_keys"] == ["dimensions"]
     assert unstable["correct"] == [True, False]
+
+
+def test_differential_limit_comparison_respects_order_and_ties() -> None:
+    """The reviewer's counterexample: top-1 of {100, 1} returning 1 must not pass."""
+
+    import importlib.util
+    from zoneinfo import ZoneInfo
+
+    from grepbit.domain.plan import QueryPlan
+
+    spec = importlib.util.spec_from_file_location(
+        "differential", ROOT / "evals" / "differential.py"
+    )
+    diff = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(diff)
+    zone = ZoneInfo("Asia/Taipei")
+    plan = QueryPlan.model_validate(
+        {
+            "base_table": "devices",
+            "dimensions": [{"table": "devices", "column": "model"}],
+            "measures": [{"aggregate": "count", "alias": "n"}],
+            "order": [{"field": "n", "direction": "desc"}],
+            "limit": 1,
+        }
+    )
+    columns = ["model", "n"]
+    reference = [("AP", 100), ("GW", 1)]
+    assert diff.compare(plan, columns, [("AP", 100)], reference, zone)
+    assert not diff.compare(plan, columns, [("GW", 1)], reference, zone)
+    # a duplicated row in place of a missing one fails too
+    plan2 = plan.model_copy(update={"limit": 2})
+    assert not diff.compare(plan2, columns, [("AP", 100), ("AP", 100)], reference, zone)
+    # ties at the boundary may stand in for one another
+    tied = [("AP", 5), ("GW", 5), ("SW", 1)]
+    assert diff.compare(plan, columns, [("GW", 5)], tied, zone)
+    assert diff.compare(plan, columns, [("AP", 5)], tied, zone)
+    assert not diff.compare(plan, columns, [("SW", 1)], tied, zone)
+    # NULLS LAST when descending: a NULL never wins a top-1
+    with_null = [("AP", None), ("GW", 3)]
+    assert diff.compare(plan, columns, [("GW", 3)], with_null, zone)
+    assert not diff.compare(plan, columns, [("AP", None)], with_null, zone)

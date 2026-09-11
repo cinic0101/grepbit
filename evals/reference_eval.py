@@ -60,15 +60,18 @@ def _joined_rows(
     """Base rows with every reachable parent's columns attached (LEFT JOIN)."""
 
     paths = _parent_paths(schema, base)
-    indexes: dict[str, dict[Any, dict]] = {}
-    for table_name in paths:
-        if table_name == base:
-            continue
-        table = schema.table(table_name)
-        key = table.primary_key[0] if table and table.primary_key else None
-        if key is None:
-            continue
-        indexes[table_name] = {r[key]: r for r in tables.get(table_name, [])}
+    # one index per (table, referenced column): a foreign key may point at a
+    # column other than the primary key (tickets.project_key -> projects.project_key)
+    indexes: dict[tuple[str, str], dict[Any, dict]] = {}
+    for chain in paths.values():
+        for fk in chain:
+            key = (fk.referenced_table, fk.referenced_column)
+            if key not in indexes:
+                indexes[key] = {
+                    r[fk.referenced_column]: r
+                    for r in tables.get(fk.referenced_table, [])
+                    if r.get(fk.referenced_column) is not None
+                }
     rows: list[Row] = []
     for raw in tables.get(base, []):
         row: Row = {f"{base}.{k}": v for k, v in raw.items()}
@@ -81,7 +84,9 @@ def _joined_rows(
                 if current is None:
                     break
                 value = current.get(fk.column) if current_table == fk.table else None
-                current = indexes.get(fk.referenced_table, {}).get(value)
+                current = indexes.get(
+                    (fk.referenced_table, fk.referenced_column), {}
+                ).get(value)
                 current_table = fk.referenced_table
             table = schema.table(table_name)
             for column in table.columns if table else []:

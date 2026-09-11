@@ -34,7 +34,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 import psycopg
-from hypothesis import HealthCheck, Phase, given, settings
+from hypothesis import HealthCheck, Phase, given, seed, settings
 from hypothesis import strategies as st
 from hypothesis.errors import HypothesisException
 from pydantic import ValidationError
@@ -67,12 +67,15 @@ def load_tables(connect, schema) -> dict[str, list[dict[str, Any]]]:
     return tables
 
 
-def generate_plans(shape: SchemaShape, examples: int) -> list[dict[str, Any]]:
-    """Distinct plan payloads that the plan itself accepts."""
+def generate_plans(
+    shape: SchemaShape, examples: int, seed_value: int
+) -> list[dict[str, Any]]:
+    """Distinct plan payloads the plan itself accepts; one seed, one list."""
 
     payloads: list[dict[str, Any]] = []
     seen: set[str] = set()
 
+    @seed(seed_value)
     @settings(
         max_examples=examples,
         deadline=None,
@@ -100,6 +103,23 @@ def generate_plans(shape: SchemaShape, examples: int) -> list[dict[str, Any]]:
     return payloads
 
 
+def scrub(payload: Any) -> Any:
+    """The plan with every filter literal replaced, for reports on real data."""
+
+    if isinstance(payload, dict):
+        return {
+            k: (
+                ["<redacted>"] * len(v)
+                if k == "values" and isinstance(v, list)
+                else scrub(v)
+            )
+            for k, v in payload.items()
+        }
+    if isinstance(payload, list):
+        return [scrub(v) for v in payload]
+    return payload
+
+
 def localize(rows: list[tuple], zone: ZoneInfo) -> list[tuple]:
     def fix(value: Any) -> Any:
         if isinstance(value, datetime) and value.tzinfo is not None:
@@ -109,21 +129,94 @@ def localize(rows: list[tuple], zone: ZoneInfo) -> list[tuple]:
     return [tuple(fix(v) for v in row) for row in rows]
 
 
+def _sort_key(value, direction: str):
+    """SQL order: NULLS FIRST for ascending, NULLS LAST for descending (as compiled)."""
+    is_null = value is None
+    if direction == "asc":
+        return (0 if is_null else 1, "" if is_null else _orderable(value))
+    return (1 if is_null else 0, "" if is_null else _Desc(_orderable(value)))
+
+
+def _orderable(value):
+    from datetime import date, datetime
+    from decimal import Decimal
+
+    if isinstance(value, (datetime, date)):
+        return value.isoformat()
+    if isinstance(value, (int, float, Decimal)) and not isinstance(value, bool):
+        return float(value)
+    return str(value)
+
+
+class _Desc:
+    __slots__ = ("v",)
+
+    def __init__(self, v):
+        self.v = v
+
+    def __lt__(self, other):
+        return self.v > other.v
+
+    def __eq__(self, other):
+        return self.v == other.v
+
+
 def compare(
     plan: QueryPlan,
+    columns: list[str],
     actual_rows: list[tuple],
     reference_rows: list[tuple],
     zone: ZoneInfo,
 ) -> bool:
+    """Whether the compiled result matches the reference evaluation.
+
+    Without a limit the two row sets must be equal. With a limit the reference
+    is ordered as the SQL orders (the plan's order, else the grouping columns
+    ascending, NULLS FIRST ascending and NULLS LAST descending) and the actual
+    rows must be the first k of it, except that rows tied with the boundary
+    row on the ordering key may stand in for one another: that choice is the
+    database's, everything else is not.
+    """
+
     actual = normalize_rows(localize(actual_rows, zone))
-    expected = normalize_rows(localize(reference_rows, zone))
-    if plan.limit is not None:
-        # the reference does not apply the limit: the actual rows must be a
-        # subset of the right size (ties at the boundary are the database's call)
-        return len(actual) == min(plan.limit, len(expected)) and all(
-            r in expected for r in actual
+    expected_all = normalize_rows(localize(reference_rows, zone))
+    if plan.limit is None:
+        return actual == expected_all
+    k = plan.limit
+    order = [(item.field, item.direction) for item in plan.order] or [
+        (c, "asc") for c in columns if c not in {m.output_name for m in plan.measures}
+    ]
+    positions = {name: i for i, name in enumerate(columns)}
+    localized = localize(reference_rows, zone)
+
+    def key(row):
+        return tuple(
+            _sort_key(row[positions[f]], d) for f, d in order if f in positions
         )
-    return actual == expected
+
+    ordered = sorted(localized, key=key)
+    if len(ordered) <= k:
+        return actual == expected_all
+    boundary = key(ordered[k - 1])
+    required = [r for r in ordered[:k] if key(r) != boundary]
+    tied = [r for r in ordered if key(r) == boundary]
+    required_n = normalize_rows(required)
+    tied_n = normalize_rows(tied)
+    actual_sorted = sorted(actual)
+    # every strictly-better row must be present, the rest come from the tied rows
+    remaining = list(actual_sorted)
+    for r in required_n:
+        if r not in remaining:
+            return False
+        remaining.remove(r)
+    if len(remaining) != k - len(required_n):
+        return False
+    tied_pool = list(tied_n)
+    for r in remaining:
+        if r not in tied_pool:
+            return False
+        tied_pool.remove(r)
+    return True
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -145,6 +238,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--redact", action="store_true", help="keep cell values out of the report"
     )
+    parser.add_argument(
+        "--enum-distinct-limit",
+        type=int,
+        default=0,
+        help="text values sampled per column for generated literals; 0 on real data",
+    )
+    parser.add_argument(
+        "--replay",
+        type=Path,
+        help="re-check the plans recorded in an earlier report instead of generating",
+    )
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args(argv)
 
@@ -159,7 +263,9 @@ def main(argv: list[str] | None = None) -> int:
             yield connection
 
     schema = introspect_schema(
-        connect, datasource_id=arguments.datasource_id, enum_distinct_limit=20
+        connect,
+        datasource_id=arguments.datasource_id,
+        enum_distinct_limit=arguments.enum_distinct_limit,
     )
     overlay = load_semantic_overlay(arguments.overlay) if arguments.overlay else None
     as_of = datetime.fromisoformat(arguments.as_of)
@@ -171,7 +277,10 @@ def main(argv: list[str] | None = None) -> int:
     ]
     rng = random.Random(arguments.seed)
 
-    payloads = generate_plans(shape, arguments.examples)
+    if arguments.replay is not None:
+        payloads = json.loads(arguments.replay.read_text(encoding="utf-8"))["plans"]
+    else:
+        payloads = generate_plans(shape, arguments.examples, arguments.seed)
     outcomes: Counter = Counter({"generated": len(payloads)})
     refusals: Counter = Counter()
     disagreements: list[dict[str, Any]] = []
@@ -195,7 +304,7 @@ def main(argv: list[str] | None = None) -> int:
             errors.append(
                 {
                     "kind": "compiler_exception",
-                    "plan": payload,
+                    "plan": scrub(payload) if arguments.redact else payload,
                     "error": repr(error)[:300],
                 }
             )
@@ -210,7 +319,7 @@ def main(argv: list[str] | None = None) -> int:
                 {
                     "kind": "database_error",
                     "instance": label,
-                    "plan": payload,
+                    "plan": scrub(payload) if arguments.redact else payload,
                     "sql": compiled.compiled.physical_sql,
                     "error": error,
                 }
@@ -230,20 +339,20 @@ def main(argv: list[str] | None = None) -> int:
                 {
                     "kind": "evaluator_exception",
                     "instance": label,
-                    "plan": payload,
+                    "plan": scrub(payload) if arguments.redact else payload,
                     "error": repr(error)[:300],
                 }
             )
             return
         out_columns = list(compiled.output_columns)
         expected_rows = [tuple(row.get(c) for c in out_columns) for row in reference]
-        if compare(plan, actual_rows, expected_rows, zone):
+        if compare(plan, out_columns, actual_rows, expected_rows, zone):
             outcomes["agree"] += 1
             return
         outcomes["disagree"] += 1
         record: dict[str, Any] = {
             "instance": label,
-            "plan": payload,
+            "plan": scrub(payload) if arguments.redact else payload,
             "exclude_segments": [s.id for s in exclude],
             "sql": compiled.compiled.physical_sql,
             "columns": out_columns,
@@ -296,9 +405,26 @@ def main(argv: list[str] | None = None) -> int:
             for payload, plan, exclude, compiled in compiled_plans:
                 check(payload, plan, exclude, compiled, tables, run_duck, f"duckdb-{k}")
 
+    import subprocess
+
+    try:
+        git_sha = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=False,
+        ).stdout.strip()
+    except OSError:
+        git_sha = None
     report = {
         "datasource_id": arguments.datasource_id,
         "engine": arguments.engine,
+        "git_sha": git_sha,
+        "seed": arguments.seed,
+        "schema_digest": schema.digest(),
+        "enum_distinct_limit": arguments.enum_distinct_limit,
+        "replayed_from": str(arguments.replay) if arguments.replay else None,
+        "plans": [scrub(p) if arguments.redact else p for p in payloads],
         "instances": arguments.instances if arguments.engine == "duckdb" else 1,
         "overlay_revision": overlay.revision if overlay else None,
         "examples_requested": arguments.examples,
