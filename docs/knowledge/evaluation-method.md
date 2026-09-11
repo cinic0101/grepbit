@@ -113,7 +113,11 @@ plan, SQL with placeholders, lineage, assumptions, interpretation, first rows,
 whether rows matched a reference, and latency. A case the model answered
 with text that failed validation (`status` failed, `reason`
 `invalid_structured_output`) keeps that text as `raw_output`, so the slip can
-be classified after the run instead of reproduced. No credentials, no bindings.
+be classified after the run instead of reproduced; a case the repair turn
+rescued carries `model_repair_turns: 1` and its first text as `raw_output`
+too, and a case the repair turn lost also carries `raw_output_repair`. The
+summary records `model`, `repair_turns_allowed`, `model_repair_turns` and
+`repaired_cases`. No credentials, no bindings.
 
 `--redact-rows` drops result rows and reference rows from the report (row
 counts, SQL, lineage and assumptions stay), so an artifact taken on a real

@@ -25,6 +25,7 @@ TIMEOUT_ENV = "GREPBIT_MODEL_TIMEOUT_SECONDS"
 TEMPERATURE_ENV = "GREPBIT_MODEL_TEMPERATURE"
 MAX_TOKENS_ENV = "GREPBIT_MODEL_MAX_TOKENS"
 OUTPUT_MODE_ENV = "GREPBIT_MODEL_OUTPUT_MODE"
+REPAIR_TURNS_ENV = "GREPBIT_MODEL_REPAIR_TURNS"
 DEFAULT_CREDENTIAL_ENV = "LITELLM_API_KEY"
 
 _SYSTEM_RULES = (
@@ -67,10 +68,13 @@ class GroundingModelSettings:
     base_url: str
     model: str
     credential_env_var: str = DEFAULT_CREDENTIAL_ENV
-    timeout_seconds: float = 30.0
+    timeout_seconds: float = 20.0
     temperature: float = 0.0
     max_tokens: int = 512
     structured_output_mode: Literal["json_object", "json_schema"] = "json_object"
+    # follow-up calls allowed when the plan fails validation: the validation
+    # errors go back to the model once (0 disables, for the ablation)
+    repair_turns: int = 1
 
     @classmethod
     def from_environment(
@@ -92,10 +96,11 @@ class GroundingModelSettings:
                     CREDENTIAL_ENV_NAME_ENV, DEFAULT_CREDENTIAL_ENV
                 ).strip()
                 or DEFAULT_CREDENTIAL_ENV,
-                timeout_seconds=float(source.get(TIMEOUT_ENV, "30")),
+                timeout_seconds=float(source.get(TIMEOUT_ENV, "20")),
                 temperature=float(source.get(TEMPERATURE_ENV, "0")),
                 max_tokens=int(source.get(MAX_TOKENS_ENV, "512")),
                 structured_output_mode=mode,  # type: ignore[arg-type]
+                repair_turns=int(source.get(REPAIR_TURNS_ENV, "1")),
             )
         except ValueError:
             raise GroundingModelError("model_settings_missing", 0) from None

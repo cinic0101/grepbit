@@ -43,6 +43,9 @@ class _Planner:
         self.proposals = list(proposals)
         self.calls = []
         self.last_repairs: list[str] = []
+        self.last_raw_output: str | None = None
+        self.last_repair_output: str | None = None
+        self.last_model_repair_turns = 0
 
     def propose(
         self,
@@ -209,12 +212,29 @@ def test_hints_reach_the_planner_and_a_transport_error_is_retried_once() -> None
 
 
 def test_a_malformed_plan_fails_with_its_raw_text_kept() -> None:
-    planner = _Planner(GroundingModelError("invalid_structured_output", 1))
+    planner = _Planner(GroundingModelError("invalid_structured_output", 2))
     planner.last_raw_output = '{"decision": "plan", "ratio": {}}'
+    planner.last_repair_output = "still wrong"
+    planner.last_model_repair_turns = 1
     result = ask("x", services(planner, _Executor([])), AskSettings(as_of=AS_OF))
     assert result.status == "failed" and result.reason == "invalid_structured_output"
     assert result.raw_output == '{"decision": "plan", "ratio": {}}'
+    assert result.raw_output_repair == "still wrong"
+    assert result.model_repair_turns == 1
     assert result.model_retries == 0
+
+
+def test_a_plan_from_the_repair_turn_answers_and_keeps_the_slip() -> None:
+    planner = _Planner(COUNT_OFFLINE)
+    planner.last_raw_output = "{slipped"
+    planner.last_model_repair_turns = 1
+    result = ask(
+        "offline 的裝置有幾台",
+        services(planner, _Executor([{"row_count": 1}])),
+        AskSettings(as_of=AS_OF),
+    )
+    assert result.status == "answered"
+    assert result.model_repair_turns == 1 and result.raw_output == "{slipped"
 
 
 def test_structural_refusals_and_empty_results_are_typed() -> None:

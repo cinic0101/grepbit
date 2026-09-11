@@ -20,17 +20,23 @@ from grepbit.domain.plan import PlanProposal
 from grepbit.ports.grounding import GroundingModelError
 
 SETTINGS = GroundingModelSettings(base_url="http://model.local/v1", model="test-model")
+NO_REPAIR = GroundingModelSettings(
+    base_url="http://model.local/v1", model="test-model", repair_turns=0
+)
 
 
 class _FakeClient:
-    def __init__(self, content: str) -> None:
+    """Returns ``content`` on every call, or the items of a list in turn."""
+
+    def __init__(self, content: str | list[str]) -> None:
         self.calls: list[dict] = []
         self.chat = SimpleNamespace(completions=SimpleNamespace(create=self._create))
-        self._content = content
+        self._contents = [content] if isinstance(content, str) else list(content)
 
     def _create(self, **kwargs):
         self.calls.append(kwargs)
-        message = SimpleNamespace(content=self._content)
+        content = self._contents[min(len(self.calls) - 1, len(self._contents) - 1)]
+        message = SimpleNamespace(content=content)
         return SimpleNamespace(choices=[SimpleNamespace(message=message)])
 
 
@@ -156,7 +162,7 @@ def test_propose_returns_declines_and_rejects_incoherent_or_malformed_output() -
             }
         ),
     ):
-        client = ChatCompletionsPlanClient(SETTINGS, client=_FakeClient(content))
+        client = ChatCompletionsPlanClient(NO_REPAIR, client=_FakeClient(content))
         with pytest.raises(GroundingModelError) as info:
             client.propose("q", iot_schema(), as_of="2026-08-15T12:00:00+08:00")
         assert info.value.code == "invalid_structured_output"
@@ -401,10 +407,11 @@ def test_repair_lifts_a_plan_level_ratio_into_a_measure() -> None:
 
 
 def test_propose_keeps_the_raw_text_of_a_malformed_output() -> None:
-    client = ChatCompletionsPlanClient(SETTINGS, client=_FakeClient("not json"))
+    client = ChatCompletionsPlanClient(NO_REPAIR, client=_FakeClient("not json"))
     with pytest.raises(GroundingModelError):
         client.propose("q", iot_schema(), as_of="2026-08-15T12:00:00+08:00")
     assert client.last_raw_output == "not json"
+    assert client.last_model_repair_turns == 0
     # a valid call clears it
     good = json.dumps(
         {
@@ -609,3 +616,75 @@ def test_repair_strips_a_qualified_output_name_in_order_and_having() -> None:
     payload["plan"]["order"] = [{"field": "devices.site_id", "direction": "asc"}]
     _, repairs = repair_column_refs(payload, iot_schema())
     assert not any(r.startswith("order.field") for r in repairs)
+
+
+def test_a_malformed_plan_gets_one_repair_turn_with_the_validation_errors() -> None:
+    # batch 1 q49's shape: numerator written beside ratio instead of inside it
+    slipped = json.dumps(
+        {
+            "decision": "plan",
+            "plan": {
+                "base_table": "alerts",
+                "measures": [
+                    {
+                        "alias": "r",
+                        "ratio": {"denominator": {"aggregate": "count"}},
+                        "numerator": {"aggregate": "count"},
+                    }
+                ],
+            },
+        }
+    )
+    fixed = json.dumps(
+        {
+            "decision": "plan",
+            "plan": {
+                "base_table": "alerts",
+                "measures": [
+                    {
+                        "alias": "r",
+                        "ratio": {
+                            "numerator": {"aggregate": "count"},
+                            "denominator": {"aggregate": "count"},
+                        },
+                    }
+                ],
+            },
+        }
+    )
+    fake = _FakeClient([slipped, fixed])
+    client = ChatCompletionsPlanClient(SETTINGS, client=fake)
+    proposal = client.propose("q", iot_schema(), as_of="2026-08-15T12:00:00+08:00")
+    assert proposal.plan is not None and proposal.plan.measures[0].ratio is not None
+    assert len(fake.calls) == 2
+    assert client.last_model_repair_turns == 1
+    assert client.last_raw_output == slipped  # the slip is kept for classification
+    assert client.last_repair_output is None
+    repair_messages = fake.calls[1]["messages"]
+    assert (
+        repair_messages[: len(fake.calls[0]["messages"])] == fake.calls[0]["messages"]
+    )
+    assert repair_messages[-2] == {"role": "assistant", "content": slipped}
+    errors = repair_messages[-1]["content"]
+    assert repair_messages[-1]["role"] == "user"
+    assert "did not validate" in errors
+    assert "plan.measures.0.ratio.numerator: Field required" in errors
+    assert "plan.measures.0.numerator: Extra inputs are not permitted" in errors
+
+    # a second malformed answer is the end of the road: both texts kept
+    fake = _FakeClient([slipped, "still not json"])
+    client = ChatCompletionsPlanClient(SETTINGS, client=fake)
+    with pytest.raises(GroundingModelError) as info:
+        client.propose("q", iot_schema(), as_of="2026-08-15T12:00:00+08:00")
+    assert info.value.code == "invalid_structured_output"
+    assert len(fake.calls) == 2
+    assert client.last_raw_output == slipped
+    assert client.last_repair_output == "still not json"
+    assert client.last_model_repair_turns == 1
+
+    # repair_turns=0 is the old behaviour: one call, no repair
+    fake = _FakeClient([slipped, fixed])
+    client = ChatCompletionsPlanClient(NO_REPAIR, client=fake)
+    with pytest.raises(GroundingModelError):
+        client.propose("q", iot_schema(), as_of="2026-08-15T12:00:00+08:00")
+    assert len(fake.calls) == 1

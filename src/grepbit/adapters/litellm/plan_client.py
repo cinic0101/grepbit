@@ -552,12 +552,48 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
     return payload, repairs
 
 
+_REPAIR_INSTRUCTION = (
+    "The JSON object you returned did not validate against the schema. "
+    "Errors: {errors}. Return the complete corrected JSON object and nothing "
+    "else: keep the same tables, columns, filters and values, fix only the "
+    "structure."
+)
+
+
+class _InvalidOutput(Exception):
+    def __init__(self, errors: str) -> None:
+        super().__init__(errors)
+        self.errors = errors
+
+
+def _validation_summary(error: ValidationError) -> str:
+    parts = [
+        ".".join(str(x) for x in item["loc"]) + ": " + item["msg"]
+        for item in error.errors()[:8]
+    ]
+    return "; ".join(parts)[:1200]
+
+
+def _content(response: Any) -> str | None:
+    try:
+        content = response.choices[0].message.content
+    except (AttributeError, IndexError):
+        return None
+    return content if isinstance(content, str) else None
+
+
 class ChatCompletionsPlanClient:
-    """One strict call per question; the server validates every identifier."""
+    """One strict call per question, plus one repair turn when the plan fails
+    validation; the server validates every identifier."""
 
     last_repairs: list[str] = []
-    # the model's text when the last call failed validation, for the report
+    # the model's text the first time it failed validation, kept even when the
+    # repair turn then succeeded, so the slip can be classified
     last_raw_output: str | None = None
+    # the repair turn's text when it failed too
+    last_repair_output: str | None = None
+    # 1 when the plan came from the repair turn or the repair turn also failed
+    last_model_repair_turns: int = 0
 
     def __init__(
         self,
@@ -642,29 +678,64 @@ class ChatCompletionsPlanClient:
     ) -> PlanProposal:
         client = self._transport._client or self._transport._create_client()
         self.last_raw_output = None
-        content: Any = None
+        self.last_repair_output = None
+        self.last_model_repair_turns = 0
+        messages = self.build_messages(
+            question,
+            model,
+            as_of=as_of,
+            overlay=overlay,
+            previous=previous,
+            question_values=question_values,
+        )
+        content = self._complete(client, messages)
+        try:
+            return self._validate(content, model)
+        except _InvalidOutput as first:
+            self.last_raw_output = content
+            if self._settings.repair_turns < 1 or content is None:
+                raise GroundingModelError("invalid_structured_output", 1) from None
+            errors = first.errors
+        # the repair turn: the model sees its own text and the validation
+        # errors, and returns the corrected object; meaning must not change
+        repair_messages = [
+            *messages,
+            {"role": "assistant", "content": content},
+            {"role": "user", "content": _REPAIR_INSTRUCTION.format(errors=errors)},
+        ]
+        self.last_model_repair_turns = 1
+        repaired = self._complete(client, repair_messages)
+        try:
+            return self._validate(repaired, model)
+        except _InvalidOutput:
+            self.last_repair_output = repaired
+            raise GroundingModelError("invalid_structured_output", 2) from None
+
+    def _complete(self, client: Any, messages: list[dict[str, str]]) -> str | None:
         try:
             response = client.chat.completions.create(
                 model=self._settings.model,
-                messages=self.build_messages(
-                    question,
-                    model,
-                    as_of=as_of,
-                    overlay=overlay,
-                    previous=previous,
-                    question_values=question_values,
-                ),
+                messages=messages,
                 temperature=self._settings.temperature,
                 max_tokens=max(self._settings.max_tokens, 768),
                 response_format=self.response_format(),
             )
         except Exception:
             raise GroundingModelError("model_call_failed", 1) from None
+        return _content(response)
+
+    def _validate(self, content: str | None, model: SchemaModel) -> PlanProposal:
+        if content is None:
+            raise _InvalidOutput("empty response")
         try:
-            content = response.choices[0].message.content
-            payload, repairs = repair_column_refs(json.loads(content), model)
+            payload = json.loads(content)
+        except ValueError as error:
+            raise _InvalidOutput(f"not valid JSON: {error}") from None
+        try:
+            payload, repairs = repair_column_refs(payload, model)
             self.last_repairs = repairs
             return PlanProposal.model_validate(payload)
-        except (AttributeError, IndexError, TypeError, ValueError, ValidationError):
-            self.last_raw_output = content if isinstance(content, str) else None
-            raise GroundingModelError("invalid_structured_output", 1) from None
+        except ValidationError as error:
+            raise _InvalidOutput(_validation_summary(error)) from None
+        except (AttributeError, TypeError, ValueError) as error:
+            raise _InvalidOutput(f"{type(error).__name__}: {error}") from None

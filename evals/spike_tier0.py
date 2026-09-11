@@ -169,6 +169,10 @@ def report_detail(result) -> dict[str, Any]:
         detail["model_retries"] = result.model_retries
     if result.raw_output:
         detail["raw_output"] = result.raw_output
+    if result.raw_output_repair:
+        detail["raw_output_repair"] = result.raw_output_repair
+    if result.model_repair_turns:
+        detail["model_repair_turns"] = result.model_repair_turns
     if result.status == "answered":
         detail["row_count"] = result.row_count
         detail["rows_truncated"] = result.rows_truncated
@@ -564,7 +568,9 @@ def main(argv: list[str] | None = None) -> int:
         "datasource_id": arguments.datasource_id,
         "cases_file": str(arguments.cases),
         "prompt_revision": PLAN_PROMPT_REVISION if arguments.live else None,
+        "model": client.settings.model if client else None,
         "output_mode": client.settings.structured_output_mode if client else None,
+        "repair_turns_allowed": client.settings.repair_turns if client else None,
         "overlay_revision": overlay.revision if overlay is not None else None,
         "perturbation": arguments.perturb,
         "as_of": as_of.isoformat(),
@@ -586,6 +592,12 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "model_failures": sum(1 for r in results if r["status"] == "failed"),
         "model_retries": sum(r.get("model_retries", 0) for r in results),
+        "model_repair_turns": sum(r.get("model_repair_turns", 0) for r in results),
+        "repaired_cases": sum(
+            1
+            for r in results
+            if r.get("model_repair_turns") and r["status"] != "failed"
+        ),
         "p50_seconds": latencies[len(latencies) // 2],
         "p95_seconds": latencies[
             min(len(latencies) - 1, int(round(0.95 * (len(latencies) - 1))))

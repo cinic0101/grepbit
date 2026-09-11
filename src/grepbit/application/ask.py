@@ -104,9 +104,13 @@ class AskResult:
     excluded_segments: list[str] = field(default_factory=list)
     literal_checks: int = 0
     model_retries: int = 0
-    # the model's text when it failed validation (status failed,
-    # reason invalid_structured_output), so a malformed plan can be classified later
+    # the model's text the first time it failed validation, kept even when the
+    # repair turn then produced the plan, so a malformed plan can be classified
     raw_output: str | None = None
+    # the repair turn's text when it failed too (status failed)
+    raw_output_repair: str | None = None
+    # 1 when the planner needed its repair turn
+    model_repair_turns: int = 0
     elapsed_seconds: float = 0.0
 
     @property
@@ -178,6 +182,11 @@ def ask(
     return result
 
 
+def _record_planner_trace(result: AskResult, planner: Any) -> None:
+    result.raw_output = getattr(planner, "last_raw_output", None)
+    result.model_repair_turns = int(getattr(planner, "last_model_repair_turns", 0) or 0)
+
+
 def _ask(question, services, settings, previous, run_id, result, overlay, index):
     if services.unsafe(question):
         result.status, result.reason = "unsafe", "unsafe_language"
@@ -211,13 +220,15 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
         except GroundingModelError as error:
             if error.code != "model_call_failed" or attempt == 1:
                 result.status, result.reason = "failed", error.code
+                _record_planner_trace(result, services.planner)
                 if error.code == "invalid_structured_output":
-                    result.raw_output = getattr(
-                        services.planner, "last_raw_output", None
+                    result.raw_output_repair = getattr(
+                        services.planner, "last_repair_output", None
                     )
                 return
             result.model_retries = attempt + 1
     assert proposal is not None
+    _record_planner_trace(result, services.planner)
     result.shape_repairs = list(getattr(services.planner, "last_repairs", []) or [])
     if proposal.decision == "none":
         result.status = {"ambiguous": "clarify"}.get(proposal.reason, proposal.reason)

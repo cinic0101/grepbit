@@ -201,6 +201,18 @@ does not read NULL as a number.
 ## Prompt revisions
 
 `PLAN_PROMPT_REVISION` in `adapters/litellm/plan_client.py` is `plan-classify-json-v13`.
+
+**Repair turn (2026-09-11).** When the model's text fails to parse or to
+validate, the planner adapter sends one follow-up in the same conversation:
+its own text as the assistant turn, then the validation errors (path and
+message, at most eight) with the instruction to return the corrected object
+without changing tables, columns, filters or values. A plan that arrives this
+way is served like any other and the row records `model_repair_turns: 1` and
+the first text as `raw_output`, so every slip stays classifiable; a second
+failure is `invalid_structured_output` with both texts kept.
+`GREPBIT_MODEL_REPAIR_TURNS=0` disables it for ablations. Each call has a 20 s
+budget (`GREPBIT_MODEL_TIMEOUT_SECONDS`), one transport retry, so a question
+costs at most three calls.
 History: v1 baseline; v2 prefer an entity's label column over its key; v3 a
 business concept with no column, sample value or null check must decline;
 v4 reviewed metrics rule (only when an overlay is present); v5 follow-up rule
