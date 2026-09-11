@@ -1,0 +1,16 @@
+{
+  "reports": [
+    "evals/cases/tier0/retail.yaml",
+    "evals/cases/tier0/retail.yaml",
+    "evals/cases/tier0/retail.yaml"
+  ],
+  "prompt_revision": "plan-classify-json-v14",
+  "model": "gemma-4-31b",
+  "runs": 3,
+  "cases": 12,
+  "stable_status": 12,
+  "stable_plan": 12,
+  "plan_stability": 1.0,
+  "status_stability": 1.0,
+  "unstable": []
+}

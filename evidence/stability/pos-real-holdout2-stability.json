@@ -1,0 +1,16 @@
+{
+  "reports": [
+    ".artifacts/holdout2/cases.yaml",
+    ".artifacts/holdout2/cases.yaml",
+    ".artifacts/holdout2/cases.yaml"
+  ],
+  "prompt_revision": "plan-classify-json-v14",
+  "model": "gemma-4-31b",
+  "runs": 3,
+  "cases": 30,
+  "stable_status": 30,
+  "stable_plan": 30,
+  "plan_stability": 1.0,
+  "status_stability": 1.0,
+  "unstable": []
+}

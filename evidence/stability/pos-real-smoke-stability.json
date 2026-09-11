@@ -1,0 +1,16 @@
+{
+  "reports": [
+    "evals/cases/tier0/pos_real_smoke.yaml",
+    "evals/cases/tier0/pos_real_smoke.yaml",
+    "evals/cases/tier0/pos_real_smoke.yaml"
+  ],
+  "prompt_revision": "plan-classify-json-v14",
+  "model": "gemma-4-31b",
+  "runs": 3,
+  "cases": 7,
+  "stable_status": 7,
+  "stable_plan": 7,
+  "plan_stability": 1.0,
+  "status_stability": 1.0,
+  "unstable": []
+}

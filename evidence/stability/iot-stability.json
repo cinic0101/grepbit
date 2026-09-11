@@ -1,0 +1,16 @@
+{
+  "reports": [
+    "evals/cases/tier0/iot.yaml",
+    "evals/cases/tier0/iot.yaml",
+    "evals/cases/tier0/iot.yaml"
+  ],
+  "prompt_revision": "plan-classify-json-v14",
+  "model": "gemma-4-31b",
+  "runs": 3,
+  "cases": 20,
+  "stable_status": 20,
+  "stable_plan": 20,
+  "plan_stability": 1.0,
+  "status_stability": 1.0,
+  "unstable": []
+}

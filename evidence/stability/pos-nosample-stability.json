@@ -1,0 +1,16 @@
+{
+  "reports": [
+    "evals/cases/tier0/pos.yaml",
+    "evals/cases/tier0/pos.yaml",
+    "evals/cases/tier0/pos.yaml"
+  ],
+  "prompt_revision": "plan-classify-json-v14",
+  "model": "gemma-4-31b",
+  "runs": 3,
+  "cases": 26,
+  "stable_status": 26,
+  "stable_plan": 26,
+  "plan_stability": 1.0,
+  "status_stability": 1.0,
+  "unstable": []
+}
