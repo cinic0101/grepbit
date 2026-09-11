@@ -399,6 +399,54 @@ def _repair_refs(node: Any, model: SchemaModel, base_table, repairs, coerce, key
         _repair_refs(value, model, base_table, repairs, coerce, child_key)
 
 
+def _output_names(plan: dict[str, Any]) -> set[str]:
+    """Output names a plan can be ordered or filtered by, read from the dict."""
+
+    names: set[str] = set()
+    for item in plan.get("dimensions") or []:
+        if isinstance(item, dict) and isinstance(item.get("column"), str):
+            names.add(item["column"])
+    for item in plan.get("measures") or []:
+        if not isinstance(item, dict):
+            continue
+        if isinstance(item.get("alias"), str):
+            names.add(item["alias"])
+        elif isinstance(item.get("metric"), str):
+            names.add(item["metric"])
+    latest = plan.get("latest")
+    if isinstance(latest, dict):
+        for ref in latest.get("take") or []:
+            if isinstance(ref, dict) and isinstance(ref.get("column"), str):
+                names.add(ref["column"])
+    time = plan.get("time")
+    if isinstance(time, dict) and time.get("grain"):
+        names.add("period_start")
+    return names
+
+
+def _strip_qualified_fields(plan: dict[str, Any], repairs: list[str]) -> None:
+    """order.field "store.store_name" -> "store_name" when that is an output name.
+
+    Order, having and growth refer to outputs by name; the model sometimes
+    qualifies them like columns. The prefix is dropped only when the bare
+    name is an output the plan produces, so nothing is guessed.
+    """
+
+    names = _output_names(plan)
+    for section, key in (
+        ("order", "field"),
+        ("having", "field"),
+        ("growth", "measure"),
+    ):
+        for item in plan.get(section) or []:
+            value = item.get(key) if isinstance(item, dict) else None
+            if isinstance(value, str) and "." in value:
+                bare = value.rsplit(".", 1)[1]
+                if bare in names:
+                    item[key] = bare
+                    repairs.append(f"{section}.{key} {value} -> {bare}")
+
+
 def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]]:
     """Coerce column references the model wrote as strings into ColumnRef dicts.
 
@@ -457,6 +505,7 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
             del without["time"]
             repairs.append("dropped without.time without scope")
     _repair_refs(plan, model, base_table, repairs, coerce)
+    _strip_qualified_fields(plan, repairs)
     return payload, repairs
 
 

@@ -506,3 +506,29 @@ def test_repair_unwraps_a_dimension_written_like_an_order_by_item() -> None:
     repaired, repairs = repair_column_refs(payload, iot_schema())
     assert repaired["plan"]["dimensions"] == [{"table": "devices", "column": "model"}]
     assert repairs == ["dimensions: unwrapped column reference"]
+
+
+def test_repair_strips_a_qualified_output_name_in_order_and_having() -> None:
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "dimensions": [{"table": "devices", "column": "devices.model"}],
+            "measures": [{"aggregate": "count", "alias": "alerts_n"}],
+            "order": [
+                {"field": "alerts_n", "direction": "desc"},
+                {"field": "devices.model", "direction": "asc"},
+            ],
+            "having": [{"field": "alerts.alerts_n", "op": "gt", "value": 3}],
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    plan = repaired["plan"]
+    assert plan["order"][1]["field"] == "model"
+    assert plan["having"][0]["field"] == "alerts_n"
+    assert "order.field devices.model -> model" in repairs
+    assert "having.field alerts.alerts_n -> alerts_n" in repairs
+    # a qualified name that is not an output stays for validation to reject
+    payload["plan"]["order"] = [{"field": "devices.site_id", "direction": "asc"}]
+    _, repairs = repair_column_refs(payload, iot_schema())
+    assert not any(r.startswith("order.field") for r in repairs)
