@@ -1,0 +1,148 @@
+{
+  "datasource_id": "pos_test",
+  "overlay_revision": "pos-overlay-experiment-v1",
+  "examples_requested": 500,
+  "as_of": "2026-02-10T12:00:00+08:00",
+  "outcomes": {
+    "invalid_plan": 51,
+    "ordered_or_limited_compared_as_sets": 60,
+    "agree": 270,
+    "typed_refusal": 97,
+    "duplicate": 81,
+    "disagree": 1
+  },
+  "typed_refusals": {
+    "share_requires_groups": 70,
+    "aggregate_kind_mismatch": 13,
+    "ambiguous_join_path": 7,
+    "growth_to_date_unsupported": 6,
+    "relative_window_reaches_future": 1
+  },
+  "disagreements": [
+    {
+      "plan": {
+        "base_table": "hr_payroll",
+        "measures": [
+          {
+            "aggregate": "avg",
+            "column": {
+              "table": "hr_payroll",
+              "column": "bonus"
+            },
+            "alias": "m0",
+            "share_of_total": true
+          },
+          {
+            "metric": "base_salary_total",
+            "alias": "m1"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "hr_employee",
+            "column": "job_title"
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "hr_payroll",
+            "column": "paid_at"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2025-12"
+          },
+          "grain": "week"
+        },
+        "filters": []
+      },
+      "exclude_segments": [],
+      "sql": "SELECT CAST(DATE_TRUNC('WEEK', hr_payroll.period_start) AS DATE) AS period_start, hr_employee.job_title AS job_title, CAST((AVG(hr_payroll.bonus)) AS DOUBLE PRECISION) / NULLIF(SUM(AVG(hr_payroll.bonus)) OVER (PARTITION BY CAST(DATE_TRUNC('WEEK', hr_payroll.period_start) AS DATE)), 0) AS m0, SUM(hr_payroll.base_salary) AS m1 FROM public.hr_payroll LEFT JOIN public.hr_employee ON hr_payroll.emp_id = hr_employee.emp_id WHERE hr_payroll.period_start >= %(p1_start_0)s AND hr_payroll.period_start < %(p1_end_1)s GROUP BY CAST(DATE_TRUNC('WEEK', hr_payroll.period_start) AS DATE), hr_employee.job_title ORDER BY period_start NULLS FIRST, job_title NULLS FIRST",
+      "columns": [
+        "period_start",
+        "job_title",
+        "m0",
+        "m1"
+      ],
+      "actual_rows": 14,
+      "reference_rows": 14,
+      "actual": [
+        [
+          "2025-12-01",
+          "主任",
+          "0.077",
+          "86000"
+        ],
+        [
+          "2025-12-01",
+          "副理",
+          "0.0653",
+          "94000"
+        ],
+        [
+          "2025-12-01",
+          "工程師",
+          "0.0701",
+          "505000"
+        ],
+        [
+          "2025-12-01",
+          "會計師",
+          "0.077",
+          "86000"
+        ],
+        [
+          "2025-12-01",
+          "業務副理",
+          "0.072",
+          "98000"
+        ],
+        [
+          "2025-12-01",
+          "業務助理",
+          "0.0636",
+          "58000"
+        ]
+      ],
+      "reference": [
+        [
+          "2025-12-01",
+          "主任",
+          "NULL",
+          "86000"
+        ],
+        [
+          "2025-12-01",
+          "副理",
+          "NULL",
+          "94000"
+        ],
+        [
+          "2025-12-01",
+          "工程師",
+          "NULL",
+          "505000"
+        ],
+        [
+          "2025-12-01",
+          "會計師",
+          "NULL",
+          "86000"
+        ],
+        [
+          "2025-12-01",
+          "業務副理",
+          "NULL",
+          "98000"
+        ],
+        [
+          "2025-12-01",
+          "業務助理",
+          "NULL",
+          "58000"
+        ]
+      ]
+    }
+  ],
+  "errors": []
+}

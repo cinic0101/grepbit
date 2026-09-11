@@ -1,0 +1,22 @@
+{
+  "datasource_id": "iot_spike",
+  "overlay_revision": null,
+  "examples_requested": 600,
+  "as_of": "2026-08-15T12:00:00+08:00",
+  "outcomes": {
+    "invalid_plan": 50,
+    "typed_refusal": 141,
+    "duplicate": 108,
+    "agree": 301,
+    "ordered_or_limited_compared_as_sets": 64
+  },
+  "typed_refusals": {
+    "share_requires_groups": 84,
+    "aggregate_kind_mismatch": 31,
+    "growth_to_date_unsupported": 10,
+    "relative_window_reaches_future": 9,
+    "time_scope_requires_grain": 7
+  },
+  "disagreements": [],
+  "errors": []
+}

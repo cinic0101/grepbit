@@ -216,3 +216,29 @@ Other runners: `spike_parent_agent.py` (relay experiment) and
   other case sets are rerun to show no over-refusal.
 - Latency numbers taken while other runs were sharing the model endpoint are
   marked as inflated.
+
+## Differential test of the compiler (`evals/differential.py`)
+
+```sh
+.venv/bin/python evals/differential.py --dsn-env <ENV> --datasource-id <id> \
+  [--overlay <overlay.json>] [--examples 500] [--seed 1] [--as-of <ISO>] \
+  [--redact] --output evidence/differential/<name>.json
+```
+
+Plans are generated over the introspected schema (`evals/plan_generator.py`,
+Hypothesis: raw and reviewed measures with their own filters, ratios,
+shares, dimensions on the base or a parent, typed filters, windows and
+grains, having, growth, order and limit, the latest row per group, entities
+with no activity). The compiled SQL runs on PostgreSQL through the service's
+executor; `evals/reference_eval.py` evaluates the same plan in plain Python
+over the same tables, written from the contract, not from the compiler
+(joins along foreign keys, three-valued filters, windows and buckets in the
+business time zone, aggregates, ratios, shares with the window total or the
+part over the whole, growth, having, the two row shapes). The two row sets
+are compared as the runner compares an answer with its reference. A typed
+refusal is a legitimate outcome and counted by code; a plan the evaluator
+does not cover is skipped and counted; a disagreement or a PostgreSQL error
+is recorded with the plan and the SQL. Reports live under
+`evidence/differential/`; the first runs are in
+`../research/differential-01.md`.
+

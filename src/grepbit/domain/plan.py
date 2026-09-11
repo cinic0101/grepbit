@@ -340,6 +340,11 @@ class QueryPlan(DomainModel):
         for item in self.growth:
             if item.measure not in measure_names:
                 raise ValueError("plan_growth_field_not_a_measure")
+            measure = next(m for m in self.measures if m.output_name == item.measure)
+            if measure.share_of_total:
+                # LAG over a window expression nests window functions (found by
+                # the differential as PostgreSQL 42P20)
+                raise ValueError("plan_growth_on_share")
             if self.time is None or self.time.grain is None:
                 raise ValueError("plan_growth_requires_grain")
         if self.base_table is None and not any(

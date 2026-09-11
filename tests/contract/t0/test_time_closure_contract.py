@@ -295,3 +295,17 @@ def test_growth_over_one_period_is_widened_to_include_the_previous_one() -> None
 def test_shapes_the_plan_itself_rejects(payload, code) -> None:
     with pytest.raises(ValueError, match=code):
         QueryPlan.model_validate(payload)
+
+
+def test_a_period_breakdown_leaves_out_rows_without_a_time_value() -> None:
+    # found by the differential: a NULL time value formed its own bucket and
+    # took part in growth as the last period
+    compiled = compile_time({"column": RAISED_AT, "grain": "month"})
+    sql = compiled.compiled.physical_sql
+    assert "WHERE NOT alerts.raised_at IS NULL" in sql
+    assert any("are in no period" in a.text for a in compiled.assumptions)
+    # a plain window (no grain) keeps the comparison as its only condition
+    windowed = compile_time(
+        {"column": RAISED_AT, "scope": {"kind": "month", "month": "2026-07"}}
+    )
+    assert "IS NULL" not in windowed.compiled.physical_sql

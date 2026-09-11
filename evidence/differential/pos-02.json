@@ -1,0 +1,23 @@
+{
+  "datasource_id": "pos_test",
+  "overlay_revision": "pos-overlay-experiment-v1",
+  "examples_requested": 600,
+  "as_of": "2026-02-10T12:00:00+08:00",
+  "outcomes": {
+    "invalid_plan": 61,
+    "agree": 288,
+    "duplicate": 148,
+    "ordered_or_limited_compared_as_sets": 74,
+    "typed_refusal": 103
+  },
+  "typed_refusals": {
+    "share_requires_groups": 78,
+    "time_scope_requires_grain": 8,
+    "ambiguous_join_path": 6,
+    "growth_to_date_unsupported": 5,
+    "aggregate_kind_mismatch": 4,
+    "relative_window_reaches_future": 2
+  },
+  "disagreements": [],
+  "errors": []
+}

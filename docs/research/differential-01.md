@@ -1,0 +1,60 @@
+# The differential: compiled SQL against a plain-Python reading of the plan (2026-09-11)
+
+## Setting
+
+Phase 2 of the root-cause program (B4). Every wrong number of the day had
+been a construct meeting another construct in a cell nobody had tested; the
+generated-plan properties had made the compiler *refuse or compile* cleanly,
+but said nothing about the values. The differential adds the oracle: a
+second, independent evaluation of the same plan over the same rows, written
+from the contract in plain Python (`evals/reference_eval.py`), with plans
+drawn by a schema-driven generator (`evals/plan_generator.py`) and the
+compiled SQL executed on PostgreSQL through the service's own executor.
+DuckDB was added as a development dependency for the next step (random
+instances) after checking that the compiled dialect runs on it.
+
+## Runs
+
+| Run | Set | Examples | Agree | Disagree | PostgreSQL errors | Typed refusals |
+|---|---|---|---|---|---|---|
+| iot first pass | `grepbit_spike_iot`, no overlay | 150 | 78 | 2 | 9 | 32 |
+| iot second | seed 2 | 400 | 206 | 0 | 3 | 85 |
+| iot third | seed 3 | 500 | 268 | 1 | 0 | 94 |
+| iot fourth | seed 4 | 600 | 301 | 0 | 0 | 141 |
+| pos first | `text2sql_test` with the fixture overlay | 500 | 270 | 1 | 0 | 97 |
+| pos second | seed 2 | 600 | 288 | 0 | 0 | 103 |
+
+(Examples minus these are duplicates or payloads the plan itself rejects.)
+Reports: `evidence/differential/`.
+
+## What the compiler got wrong
+
+Four classes, none of which 313 hand-written cases had reached.
+
+| Finding | PostgreSQL | Fix |
+|---|---|---|
+| growth on a share: `LAG` over a window expression nests window functions | 42P20 | rejected at validation, `plan_growth_on_share` |
+| a ratio, share, growth or having over `min`/`max` of a date or text | 42846, 42883 | refused typed, `aggregate_kind_mismatch` with the reason |
+| `having` with the after-share selection attached to the outer query, which has no `GROUP BY` | 42803 | `having` moves to the inner grouped query |
+| a NULL time value under a grain formed its own bucket and took part in growth as the last period | a result, not an error | a period breakdown leaves out rows without a time value, with an assumption |
+
+## What the evaluator got wrong
+
+Three gaps, each a rule the contract states and the first draft missed: the
+NULL bucket (then removed on both sides by the rule above), a reviewed
+metric's prescribed time column overriding the plan's (the compiler states
+an assumption; the evaluator now does the same), and the order of a NULL
+period. Writing the second implementation is where the contract's silences
+show; each was filled in the contract or made a rule.
+
+## Reading
+
+Two oracles that disagree on 11 of the first 150 plans and on 0 of the
+last 1,200 is the shape this was meant to have: the compiler is now
+checked, per construct pair and per value, by something that does not share
+its code. The generated space still leaves out what the generator cannot
+draw (default segments were not exercised because the fixture overlay has
+none; `without` plans over the real POS schema; literals the value index
+would resolve). The next step runs the same plans on random instances in
+DuckDB (C3), so that a coincidence of the fixture data (a column with one
+value, an empty month) cannot hide a difference.

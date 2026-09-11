@@ -1051,3 +1051,120 @@ def test_an_alias_in_the_questions_language_compiles_quoted() -> None:
     sql = compiled.compiled.physical_sql
     assert 'AS "停機分鐘"' in sql and 'ORDER BY "停機分鐘"' in sql
     assert compiled.output_columns == ("model", "停機分鐘")
+
+
+def test_derived_measures_over_non_numeric_operands_are_refused_typed() -> None:
+    # found by the differential: CAST(MAX(timestamp) AS DOUBLE PRECISION) is
+    # PostgreSQL 42846, MAX(date) - LAG(MAX(date)) is 42883
+    for payload in (
+        {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "alias": "r",
+                    "ratio": {
+                        "numerator": {
+                            "aggregate": "max",
+                            "column": {"table": "alerts", "column": "raised_at"},
+                        },
+                        "denominator": {"aggregate": "count"},
+                    },
+                }
+            ],
+        },
+        {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "aggregate": "max",
+                    "column": {"table": "alerts", "column": "raised_at"},
+                    "alias": "last",
+                    "share_of_total": True,
+                }
+            ],
+            "dimensions": [{"table": "devices", "column": "model"}],
+        },
+        {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "aggregate": "max",
+                    "column": {"table": "alerts", "column": "raised_at"},
+                    "alias": "last",
+                }
+            ],
+            "time": {
+                "column": {"table": "alerts", "column": "raised_at"},
+                "scope": {"kind": "month", "month": "2026-07"},
+                "grain": "month",
+            },
+            "growth": [{"measure": "last"}],
+        },
+    ):
+        with pytest.raises(PlanError) as info:
+            compile_plan(payload)
+        assert info.value.code == "aggregate_kind_mismatch"
+    # min and max over a numeric column stay fine inside a ratio
+    compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "alias": "r",
+                    "ratio": {
+                        "numerator": {
+                            "aggregate": "max",
+                            "column": {"table": "alerts", "column": "downtime_minutes"},
+                        },
+                        "denominator": {"aggregate": "count"},
+                    },
+                }
+            ],
+        }
+    )
+
+
+def test_growth_on_a_share_is_rejected_at_validation() -> None:
+    # found by the differential: LAG over a window expression is PostgreSQL 42P20
+    with pytest.raises(ValueError, match="plan_growth_on_share"):
+        QueryPlan.model_validate(
+            {
+                "base_table": "alerts",
+                "measures": [
+                    {"aggregate": "count", "alias": "n", "share_of_total": True}
+                ],
+                "dimensions": [{"table": "devices", "column": "model"}],
+                "time": {
+                    "column": {"table": "alerts", "column": "raised_at"},
+                    "grain": "month",
+                },
+                "growth": [{"measure": "n"}],
+            }
+        )
+
+
+def test_having_sits_inside_the_after_share_subquery() -> None:
+    # found by the differential: HAVING on the outer selection query has no
+    # GROUP BY (PostgreSQL 42803)
+    compiled = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [
+                {"aggregate": "count", "alias": "share", "share_of_total": True},
+                {"aggregate": "count", "alias": "n"},
+            ],
+            "dimensions": [{"table": "devices", "column": "model"}],
+            "filters": [
+                {
+                    "column": {"table": "devices", "column": "model"},
+                    "op": "eq",
+                    "values": ["AP-300"],
+                }
+            ],
+            "having": [{"field": "n", "op": "gt", "value": 5}],
+        }
+    )
+    sql = compiled.compiled.physical_sql
+    inner, outer = sql.split(") AS shares")
+    assert "HAVING COUNT(*) > %(h_" in inner
+    assert "HAVING" not in outer and "WHERE model = %(f_" in outer

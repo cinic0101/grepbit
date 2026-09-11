@@ -1,0 +1,948 @@
+{
+  "datasource_id": "iot_spike",
+  "overlay_revision": null,
+  "examples_requested": 150,
+  "as_of": "2026-08-15T12:00:00+08:00",
+  "outcomes": {
+    "invalid_plan": 6,
+    "postgres_error": 9,
+    "agree": 78,
+    "duplicate": 23,
+    "typed_refusal": 32,
+    "ordered_or_limited_compared_as_sets": 12,
+    "disagree": 2
+  },
+  "typed_refusals": {
+    "share_requires_groups": 28,
+    "time_scope_requires_grain": 4
+  },
+  "disagreements": [
+    {
+      "plan": {
+        "base_table": "alerts",
+        "measures": [
+          {
+            "aggregate": "count_distinct",
+            "column": {
+              "table": "alerts",
+              "column": "severity"
+            },
+            "alias": "m0"
+          },
+          {
+            "aggregate": "count_distinct",
+            "column": {
+              "table": "sites",
+              "column": "site_name"
+            },
+            "alias": "m1",
+            "share_of_total": true
+          }
+        ],
+        "dimensions": [],
+        "time": {
+          "column": {
+            "table": "alerts",
+            "column": "resolved_at"
+          },
+          "grain": "day"
+        },
+        "filters": [
+          {
+            "column": {
+              "table": "sites",
+              "column": "tz"
+            },
+            "op": "in",
+            "values": [
+              "Asia/Taipei"
+            ]
+          }
+        ],
+        "growth": [
+          {
+            "measure": "m0"
+          }
+        ],
+        "order": [
+          {
+            "field": "m0",
+            "direction": "asc"
+          }
+        ],
+        "limit": 10
+      },
+      "exclude_segments": [],
+      "sql": "SELECT DATE_TRUNC('DAY', alerts.resolved_at AT TIME ZONE 'Asia/Taipei') AS period_start, COUNT(DISTINCT alerts.severity) AS m0, CAST((COUNT(DISTINCT sites.site_name)) AS DOUBLE PRECISION) / NULLIF(SUM(COUNT(DISTINCT sites.site_name)) OVER (PARTITION BY DATE_TRUNC('DAY', alerts.resolved_at AT TIME ZONE 'Asia/Taipei')), 0) AS m1, CAST((COUNT(DISTINCT alerts.severity) - LAG(COUNT(DISTINCT alerts.severity)) OVER (ORDER BY DATE_TRUNC('DAY', alerts.resolved_at AT TIME ZONE 'Asia/Taipei'))) AS DOUBLE PRECISION) / NULLIF(LAG(COUNT(DISTINCT alerts.severity)) OVER (ORDER BY DATE_TRUNC('DAY', alerts.resolved_at AT TIME ZONE 'Asia/Taipei')), 0) AS m0_growth FROM public.alerts LEFT JOIN public.devices ON alerts.device_id = devices.device_id LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE sites.tz IN (%(f_0)s) GROUP BY DATE_TRUNC('DAY', alerts.resolved_at AT TIME ZONE 'Asia/Taipei') ORDER BY m0 NULLS FIRST LIMIT %(limit_1)s",
+      "columns": [
+        "period_start",
+        "m0",
+        "m1",
+        "m0_growth"
+      ],
+      "actual_rows": 10,
+      "reference_rows": 13,
+      "actual": [
+        [
+          "2026-07-02T00:00:00",
+          "1",
+          "1",
+          "NULL"
+        ],
+        [
+          "2026-07-04T00:00:00",
+          "1",
+          "1",
+          "0"
+        ],
+        [
+          "2026-07-05T00:00:00",
+          "1",
+          "1",
+          "0"
+        ],
+        [
+          "2026-07-08T00:00:00",
+          "1",
+          "1",
+          "0"
+        ],
+        [
+          "2026-07-11T00:00:00",
+          "1",
+          "1",
+          "0"
+        ],
+        [
+          "2026-07-15T00:00:00",
+          "1",
+          "1",
+          "0"
+        ]
+      ],
+      "reference": [
+        [
+          "2026-07-02T00:00:00",
+          "1",
+          "1",
+          "NULL"
+        ],
+        [
+          "2026-07-04T00:00:00",
+          "1",
+          "1",
+          "0"
+        ],
+        [
+          "2026-07-05T00:00:00",
+          "1",
+          "1",
+          "0"
+        ],
+        [
+          "2026-07-08T00:00:00",
+          "1",
+          "1",
+          "0"
+        ],
+        [
+          "2026-07-11T00:00:00",
+          "1",
+          "1",
+          "0"
+        ],
+        [
+          "2026-07-15T00:00:00",
+          "1",
+          "1",
+          "0"
+        ]
+      ]
+    },
+    {
+      "plan": {
+        "base_table": "alerts",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "alerts",
+              "column": "downtime_minutes"
+            },
+            "filters": [
+              {
+                "column": {
+                  "table": "alerts",
+                  "column": "severity"
+                },
+                "op": "in",
+                "values": [
+                  "critical"
+                ]
+              }
+            ],
+            "alias": "m0"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "devices",
+            "column": "model"
+          },
+          {
+            "table": "alerts",
+            "column": "severity"
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "alerts",
+            "column": "resolved_at"
+          },
+          "grain": "day"
+        },
+        "filters": []
+      },
+      "exclude_segments": [],
+      "sql": "SELECT DATE_TRUNC('DAY', alerts.resolved_at AT TIME ZONE 'Asia/Taipei') AS period_start, devices.model AS model, alerts.severity AS severity, SUM(alerts.downtime_minutes) FILTER(WHERE alerts.severity IN (%(f_0)s)) AS m0 FROM public.alerts LEFT JOIN public.devices ON alerts.device_id = devices.device_id GROUP BY DATE_TRUNC('DAY', alerts.resolved_at AT TIME ZONE 'Asia/Taipei'), devices.model, alerts.severity ORDER BY period_start NULLS FIRST, model NULLS FIRST, severity NULLS FIRST",
+      "columns": [
+        "period_start",
+        "model",
+        "severity",
+        "m0"
+      ],
+      "actual_rows": 15,
+      "reference_rows": 14,
+      "actual": [
+        [
+          "2026-07-02T00:00:00",
+          "AP-500",
+          "warning",
+          "NULL"
+        ],
+        [
+          "2026-07-04T00:00:00",
+          "AP-500",
+          "critical",
+          "210"
+        ],
+        [
+          "2026-07-05T00:00:00",
+          "SW-24",
+          "info",
+          "NULL"
+        ],
+        [
+          "2026-07-08T00:00:00",
+          "AP-500",
+          "warning",
+          "NULL"
+        ],
+        [
+          "2026-07-11T00:00:00",
+          "GW-10",
+          "critical",
+          "360"
+        ],
+        [
+          "2026-07-15T00:00:00",
+          "AP-500",
+          "critical",
+          "60"
+        ]
+      ],
+      "reference": [
+        [
+          "2026-07-02T00:00:00",
+          "AP-500",
+          "warning",
+          "NULL"
+        ],
+        [
+          "2026-07-04T00:00:00",
+          "AP-500",
+          "critical",
+          "210"
+        ],
+        [
+          "2026-07-05T00:00:00",
+          "SW-24",
+          "info",
+          "NULL"
+        ],
+        [
+          "2026-07-08T00:00:00",
+          "AP-500",
+          "warning",
+          "NULL"
+        ],
+        [
+          "2026-07-11T00:00:00",
+          "GW-10",
+          "critical",
+          "360"
+        ],
+        [
+          "2026-07-15T00:00:00",
+          "AP-500",
+          "critical",
+          "60"
+        ]
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "kind": "postgres_error",
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "min",
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "filters": [
+              {
+                "column": {
+                  "table": "sites",
+                  "column": "region"
+                },
+                "op": "is_null"
+              }
+            ],
+            "alias": "m0",
+            "share_of_total": true
+          },
+          {
+            "aggregate": "avg",
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "alias": "m1"
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "sites",
+            "column": "site_name"
+          },
+          {
+            "table": "devices",
+            "column": "firmware"
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "devices",
+            "column": "installed_on"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-06"
+          },
+          "grain": "day"
+        },
+        "filters": [
+          {
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "op": "lte",
+            "values": [
+              100
+            ]
+          }
+        ],
+        "growth": [
+          {
+            "measure": "m0"
+          }
+        ],
+        "having": [
+          {
+            "field": "m1",
+            "op": "gte",
+            "value": 5
+          }
+        ],
+        "order": [
+          {
+            "field": "site_name",
+            "direction": "desc"
+          }
+        ]
+      },
+      "sql": "SELECT CAST(DATE_TRUNC('DAY', devices.installed_on) AS DATE) AS period_start, sites.site_name AS site_name, devices.firmware AS firmware, CAST((MIN(devices.monthly_fee) FILTER(WHERE sites.region IS NULL)) AS DOUBLE PRECISION) / NULLIF(SUM(MIN(devices.monthly_fee) FILTER(WHERE sites.region IS NULL)) OVER (PARTITION BY CAST(DATE_TRUNC('DAY', devices.installed_on) AS DATE)), 0) AS m0, AVG(devices.monthly_fee) AS m1, CAST((CAST((MIN(devices.monthly_fee) FILTER(WHERE sites.region IS NULL)) AS DOUBLE PRECISION) / NULLIF(SUM(MIN(devices.monthly_fee) FILTER(WHERE sites.region IS NULL)) OVER (PARTITION BY CAST(DATE_TRUNC('DAY', devices.installed_on) AS DATE)), 0) - LAG(CAST((MIN(devices.monthly_fee) FILTER(WHERE sites.region IS NULL)) AS DOUBLE PRECISION) / NULLIF(SUM(MIN(devices.monthly_fee) FILTER(WHERE sites.region IS NULL)) OVER (PARTITION BY CAST(DATE_TRUNC('DAY', devices.installed_on) AS DATE)), 0)) OVER (PARTITION BY sites.site_name, devices.firmware ORDER BY CAST(DATE_TRUNC('DAY', devices.installed_on) AS DATE))) AS DOUBLE PRECISION) / NULLIF(LAG(CAST((MIN(devices.monthly_fee) FILTER(WHERE sites.region IS NULL)) AS DOUBLE PRECISION) / NULLIF(SUM(MIN(devices.monthly_fee) FILTER(WHERE sites.region IS NULL)) OVER (PARTITION BY CAST(DATE_TRUNC('DAY', devices.installed_on) AS DATE)), 0)) OVER (PARTITION BY sites.site_name, devices.firmware ORDER BY CAST(DATE_TRUNC('DAY', devices.installed_on) AS DATE)), 0) AS m0_growth FROM public.devices LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE devices.monthly_fee <= %(f_0)s AND (devices.installed_on >= %(p1_start_1)s AND devices.installed_on < %(p1_end_2)s) GROUP BY CAST(DATE_TRUNC('DAY', devices.installed_on) AS DATE), sites.site_name, devices.firmware HAVING AVG(devices.monthly_fee) >= %(h_3)s ORDER BY site_name DESC NULLS LAST",
+      "error": "42P20"
+    },
+    {
+      "kind": "postgres_error",
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "avg",
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "alias": "m0"
+          },
+          {
+            "alias": "m1",
+            "ratio": {
+              "numerator": {
+                "aggregate": "max",
+                "column": {
+                  "table": "devices",
+                  "column": "installed_on"
+                },
+                "filters": [
+                  {
+                    "column": {
+                      "table": "devices",
+                      "column": "firmware"
+                    },
+                    "op": "in",
+                    "values": [
+                      "2.0.3"
+                    ]
+                  }
+                ]
+              },
+              "denominator": {
+                "aggregate": "count_distinct",
+                "column": {
+                  "table": "sites",
+                  "column": "site_name"
+                }
+              }
+            },
+            "share_of_total": true
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "devices",
+            "column": "status"
+          },
+          {
+            "table": "sites",
+            "column": "tz"
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "devices",
+            "column": "installed_on"
+          },
+          "scope": {
+            "kind": "latest",
+            "unit": "month"
+          }
+        },
+        "filters": [
+          {
+            "column": {
+              "table": "sites",
+              "column": "region"
+            },
+            "op": "eq",
+            "values": [
+              "north"
+            ]
+          }
+        ]
+      },
+      "sql": "SELECT devices.status AS status, sites.tz AS tz, AVG(devices.monthly_fee) AS m0, CAST((CAST((MAX(devices.installed_on) FILTER(WHERE devices.firmware IN (%(f_0)s))) AS DOUBLE PRECISION) / NULLIF(COUNT(DISTINCT sites.site_name), 0)) AS DOUBLE PRECISION) / NULLIF(SUM(CAST((MAX(devices.installed_on) FILTER(WHERE devices.firmware IN (%(f_0)s))) AS DOUBLE PRECISION) / NULLIF(COUNT(DISTINCT sites.site_name), 0)) OVER (), 0) AS m1 FROM public.devices LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE sites.region = %(f_1)s AND (devices.installed_on >= DATE_TRUNC('MONTH', (SELECT MAX(devices.installed_on) FROM public.devices LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE sites.region = %(f_1)s)) AND devices.installed_on < (DATE_TRUNC('MONTH', (SELECT MAX(devices.installed_on) FROM public.devices LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE sites.region = %(f_1)s)) + INTERVAL '1 month')) GROUP BY devices.status, sites.tz ORDER BY status NULLS FIRST, tz NULLS FIRST",
+      "error": "42846"
+    },
+    {
+      "kind": "postgres_error",
+      "plan": {
+        "base_table": "readings",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "devices",
+              "column": "monthly_fee"
+            },
+            "alias": "m0",
+            "share_of_total": true
+          },
+          {
+            "alias": "m1",
+            "ratio": {
+              "numerator": {
+                "aggregate": "min",
+                "column": {
+                  "table": "readings",
+                  "column": "throughput_mbps"
+                }
+              },
+              "denominator": {
+                "aggregate": "count"
+              }
+            }
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "devices",
+            "column": "firmware"
+          },
+          {
+            "table": "sites",
+            "column": "site_name"
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "readings",
+            "column": "measured_at"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-06"
+          },
+          "grain": "quarter"
+        },
+        "filters": [],
+        "growth": [
+          {
+            "measure": "m0"
+          }
+        ]
+      },
+      "sql": "SELECT DATE_TRUNC('QUARTER', readings.measured_at AT TIME ZONE 'Asia/Taipei') AS period_start, devices.firmware AS firmware, sites.site_name AS site_name, CAST((SUM(devices.monthly_fee)) AS DOUBLE PRECISION) / NULLIF(SUM(SUM(devices.monthly_fee)) OVER (PARTITION BY DATE_TRUNC('QUARTER', readings.measured_at AT TIME ZONE 'Asia/Taipei')), 0) AS m0, CAST((MIN(readings.throughput_mbps)) AS DOUBLE PRECISION) / NULLIF(COUNT(*), 0) AS m1, CAST((CAST((SUM(devices.monthly_fee)) AS DOUBLE PRECISION) / NULLIF(SUM(SUM(devices.monthly_fee)) OVER (PARTITION BY DATE_TRUNC('QUARTER', readings.measured_at AT TIME ZONE 'Asia/Taipei')), 0) - LAG(CAST((SUM(devices.monthly_fee)) AS DOUBLE PRECISION) / NULLIF(SUM(SUM(devices.monthly_fee)) OVER (PARTITION BY DATE_TRUNC('QUARTER', readings.measured_at AT TIME ZONE 'Asia/Taipei')), 0)) OVER (PARTITION BY devices.firmware, sites.site_name ORDER BY DATE_TRUNC('QUARTER', readings.measured_at AT TIME ZONE 'Asia/Taipei'))) AS DOUBLE PRECISION) / NULLIF(LAG(CAST((SUM(devices.monthly_fee)) AS DOUBLE PRECISION) / NULLIF(SUM(SUM(devices.monthly_fee)) OVER (PARTITION BY DATE_TRUNC('QUARTER', readings.measured_at AT TIME ZONE 'Asia/Taipei')), 0)) OVER (PARTITION BY devices.firmware, sites.site_name ORDER BY DATE_TRUNC('QUARTER', readings.measured_at AT TIME ZONE 'Asia/Taipei')), 0) AS m0_growth FROM public.readings LEFT JOIN public.devices ON readings.device_id = devices.device_id LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE readings.measured_at >= %(p1_start_0)s AND readings.measured_at < %(p1_end_1)s GROUP BY DATE_TRUNC('QUARTER', readings.measured_at AT TIME ZONE 'Asia/Taipei'), devices.firmware, sites.site_name ORDER BY period_start NULLS FIRST, firmware NULLS FIRST, site_name NULLS FIRST",
+      "error": "42P20"
+    },
+    {
+      "kind": "postgres_error",
+      "plan": {
+        "base_table": "alerts",
+        "measures": [
+          {
+            "alias": "m0",
+            "ratio": {
+              "numerator": {
+                "aggregate": "max",
+                "column": {
+                  "table": "alerts",
+                  "column": "raised_at"
+                }
+              },
+              "denominator": {
+                "aggregate": "count",
+                "filters": [
+                  {
+                    "column": {
+                      "table": "sites",
+                      "column": "tz"
+                    },
+                    "op": "in",
+                    "values": [
+                      "Asia/Taipei"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "sites",
+            "column": "site_name"
+          },
+          {
+            "table": "devices",
+            "column": "firmware"
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "alerts",
+            "column": "raised_at"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "month",
+            "offset": 0,
+            "length": 1,
+            "to_date": true
+          }
+        },
+        "filters": [
+          {
+            "column": {
+              "table": "alerts",
+              "column": "downtime_minutes"
+            },
+            "op": "lt",
+            "values": [
+              1
+            ]
+          }
+        ]
+      },
+      "sql": "SELECT sites.site_name AS site_name, devices.firmware AS firmware, CAST((MAX(alerts.raised_at)) AS DOUBLE PRECISION) / NULLIF(COUNT(*) FILTER(WHERE sites.tz IN (%(f_0)s)), 0) AS m0 FROM public.alerts LEFT JOIN public.devices ON alerts.device_id = devices.device_id LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE alerts.downtime_minutes < %(f_1)s AND (alerts.raised_at >= %(p1_start_2)s AND alerts.raised_at < %(p1_end_3)s) GROUP BY sites.site_name, devices.firmware ORDER BY site_name NULLS FIRST, firmware NULLS FIRST",
+      "error": "42846"
+    },
+    {
+      "kind": "postgres_error",
+      "plan": {
+        "base_table": "alerts",
+        "measures": [
+          {
+            "aggregate": "max",
+            "column": {
+              "table": "alerts",
+              "column": "resolved_at"
+            },
+            "alias": "m0"
+          },
+          {
+            "aggregate": "count_distinct",
+            "column": {
+              "table": "sites",
+              "column": "site_name"
+            },
+            "alias": "m1",
+            "share_of_total": true
+          }
+        ],
+        "dimensions": [],
+        "time": {
+          "column": {
+            "table": "alerts",
+            "column": "resolved_at"
+          },
+          "grain": "day"
+        },
+        "filters": [
+          {
+            "column": {
+              "table": "sites",
+              "column": "tz"
+            },
+            "op": "in",
+            "values": [
+              "Asia/Taipei"
+            ]
+          }
+        ],
+        "growth": [
+          {
+            "measure": "m0"
+          }
+        ],
+        "order": [
+          {
+            "field": "m0",
+            "direction": "asc"
+          }
+        ],
+        "limit": 10
+      },
+      "sql": "SELECT DATE_TRUNC('DAY', alerts.resolved_at AT TIME ZONE 'Asia/Taipei') AS period_start, MAX(alerts.resolved_at) AS m0, CAST((COUNT(DISTINCT sites.site_name)) AS DOUBLE PRECISION) / NULLIF(SUM(COUNT(DISTINCT sites.site_name)) OVER (PARTITION BY DATE_TRUNC('DAY', alerts.resolved_at AT TIME ZONE 'Asia/Taipei')), 0) AS m1, CAST((MAX(alerts.resolved_at) - LAG(MAX(alerts.resolved_at)) OVER (ORDER BY DATE_TRUNC('DAY', alerts.resolved_at AT TIME ZONE 'Asia/Taipei'))) AS DOUBLE PRECISION) / NULLIF(LAG(MAX(alerts.resolved_at)) OVER (ORDER BY DATE_TRUNC('DAY', alerts.resolved_at AT TIME ZONE 'Asia/Taipei')), 0) AS m0_growth FROM public.alerts LEFT JOIN public.devices ON alerts.device_id = devices.device_id LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE sites.tz IN (%(f_0)s) GROUP BY DATE_TRUNC('DAY', alerts.resolved_at AT TIME ZONE 'Asia/Taipei') ORDER BY m0 NULLS FIRST LIMIT %(limit_1)s",
+      "error": "42846"
+    },
+    {
+      "kind": "postgres_error",
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "alias": "m0",
+            "ratio": {
+              "numerator": {
+                "aggregate": "count_distinct",
+                "column": {
+                  "table": "sites",
+                  "column": "site_id"
+                }
+              },
+              "denominator": {
+                "aggregate": "count_distinct",
+                "column": {
+                  "table": "devices",
+                  "column": "status"
+                }
+              }
+            },
+            "share_of_total": true
+          },
+          {
+            "alias": "m1",
+            "ratio": {
+              "numerator": {
+                "aggregate": "sum",
+                "column": {
+                  "table": "devices",
+                  "column": "monthly_fee"
+                }
+              },
+              "denominator": {
+                "aggregate": "count_distinct",
+                "column": {
+                  "table": "sites",
+                  "column": "tz"
+                }
+              }
+            }
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "sites",
+            "column": "region"
+          },
+          {
+            "table": "devices",
+            "column": "status"
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "devices",
+            "column": "installed_on"
+          },
+          "grain": "year"
+        },
+        "filters": [
+          {
+            "column": {
+              "table": "devices",
+              "column": "firmware"
+            },
+            "op": "eq",
+            "values": [
+              "1.4.2"
+            ]
+          }
+        ],
+        "growth": [
+          {
+            "measure": "m0"
+          }
+        ]
+      },
+      "sql": "SELECT CAST(DATE_TRUNC('YEAR', devices.installed_on) AS DATE) AS period_start, sites.region AS region, devices.status AS status, CAST((CAST((COUNT(DISTINCT sites.site_id)) AS DOUBLE PRECISION) / NULLIF(COUNT(DISTINCT devices.status), 0)) AS DOUBLE PRECISION) / NULLIF(SUM(CAST((COUNT(DISTINCT sites.site_id)) AS DOUBLE PRECISION) / NULLIF(COUNT(DISTINCT devices.status), 0)) OVER (PARTITION BY CAST(DATE_TRUNC('YEAR', devices.installed_on) AS DATE)), 0) AS m0, CAST((SUM(devices.monthly_fee)) AS DOUBLE PRECISION) / NULLIF(COUNT(DISTINCT sites.tz), 0) AS m1, CAST((CAST((CAST((COUNT(DISTINCT sites.site_id)) AS DOUBLE PRECISION) / NULLIF(COUNT(DISTINCT devices.status), 0)) AS DOUBLE PRECISION) / NULLIF(SUM(CAST((COUNT(DISTINCT sites.site_id)) AS DOUBLE PRECISION) / NULLIF(COUNT(DISTINCT devices.status), 0)) OVER (PARTITION BY CAST(DATE_TRUNC('YEAR', devices.installed_on) AS DATE)), 0) - LAG(CAST((CAST((COUNT(DISTINCT sites.site_id)) AS DOUBLE PRECISION) / NULLIF(COUNT(DISTINCT devices.status), 0)) AS DOUBLE PRECISION) / NULLIF(SUM(CAST((COUNT(DISTINCT sites.site_id)) AS DOUBLE PRECISION) / NULLIF(COUNT(DISTINCT devices.status), 0)) OVER (PARTITION BY CAST(DATE_TRUNC('YEAR', devices.installed_on) AS DATE)), 0)) OVER (PARTITION BY sites.region, devices.status ORDER BY CAST(DATE_TRUNC('YEAR', devices.installed_on) AS DATE))) AS DOUBLE PRECISION) / NULLIF(LAG(CAST((CAST((COUNT(DISTINCT sites.site_id)) AS DOUBLE PRECISION) / NULLIF(COUNT(DISTINCT devices.status), 0)) AS DOUBLE PRECISION) / NULLIF(SUM(CAST((COUNT(DISTINCT sites.site_id)) AS DOUBLE PRECISION) / NULLIF(COUNT(DISTINCT devices.status), 0)) OVER (PARTITION BY CAST(DATE_TRUNC('YEAR', devices.installed_on) AS DATE)), 0)) OVER (PARTITION BY sites.region, devices.status ORDER BY CAST(DATE_TRUNC('YEAR', devices.installed_on) AS DATE)), 0) AS m0_growth FROM public.devices LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE devices.firmware = %(f_0)s GROUP BY CAST(DATE_TRUNC('YEAR', devices.installed_on) AS DATE), sites.region, devices.status ORDER BY period_start NULLS FIRST, region NULLS FIRST, status NULLS FIRST",
+      "error": "42P20"
+    },
+    {
+      "kind": "postgres_error",
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "max",
+            "column": {
+              "table": "devices",
+              "column": "installed_on"
+            },
+            "alias": "m0"
+          }
+        ],
+        "dimensions": [],
+        "time": {
+          "column": {
+            "table": "devices",
+            "column": "installed_on"
+          },
+          "scope": {
+            "kind": "periods",
+            "periods": [
+              {
+                "kind": "month",
+                "month": "2026-06"
+              },
+              {
+                "kind": "month",
+                "month": "2026-07"
+              }
+            ]
+          },
+          "grain": "quarter"
+        },
+        "filters": [
+          {
+            "column": {
+              "table": "sites",
+              "column": "tz"
+            },
+            "op": "eq",
+            "values": [
+              "Asia/Taipei"
+            ]
+          },
+          {
+            "column": {
+              "table": "devices",
+              "column": "model"
+            },
+            "op": "eq",
+            "values": [
+              "SW-24"
+            ]
+          }
+        ],
+        "growth": [
+          {
+            "measure": "m0"
+          }
+        ],
+        "order": [
+          {
+            "field": "period_start",
+            "direction": "desc"
+          }
+        ]
+      },
+      "sql": "SELECT CAST(DATE_TRUNC('QUARTER', devices.installed_on) AS DATE) AS period_start, MAX(devices.installed_on) AS m0, CAST((MAX(devices.installed_on) - LAG(MAX(devices.installed_on)) OVER (ORDER BY CAST(DATE_TRUNC('QUARTER', devices.installed_on) AS DATE))) AS DOUBLE PRECISION) / NULLIF(LAG(MAX(devices.installed_on)) OVER (ORDER BY CAST(DATE_TRUNC('QUARTER', devices.installed_on) AS DATE)), 0) AS m0_growth FROM public.devices LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE sites.tz = %(f_0)s AND devices.model = %(f_1)s AND ((devices.installed_on >= %(p1_start_2)s AND devices.installed_on < %(p1_end_3)s) OR (devices.installed_on >= %(p2_start_4)s AND devices.installed_on < %(p2_end_5)s)) GROUP BY CAST(DATE_TRUNC('QUARTER', devices.installed_on) AS DATE) ORDER BY period_start DESC NULLS LAST",
+      "error": "42883"
+    },
+    {
+      "kind": "postgres_error",
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "max",
+            "column": {
+              "table": "devices",
+              "column": "installed_on"
+            },
+            "alias": "m0"
+          }
+        ],
+        "dimensions": [],
+        "time": {
+          "column": {
+            "table": "devices",
+            "column": "installed_on"
+          },
+          "scope": {
+            "kind": "periods",
+            "periods": [
+              {
+                "kind": "month",
+                "month": "2026-06"
+              },
+              {
+                "kind": "month",
+                "month": "2026-07"
+              }
+            ]
+          },
+          "grain": "quarter"
+        },
+        "filters": [
+          {
+            "column": {
+              "table": "devices",
+              "column": "model"
+            },
+            "op": "eq",
+            "values": [
+              "AP-300"
+            ]
+          },
+          {
+            "column": {
+              "table": "sites",
+              "column": "site_name"
+            },
+            "op": "eq",
+            "values": [
+              "Kaohsiung Depot"
+            ]
+          }
+        ],
+        "having": [
+          {
+            "field": "m0",
+            "op": "gte",
+            "value": 1
+          }
+        ]
+      },
+      "sql": "SELECT CAST(DATE_TRUNC('QUARTER', devices.installed_on) AS DATE) AS period_start, MAX(devices.installed_on) AS m0 FROM public.devices LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE devices.model = %(f_0)s AND sites.site_name = %(f_1)s AND ((devices.installed_on >= %(p1_start_2)s AND devices.installed_on < %(p1_end_3)s) OR (devices.installed_on >= %(p2_start_4)s AND devices.installed_on < %(p2_end_5)s)) GROUP BY CAST(DATE_TRUNC('QUARTER', devices.installed_on) AS DATE) HAVING MAX(devices.installed_on) >= %(h_6)s ORDER BY period_start NULLS FIRST",
+      "error": "42883"
+    },
+    {
+      "kind": "postgres_error",
+      "plan": {
+        "base_table": "devices",
+        "measures": [
+          {
+            "aggregate": "max",
+            "column": {
+              "table": "devices",
+              "column": "installed_on"
+            },
+            "alias": "m0"
+          }
+        ],
+        "dimensions": [],
+        "time": {
+          "column": {
+            "table": "devices",
+            "column": "installed_on"
+          },
+          "scope": {
+            "kind": "periods",
+            "periods": [
+              {
+                "kind": "month",
+                "month": "2026-06"
+              },
+              {
+                "kind": "month",
+                "month": "2026-07"
+              }
+            ]
+          },
+          "grain": "quarter"
+        },
+        "filters": [
+          {
+            "column": {
+              "table": "sites",
+              "column": "site_name"
+            },
+            "op": "eq",
+            "values": [
+              "Kaohsiung Depot"
+            ]
+          },
+          {
+            "column": {
+              "table": "sites",
+              "column": "site_name"
+            },
+            "op": "eq",
+            "values": [
+              "Kaohsiung Depot"
+            ]
+          }
+        ],
+        "having": [
+          {
+            "field": "m0",
+            "op": "gte",
+            "value": 1
+          }
+        ]
+      },
+      "sql": "SELECT CAST(DATE_TRUNC('QUARTER', devices.installed_on) AS DATE) AS period_start, MAX(devices.installed_on) AS m0 FROM public.devices LEFT JOIN public.sites ON devices.site_id = sites.site_id WHERE sites.site_name = %(f_0)s AND sites.site_name = %(f_1)s AND ((devices.installed_on >= %(p1_start_2)s AND devices.installed_on < %(p1_end_3)s) OR (devices.installed_on >= %(p2_start_4)s AND devices.installed_on < %(p2_end_5)s)) GROUP BY CAST(DATE_TRUNC('QUARTER', devices.installed_on) AS DATE) HAVING MAX(devices.installed_on) >= %(h_6)s ORDER BY period_start NULLS FIRST",
+      "error": "42883"
+    }
+  ]
+}

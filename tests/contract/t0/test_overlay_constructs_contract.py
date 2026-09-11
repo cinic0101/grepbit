@@ -290,7 +290,7 @@ def test_grain_without_a_scope_buckets_all_data_without_a_window() -> None:
         }
     )
     sql = compiled.compiled.physical_sql
-    assert "DATE_TRUNC('DAY'" in sql and "WHERE" not in sql
+    assert "DATE_TRUNC('DAY'" in sql and ">=" not in sql
     assert compiled.periods == ()
     assert compiled.output_columns[0] == "period_start"
     assert "per day; over all data" in compiled.interpretation

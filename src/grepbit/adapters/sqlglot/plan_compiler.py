@@ -131,6 +131,22 @@ class PlanCompiler:
             )
             return expanded, metric
 
+        def numeric_result(operand: Operand) -> bool:
+            """Whether the operand's aggregate yields a number (sum, avg, counts, or
+            min/max over a numeric column); a ratio, share or growth over anything
+            else has no meaning and PostgreSQL rejects the cast (42846, 42883)."""
+
+            if operand.aggregate in (Aggregate.COUNT, Aggregate.COUNT_DISTINCT):
+                return True
+            if operand.column is None:
+                return True
+            table = schema.table(operand.column.table)
+            column = table.column(operand.column.column) if table else None
+            return column is not None and column.kind is ColumnKind.NUMERIC
+
+        growth_measures = {item.measure for item in plan.growth}
+        having_measures = {item.field for item in plan.having}
+
         # effective: one entry per plan measure, with the resolved operands.
         effective: list[tuple[Measure, list[tuple[Operand, ReviewedMetric | None]]]]
         effective = []
@@ -159,6 +175,18 @@ class PlanCompiler:
                     )
             else:
                 parts = [resolve_operand(measure)]
+            derived = (
+                measure.ratio is not None
+                or measure.share_of_total
+                or measure.output_name in growth_measures
+                or measure.output_name in having_measures
+            )
+            if derived and not all(numeric_result(op) for op, _ in parts):
+                raise PlanError(
+                    "aggregate_kind_mismatch",
+                    f"{measure.output_name}: a ratio, share, growth or having needs "
+                    "numeric operands (a min or max of a date or text is not one)",
+                )
             effective.append((measure, parts))
         # Metric filters: when every operand carries the same filters they go in
         # WHERE (one metric, the common case); when operands differ (a ratio
@@ -415,6 +443,27 @@ class PlanCompiler:
                 group_by.append(time_bucket)
                 output.append(PERIOD_COLUMN)
 
+        null_time_condition: exp.Expression | None = None
+        if time_bucket is not None and time_spec is not None and time_spec.column:
+            # a period breakdown holds no row without a time value: a NULL bucket
+            # is not a period (found by the differential, where it took part in
+            # growth as the last period)
+            null_time_condition = exp.Not(
+                this=exp.column(
+                    time_spec.column.column, table=time_spec.column.table
+                ).is_(exp.Null())
+            )
+            assumptions.append(
+                Assumption(
+                    text=(
+                        f"Rows with no {time_spec.column.id} are in no period and "
+                        "are left out of the breakdown."
+                    ),
+                    source=AssumptionSource.DEFAULT,
+                    definition_ref="plan.time.grain",
+                )
+            )
+
         for dimension in plan.dimensions:
             resolve(dimension)
             expression = exp.column(dimension.column, table=dimension.table)
@@ -513,6 +562,13 @@ class PlanCompiler:
 
         conditions: list[exp.Expression] = []
         filter_texts: list[str] = []
+        if (
+            null_time_condition is not None
+            and time_spec is not None
+            and time_spec.column
+        ):
+            conditions.append(null_time_condition)
+            filter_texts.append(f"[grain] {time_spec.column.id} not_null")
         # A share asked for one group (特約永和中正 佔全部門市) must still be
         # taken over all groups: a filter on a grouped column selects which
         # rows come back after the share, it does not shrink the population.
@@ -678,21 +734,8 @@ class PlanCompiler:
         if group_by:
             query = query.group_by(*group_by)
         having_texts: list[str] = []
-        if selection_filters:
-            inner = query
-            query = exp.select(*(exp.column(name) for name in output)).from_(
-                inner.subquery("shares")
-            )
-            selected = [
-                self._condition(
-                    item,
-                    resolve(item.column),
-                    bind,
-                    reference=exp.column(item.column.column),
-                )
-                for item in selection_filters
-            ]
-            query = query.where(exp.and_(*selected))
+        # HAVING belongs to the grouped query; with the after-share selection
+        # that is the inner one (found by the differential as PostgreSQL 42803)
         if plan.having:
             conditions_having = []
             for item in plan.having:
@@ -711,6 +754,21 @@ class PlanCompiler:
                 )
                 having_texts.append(f"{item.field} {item.op} {item.value}")
             query = query.having(exp.and_(*conditions_having))
+        if selection_filters:
+            inner = query
+            query = exp.select(*(exp.column(name) for name in output)).from_(
+                inner.subquery("shares")
+            )
+            selected = [
+                self._condition(
+                    item,
+                    resolve(item.column),
+                    bind,
+                    reference=exp.column(item.column.column),
+                )
+                for item in selection_filters
+            ]
+            query = query.where(exp.and_(*selected))
         if plan.order:
             for item in plan.order:
                 column = exp.column(item.field)
