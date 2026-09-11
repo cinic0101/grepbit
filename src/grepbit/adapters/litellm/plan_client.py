@@ -356,6 +356,19 @@ def _repair_refs(node: Any, model: SchemaModel, base_table, repairs, coerce, key
         for index, item in enumerate(node):
             if isinstance(item, str) and key in ("dimensions", "take"):
                 node[index] = coerce(item)
+            elif (
+                key in ("dimensions", "take")
+                and isinstance(item, dict)
+                and isinstance(item.get("column"), dict)
+                and _is_column_ref(item["column"])
+                and set(item) <= {"column", "table"}
+            ):
+                # {"column": {"table": t, "column": c}, "table": t}: a reference
+                # wrapped the way order_by items are written; the inner reference
+                # is the whole meaning
+                node[index] = item["column"]
+                repairs.append(f"{key}: unwrapped column reference")
+                _strip_qualifier(node[index], repairs)
             else:
                 _repair_refs(item, model, base_table, repairs, coerce, key)
         return

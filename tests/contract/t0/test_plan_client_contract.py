@@ -487,3 +487,22 @@ def test_repair_mends_references_anywhere_in_the_plan() -> None:
     repaired, repairs = repair_column_refs(payload, iot_schema())
     numerator = repaired["plan"]["measures"][0]["ratio"]["numerator"]
     assert numerator["column"] == {"table": "alerts", "column": "downtime_minutes"}
+
+
+def test_repair_unwraps_a_dimension_written_like_an_order_by_item() -> None:
+    """Prompt v13 taught {"column": <ref>} for latest.order_by; the model then
+    wrote dimensions the same way and every grouped question failed."""
+
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count"}],
+            "dimensions": [
+                {"column": {"table": "devices", "column": "model"}, "table": "devices"}
+            ],
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    assert repaired["plan"]["dimensions"] == [{"table": "devices", "column": "model"}]
+    assert repairs == ["dimensions: unwrapped column reference"]
