@@ -1,0 +1,202 @@
+{
+  "summary": {
+    "datasource_id": "retail_spike",
+    "cases_file": "evals/cases/tier0/coverage_retail.yaml",
+    "prompt_revision": "plan-classify-json-v13",
+    "output_mode": "json_object",
+    "overlay_revision": null,
+    "perturbation": null,
+    "as_of": "2026-08-15T12:00:00+08:00",
+    "cases": 8,
+    "judged": 8,
+    "unjudged": 0,
+    "correct": 8,
+    "answerable_correct": 0,
+    "answerable_total": 0,
+    "answered_but_wrong_rows": 0,
+    "refusals_correct": 8,
+    "refusals_total": 8,
+    "false_answers_on_refusal_cases": 0,
+    "model_failures": 0,
+    "model_retries": 0,
+    "p50_seconds": 2.596,
+    "p95_seconds": 3.41,
+    "introspection_seconds": 0.037,
+    "schema": {
+      "tables": 5,
+      "columns": 22,
+      "foreign_keys": 4,
+      "inferred_foreign_keys": [],
+      "enum_distinct_limit": 20,
+      "sampled_columns": 5,
+      "enum_columns": 0
+    },
+    "status_counts": {
+      "semantic_gap": 8
+    },
+    "rows_redacted": false,
+    "incorrect_case_ids": [],
+    "verification_counts": {
+      "verified": 0,
+      "partially_verified": 0,
+      "unverified_semantics": 0
+    },
+    "shape_repairs": 0,
+    "base_repairs": 0,
+    "plan_error_counts": {},
+    "zero_call_refusals": 0,
+    "shape_gate_refusals": 0,
+    "per_period_clarifies": 0,
+    "literal_checks": 0,
+    "literal_misses": 0,
+    "grounding": {
+      "columns": [],
+      "values": 0,
+      "skipped_for_size": [],
+      "hinted_cases": 0,
+      "resolved_cases": 0,
+      "ambiguous_cases": 0
+    },
+    "empty_result_warnings": 0,
+    "negative_share_warnings": 0,
+    "segment_exclusions": 0
+  },
+  "results": [
+    {
+      "case_id": "cov_net_revenue",
+      "question": "2026年7月的淨營收",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 3.41,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not define a 'net revenue' (淨營收) column or a clear formula to calculate it (e.g., whether it is gross_amount minus discount_amount, or if it should also subtract return_amount from the returns table).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_new_customers",
+      "question": "2026年7月新客戶的訂單數",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.596,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column to identify when a customer first joined or became a 'new customer' (e.g., a registration date or join date).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_online_orders_en",
+      "question": "Gross amount of online orders in July 2026",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.147,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column or table to distinguish 'online' orders from other order channels.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_promo_orders",
+      "question": "2026年7月促銷訂單的金額",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.35,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column or flag to identify if an order is a 'promotion' (促銷) order.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_repeat_customers_en",
+      "question": "Number of repeat customers in July 2026",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.751,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not define what constitutes a 'repeat customer' (e.g., whether it means a customer with more than one order in that specific month, or a customer who has ordered in previous months).",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_b2b_orders",
+      "question": "2026年7月 B2B 客戶的訂單金額",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.086,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column to distinguish 'B2B' customers from other customer types.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_delivery_time_en",
+      "question": "Average delivery time for July 2026 orders",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.552,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not contain a column to track delivery dates or delivery times (e.g., 'delivered_at'), making it impossible to calculate the delivery time.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "cov_reordered_after_cancel",
+      "question": "2026年7月取消後重新下單的訂單數",
+      "expected_status": "semantic_gap",
+      "accepted_statuses": [
+        "clarify",
+        "semantic_gap",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "semantic_gap",
+      "correct": true,
+      "elapsed_seconds": 2.916,
+      "reason": "semantic_gap",
+      "clarification": "The schema does not provide a way to link a 're-ordered' order to a previously 'cancelled' order (e.g., no reference to a previous order ID or a specific re-order flag).",
+      "status_without_coverage": "semantic_gap"
+    }
+  ]
+}

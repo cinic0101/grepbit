@@ -1,0 +1,2941 @@
+{
+  "summary": {
+    "datasource_id": "pos_test",
+    "cases_file": "evals/cases/tier0/pos_features.yaml",
+    "prompt_revision": "plan-classify-json-v13",
+    "output_mode": "json_object",
+    "overlay_revision": "pos-overlay-experiment-v1",
+    "perturbation": null,
+    "as_of": "2026-02-10T12:00:00+08:00",
+    "cases": 39,
+    "judged": 39,
+    "unjudged": 0,
+    "correct": 31,
+    "answerable_correct": 31,
+    "answerable_total": 39,
+    "answered_but_wrong_rows": 1,
+    "refusals_correct": 0,
+    "refusals_total": 0,
+    "false_answers_on_refusal_cases": 0,
+    "model_failures": 5,
+    "model_retries": 0,
+    "p50_seconds": 5.798,
+    "p95_seconds": 8.428,
+    "introspection_seconds": 0.038,
+    "schema": {
+      "tables": 13,
+      "columns": 58,
+      "foreign_keys": 11,
+      "inferred_foreign_keys": [],
+      "enum_distinct_limit": 20,
+      "sampled_columns": 13,
+      "enum_columns": 0
+    },
+    "status_counts": {
+      "answered": 31,
+      "failed": 5,
+      "semantic_gap": 2,
+      "unsupported": 1
+    },
+    "rows_redacted": false,
+    "incorrect_case_ids": [
+      "ft_compare_last_two_months",
+      "ft_two_measures_same_base",
+      "ft_share_by_method",
+      "ft_latest_sale_per_salesperson",
+      "fu_base_payment",
+      "fu_add_time",
+      "fu_base_headcount",
+      "fu_add_filter"
+    ],
+    "verification_counts": {
+      "verified": 18,
+      "partially_verified": 3,
+      "unverified_semantics": 10
+    },
+    "shape_repairs": 3,
+    "base_repairs": 0,
+    "plan_error_counts": {
+      "plan_metric_base_table_mismatch": 1
+    },
+    "zero_call_refusals": 0,
+    "shape_gate_refusals": 0,
+    "per_period_clarifies": 0,
+    "literal_checks": 4,
+    "literal_misses": 0,
+    "grounding": {
+      "columns": [],
+      "values": 0,
+      "skipped_for_size": [],
+      "hinted_cases": 0,
+      "resolved_cases": 0,
+      "ambiguous_cases": 0
+    },
+    "empty_result_warnings": 2,
+    "negative_share_warnings": 0,
+    "segment_exclusions": 0
+  },
+  "results": [
+    {
+      "case_id": "ft_compare_last_two_months",
+      "question": "上個月和前一個月的營業額比較",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": false,
+      "elapsed_seconds": 7.599,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "alias": "net_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "month",
+            "offset": -2,
+            "length": 2,
+            "to_date": false
+          },
+          "grain": "month"
+        },
+        "order": [],
+        "having": [],
+        "growth": [
+          {
+            "measure": "net_sales"
+          }
+        ]
+      },
+      "sql": "SELECT DATE_TRUNC('MONTH', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') AS period_start, SUM(pos_sale.total_amount) AS net_sales, CAST((SUM(pos_sale.total_amount) - LAG(SUM(pos_sale.total_amount)) OVER (ORDER BY DATE_TRUNC('MONTH', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei'))) AS DOUBLE PRECISION) / NULLIF(LAG(SUM(pos_sale.total_amount)) OVER (ORDER BY DATE_TRUNC('MONTH', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei')), 0) AS net_sales_growth FROM public.pos_sale WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s GROUP BY DATE_TRUNC('MONTH', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') ORDER BY period_start NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]",
+          "net_sales_growth = period-over-period change"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric net_sales over pos_sale; growth of net_sales versus the previous period; per month; for 2025-12..2026-02",
+      "assumptions": [
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "Relative period resolved from as_of 2026-02-10T12:00:00+08:00: 2025-12..2026-02 is [2025-12-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "net_sales_growth compares each period with the previous period of the same group; the first period has no previous value and is NULL."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 2,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "period_start": "2025-12-01 00:00:00",
+          "net_sales": "339300",
+          "net_sales_growth": "None"
+        },
+        {
+          "period_start": "2026-01-01 00:00:00",
+          "net_sales": "340800",
+          "net_sales_growth": "0.004420866489832007"
+        }
+      ],
+      "rows_match_reference": false,
+      "matched_reference_index": null,
+      "reference_rows": [
+        [
+          "2025-12-01T00:00:00",
+          "339300"
+        ],
+        [
+          "2026-01-01T00:00:00",
+          "340800"
+        ]
+      ],
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_last_7_days",
+      "question": "近7天的營業額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.178,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "day",
+            "offset": -7,
+            "length": 7,
+            "to_date": false
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT SUM(pos_sale.total_amount) AS net_sales FROM public.pos_sale WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2026-02-03T00:00:00+08:00, 2026-02-10T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric net_sales over pos_sale; for 2026-02-03..2026-02-10",
+      "assumptions": [
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "Relative period resolved from as_of 2026-02-10T12:00:00+08:00: 2026-02-03..2026-02-10 is [2026-02-03T00:00:00+08:00, 2026-02-10T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "warnings": [
+        "Every value is NULL: the aggregate ran over zero rows (the window or filters select nothing)."
+      ],
+      "rows": [
+        {
+          "net_sales": "None"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_this_quarter",
+      "question": "本季的營業額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.041,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "quarter",
+            "offset": 0,
+            "length": 1,
+            "to_date": false
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT SUM(pos_sale.total_amount) AS net_sales FROM public.pos_sale WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-01T00:00:00+08:00, 2026-04-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric net_sales over pos_sale; for 2026-Q1",
+      "assumptions": [
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "Relative period resolved from as_of 2026-02-10T12:00:00+08:00: 2026-Q1 is [2026-01-01T00:00:00+08:00, 2026-04-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "net_sales": "340800"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_last_quarter_by_store",
+      "question": "上一季各門市的營業額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.984,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "alias": "net_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "quarter",
+            "offset": -1,
+            "length": 1,
+            "to_date": false
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS net_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s GROUP BY store.store_name ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2025-10-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric net_sales over pos_sale; by store.store_name; for 2025-Q4",
+      "assumptions": [
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "Relative period resolved from as_of 2026-02-10T12:00:00+08:00: 2025-Q4 is [2025-10-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 5,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "store_name": "特約台南崇德",
+          "net_sales": "39900"
+        },
+        {
+          "store_name": "特約新店遠東",
+          "net_sales": "120000"
+        },
+        {
+          "store_name": "特約板橋華江",
+          "net_sales": "54500"
+        },
+        {
+          "store_name": "特約永和中正",
+          "net_sales": "101400"
+        },
+        {
+          "store_name": "特約竹東長春二",
+          "net_sales": "23500"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_ytd",
+      "question": "今年到目前為止有幾筆交易",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.263,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "metric": "transaction_count",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "year",
+            "offset": 0,
+            "length": 1,
+            "to_date": true
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT COUNT(DISTINCT pos_payment.transaction_no) AS transaction_count FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_payment.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "transaction_count = count_distinct(pos_payment.transaction_no) [transaction_count]"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-01T00:00:00+08:00, 2026-02-11T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric transaction_count over pos_payment; for 2026 to 2026-02-10",
+      "assumptions": [
+        "pos_payment rows are joined to pos_sale through pos_payment.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "transaction_count = Number of distinct pos_payment.transaction_no; a transaction paid in several parts counts once. Time is the sale_date of the transaction.",
+        "No row filter was applied beyond the time window; every pos_payment row counts, including any status the question did not mention.",
+        "Relative period resolved from as_of 2026-02-10T12:00:00+08:00: 2026 to 2026-02-10 is [2026-01-01T00:00:00+08:00, 2026-02-11T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "transaction_count": 10
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_weekly_trend",
+      "question": "2025年12月每週的營業額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.411,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "alias": "net_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2025-12"
+          },
+          "grain": "week"
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT DATE_TRUNC('WEEK', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') AS period_start, SUM(pos_sale.total_amount) AS net_sales FROM public.pos_sale WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s GROUP BY DATE_TRUNC('WEEK', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') ORDER BY period_start NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric net_sales over pos_sale; per week; for 2025-12",
+      "assumptions": [
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2025-12 is [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 4,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "period_start": "2025-12-01 00:00:00",
+          "net_sales": "169600"
+        },
+        {
+          "period_start": "2025-12-08 00:00:00",
+          "net_sales": "68900"
+        },
+        {
+          "period_start": "2025-12-15 00:00:00",
+          "net_sales": "67000"
+        },
+        {
+          "period_start": "2025-12-22 00:00:00",
+          "net_sales": "33800"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_quarterly_payroll",
+      "question": "2025年每季的薪資總額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 6.144,
+      "plan": {
+        "base_table": "hr_payroll",
+        "measures": [
+          {
+            "metric": "base_salary_total",
+            "alias": "base_salary_total",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "hr_payroll",
+            "column": "period_start"
+          },
+          "scope": {
+            "kind": "range",
+            "start": "2025-01-01",
+            "end_exclusive": "2060-01-01"
+          },
+          "grain": "quarter"
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT CAST(DATE_TRUNC('QUARTER', hr_payroll.period_start) AS DATE) AS period_start, SUM(hr_payroll.base_salary) AS base_salary_total FROM public.hr_payroll WHERE hr_payroll.period_start >= %(p1_start_0)s AND hr_payroll.period_start < %(p1_end_1)s GROUP BY CAST(DATE_TRUNC('QUARTER', hr_payroll.period_start) AS DATE) ORDER BY period_start NULLS FIRST",
+      "lineage": {
+        "base_table": "hr_payroll",
+        "tables": [
+          "hr_payroll"
+        ],
+        "joins": [],
+        "measures": [
+          "base_salary_total = sum(hr_payroll.base_salary) [base_salary_total]"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "hr_payroll.period_start in [2025-01-01T00:00:00+08:00, 2060-01-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric base_salary_total over hr_payroll; per quarter; for 2025-01-01..2060-01-01",
+      "assumptions": [
+        "base_salary_total = Sum of hr_payroll.base_salary over payroll periods, attributed to the period start date; bonuses are excluded.",
+        "No row filter was applied beyond the time window; every hr_payroll row counts, including any status the question did not mention.",
+        "2025-01-01..2060-01-01 is [2025-01-01T00:00:00+08:00, 2060-01-01T00:00:00+08:00) in Asia/Taipei on hr_payroll.period_start."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 4,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "period_start": "2025-01-01",
+          "base_salary_total": "6016000.00"
+        },
+        {
+          "period_start": "2025-04-01",
+          "base_salary_total": "6179000.00"
+        },
+        {
+          "period_start": "2025-07-01",
+          "base_salary_total": "6246000.00"
+        },
+        {
+          "period_start": "2025-10-01",
+          "base_salary_total": "6054000.00"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_yoy_same_month",
+      "question": "2026年1月和2025年1月的營業額比較",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 6.256,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "alias": "net_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "periods",
+            "periods": [
+              {
+                "kind": "month",
+                "month": "2025-01"
+              },
+              {
+                "kind": "month",
+                "month": "2026-01"
+              }
+            ]
+          },
+          "grain": "month"
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT DATE_TRUNC('MONTH', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') AS period_start, SUM(pos_sale.total_amount) AS net_sales FROM public.pos_sale WHERE (pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s) OR (pos_sale.sale_date >= %(p2_start_2)s AND pos_sale.sale_date < %(p2_end_3)s) GROUP BY DATE_TRUNC('MONTH', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') ORDER BY period_start NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2025-01-01T00:00:00+08:00, 2025-02-01T00:00:00+08:00)",
+          "pos_sale.sale_date in [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric net_sales over pos_sale; per month; for 2025-01, 2026-01",
+      "assumptions": [
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2025-01 is [2025-01-01T00:00:00+08:00, 2025-02-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "2026-01 is [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "period_start": "2026-01-01 00:00:00",
+          "net_sales": "340800"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_bottom_store",
+      "question": "2025年12月業績最差的門市",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 6.57,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "alias": "net_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2025-12"
+          }
+        },
+        "order": [
+          {
+            "field": "net_sales",
+            "direction": "asc"
+          }
+        ],
+        "having": [],
+        "growth": [],
+        "limit": 1
+      },
+      "sql": "SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS net_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s GROUP BY store.store_name ORDER BY net_sales NULLS FIRST LIMIT %(limit_2)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric net_sales over pos_sale; by store.store_name; for 2025-12; limit 1",
+      "assumptions": [
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2025-12 is [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "store_name": "特約竹東長春二",
+          "net_sales": "23500"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_two_stores_compare",
+      "question": "比較新店遠東和永和中正在2025年12月的營業額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 6.853,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [
+          {
+            "column": {
+              "table": "store",
+              "column": "store_name"
+            },
+            "op": "in",
+            "values": [
+              "特約新店遠東",
+              "特約永和中正"
+            ]
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2025-12"
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "shape_repairs": [
+        "store_name + table store -> store.store_name"
+      ],
+      "sql": "SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS net_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE store.store_name IN (%(f_0)s, %(f_1)s) AND (pos_sale.sale_date >= %(p1_start_2)s AND pos_sale.sale_date < %(p1_end_3)s) GROUP BY store.store_name ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [
+          "store.store_name in 特約新店遠東, 特約永和中正"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric net_sales over pos_sale; by store.store_name; for 2025-12; where store.store_name in 特約新店遠東, 特約永和中正",
+      "assumptions": [
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "2025-12 is [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Measures follow reviewed definitions; the extra filters taken from the question are checked for structure only."
+      ],
+      "verification": "partially_verified",
+      "excluded_segments": [],
+      "literal_checks": 2,
+      "row_count": 2,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "store_name": "特約新店遠東",
+          "net_sales": "120000"
+        },
+        {
+          "store_name": "特約永和中正",
+          "net_sales": "101400"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_share_top3",
+      "question": "前三名商品的銷售金額佔比",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered",
+        "clarify"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.957,
+      "plan": {
+        "base_table": "pos_saleitem",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_saleitem",
+              "column": "amount"
+            },
+            "alias": "total_sales",
+            "share_of_total": true
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "product",
+            "column": "product_name"
+          }
+        ],
+        "filters": [],
+        "order": [
+          {
+            "field": "total_sales",
+            "direction": "desc"
+          }
+        ],
+        "having": [],
+        "growth": [],
+        "limit": 3
+      },
+      "sql": "SELECT product.product_name AS product_name, CAST((SUM(pos_saleitem.amount)) AS DOUBLE PRECISION) / NULLIF(SUM(SUM(pos_saleitem.amount)) OVER (), 0) AS total_sales FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id GROUP BY product.product_name ORDER BY total_sales DESC NULLS LAST LIMIT %(limit_0)s",
+      "lineage": {
+        "base_table": "pos_saleitem",
+        "tables": [
+          "pos_saleitem",
+          "product"
+        ],
+        "joins": [
+          "pos_saleitem.product_id -> product.product_id"
+        ],
+        "measures": [
+          "total_sales = share of total of sum(pos_saleitem.amount)"
+        ],
+        "dimensions": [
+          "product.product_name"
+        ],
+        "filters": [],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "share of total of sum(pos_saleitem.amount) over pos_saleitem; by product.product_name; limit 3",
+      "assumptions": [
+        "pos_saleitem rows are joined to product through pos_saleitem.product_id; rows without a matching product row keep NULL there.",
+        "total_sales = SUM of pos_saleitem.amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_saleitem row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "total_sales is the share of the total over all groups over the same time window and filters (同期 = the same window as the group values).",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 3,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "product_name": "iPhone 15 128G",
+          "total_sales": "0.31392442287898836"
+        },
+        {
+          "product_name": "Samsung Galaxy S",
+          "total_sales": "0.2965740332304073"
+        },
+        {
+          "product_name": "OPPO Reno",
+          "total_sales": "0.105866784296427"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_two_measures_same_base",
+      "question": "各部門的本薪總額與獎金總額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 6.379,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "ft_two_measures_cross_base",
+      "question": "各門市的營業額與交易數",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered",
+        "clarify",
+        "unsupported"
+      ],
+      "follow_up_of": null,
+      "status": "unsupported",
+      "correct": true,
+      "elapsed_seconds": 4.911,
+      "reason": "plan_metric_base_table_mismatch",
+      "clarification": "transaction_count",
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "alias": "net_sales",
+            "share_of_total": false
+          },
+          {
+            "metric": "transaction_count",
+            "alias": "transaction_count",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "status_without_coverage": "unsupported"
+    },
+    {
+      "case_id": "ft_numeric_filter",
+      "question": "金額超過20000的交易有幾筆",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.041,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "transaction_count",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "pos_sale",
+              "column": "total_amount"
+            },
+            "op": "gt",
+            "values": [
+              20000
+            ]
+          }
+        ],
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT COUNT(*) AS transaction_count FROM public.pos_sale WHERE pos_sale.total_amount > %(f_0)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "transaction_count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "pos_sale.total_amount gt 20000"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(*) over pos_sale; where pos_sale.total_amount gt 20000",
+      "assumptions": [
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "transaction_count": 17
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_enum_and_parent_time",
+      "question": "2025年12月現金付款的收款總額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 6.917,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_payment",
+              "column": "payment_amount"
+            },
+            "alias": "total_cash_amount",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "pos_payment",
+              "column": "payment_method"
+            },
+            "op": "eq",
+            "values": [
+              "cash"
+            ]
+          }
+        ],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2025-12"
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT SUM(pos_payment.payment_amount) AS total_cash_amount FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE pos_payment.payment_method = %(f_0)s AND (pos_sale.sale_date >= %(p1_start_1)s AND pos_sale.sale_date < %(p1_end_2)s)",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_payment.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "total_cash_amount = sum(pos_payment.payment_amount)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "pos_payment.payment_method eq cash"
+        ],
+        "time_window": [
+          "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "sum(pos_payment.payment_amount) over pos_payment; for 2025-12; where pos_payment.payment_method eq cash",
+      "assumptions": [
+        "pos_payment rows are joined to pos_sale through pos_payment.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "total_cash_amount = SUM of pos_payment.payment_amount; NULL values are ignored by the aggregate.",
+        "2025-12 is [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "literal_checks": 1,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "total_cash_amount": "131400"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_non_member",
+      "question": "非會員的交易有幾筆",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.607,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "metric": "transaction_count",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "pos_sale",
+              "column": "member_id"
+            },
+            "op": "is_null",
+            "values": []
+          }
+        ],
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT COUNT(DISTINCT pos_payment.transaction_no) AS transaction_count FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE pos_sale.member_id IS NULL",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_payment.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "transaction_count = count_distinct(pos_payment.transaction_no) [transaction_count]"
+        ],
+        "dimensions": [],
+        "filters": [
+          "pos_sale.member_id is_null"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "metric transaction_count over pos_payment; where pos_sale.member_id is_null",
+      "assumptions": [
+        "pos_payment rows are joined to pos_sale through pos_payment.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "transaction_count = Number of distinct pos_payment.transaction_no; a transaction paid in several parts counts once. Time is the sale_date of the transaction.",
+        "No time window was applied; all rows count.",
+        "Measures follow reviewed definitions; the extra filters taken from the question are checked for structure only."
+      ],
+      "verification": "partially_verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "transaction_count": 15
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_growth_rate",
+      "question": "2026年1月營業額相較2025年12月的成長率",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 6.642,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "alias": "net_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "periods",
+            "periods": [
+              {
+                "kind": "month",
+                "month": "2025-12"
+              },
+              {
+                "kind": "month",
+                "month": "2026-01"
+              }
+            ]
+          },
+          "grain": "month"
+        },
+        "order": [],
+        "having": [],
+        "growth": [
+          {
+            "measure": "net_sales"
+          }
+        ]
+      },
+      "sql": "SELECT DATE_TRUNC('MONTH', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') AS period_start, SUM(pos_sale.total_amount) AS net_sales, CAST((SUM(pos_sale.total_amount) - LAG(SUM(pos_sale.total_amount)) OVER (ORDER BY DATE_TRUNC('MONTH', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei'))) AS DOUBLE PRECISION) / NULLIF(LAG(SUM(pos_sale.total_amount)) OVER (ORDER BY DATE_TRUNC('MONTH', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei')), 0) AS net_sales_growth FROM public.pos_sale WHERE (pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s) OR (pos_sale.sale_date >= %(p2_start_2)s AND pos_sale.sale_date < %(p2_end_3)s) GROUP BY DATE_TRUNC('MONTH', pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') ORDER BY period_start NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]",
+          "net_sales_growth = period-over-period change"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)",
+          "pos_sale.sale_date in [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric net_sales over pos_sale; growth of net_sales versus the previous period; per month; for 2025-12, 2026-01",
+      "assumptions": [
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2025-12 is [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "2026-01 is [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "net_sales_growth compares each period with the previous period of the same group; the first period has no previous value and is NULL."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 2,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "period_start": "2025-12-01 00:00:00",
+          "net_sales": "339300",
+          "net_sales_growth": "None"
+        },
+        {
+          "period_start": "2026-01-01 00:00:00",
+          "net_sales": "340800",
+          "net_sales_growth": "0.004420866489832007"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_aov",
+      "question": "2025年12月平均每筆交易金額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 12.651,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "alias": "avg_transaction_amount",
+            "ratio": {
+              "numerator": {
+                "aggregate": "sum",
+                "column": {
+                  "table": "pos_sale",
+                  "column": "total_amount"
+                }
+              },
+              "denominator": {
+                "aggregate": "count",
+                "column": {
+                  "table": "pos_sale",
+                  "column": "transaction_no"
+                }
+              }
+            },
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2025-12"
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT CAST((SUM(pos_sale.total_amount)) AS DOUBLE PRECISION) / NULLIF(COUNT(pos_sale.transaction_no), 0) AS avg_transaction_amount FROM public.pos_sale WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "avg_transaction_amount = sum(pos_sale.total_amount) / count(pos_sale.transaction_no)"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "sum(pos_sale.total_amount) / count(pos_sale.transaction_no) over pos_sale; for 2025-12",
+      "assumptions": [
+        "avg_transaction_amount = SUM of pos_sale.total_amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2025-12 is [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date.",
+        "avg_transaction_amount divides two aggregates over the same rows; a zero denominator yields NULL.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "avg_transaction_amount": "18850.0"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_share_by_method",
+      "question": "各付款方式的收款佔比",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 8.262,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "ft_share_one_store",
+      "question": "特約新店遠東的營業額占全部門市營業額的比例",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 8.428,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "share_of_total": true
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [
+          {
+            "column": {
+              "table": "store",
+              "column": "store_name"
+            },
+            "op": "eq",
+            "values": [
+              "特約新店遠東"
+            ]
+          }
+        ],
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT store_name, net_sales_share FROM (SELECT store.store_name AS store_name, CAST((SUM(pos_sale.total_amount)) AS DOUBLE PRECISION) / NULLIF(SUM(SUM(pos_sale.total_amount)) OVER (), 0) AS net_sales_share FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id GROUP BY store.store_name) AS shares WHERE store_name = %(f_0)s ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "net_sales_share = share of total of sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [
+          "[after share] store.store_name eq 特約新店遠東"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "share of total of metric net_sales over pos_sale; by store.store_name; where store.store_name eq 特約新店遠東",
+      "assumptions": [
+        "The share is taken over all store_name groups; the filter on store.store_name only selects which groups are returned, so it is the subset's share of the whole.",
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "net_sales_share = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No time window was applied; all rows count.",
+        "net_sales_share is the share of the total over all groups over the same time window and filters (同期 = the same window as the group values).",
+        "Measures follow reviewed definitions; the extra filters taken from the question are checked for structure only."
+      ],
+      "verification": "partially_verified",
+      "excluded_segments": [],
+      "literal_checks": 1,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "store_name": "特約新店遠東",
+          "net_sales_share": "0.29569181002793704"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_last_30_days",
+      "question": "最近 30 天的營業額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.453,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "relative",
+            "unit": "day",
+            "offset": -30,
+            "length": 30,
+            "to_date": false
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT SUM(pos_sale.total_amount) AS net_sales FROM public.pos_sale WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-11T00:00:00+08:00, 2026-02-10T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric net_sales over pos_sale; for 2026-01-11..2026-02-10",
+      "assumptions": [
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "Relative period resolved from as_of 2026-02-10T12:00:00+08:00: 2026-01-11..2026-02-10 is [2026-01-11T00:00:00+08:00, 2026-02-10T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "net_sales": "142000"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_share_same_period_no_grain",
+      "question": "各門市的營業額占同期全部營業額的比例",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.299,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "share_of_total": true
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "shape_repairs": [
+        "dropped time without scope or grain"
+      ],
+      "sql": "SELECT store.store_name AS store_name, CAST((SUM(pos_sale.total_amount)) AS DOUBLE PRECISION) / NULLIF(SUM(SUM(pos_sale.total_amount)) OVER (), 0) AS net_sales_share FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id GROUP BY store.store_name ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "net_sales_share = share of total of sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "share of total of metric net_sales over pos_sale; by store.store_name",
+      "assumptions": [
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "net_sales_share = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "net_sales_share is the share of the total over all groups over the same time window and filters (同期 = the same window as the group values)."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 5,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "store_name": "特約台南崇德",
+          "net_sales_share": "0.05866784296426996"
+        },
+        {
+          "store_name": "特約新店遠東",
+          "net_sales_share": "0.29569181002793704"
+        },
+        {
+          "store_name": "特約板橋華江",
+          "net_sales_share": "0.08013527422437877"
+        },
+        {
+          "store_name": "特約永和中正",
+          "net_sales_share": "0.22481987942949566"
+        },
+        {
+          "store_name": "特約竹東長春二",
+          "net_sales_share": "0.34068519335391856"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_without_sales_in_range",
+      "question": "2026年2月1日到2月9日沒有任何銷售紀錄的銷售員有哪些？",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 9.348,
+      "plan": {
+        "base_table": "salesperson",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "salesperson_count",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "salesperson",
+            "column": "sales_name"
+          }
+        ],
+        "filters": [],
+        "order": [],
+        "having": [],
+        "growth": [],
+        "without": {
+          "table": "pos_sale",
+          "filters": [],
+          "time": {
+            "column": {
+              "table": "pos_sale",
+              "column": "sale_date"
+            },
+            "scope": {
+              "kind": "range",
+              "start": "2026-02-01",
+              "end_exclusive": "2026-02-10"
+            }
+          }
+        }
+      },
+      "shape_repairs": [
+        "salesperson.sales_name -> sales_name"
+      ],
+      "sql": "SELECT salesperson.sales_name AS sales_name, COUNT(*) AS salesperson_count FROM public.salesperson WHERE NOT EXISTS(SELECT 1 FROM public.pos_sale WHERE pos_sale.sales_id = salesperson.sales_id AND (pos_sale.sale_date >= %(w1_start_0)s AND pos_sale.sale_date < %(w1_end_1)s)) GROUP BY salesperson.sales_name ORDER BY sales_name NULLS FIRST",
+      "lineage": {
+        "base_table": "salesperson",
+        "tables": [
+          "salesperson"
+        ],
+        "joins": [],
+        "measures": [
+          "salesperson_count = count(*)"
+        ],
+        "dimensions": [
+          "salesperson.sales_name"
+        ],
+        "filters": [
+          "[no rows in pos_sale]"
+        ],
+        "time_window": [
+          "[no rows in pos_sale] pos_sale.sale_date in [2026-02-01T00:00:00+08:00, 2026-02-10T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "count(*) over salesperson; by salesperson.sales_name; with no pos_sale rows",
+      "assumptions": [
+        "Only salesperson rows with no pos_sale row referencing them in the window 2026-02-01..2026-02-10 are kept (NOT EXISTS); a row with any matching pos_sale row is dropped, not counted as zero.",
+        "No row filter was applied beyond the time window; every salesperson row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 3,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "sales_name": "Fixture Sales A",
+          "salesperson_count": 1
+        },
+        {
+          "sales_name": "Fixture Sales B",
+          "salesperson_count": 1
+        },
+        {
+          "sales_name": "Fixture Sales C",
+          "salesperson_count": 1
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_never_sold_products",
+      "question": "從未出現在任何銷售明細中的商品有哪些？",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.706,
+      "plan": {
+        "base_table": "product",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "product_count",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "product",
+            "column": "product_name"
+          }
+        ],
+        "filters": [],
+        "order": [],
+        "having": [],
+        "growth": [],
+        "without": {
+          "table": "pos_saleitem",
+          "filters": []
+        }
+      },
+      "sql": "SELECT product.product_name AS product_name, COUNT(*) AS product_count FROM public.product WHERE NOT EXISTS(SELECT 1 FROM public.pos_saleitem WHERE pos_saleitem.product_id = product.product_id) GROUP BY product.product_name ORDER BY product_name NULLS FIRST",
+      "lineage": {
+        "base_table": "product",
+        "tables": [
+          "product"
+        ],
+        "joins": [],
+        "measures": [
+          "product_count = count(*)"
+        ],
+        "dimensions": [
+          "product.product_name"
+        ],
+        "filters": [
+          "[no rows in pos_saleitem]"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(*) over product; by product.product_name; with no pos_saleitem rows",
+      "assumptions": [
+        "Only product rows with no pos_saleitem row referencing them are kept (NOT EXISTS); a row with any matching pos_saleitem row is dropped, not counted as zero.",
+        "No row filter was applied beyond the time window; every product row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 0,
+      "rows_truncated": false,
+      "warnings": [
+        "The query matched no rows; the window or filters select nothing."
+      ],
+      "rows": [],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "ft_latest_sale_per_salesperson",
+      "question": "每位銷售員最新一筆交易的金額與交易日期是什麼？",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 5.961,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "ft_latest_business_day_sales",
+      "question": "最新營業日的營業額是多少？",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.912,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "latest",
+            "unit": "day"
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT SUM(pos_sale.total_amount) AS net_sales FROM public.pos_sale WHERE pos_sale.sale_date AT TIME ZONE 'Asia/Taipei' >= DATE_TRUNC('DAY', (SELECT MAX(pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') FROM public.pos_sale)) AND pos_sale.sale_date AT TIME ZONE 'Asia/Taipei' < (DATE_TRUNC('DAY', (SELECT MAX(pos_sale.sale_date AT TIME ZONE 'Asia/Taipei') FROM public.pos_sale)) + INTERVAL '1 day')",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in the latest day that has rows after the filters (resolved against the data, not as_of)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric net_sales over pos_sale; for the latest day with data",
+      "assumptions": [
+        "The window is the most recent day that has pos_sale rows after the filters (the day of the maximum pos_sale.sale_date), not as_of's.",
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "net_sales": "21000"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "fu_base_store_dec",
+      "question": "2025年12月各門市的營業額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.798,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "alias": "net_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2025-12"
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS net_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s GROUP BY store.store_name ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric net_sales over pos_sale; by store.store_name; for 2025-12",
+      "assumptions": [
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2025-12 is [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 5,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "store_name": "特約台南崇德",
+          "net_sales": "39900"
+        },
+        {
+          "store_name": "特約新店遠東",
+          "net_sales": "120000"
+        },
+        {
+          "store_name": "特約板橋華江",
+          "net_sales": "54500"
+        },
+        {
+          "store_name": "特約永和中正",
+          "net_sales": "101400"
+        },
+        {
+          "store_name": "特約竹東長春二",
+          "net_sales": "23500"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "fu_change_month",
+      "question": "那1月呢？",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": "fu_base_store_dec",
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 7.727,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "alias": "net_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-01"
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS net_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s GROUP BY store.store_name ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric net_sales over pos_sale; by store.store_name; for 2026-01",
+      "assumptions": [
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2026-01 is [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 3,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "store_name": "特約新店遠東",
+          "net_sales": "81100"
+        },
+        {
+          "store_name": "特約永和中正",
+          "net_sales": "51500"
+        },
+        {
+          "store_name": "特約竹東長春二",
+          "net_sales": "208200"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "fu_base_payment",
+      "question": "各付款方式的收款總額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 5.344,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "fu_add_time",
+      "question": "只看2025年12月",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": "fu_base_payment",
+      "status": "semantic_gap",
+      "correct": false,
+      "elapsed_seconds": 4.219,
+      "reason": "semantic_gap",
+      "clarification": "請提供您想要查看的指標（例如：營業額、交易筆數或退貨金額），目前問題僅指定了時間範圍。",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "fu_base_headcount",
+      "question": "各部門人數",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "failed",
+      "correct": false,
+      "elapsed_seconds": 4.812,
+      "reason": "invalid_structured_output",
+      "status_without_coverage": "failed"
+    },
+    {
+      "case_id": "fu_add_filter",
+      "question": "只算在職的",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": "fu_base_headcount",
+      "status": "semantic_gap",
+      "correct": false,
+      "elapsed_seconds": 4.864,
+      "reason": "semantic_gap",
+      "clarification": "The request \"只算在職的\" (only count those currently employed) is a filter condition, but it does not specify what metric to calculate (e.g., count of employees, total salary, or sales) or how to group the results.",
+      "status_without_coverage": "semantic_gap"
+    },
+    {
+      "case_id": "fu_base_top3",
+      "question": "銷售金額最高的前三個商品",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.789,
+      "plan": {
+        "base_table": "pos_saleitem",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_saleitem",
+              "column": "amount"
+            },
+            "alias": "total_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "product",
+            "column": "product_name"
+          }
+        ],
+        "filters": [],
+        "order": [
+          {
+            "field": "total_sales",
+            "direction": "desc"
+          }
+        ],
+        "having": [],
+        "growth": [],
+        "limit": 3
+      },
+      "sql": "SELECT product.product_name AS product_name, SUM(pos_saleitem.amount) AS total_sales FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id GROUP BY product.product_name ORDER BY total_sales DESC NULLS LAST LIMIT %(limit_0)s",
+      "lineage": {
+        "base_table": "pos_saleitem",
+        "tables": [
+          "pos_saleitem",
+          "product"
+        ],
+        "joins": [
+          "pos_saleitem.product_id -> product.product_id"
+        ],
+        "measures": [
+          "total_sales = sum(pos_saleitem.amount)"
+        ],
+        "dimensions": [
+          "product.product_name"
+        ],
+        "filters": [],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "sum(pos_saleitem.amount) over pos_saleitem; by product.product_name; limit 3",
+      "assumptions": [
+        "pos_saleitem rows are joined to product through pos_saleitem.product_id; rows without a matching product row keep NULL there.",
+        "total_sales = SUM of pos_saleitem.amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_saleitem row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 3,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "product_name": "iPhone 15 128G",
+          "total_sales": "213500"
+        },
+        {
+          "product_name": "Samsung Galaxy S",
+          "total_sales": "201700"
+        },
+        {
+          "product_name": "OPPO Reno",
+          "total_sales": "72000"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "fu_change_limit",
+      "question": "改成前五名",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": "fu_base_top3",
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 6.474,
+      "plan": {
+        "base_table": "pos_saleitem",
+        "measures": [
+          {
+            "aggregate": "sum",
+            "column": {
+              "table": "pos_saleitem",
+              "column": "amount"
+            },
+            "alias": "total_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "product",
+            "column": "product_name"
+          }
+        ],
+        "filters": [],
+        "order": [
+          {
+            "field": "total_sales",
+            "direction": "desc"
+          }
+        ],
+        "having": [],
+        "growth": [],
+        "limit": 5
+      },
+      "sql": "SELECT product.product_name AS product_name, SUM(pos_saleitem.amount) AS total_sales FROM public.pos_saleitem LEFT JOIN public.product ON pos_saleitem.product_id = product.product_id GROUP BY product.product_name ORDER BY total_sales DESC NULLS LAST LIMIT %(limit_0)s",
+      "lineage": {
+        "base_table": "pos_saleitem",
+        "tables": [
+          "pos_saleitem",
+          "product"
+        ],
+        "joins": [
+          "pos_saleitem.product_id -> product.product_id"
+        ],
+        "measures": [
+          "total_sales = sum(pos_saleitem.amount)"
+        ],
+        "dimensions": [
+          "product.product_name"
+        ],
+        "filters": [],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "sum(pos_saleitem.amount) over pos_saleitem; by product.product_name; limit 5",
+      "assumptions": [
+        "pos_saleitem rows are joined to product through pos_saleitem.product_id; rows without a matching product row keep NULL there.",
+        "total_sales = SUM of pos_saleitem.amount; NULL values are ignored by the aggregate.",
+        "No row filter was applied beyond the time window; every pos_saleitem row counts, including any status the question did not mention.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 5,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "product_name": "iPhone 15 128G",
+          "total_sales": "213500"
+        },
+        {
+          "product_name": "Samsung Galaxy S",
+          "total_sales": "201700"
+        },
+        {
+          "product_name": "OPPO Reno",
+          "total_sales": "72000"
+        },
+        {
+          "product_name": "Pixel Pro",
+          "total_sales": "44000"
+        },
+        {
+          "product_name": "Xiaomi 15",
+          "total_sales": "42000"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "fu_base_total",
+      "question": "2025年12月的總營業額",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.593,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "alias": "net_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2025-12"
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT SUM(pos_sale.total_amount) AS net_sales FROM public.pos_sale WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale"
+        ],
+        "joins": [],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric net_sales over pos_sale; for 2025-12",
+      "assumptions": [
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2025-12 is [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "net_sales": "339300"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "fu_add_dimension",
+      "question": "按門市拆開",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": "fu_base_total",
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 7.081,
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "metric": "net_sales",
+            "alias": "net_sales",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "store",
+            "column": "store_name"
+          }
+        ],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2025-12"
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT store.store_name AS store_name, SUM(pos_sale.total_amount) AS net_sales FROM public.pos_sale LEFT JOIN public.store ON pos_sale.store_id = store.store_id WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s GROUP BY store.store_name ORDER BY store_name NULLS FIRST",
+      "lineage": {
+        "base_table": "pos_sale",
+        "tables": [
+          "pos_sale",
+          "store"
+        ],
+        "joins": [
+          "pos_sale.store_id -> store.store_id"
+        ],
+        "measures": [
+          "net_sales = sum(pos_sale.total_amount) [net_sales]"
+        ],
+        "dimensions": [
+          "store.store_name"
+        ],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric net_sales over pos_sale; by store.store_name; for 2025-12",
+      "assumptions": [
+        "pos_sale rows are joined to store through pos_sale.store_id; rows without a matching store row keep NULL there.",
+        "net_sales = Sum of pos_sale.total_amount; total_amount is already net of any discount, there is no separate discount column.",
+        "No row filter was applied beyond the time window; every pos_sale row counts, including any status the question did not mention.",
+        "2025-12 is [2025-12-01T00:00:00+08:00, 2026-01-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 5,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "store_name": "特約台南崇德",
+          "net_sales": "39900"
+        },
+        {
+          "store_name": "特約新店遠東",
+          "net_sales": "120000"
+        },
+        {
+          "store_name": "特約板橋華江",
+          "net_sales": "54500"
+        },
+        {
+          "store_name": "特約永和中正",
+          "net_sales": "101400"
+        },
+        {
+          "store_name": "特約竹東長春二",
+          "net_sales": "23500"
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "fu_base_active",
+      "question": "目前在職員工有幾位",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": null,
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 4.912,
+      "plan": {
+        "base_table": "hr_employee",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "employee_count",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [
+          {
+            "column": {
+              "table": "hr_employee",
+              "column": "terminated_at"
+            },
+            "op": "is_null",
+            "values": []
+          }
+        ],
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT COUNT(*) AS employee_count FROM public.hr_employee WHERE hr_employee.terminated_at IS NULL",
+      "lineage": {
+        "base_table": "hr_employee",
+        "tables": [
+          "hr_employee"
+        ],
+        "joins": [],
+        "measures": [
+          "employee_count = count(*)"
+        ],
+        "dimensions": [],
+        "filters": [
+          "hr_employee.terminated_at is_null"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(*) over hr_employee; where hr_employee.terminated_at is_null",
+      "assumptions": [
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "employee_count": 27
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "fu_breakdown_dept",
+      "question": "各部門呢",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": "fu_base_active",
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 6.403,
+      "plan": {
+        "base_table": "hr_employee",
+        "measures": [
+          {
+            "aggregate": "count",
+            "alias": "employee_count",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [
+          {
+            "table": "hr_dept",
+            "column": "dept_name"
+          }
+        ],
+        "filters": [
+          {
+            "column": {
+              "table": "hr_employee",
+              "column": "terminated_at"
+            },
+            "op": "is_null",
+            "values": []
+          }
+        ],
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT hr_dept.dept_name AS dept_name, COUNT(*) AS employee_count FROM public.hr_employee LEFT JOIN public.hr_dept ON hr_employee.dept_id = hr_dept.dept_id WHERE hr_employee.terminated_at IS NULL GROUP BY hr_dept.dept_name ORDER BY dept_name NULLS FIRST",
+      "lineage": {
+        "base_table": "hr_employee",
+        "tables": [
+          "hr_employee",
+          "hr_dept"
+        ],
+        "joins": [
+          "hr_employee.dept_id -> hr_dept.dept_id"
+        ],
+        "measures": [
+          "employee_count = count(*)"
+        ],
+        "dimensions": [
+          "hr_dept.dept_name"
+        ],
+        "filters": [
+          "hr_employee.terminated_at is_null"
+        ],
+        "time_window": [],
+        "having": []
+      },
+      "interpretation": "count(*) over hr_employee; by hr_dept.dept_name; where hr_employee.terminated_at is_null",
+      "assumptions": [
+        "hr_employee rows are joined to hr_dept through hr_employee.dept_id; rows without a matching hr_dept row keep NULL there.",
+        "No time window was applied; all rows count.",
+        "Column meanings come from the schema only; no reviewed business definition was applied."
+      ],
+      "verification": "unverified_semantics",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 4,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "dept_name": "業務部",
+          "employee_count": 7
+        },
+        {
+          "dept_name": "研發部",
+          "employee_count": 11
+        },
+        {
+          "dept_name": "行銷部",
+          "employee_count": 5
+        },
+        {
+          "dept_name": "財務部",
+          "employee_count": 4
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    },
+    {
+      "case_id": "fu_new_topic",
+      "question": "2026年1月有幾筆交易",
+      "expected_status": "answered",
+      "accepted_statuses": [
+        "answered"
+      ],
+      "follow_up_of": "fu_base_active",
+      "status": "answered",
+      "correct": true,
+      "elapsed_seconds": 5.014,
+      "plan": {
+        "base_table": "pos_payment",
+        "measures": [
+          {
+            "metric": "transaction_count",
+            "share_of_total": false
+          }
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time": {
+          "column": {
+            "table": "pos_sale",
+            "column": "sale_date"
+          },
+          "scope": {
+            "kind": "month",
+            "month": "2026-01"
+          }
+        },
+        "order": [],
+        "having": [],
+        "growth": []
+      },
+      "sql": "SELECT COUNT(DISTINCT pos_payment.transaction_no) AS transaction_count FROM public.pos_payment LEFT JOIN public.pos_sale ON pos_payment.transaction_no = pos_sale.transaction_no WHERE pos_sale.sale_date >= %(p1_start_0)s AND pos_sale.sale_date < %(p1_end_1)s",
+      "lineage": {
+        "base_table": "pos_payment",
+        "tables": [
+          "pos_payment",
+          "pos_sale"
+        ],
+        "joins": [
+          "pos_payment.transaction_no -> pos_sale.transaction_no"
+        ],
+        "measures": [
+          "transaction_count = count_distinct(pos_payment.transaction_no) [transaction_count]"
+        ],
+        "dimensions": [],
+        "filters": [],
+        "time_window": [
+          "pos_sale.sale_date in [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00)"
+        ],
+        "having": []
+      },
+      "interpretation": "metric transaction_count over pos_payment; for 2026-01",
+      "assumptions": [
+        "pos_payment rows are joined to pos_sale through pos_payment.transaction_no; rows without a matching pos_sale row keep NULL there.",
+        "transaction_count = Number of distinct pos_payment.transaction_no; a transaction paid in several parts counts once. Time is the sale_date of the transaction.",
+        "No row filter was applied beyond the time window; every pos_payment row counts, including any status the question did not mention.",
+        "2026-01 is [2026-01-01T00:00:00+08:00, 2026-02-01T00:00:00+08:00) in Asia/Taipei on pos_sale.sale_date."
+      ],
+      "verification": "verified",
+      "excluded_segments": [],
+      "literal_checks": 0,
+      "row_count": 1,
+      "rows_truncated": false,
+      "rows": [
+        {
+          "transaction_count": 10
+        }
+      ],
+      "rows_match_reference": true,
+      "matched_reference_index": 0,
+      "status_without_coverage": "answered"
+    }
+  ]
+}
