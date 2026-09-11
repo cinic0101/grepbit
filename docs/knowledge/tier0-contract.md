@@ -200,7 +200,38 @@ does not read NULL as a number.
 
 ## Prompt revisions
 
-`PLAN_PROMPT_REVISION` in `adapters/litellm/plan_client.py` is `plan-classify-json-v13`.
+`PLAN_PROMPT_REVISION` in `adapters/litellm/plan_client.py` is `plan-classify-json-v14`.
+
+**Wire contract v2 (2026-09-11, `adapters/litellm/plan_wire.py`).** The
+schema the planner is shown is no longer the pydantic schema of the domain
+models (11,838 characters with titles and docstrings) but a hand-built,
+flat form of 6,671 characters built around what the model writes: every
+column is the string `table.column`; a ratio is `numerator` and
+`denominator` directly on the measure; `latest.order_by[].column`,
+`latest.take[]`, `without.filters[].column` and `time.column` are strings
+too; no titles, descriptions or defaults. The normaliser
+(`normalize_variants`, then the reference walk) accepts a documented
+superset and rewrites it to the domain models without guessing meaning:
+
+| Accepted variant | Rewritten to | Recorded as |
+|---|---|---|
+| `numerator` / `denominator` beside a missing or partial `ratio` (batch 1 q49, five runs) | `ratio: {numerator, denominator}` | nothing: it is the shown form |
+| `{"table": t, "column": c}` objects (the v1 form) | kept | nothing |
+| a bare column name that resolves to one table (or the base table) | `table.column` | `shape_repairs` (`c -> t.c`) |
+| `{"column": "c", "table": t}` | `t.c` when `t` owns `c` | `shape_repairs` |
+| `{"column": {"table": t, "column": c}, "table": t}` on a measure, filter or operand (fu_base_payment) | the reference alone | `shape_repairs` (`dropped table beside the column reference`); a sibling naming another table is left to fail |
+| a dimension wrapped like an `order_by` item, or carrying `alias`, `description`, `label`, `name` | the reference alone | `shape_repairs` |
+| `grain` on the plan (the 12B control model) | `time.grain` | `shape_repairs` |
+| `ratio` on the plan beside its operands as measures | one ratio measure | `shape_repairs` |
+
+`shape_repairs` therefore keeps its meaning as the health metric: how often
+the model leaves the shown form. Rules 8 to 10 (entities with no activity,
+the latest row per entity, the latest period with data) enter the prompt
+only when the question carries one of their trigger words
+(`resources/unsupported_shapes.json`, `rule_triggers`, pack v5); the other
+rules are always present. Prompt size on the POS fixture fell from 27,304
+to 20,993 characters (21,461 with a rule pack) and on the real database
+from 31,048 to 24,733.
 
 **Repair turn (2026-09-11).** When the model's text fails to parse or to
 validate, the planner adapter sends one follow-up in the same conversation:
@@ -241,3 +272,8 @@ v13 (2026-09-11) adds rules (9) and (10): the latest row per entity is a
 `latest` with `order_by` and `take` and no measures; the most recent period
 with data is the time scope `{"kind": "latest", "unit": ...}`; measured in
 `../research/holdout3-01.md`.
+
+v14 (2026-09-11 afternoon) is the wire contract v2 above: the shown schema
+is the flat compact form, column references are `table.column` strings, a
+ratio is `numerator` and `denominator` on the measure, and rules 8 to 10 are
+attached only on their trigger words; no rule changed meaning.
