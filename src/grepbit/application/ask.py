@@ -104,6 +104,9 @@ class AskResult:
     excluded_segments: list[str] = field(default_factory=list)
     literal_checks: int = 0
     model_retries: int = 0
+    # the model's text when it failed validation (status failed,
+    # reason invalid_structured_output), so a malformed plan can be classified later
+    raw_output: str | None = None
     elapsed_seconds: float = 0.0
 
     @property
@@ -208,6 +211,10 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
         except GroundingModelError as error:
             if error.code != "model_call_failed" or attempt == 1:
                 result.status, result.reason = "failed", error.code
+                if error.code == "invalid_structured_output":
+                    result.raw_output = getattr(
+                        services.planner, "last_raw_output", None
+                    )
                 return
             result.model_retries = attempt + 1
     assert proposal is not None

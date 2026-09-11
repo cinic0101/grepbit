@@ -6,6 +6,7 @@ import json
 from types import SimpleNamespace
 
 import pytest
+from pydantic import ValidationError
 from t0_helpers import iot_schema
 
 from grepbit.adapters.litellm.grounding_client import GroundingModelSettings
@@ -15,6 +16,7 @@ from grepbit.adapters.litellm.plan_client import (
     repair_column_refs,
     schema_payload,
 )
+from grepbit.domain.plan import PlanProposal
 from grepbit.ports.grounding import GroundingModelError
 
 SETTINGS = GroundingModelSettings(base_url="http://model.local/v1", model="test-model")
@@ -338,6 +340,81 @@ def test_repair_drops_a_bare_aggregate_written_beside_a_ratio() -> None:
     ]
     untouched, repairs = repair_column_refs(payload, iot_schema())
     assert untouched["plan"]["measures"][0]["aggregate"] == "sum" and repairs == []
+
+
+def test_repair_lifts_a_plan_level_ratio_into_a_measure() -> None:
+    # the shape seen for 會員交易佔比: both operands spelled out as measures,
+    # the ratio written beside them on the plan
+    member = {
+        "aggregate": "count",
+        "filters": [
+            {"column": {"table": "alerts", "column": "device_id"}, "op": "not_null"}
+        ],
+    }
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [
+                dict(member, alias="member_count"),
+                {"aggregate": "count", "alias": "total_count"},
+                {
+                    "aggregate": "sum",
+                    "column": {"table": "alerts", "column": "downtime_minutes"},
+                },
+            ],
+            "ratio": {"numerator": member, "denominator": {"aggregate": "count"}},
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    plan = repaired["plan"]
+    assert "ratio" not in plan
+    assert plan["measures"] == [
+        {
+            "aggregate": "sum",
+            "column": {"table": "alerts", "column": "downtime_minutes"},
+        },
+        {"ratio": {"numerator": member, "denominator": {"aggregate": "count"}}},
+    ]
+    assert repairs == [
+        "dropped measure member_count spelled inside the ratio",
+        "dropped measure total_count spelled inside the ratio",
+        "lifted plan-level ratio into a measure",
+    ]
+    PlanProposal.model_validate(repaired)
+
+    # a measure that already carries a ratio: nothing moves, validation fails as before
+    twice = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [
+                {"ratio": {"numerator": member, "denominator": {"aggregate": "count"}}}
+            ],
+            "ratio": {"numerator": member, "denominator": {"aggregate": "count"}},
+        },
+    }
+    untouched, repairs = repair_column_refs(twice, iot_schema())
+    assert "ratio" in untouched["plan"] and repairs == []
+    with pytest.raises(ValidationError):
+        PlanProposal.model_validate(untouched)
+
+
+def test_propose_keeps_the_raw_text_of_a_malformed_output() -> None:
+    client = ChatCompletionsPlanClient(SETTINGS, client=_FakeClient("not json"))
+    with pytest.raises(GroundingModelError):
+        client.propose("q", iot_schema(), as_of="2026-08-15T12:00:00+08:00")
+    assert client.last_raw_output == "not json"
+    # a valid call clears it
+    good = json.dumps(
+        {
+            "decision": "plan",
+            "plan": {"base_table": "alerts", "measures": [{"aggregate": "count"}]},
+        }
+    )
+    client = ChatCompletionsPlanClient(SETTINGS, client=_FakeClient(good))
+    client.propose("q", iot_schema(), as_of="2026-08-15T12:00:00+08:00")
+    assert client.last_raw_output is None
 
 
 def test_repair_takes_a_missing_relative_unit_from_the_grain() -> None:

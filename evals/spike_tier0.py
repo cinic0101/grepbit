@@ -167,6 +167,8 @@ def report_detail(result) -> dict[str, Any]:
         detail["missing_literals"] = list(result.missing_literals)
     if result.model_retries:
         detail["model_retries"] = result.model_retries
+    if result.raw_output:
+        detail["raw_output"] = result.raw_output
     if result.status == "answered":
         detail["row_count"] = result.row_count
         detail["rows_truncated"] = result.rows_truncated

@@ -110,7 +110,10 @@ report holds a summary (correct, answerable correct, refusals correct, false
 answers on refusal cases, model failures, P50 and P95, schema size, inferred
 joins, verification counts, shape repairs) and one row per case with status,
 plan, SQL with placeholders, lineage, assumptions, interpretation, first rows,
-whether rows matched a reference, and latency. No credentials, no bindings.
+whether rows matched a reference, and latency. A case the model answered
+with text that failed validation (`status` failed, `reason`
+`invalid_structured_output`) keeps that text as `raw_output`, so the slip can
+be classified after the run instead of reproduced. No credentials, no bindings.
 
 `--redact-rows` drops result rows and reference rows from the report (row
 counts, SQL, lineage and assumptions stay), so an artifact taken on a real

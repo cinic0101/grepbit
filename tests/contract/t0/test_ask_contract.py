@@ -208,6 +208,15 @@ def test_hints_reach_the_planner_and_a_transport_error_is_retried_once() -> None
     )
 
 
+def test_a_malformed_plan_fails_with_its_raw_text_kept() -> None:
+    planner = _Planner(GroundingModelError("invalid_structured_output", 1))
+    planner.last_raw_output = '{"decision": "plan", "ratio": {}}'
+    result = ask("x", services(planner, _Executor([])), AskSettings(as_of=AS_OF))
+    assert result.status == "failed" and result.reason == "invalid_structured_output"
+    assert result.raw_output == '{"decision": "plan", "ratio": {}}'
+    assert result.model_retries == 0
+
+
 def test_structural_refusals_and_empty_results_are_typed() -> None:
     fan_out = {
         "decision": "plan",

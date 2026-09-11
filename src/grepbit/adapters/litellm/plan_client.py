@@ -325,6 +325,48 @@ def _drop_aggregate_beside_ratio(plan: dict[str, Any], repairs: list[str]) -> No
             repairs.append(f"dropped aggregate {dropped} beside ratio")
 
 
+def _lift_plan_level_ratio(plan: dict[str, Any], repairs: list[str]) -> None:
+    """A ``ratio`` written on the plan instead of inside a measure becomes one.
+
+    For 會員交易佔比 the model sometimes spells the two operands out as
+    measures and then writes the ratio beside ``measures`` at the plan level,
+    a key the plan does not have. The ratio is the measure the question asks
+    for: it moves into ``measures`` and any measure that is exactly one of its
+    operands (same aggregate, column, metric and filters; the alias aside)
+    is dropped as the same thing spelled twice. Nothing moves when a measure
+    already carries a ratio; that plan fails validation as before.
+    """
+
+    ratio = plan.get("ratio")
+    if not isinstance(ratio, dict) or not (
+        isinstance(ratio.get("numerator"), dict)
+        and isinstance(ratio.get("denominator"), dict)
+    ):
+        return
+    measures = plan.get("measures")
+    if measures is None:
+        measures = plan["measures"] = []
+    if not isinstance(measures, list) or any(
+        isinstance(m, dict) and "ratio" in m for m in measures
+    ):
+        return
+
+    def core(node: dict[str, Any]) -> dict[str, Any]:
+        return {k: v for k, v in node.items() if k != "alias"}
+
+    operands = [core(ratio["numerator"]), core(ratio["denominator"])]
+    kept: list[Any] = []
+    for item in measures:
+        if isinstance(item, dict) and core(item) in operands:
+            name = item.get("alias") or core(item)
+            repairs.append(f"dropped measure {name} spelled inside the ratio")
+            continue
+        kept.append(item)
+    kept.append({"ratio": plan.pop("ratio")})
+    plan["measures"] = kept
+    repairs.append("lifted plan-level ratio into a measure")
+
+
 def _is_column_ref(node: dict[str, Any]) -> bool:
     return set(node) == {"table", "column"} and all(
         isinstance(node[k], str) for k in ("table", "column")
@@ -476,6 +518,7 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
     _unit_from_grain(plan, repairs)
     _anchor_relative_window(plan, repairs)
     _drop_aggregate_beside_ratio(plan, repairs)
+    _lift_plan_level_ratio(plan, repairs)
     base_table = plan.get("base_table")
 
     def coerce(value: Any) -> Any:
@@ -513,6 +556,8 @@ class ChatCompletionsPlanClient:
     """One strict call per question; the server validates every identifier."""
 
     last_repairs: list[str] = []
+    # the model's text when the last call failed validation, for the report
+    last_raw_output: str | None = None
 
     def __init__(
         self,
@@ -596,6 +641,8 @@ class ChatCompletionsPlanClient:
         question_values: list[dict[str, str]] | None = None,
     ) -> PlanProposal:
         client = self._transport._client or self._transport._create_client()
+        self.last_raw_output = None
+        content: Any = None
         try:
             response = client.chat.completions.create(
                 model=self._settings.model,
@@ -619,4 +666,5 @@ class ChatCompletionsPlanClient:
             self.last_repairs = repairs
             return PlanProposal.model_validate(payload)
         except (AttributeError, IndexError, TypeError, ValueError, ValidationError):
+            self.last_raw_output = content if isinstance(content, str) else None
             raise GroundingModelError("invalid_structured_output", 1) from None
