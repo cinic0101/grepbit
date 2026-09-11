@@ -262,36 +262,6 @@ def _drop_null_extras(plan: dict[str, Any], repairs: list[str]) -> None:
         repairs.append("dropped null keys: " + ", ".join(dropped))
 
 
-def _strip_qualified_columns(plan: dict[str, Any], repairs: list[str]) -> None:
-    """{"table": "t", "column": "t.c"} -> {"table": "t", "column": "c"}: the model
-    qualified the column name inside a reference that already names the table."""
-
-    def fix(ref: Any) -> None:
-        if (
-            isinstance(ref, dict)
-            and isinstance(ref.get("table"), str)
-            and isinstance(ref.get("column"), str)
-            and ref["column"].startswith(ref["table"] + ".")
-        ):
-            repairs.append(f"{ref['column']} -> {ref['column'].split('.', 1)[1]}")
-            ref["column"] = ref["column"].split(".", 1)[1]
-
-    for item in plan.get("dimensions") or []:
-        fix(item)
-    for section in ("measures", "filters"):
-        for item in plan.get(section) or []:
-            if isinstance(item, dict):
-                fix(item.get("column"))
-                ratio = item.get("ratio")
-                if isinstance(ratio, dict):
-                    for side in ("numerator", "denominator"):
-                        if isinstance(ratio.get(side), dict):
-                            fix(ratio[side].get("column"))
-    time = plan.get("time")
-    if isinstance(time, dict):
-        fix(time.get("column"))
-
-
 def _anchor_relative_window(plan: dict[str, Any], repairs: list[str]) -> None:
     """Read "offset 0, length L > 1" as the last L complete units before as_of.
 
@@ -355,6 +325,67 @@ def _drop_aggregate_beside_ratio(plan: dict[str, Any], repairs: list[str]) -> No
             repairs.append(f"dropped aggregate {dropped} beside ratio")
 
 
+def _is_column_ref(node: dict[str, Any]) -> bool:
+    return set(node) == {"table", "column"} and all(
+        isinstance(node[k], str) for k in ("table", "column")
+    )
+
+
+def _strip_qualifier(ref: dict[str, Any], repairs: list[str]) -> None:
+    """{"table": "t", "column": "t.c"} -> {"table": "t", "column": "c"}: the model
+    qualified the column name inside a reference that already names the table."""
+
+    if ref["column"].startswith(ref["table"] + "."):
+        repairs.append(f"{ref['column']} -> {ref['column'].split('.', 1)[1]}")
+        ref["column"] = ref["column"].split(".", 1)[1]
+
+
+def _repair_refs(node: Any, model: SchemaModel, base_table, repairs, coerce, key=None):
+    """Walk the whole plan and mend column references wherever they sit.
+
+    A reference dict that qualifies its own column loses the prefix; an item
+    that names a column as a string beside a sibling ``table`` key (measures,
+    filters, latest.order_by) is folded into a reference when that table owns
+    the column; any other string column (measures, filters, dimensions, time,
+    ratio operands, without, latest.take) is coerced when the name resolves to
+    exactly one table. Meaning is never guessed: anything still ambiguous fails
+    validation as before.
+    """
+
+    if isinstance(node, list):
+        for index, item in enumerate(node):
+            if isinstance(item, str) and key in ("dimensions", "take"):
+                node[index] = coerce(item)
+            else:
+                _repair_refs(item, model, base_table, repairs, coerce, key)
+        return
+    if not isinstance(node, dict):
+        return
+    if _is_column_ref(node):
+        _strip_qualifier(node, repairs)
+        return
+    if "column" in node:
+        column = node["column"]
+        if isinstance(column, dict) and _is_column_ref(column):
+            _strip_qualifier(column, repairs)
+        elif isinstance(column, str):
+            table = node.get("table")
+            if isinstance(table, str) and "." not in column:
+                owner = model.table(table)
+                if owner is not None and owner.column(column) is not None:
+                    del node["table"]
+                    repairs.append(f"{column} + table {table} -> {table}.{column}")
+                    node["column"] = {"table": table, "column": column}
+                # a sibling table that does not own the column is left alone:
+                # the extra key fails validation instead of being guessed away
+            else:
+                node["column"] = coerce(column)
+    for child_key, value in list(node.items()):
+        if child_key == "column":
+            continue
+        _repair_refs(value, model, base_table, repairs, coerce, child_key)
+
+
 def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]]:
     """Coerce column references the model wrote as strings into ColumnRef dicts.
 
@@ -372,7 +403,6 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
         return payload, repairs
     plan = payload["plan"]
     _drop_null_extras(plan, repairs)
-    _strip_qualified_columns(plan, repairs)
     time = plan.get("time")
     if (
         isinstance(time, dict)
@@ -403,45 +433,17 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
         repairs.append(f"{value} -> {candidates[0]}.{column}")
         return {"table": candidates[0], "column": column}
 
-    latest = plan.get("latest")
-    if isinstance(latest, dict):
-        for item in latest.get("order_by") or []:
-            if isinstance(item, dict) and isinstance(item.get("column"), str):
-                item["column"] = coerce(item["column"])
-        if isinstance(latest.get("take"), list):
-            latest["take"] = [coerce(ref) for ref in latest["take"]]
     without = plan.get("without")
     if isinstance(without, dict):
         w_time = without.get("time")
-        if isinstance(w_time, dict):
-            if w_time.get("scope") is None and w_time.get("grain") is None:
-                del without["time"]
-                repairs.append("dropped without.time without scope")
-            elif isinstance(w_time.get("column"), str):
-                w_time["column"] = coerce(w_time["column"])
-        for item in without.get("filters") or []:
-            if isinstance(item, dict) and isinstance(item.get("column"), str):
-                item["column"] = coerce(item["column"])
-    for key in ("measures", "filters"):
-        for item in plan.get(key) or []:
-            if not isinstance(item, dict) or "column" not in item:
-                continue
-            table, column = item.get("table"), item["column"]
-            if isinstance(table, str) and isinstance(column, str) and "." not in column:
-                owner = model.table(table)
-                if owner is not None and owner.column(column) is not None:
-                    del item["table"]
-                    repairs.append(f"{column} + table {table} -> {table}.{column}")
-                    item["column"] = {"table": table, "column": column}
-                # A sibling table that does not own the column is left alone:
-                # the extra key fails validation instead of being guessed away.
-                continue
-            item["column"] = coerce(column)
-    if isinstance(plan.get("dimensions"), list):
-        plan["dimensions"] = [coerce(d) for d in plan["dimensions"]]
-    time = plan.get("time")
-    if isinstance(time, dict) and "column" in time:
-        time["column"] = coerce(time["column"])
+        if (
+            isinstance(w_time, dict)
+            and w_time.get("scope") is None
+            and w_time.get("grain") is None
+        ):
+            del without["time"]
+            repairs.append("dropped without.time without scope")
+    _repair_refs(plan, model, base_table, repairs, coerce)
     return payload, repairs
 
 

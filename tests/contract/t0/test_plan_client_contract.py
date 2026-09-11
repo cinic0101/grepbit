@@ -415,3 +415,75 @@ def test_repair_reaches_into_latest() -> None:
         {"table": "alerts", "column": "raised_at"},
     ]
     assert len(repairs) == 3
+
+
+def test_repair_mends_references_anywhere_in_the_plan() -> None:
+    """The three slips holdout 3 run 5 produced: a sibling table beside a string
+    column inside latest.order_by, a qualified column inside a take reference,
+    and a qualified column inside without.time.column."""
+
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "dimensions": [{"table": "devices", "column": "devices.model"}],
+            "latest": {
+                "order_by": [
+                    {"column": "raised_at", "table": "alerts", "direction": "desc"}
+                ],
+                "take": [{"column": "alerts.severity", "table": "alerts"}],
+            },
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    plan = repaired["plan"]
+    assert plan["dimensions"] == [{"table": "devices", "column": "model"}]
+    assert plan["latest"]["order_by"][0] == {
+        "column": {"table": "alerts", "column": "raised_at"},
+        "direction": "desc",
+    }
+    assert plan["latest"]["take"] == [{"table": "alerts", "column": "severity"}]
+    assert set(repairs) == {
+        "devices.model -> model",
+        "raised_at + table alerts -> alerts.raised_at",
+        "alerts.severity -> severity",
+    }
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "devices",
+            "measures": [{"aggregate": "count"}],
+            "without": {
+                "table": "alerts",
+                "time": {
+                    "column": {"column": "alerts.raised_at", "table": "alerts"},
+                    "scope": {"kind": "month", "month": "2026-07"},
+                },
+            },
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    assert repaired["plan"]["without"]["time"]["column"] == {
+        "table": "alerts",
+        "column": "raised_at",
+    }
+    assert repairs == ["alerts.raised_at -> raised_at"]
+    # a ratio operand written as a string column is coerced too
+    payload = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "alias": "share",
+                    "ratio": {
+                        "numerator": {"aggregate": "sum", "column": "downtime_minutes"},
+                        "denominator": {"aggregate": "count"},
+                    },
+                }
+            ],
+        },
+    }
+    repaired, repairs = repair_column_refs(payload, iot_schema())
+    numerator = repaired["plan"]["measures"][0]["ratio"]["numerator"]
+    assert numerator["column"] == {"table": "alerts", "column": "downtime_minutes"}
