@@ -179,3 +179,21 @@ calendar weeks; 0 silent wrong numbers; refusal rate 47% (from 80% on run
 2), every remaining refusal structural: time parts, rolling averages,
 to-date growth.
 
+### Cost on the fixture sets
+
+The regression under v13 is recorded in `../../evidence/README.md` (rows
+for `pos-features-22` through `pos-21`). The first pass lost 19 cases to
+malformed output; after the two repairs above and a third for qualified
+output names in `order`, `having` and `growth` (`04f7bdc`) the author sets
+stand at 151/160 (156/160 under v12), features 38/39, batch 1 49/50. What
+is left is not one shape: `member_ratio_gap` and b1 q49 came back
+malformed in one run and valid in the next at the same revision and
+temperature 0. A probe that kept the raw output showed the model writing
+`ratio` at the plan level instead of inside a measure on one call and a
+valid plan on the next, with column sampling on. The runner discards the
+raw text of a malformed output, so the earlier failures cannot be
+classified after the fact. Shape repairs per set rose from at most 2 under
+v12 to 11 on `pos` and batch 1: the two new shapes cost the model
+structure, and the repairs carry it. Next: keep the raw output of a
+malformed plan in the report, repair a plan-level `ratio`, rerun.
+
