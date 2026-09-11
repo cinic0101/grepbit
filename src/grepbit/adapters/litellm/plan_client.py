@@ -7,24 +7,28 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from grepbit.adapters.language_pack_store import load_shape_pack
 from grepbit.adapters.litellm.grounding_client import (
     ChatCompletionsGroundingClient,
     GroundingModelSettings,
 )
+from grepbit.adapters.litellm.plan_wire import normalize_variants, shown_schema_text
+from grepbit.application.text import phrase_in
 from grepbit.domain.overlay import SemanticOverlay
 from grepbit.domain.plan import Filter, Measure, PlanProposal, PreviousTurn, QueryPlan
 from grepbit.domain.schema_model import SchemaModel
 from grepbit.ports.ask import RELATIVE_WINDOW_REPAIR
 from grepbit.ports.grounding import GroundingModelError
 
-PLAN_PROMPT_REVISION = "plan-classify-json-v13"
+PLAN_PROMPT_REVISION = "plan-classify-json-v14"
 
-_RULES = (
+_RULES_ALL = (
     "You translate one analytics question into ONE aggregate query plan over the "
     "given PostgreSQL schema, or decline. Output only JSON matching the schema. "
     "Rules: "
     "(1) Use only table and column names that appear in the schema; never invent "
-    "names. base_table is the table whose rows are being counted or summed. "
+    'names. Write every column reference as the string "table.column". '
+    "base_table is the table whose rows are being counted or summed. "
     "(2) measures: aggregate is one of sum, count, count_distinct, avg, min, max; "
     "count without a column counts rows. sum and avg need numeric columns. A "
     "share or percentage of the total (佔比, 比例, share of) is the same measure "
@@ -35,8 +39,9 @@ _RULES = (
     "numerator is a metric or an aggregate the question restricts and whose "
     "denominator is the same aggregate unrestricted. A rate or ratio of "
     "two aggregates (退貨率, 客單價 as amount per transaction, conversion rate) is "
-    '{"ratio": {"numerator": {aggregate/column or metric}, "denominator": {...}}} '
-    "over the same base table. base_table may be omitted when the measure columns "
+    'one measure with "numerator": {aggregate/column or metric, optional filters} '
+    'and "denominator": {...} over the same base table; an operand\'s own filters '
+    "restrict that aggregate alone. base_table may be omitted when the measure columns "
     "or metrics determine it. "
     "(3) dimensions and filters may use columns of base_table or of a table that "
     "base_table references through a foreign key (its parent, or the parent's "
@@ -106,6 +111,51 @@ _RULES = (
     "filters, so never guess a date for it. "
     "(11) Return only one JSON object."
 )
+_PACK_MARKERS = {
+    "without": "(8) Entities with no activity",
+    "latest": "(9) The latest row per entity",
+    "latest_period": "(10) The most recent period that has data",
+}
+_CLOSING_RULE = "(11) Return only one JSON object."
+
+
+def _split_rules() -> tuple[str, dict[str, str], str]:
+    starts = {key: _RULES_ALL.index(marker) for key, marker in _PACK_MARKERS.items()}
+    closing = _RULES_ALL.index(_CLOSING_RULE)
+    ordered = sorted(starts.items(), key=lambda kv: kv[1])
+    ends = [start for _, start in ordered[1:]] + [closing]
+    packs = {key: _RULES_ALL[start:end] for (key, start), end in zip(ordered, ends)}
+    return _RULES_ALL[: ordered[0][1]], packs, _RULES_ALL[closing:]
+
+
+_RULES_CORE, _RULE_PACKS, _RULES_CLOSING = _split_rules()
+_RULE_TRIGGERS: dict[str, list[str]] | None = None
+
+
+def _triggers() -> dict[str, list[str]]:
+    global _RULE_TRIGGERS
+    if _RULE_TRIGGERS is None:
+        _RULE_TRIGGERS = dict(load_shape_pack().rule_triggers)
+    return _RULE_TRIGGERS
+
+
+def rules_for(question: str) -> str:
+    """The core rules plus the packs the question's words switch on.
+
+    Rules 8 to 10 (entities with no activity, the latest row per entity, the
+    latest period with data) enter the prompt only when the question carries
+    one of their trigger words (``unsupported_shapes.json``, ``rule_triggers``);
+    a rule the question does not need is prompt length and shape risk.
+    """
+
+    packs = "".join(
+        text
+        for key, text in _RULE_PACKS.items()
+        if any(phrase_in(question, word) for word in _triggers().get(key, []))
+    )
+    return _RULES_CORE + packs + _RULES_CLOSING
+
+
 _VALUES_RULE = (
     " (11) question_values lists stored values that occur verbatim in the question, "
     "each with its column. When the question refers to one of them, filter that "
@@ -506,6 +556,7 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
         return payload, repairs
     plan = payload["plan"]
     _drop_null_extras(plan, repairs)
+    normalize_variants(plan, repairs)
     time = plan.get("time")
     if (
         isinstance(time, dict)
@@ -534,7 +585,9 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
                 candidates = [base_table]
         if len(candidates) != 1:
             return value
-        repairs.append(f"{value} -> {candidates[0]}.{column}")
+        if "." not in value:
+            # a bare name resolved to one table is a variant of the shown form
+            repairs.append(f"{value} -> {candidates[0]}.{column}")
         return {"table": candidates[0], "column": column}
 
     without = plan.get("without")
@@ -638,7 +691,7 @@ class ChatCompletionsPlanClient:
         previous: PreviousTurn | None = None,
         question_values: list[dict[str, str]] | None = None,
     ) -> list[dict[str, str]]:
-        schema = json.dumps(PlanProposal.model_json_schema(), sort_keys=True)
+        schema = shown_schema_text()
         payload: dict[str, Any] = {
             "question": question.strip(),
             "as_of": as_of,
@@ -651,7 +704,7 @@ class ChatCompletionsPlanClient:
             )
         if question_values:
             payload["question_values"] = question_values
-        rules = _RULES + (_OVERLAY_RULE if overlay is not None else "")
+        rules = rules_for(question) + (_OVERLAY_RULE if overlay is not None else "")
         rules += _FOLLOW_UP_RULE if previous is not None else ""
         rules += _VALUES_RULE if question_values else ""
         return [

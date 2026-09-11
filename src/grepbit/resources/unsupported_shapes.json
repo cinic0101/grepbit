@@ -1,5 +1,5 @@
 {
-  "revision": "unsupported-shapes-v4",
+  "revision": "unsupported-shapes-v5",
   "shapes": [],
   "period_words": [
     "每天",
@@ -72,5 +72,68 @@
     "each quarter",
     "each year"
   ],
-  "period_clarification": "The question asks for one value per period, but the plan covered only the current period. Say which range to break down (for example every day of last month), or ask for today alone."
+  "period_clarification": "The question asks for one value per period, but the plan covered only the current period. Say which range to break down (for example every day of last month), or ask for today alone.",
+  "rule_triggers": {
+    "without": [
+      "沒有",
+      "從未",
+      "未曾",
+      "不曾",
+      "無任何",
+      "缺少",
+      "未有",
+      "never",
+      "without",
+      "no sales",
+      "no orders",
+      "no transactions",
+      "not sold",
+      "did not",
+      "didn't",
+      "have not",
+      "haven't",
+      "has not",
+      "hasn't",
+      "zero sales",
+      "unsold",
+      "inactive"
+    ],
+    "latest": [
+      "最新",
+      "最近一筆",
+      "最近一次",
+      "最後一筆",
+      "最後一次",
+      "最後",
+      "最近的",
+      "latest",
+      "most recent",
+      "last sale",
+      "last transaction",
+      "last order",
+      "last purchase",
+      "last time",
+      "newest",
+      "last record"
+    ],
+    "latest_period": [
+      "最新營業日",
+      "最近營業日",
+      "最後營業日",
+      "最新交易日",
+      "最近有",
+      "最後有",
+      "最新一天",
+      "最新的月份",
+      "最新月份",
+      "latest day",
+      "last day with",
+      "last month with",
+      "last week with",
+      "most recent day",
+      "most recent month",
+      "latest month",
+      "latest week"
+    ]
+  }
 }

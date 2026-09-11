@@ -192,7 +192,8 @@ def test_string_column_references_are_repaired_only_when_unambiguous() -> None:
     # device_id exists in alerts, devices and readings: the base table wins.
     assert plan["filters"][0]["column"] == {"table": "alerts", "column": "device_id"}
     assert plan["time"]["column"] == {"table": "alerts", "column": "raised_at"}
-    assert len(repairs) == 4
+    # devices.model is the shown form and is not a repair; the three bare names are
+    assert len(repairs) == 3
     # site_id exists in two tables, neither is the base: left alone, so
     # validation fails.
     ambiguous = {
@@ -498,7 +499,8 @@ def test_repair_reaches_into_latest() -> None:
         {"table": "alerts", "column": "severity"},
         {"table": "alerts", "column": "raised_at"},
     ]
-    assert len(repairs) == 3
+    # the two bare names are variants; a qualified string is the shown form
+    assert len(repairs) == 2
 
 
 def test_repair_mends_references_anywhere_in_the_plan() -> None:
@@ -619,7 +621,9 @@ def test_repair_strips_a_qualified_output_name_in_order_and_having() -> None:
 
 
 def test_a_malformed_plan_gets_one_repair_turn_with_the_validation_errors() -> None:
-    # batch 1 q49's shape: numerator written beside ratio instead of inside it
+    # an aggregate outside the enum and a ratio missing its denominator: shapes
+    # no normalisation accepts (q49's numerator-beside-ratio is accepted since
+    # contract v2, see test_plan_wire_contract.py)
     slipped = json.dumps(
         {
             "decision": "plan",
@@ -628,8 +632,9 @@ def test_a_malformed_plan_gets_one_repair_turn_with_the_validation_errors() -> N
                 "measures": [
                     {
                         "alias": "r",
-                        "ratio": {"denominator": {"aggregate": "count"}},
-                        "numerator": {"aggregate": "count"},
+                        "aggregate": "total",
+                        "column": "alerts.downtime_minutes",
+                        "ratio": {"numerator": {"aggregate": "count"}},
                     }
                 ],
             },
@@ -668,8 +673,8 @@ def test_a_malformed_plan_gets_one_repair_turn_with_the_validation_errors() -> N
     errors = repair_messages[-1]["content"]
     assert repair_messages[-1]["role"] == "user"
     assert "did not validate" in errors
-    assert "plan.measures.0.ratio.numerator: Field required" in errors
-    assert "plan.measures.0.numerator: Extra inputs are not permitted" in errors
+    assert "plan.measures.0.ratio.denominator: Field required" in errors
+    assert "plan.measures.0.aggregate: Input should be" in errors
 
     # a second malformed answer is the end of the road: both texts kept
     fake = _FakeClient([slipped, "still not json"])

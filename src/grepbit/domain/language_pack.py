@@ -25,6 +25,10 @@ class ShapePack(DomainModel):
     # Words that ask for one value per period (每天, monthly); a plan that
     # answers such a question with a single current-period window misread it.
     period_words: list[str] = Field(default_factory=list)
+    # Words that switch a planner rule pack on (entities with no activity,
+    # the latest row per entity, the latest period with data); a rule the
+    # question does not need stays out of the prompt.
+    rule_triggers: dict[str, list[str]] = Field(default_factory=dict)
     period_clarification: str = (
         "The question asks for one value per period, but the plan covered only "
         "the current period."
