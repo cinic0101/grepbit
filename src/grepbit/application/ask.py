@@ -30,10 +30,12 @@ from grepbit.application.shapes import (
     constant_dimensions,
     drop_dimensions,
     drop_grain,
+    drop_growth,
     match_unsupported_shape,
     single_period_misread,
     unmapped_concepts,
     unrequested_grain,
+    unrequested_growth,
 )
 from grepbit.domain.language_pack import ShapePack
 from grepbit.domain.overlay import SemanticOverlay
@@ -43,6 +45,7 @@ from grepbit.ports.ask import (
     CONSTANT_DIMENSION_REPAIR,
     DATE_LITERAL_REPAIR,
     GRAIN_DROP_REPAIR,
+    GROWTH_DROP_REPAIR,
     RELATIVE_WINDOW_REPAIR,
     LiteralCheckPort,
     PlannerPort,
@@ -111,6 +114,8 @@ class AskResult:
     constant_dimensions_dropped: list[str] = field(default_factory=list)
     # concepts the question named that the plan left no trace of (a clarify)
     unmapped_concepts: list[str] = field(default_factory=list)
+    # growth measures dropped because no word in the question asked for a rate
+    growth_dropped: list[str] = field(default_factory=list)
     base_repair: str | None = None
     excluded_segments: list[str] = field(default_factory=list)
     literal_checks: int = 0
@@ -273,6 +278,14 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
                 f"{GRAIN_DROP_REPAIR} {grain}: no per-period word"
             )
             result.grain_dropped = grain
+        unasked = unrequested_growth(question, plan, pack)
+        if unasked:
+            plan = drop_growth(plan)
+            result.plan = plan
+            result.growth_dropped = unasked
+            result.shape_repairs.append(
+                f"{GROWTH_DROP_REPAIR} on {', '.join(unasked)}: no growth word"
+            )
     constants = constant_dimensions(plan)
     if constants:
         plan = drop_dimensions(plan, constants)
@@ -394,6 +407,11 @@ def _describe(result, compiled, question, base_repair, plan) -> None:
         result.assumptions.append(
             f"{column} is not returned as a column: the question fixes it to one "
             "value, so it would repeat on every row; the filter still applies."
+        )
+    if result.growth_dropped:
+        result.assumptions.append(
+            "The values are shown per period without a growth rate; the question "
+            "compares periods but names no rate (say 成長率 or growth for one)."
         )
     if result.grain_dropped:
         result.assumptions.append(

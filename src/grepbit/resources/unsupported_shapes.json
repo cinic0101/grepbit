@@ -1,5 +1,5 @@
 {
-  "revision": "unsupported-shapes-v6",
+  "revision": "unsupported-shapes-v7",
   "shapes": [],
   "period_words": [
     "每天",
@@ -134,6 +134,33 @@
       "most recent month",
       "latest month",
       "latest week"
+    ],
+    "growth": [
+      "成長",
+      "增長",
+      "成長率",
+      "增長率",
+      "變化率",
+      "變動率",
+      "增幅",
+      "減幅",
+      "漲幅",
+      "跌幅",
+      "衰退",
+      "成長多少",
+      "growth",
+      "grew",
+      "grow",
+      "rate of change",
+      "percent change",
+      "percentage change",
+      "increase",
+      "increased",
+      "decrease",
+      "decreased",
+      "伸び率",
+      "増加率",
+      "減少率"
     ]
   },
   "concepts": [

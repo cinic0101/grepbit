@@ -56,6 +56,7 @@ DATE_LITERAL_REPAIR = "date literal"
 SHARE_FILTER_REPAIR = "share filter"
 GRAIN_DROP_REPAIR = "dropped grain"
 CONSTANT_DIMENSION_REPAIR = "dropped constant dimensions"
+GROWTH_DROP_REPAIR = "dropped growth"
 # Normalisations that change what the plan means (stated as assumptions), as
 # opposed to shape variants (another way of writing the same plan). The health
 # metric of the wire contract counts only the variants.
@@ -65,6 +66,7 @@ MEANING_REPAIR_PREFIXES = (
     SHARE_FILTER_REPAIR,
     GRAIN_DROP_REPAIR,
     CONSTANT_DIMENSION_REPAIR,
+    GROWTH_DROP_REPAIR,
 )
 
 

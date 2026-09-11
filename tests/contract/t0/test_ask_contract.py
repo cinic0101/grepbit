@@ -573,3 +573,47 @@ def test_a_named_concept_the_plan_leaves_no_trace_of_is_a_clarify() -> None:
         services(_Planner(dropped), _Executor([{"n": 9}])), shape_pack=pack
     )
     assert ask("告警數", svc, AskSettings(as_of=AS_OF)).status == "answered"
+
+
+def test_a_growth_nobody_asked_for_is_dropped_but_a_growth_word_keeps_it() -> None:
+    # ft_compare_last_two_months flapped all day on an extra growth column
+    def plan_with_growth():
+        return {
+            "decision": "plan",
+            "plan": {
+                "base_table": "alerts",
+                "measures": [{"aggregate": "count", "alias": "n"}],
+                "time": {
+                    "column": {"table": "alerts", "column": "raised_at"},
+                    "scope": {
+                        "kind": "relative",
+                        "unit": "month",
+                        "offset": -2,
+                        "length": 2,
+                    },
+                    "grain": "month",
+                },
+                "growth": [{"measure": "n"}],
+            },
+        }
+
+    compared = ask(
+        "上個月和前一個月的告警數比較",
+        services(
+            _Planner(plan_with_growth()), _Executor([{"period_start": "x", "n": 1}])
+        ),
+        AskSettings(as_of=AS_OF),
+    )
+    assert compared.status == "answered" and compared.plan is not None
+    assert compared.plan.growth == [] and compared.growth_dropped == ["n"]
+    assert "LAG(" not in (compared.sql or "")
+    assert compared.meaning_normalisations == ["dropped growth on n: no growth word"]
+    assert any("without a growth rate" in a for a in compared.assumptions)
+    grown = ask(
+        "告警數的月成長率",
+        services(
+            _Planner(plan_with_growth()), _Executor([{"period_start": "x", "n": 1}])
+        ),
+        AskSettings(as_of=AS_OF),
+    )
+    assert grown.plan is not None and len(grown.plan.growth) == 1
