@@ -70,8 +70,10 @@ cases:
   - case_id: returns_dec_gap
     question: "2025年12月的退貨金額"
     expected: {status: semantic_gap}
-    note: nothing in the schema says what a return is; origin_transaction_no is undocumented
-    accept_statuses: [semantic_gap, clarify, unsupported]
+    note: >-
+      contrast case without the overlay: nothing in the schema documents what a return is. A refusal is accepted; since 2026-09-10 the model reads origin_transaction_no as the return marker on its own, so an answer is accepted too, but only if it equals the overlay's definition (the reference); the assumption must say no reviewed definition applied
+    accept_statuses: [semantic_gap, clarify, unsupported, answered]
+    reference_sql: "SELECT SUM(total_amount) FROM pos_sale WHERE origin_transaction_no IS NOT NULL AND sale_date >= '2025-12-01T00:00+08' AND sale_date < '2026-01-01T00:00+08'"
   - case_id: member_ratio_gap
     question: "會員交易佔比是多少"
     note: >-

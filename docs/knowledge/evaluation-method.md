@@ -117,6 +117,19 @@ counts, SQL, lineage and assumptions stay), so an artifact taken on a real
 database can be committed under `evidence/`. The summary records
 `rows_redacted`, the case file, the prompt revision and `as_of`.
 
+### Contrast cases for undocumented concepts
+
+`returns_dec_gap` (and its Japanese twin) ask for a return amount on the
+fixture without the overlay, where nothing documents what a return is. Until
+2026-09-10 the model declined; since then it reads `origin_transaction_no` as
+the return marker on its own. The case accepts both: a typed refusal, or an
+answer that equals the overlay's definition (the reference SQL). The rule
+this encodes is the product's: a concept the schema leaves undocumented may
+be answered on a plausible reading only when the assumption says no reviewed
+definition applied, and the number must be the documented one when a
+definition exists. No prompt rule forbids the inference; the overlay is
+where a business pins meaning.
+
 ## Judged runs (real questions)
 
 A holdout arrives as a UTF-8 text file, one question per line (leading
