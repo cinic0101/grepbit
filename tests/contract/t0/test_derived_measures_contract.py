@@ -923,3 +923,50 @@ def test_a_share_with_no_groups_is_the_filtered_part_over_the_whole() -> None:
         )
     assert info.value.code == "share_requires_groups"
     assert "name the groups" in (info.value.detail or "")
+
+
+def test_a_metric_operand_keeps_its_own_filters() -> None:
+    """holdout 2 q22 (店A的銷售額是店B的幾倍) came back as a ratio of the
+    gross_sales metric filtered on store A over the same metric filtered on
+    store B; the metric expansion dropped both filters, the SQL divided the
+    total by itself and answered 1.0 marked verified."""
+
+    def operand(model: str) -> dict:
+        return {
+            "metric": "critical_alerts",
+            "filters": [
+                {
+                    "column": {"table": "devices", "column": "model"},
+                    "op": "eq",
+                    "values": [model],
+                }
+            ],
+        }
+
+    compiled = compile_plan(
+        {
+            "base_table": "alerts",
+            "measures": [
+                {
+                    "alias": "a_over_b",
+                    "ratio": {"numerator": operand("A"), "denominator": operand("B")},
+                }
+            ],
+        }
+    )
+    sql = compiled.compiled.physical_sql
+    # the metric's own filter is shared by both operands and stays in WHERE;
+    # each operand's store filter restricts its aggregate alone
+    assert (
+        "CAST((COUNT(*) FILTER(WHERE devices.model = %(f_0)s)) AS DOUBLE PRECISION)"
+        " / NULLIF(COUNT(*) FILTER(WHERE devices.model = %(f_1)s), 0) AS a_over_b"
+    ) in sql
+    assert sql.endswith("WHERE alerts.severity = %(f_2)s")
+    params = {p.name: p.value for p in compiled.compiled.execution_parameters}
+    assert params["f_0"] == "A" and params["f_1"] == "B"
+    assert compiled.lineage.measures[0] == (
+        "a_over_b = count(*) [critical_alerts] where devices.model eq A / "
+        "count(*) [critical_alerts] where devices.model eq B"
+    )
+    # the plan added filters of its own, so the answer is no longer fully verified
+    assert compiled.verification == "partially_verified"

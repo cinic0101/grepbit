@@ -120,7 +120,13 @@ class PlanCompiler:
                 if time_override is not None and time_override != metric.time_column:
                     raise PlanError("metric_conflict", operand.metric)
                 time_override = metric.time_column
-            expanded = Operand(aggregate=metric.aggregate, column=metric.column)
+            # the operand's own filters (店A的銷售額 / 店B的銷售額) travel with
+            # the expansion; the metric's defining filters come from ``metric``
+            expanded = Operand(
+                aggregate=metric.aggregate,
+                column=metric.column,
+                filters=operand.filters,
+            )
             return expanded, metric
 
         # effective: one entry per plan measure, with the resolved operands.
@@ -838,9 +844,10 @@ class PlanCompiler:
             all_verified = all(
                 m.review_state is ReviewState.VERIFIED for m in metrics_used
             )
+            own_filters = any(op.filters for _, op, _ in operands)
             verification = (
                 "verified"
-                if all_verified and not plan.filters
+                if all_verified and not plan.filters and not own_filters
                 else "partially_verified"
             )
             if verification == "partially_verified":

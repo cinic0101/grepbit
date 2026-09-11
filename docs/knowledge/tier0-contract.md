@@ -32,7 +32,10 @@
   `FILTER (WHERE ...)`; a single metric keeps its filters in `WHERE`. An
   operand may also carry up to 2 `filters` of its own (會員交易佔比 as
   `count where member_id not_null / count`), compiled as `FILTER (WHERE ...)`
-  on that aggregate alone and shown in the lineage as `count(*) where ...`.
+  on that aggregate alone and shown in the lineage as `count(*) where ...`;
+  a reviewed-metric operand keeps them too (店A的銷售額 / 店B的銷售額 as
+  `gross_sales where store eq A / gross_sales where store eq B`), and a plan
+  with such filters is at most `partially_verified`.
 - latest: `{"order_by": [{"column", "direction"}...], "take": [<columns>]}`
   returns, per group of the dimensions, the single most recent base row
   ranked by `order_by` (the compiler appends the base table's primary key
