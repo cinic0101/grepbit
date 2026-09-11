@@ -164,6 +164,31 @@ over the same window and filters as the group values; with a grain, each
 period's own total. A datasource that needs a different default has no
 overlay construct for it yet (`../plan/next-phase.md`).
 
+## Construct matrix (2026-09-11)
+
+Every measure kind against every row construct it can meet. A cell names the
+contract test that compiles that pair, or the validation error that excludes
+it, or says **gap**. The two wrong numbers of 2026-09-11 were both gap cells
+(operand filter with share; operand filter with a metric). A new construct
+adds a row or a column and fills every cell before it merges; gap cells are
+covered generically by the generated-plan properties (`test_plan_properties.py`,
+every valid plan compiles or raises a typed error and the self-check
+invariants hold) and closed one by one with a value test.
+
+| measure \ rows | plan filter | operand filter | default segment | named segment | time window | grain | latest | without |
+|---|---|---|---|---|---|---|---|---|
+| raw aggregate | `test_enum_filters_compare_as_text...`, `test_null_checks_and_count_distinct...` | `test_an_operand_may_carry_its_own_filters...` | `test_default_exclusion_adds_the_inverse_filter...` | `test_excluded_segments_are_lifted_when_the_question_names_them` | `test_count_with_month_window_binds_boundaries...` | `test_monthly_grain_buckets_in_business_timezone...` | excluded: `plan_latest_excludes_aggregates` | `test_without_compiles_an_anti_join...` |
+| reviewed metric | `test_extra_question_filters_or_candidate_metrics_are_only_partially_verified` | `test_a_metric_operand_keeps_its_own_filters` | `test_default_segment_becomes_operand_level_when_one_operand_selects_it` | **gap** | `test_time_column_defaults_to_the_overlay_time_default_of_the_base` | **gap** | excluded: `plan_latest_excludes_aggregates` | **gap** (a metric on the entity table) |
+| ratio | **gap** | `test_an_operand_may_carry_its_own_filters...`, `test_a_metric_operand_keeps_its_own_filters` | `test_default_segment_becomes_operand_level...` (return ratio keeps gross sales) | **gap** | **gap** (b1_q34 is an eval case only) | **gap** | excluded | **gap** |
+| share_of_total | `test_share_filtered_on_its_own_dimension_is_the_subset_share_of_the_whole` (after-share selection) | `test_a_share_with_no_groups_is_the_filtered_part_over_the_whole`, `test_grouped_share_and_growth_keep_their_windows` | **gap** (batch 1 q17 is an eval case only) | **gap** | `test_share_of_total_divides_by_the_window_total_over_all_groups` | `test_share_within_each_period_when_the_plan_has_a_grain` | excluded | **gap** |
+| growth | **gap** | **gap** | **gap** | **gap** | `test_growth_on_a_single_period_window_widens...`, `test_growth_on_a_to_date_window_is_refused` | `test_growth_compares_each_period_with_the_previous_one_per_group` (required: `plan_growth_requires_grain`) | excluded | **gap** |
+| having | `test_having_compares_the_aggregate_expression_with_a_bound_value` | **gap** | **gap** | **gap** | **gap** | **gap** | excluded | `count = 0` excluded: `anti_join_required`; other thresholds **gap** |
+
+Having on a ratio or share is excluded (`plan_having_on_derived_measure`,
+`test_having_cannot_target_a_derived_measure`). Twenty-two gap cells on
+2026-09-11; the generated-plan properties cover them for structure the same
+day, the value tests follow.
+
 ## Verification levels (CompiledPlan.verification)
 
 | Level | When |
