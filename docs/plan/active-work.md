@@ -1,13 +1,26 @@
 # Active work: evaluation repairs and accepted period semantics
 
-Current ruler: `cross-language-disagreement.md`. Local closeout completed at
-`a2e080b` (preceded by `4cf6162`, `3cf9e5b`); clean before starting this ruler,
-no push. Scope is test-only fidelity/disagreement accounting and counterexamples
-against the existing structural comparator. No new evals/src implementation,
-live requests or production changes. Proposed post-ruler ceiling: 48 serial
-Gemma attempts across 12 authored development questions; unknown translations
-remain uncredited without reference-exact or owner-confirmed fidelity. Await the
-explicit ruler follow-up before implementation/live; previous budgets are closed.
+Latest slice COMPLETE: cross-language disagreement. The owner's explicit "同意"
+approved the ruler and at most 48 Gemma attempts; all 48 succeeded, budget closed.
+See `cross-language-disagreement.md` for authority/data limits and
+`../research/cross-language-study-01.md` / `evidence/cross-language-study-01.json`
+for results. Baseline clean dev `8288c06`, root sole writer. Focused 85, static
+and offline 1,586 pass; frozen source `10d70429`. There are 108 proposal value
+checks, 12 witness plan-instance checks and 216 actual ask replays / 195 SQL
+executions, all local. No production, historical score, package or DB change.
+
+Z1/Z2 agree 12/12; cross-language reveals the wrong return-only count but misses
+the wrong service record/entity count. Conditional on agent-reviewed translation
+fidelity: one incremental signal among two known wrong questions, zero false
+alarms among nine correct controls, one separately reported ambiguous-rate flag.
+The owner asked the root "你可以幫我檢查嗎"; all 12 translations preserve meaning
+in that agent's review, not independent human confirmation. The original ledger
+stays 2 reference-exact / 10 unreviewed; formal screen remains unpassed. English
+current ask falsely blocks four correct proposals, so it is not a replacement.
+Local closeout is authorized by the owner's earlier "有需要時隨時可以 commit
+不用特別問我". No push, additional live allocation or automatic promotion. Next
+discussion: independently judged confirmation versus editable-query technical
+ruler. Historical checkpoints/permission states below are preserved as history.
 
 Current 2026-09-12 closeout: owner authorized "整理完直接開始" and local commits
 without asking each time; no push. See `git-closeout-and-cross-language.md` for

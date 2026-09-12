@@ -1,5 +1,24 @@
 # Cross-language disagreement: bounded feasibility ruler
 
+Completed 2026-09-12: approved implementation and all 48 calls, no transport
+errors or production changes. See `../research/cross-language-study-01.md`.
+Focused 85/static/offline 1,586 pass. Z1/Z2 agree 12/12; Z1/E witnesses one
+known wrong-count difference and one unresolved-rate difference, while one
+known wrong service count remains identical. The owner delegated translation
+review to the root; its all-12-preserved judgment is agent review, not human
+confirmation. The original 2 exact / 10 unreviewed ledger and formal unpassed
+screen remain intact. Budget closed; no automatic confirmation or promotion.
+The specification/checkpoint text below records the frozen rule and its history.
+
+Checkpoint follow-up RECEIVED: owner replied "同意" to the 33-check ruler and
+the request to implement and run 12 questions / at most 48 Gemma attempts.
+Implementation baseline: clean dev `8288c06`, source `04543492`. Root owns the
+coupled comparison, driver and analysis; a read-only specialist may advise on
+existing replay helpers/review. Its external permissions remain denied. The
+endpoint, outbound data, opaque credentials, ceilings and stops below are the
+effective live scope; no package/DB/production change or push. Standing owner
+permission allows local commits. Historical checkpoint text below is preserved.
+
 2026-09-12. Root owns the coupled research contract. Initial baseline is the
 clean local closeout at `a2e080b`; production and historical studies stay frozen.
 Owner authorized organizing the test and, after Git cleanup, "直接開始". This

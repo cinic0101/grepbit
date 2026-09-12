@@ -121,14 +121,18 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-12: accumulated work is locally committed through `a2e080b`,
-with 1,501 offline tests and static checks passing. Subsequent metric wire/factor
-studies did not qualify a candidate; see `../research/metric-factor-study-01.md`.
-Next is the test-only `cross-language-disagreement.md` ruler: manufacture another
-view, measure computational disagreement deterministically, and keep translation
-fidelity and user intent separate. New live implementation waits for its explicit
-checkpoint follow-up. Editable-query feasibility remains a separate planned
-human-evidence route. No research gate is promoted; A5 is still provisional.
+Current 2026-09-12: the approved 48-call cross-language slice is complete;
+see `../research/cross-language-study-01.md`. Identical repeats agree 12/12;
+translated planning exposes the known return-count misreading but shares the
+service record/entity error. Conditional on the requested agent translation
+review, there is one incremental signal among two known errors and zero false
+alarms among nine correct controls. This is not independent human review:
+the frozen fidelity ledger remains 2 exact / 10 unreviewed and the formal screen
+is unpassed. No further calls or promotion; focused 85/static/offline 1,586 pass.
+Next discussion separates independently judged confirmation from the planned
+editable-query technical ruler/human-evidence route. Earlier metric wire/factor
+candidates remain rejected; production and historical scores are unchanged.
+A5 is still provisional. Current authority and local closeout: `active-work.md`.
 
 Latest 2026-09-12: `../research/semantic-contrast-01.md`. Owner-approved
 ratio-wrapper filter rejection is implemented through domain/compiler/self-check
