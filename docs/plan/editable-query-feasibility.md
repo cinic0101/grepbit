@@ -1,5 +1,16 @@
 # Editable query definitions: feasibility experiment
 
+2026-09-12 update: the owner authorized beginning the Stage-0 rulers, explicitly
+naming that phase. `editable-query-stage0-rulers.md` specifies the current
+test-only boundary, hand facts, whole-candidate edit and review identity.
+Baseline clean dev `8c9e7c5`; no editor, model/DB calls or human pilot yet.
+Standing local-commit permission supersedes the historical no-Git planning
+restriction below; explicit post-ruler implementation approval is still required.
+Ruler results are now in `../research/editable-query-ruler-01.md`: focused
+272 pass / 3 fail, static pass, offline 1,858 pass / the same 3 reference
+named-segment failures. This is a completed specification checkpoint, not a
+completed Stage-0 implementation or a green technical readiness gate.
+
 2026-09-12. Status: protocol drafted, not implemented or measured.
 Owner request: "好 我們先做個實驗來驗證可行性？你來組織" after comparing
 self-certification, answer-and-correct, explicit confirmation and approved templates.

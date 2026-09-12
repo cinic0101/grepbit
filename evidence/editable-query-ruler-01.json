@@ -1,0 +1,469 @@
+{
+  "revision": "editable-query-ruler-v1",
+  "status": "ruler_checkpoint_complete_awaiting_implementation_approval",
+  "baseline_head": "8c9e7c5",
+  "source_digest": "sha256:d2588a9c9a33fa7ce7132f9a2e259bdb48cfaf300ad103f7e34ef6b6dca7a106",
+  "authority": "Owner explicitly requested beginning editable-query Stage-0 rulers. Earlier standing permission permits local commits; no push.",
+  "implementation_authorized": false,
+  "renderer_implemented": false,
+  "editor_implemented": false,
+  "confirmation_runtime_implemented": false,
+  "production_changed": false,
+  "evals_changed": false,
+  "live_model_calls": 0,
+  "external_db_calls": 0,
+  "human_trials": 0,
+  "artifact_directory": ".artifacts/editable-query-ruler-20260912",
+  "profiles": {
+    "focused-initial": {
+      "status": "failed",
+      "counts": {
+        "errors": 0,
+        "failures": 3,
+        "skipped": 0,
+        "tests": 242
+      },
+      "source_digest": "sha256:82234894a26b094f1c5e0c7dd52ec741b027c9f30b6a1ae478e656748f2d663f",
+      "source_stable": true
+    },
+    "focused-final": {
+      "status": "failed",
+      "counts": {
+        "errors": 0,
+        "failures": 3,
+        "skipped": 0,
+        "tests": 263
+      },
+      "source_digest": "sha256:673543c33906738a9d3cca711da9314264bfb70df1b5226f44393667f6a4083f",
+      "source_stable": true
+    },
+    "offline": {
+      "status": "failed",
+      "counts": {
+        "errors": 0,
+        "failures": 3,
+        "skipped": 0,
+        "tests": 1849
+      },
+      "source_digest": "sha256:673543c33906738a9d3cca711da9314264bfb70df1b5226f44393667f6a4083f",
+      "source_stable": true
+    },
+    "focused-complete": {
+      "status": "failed",
+      "counts": {
+        "errors": 0,
+        "failures": 3,
+        "skipped": 0,
+        "tests": 275
+      },
+      "source_digest": "sha256:d2588a9c9a33fa7ce7132f9a2e259bdb48cfaf300ad103f7e34ef6b6dca7a106",
+      "source_stable": true
+    },
+    "static-complete": {
+      "status": "pass",
+      "counts": null,
+      "source_digest": "sha256:d2588a9c9a33fa7ce7132f9a2e259bdb48cfaf300ad103f7e34ef6b6dca7a106",
+      "source_stable": true
+    },
+    "offline-complete": {
+      "status": "failed",
+      "counts": {
+        "errors": 0,
+        "failures": 3,
+        "skipped": 0,
+        "tests": 1861
+      },
+      "source_digest": "sha256:d2588a9c9a33fa7ce7132f9a2e259bdb48cfaf300ad103f7e34ef6b6dca7a106",
+      "source_stable": true
+    }
+  },
+  "artifact_hashes": {
+    "focused-initial/result.json": "522f8b1aaf2ca33d7cad00751ce9113bf0e9b9eb0333518d11da8913c34d6536",
+    "focused-initial/command-01.log": "0594339faa062541e80b5a5a628dc9b69edf17b74d7050e7f47ebaa45b44b725",
+    "focused-initial/junit.xml": "a673cd6b88492e282b8ac2f2c094f8a5a69a0f629e1a7c52e46b4a39c8093333",
+    "focused-final/result.json": "8088e48bdb3a95423e51ee57627f5b2637dab532d7a2fd9c92543bd417e955a9",
+    "focused-final/command-01.log": "1d60451a11413216580f5d5c8f5a6ba11a94948937bee40cef127d348e73cd01",
+    "focused-final/junit.xml": "613d7f30f0360d7f0a5de3ff7ab55a800a01b0935832c4db46686e387fecea5b",
+    "offline/result.json": "7dd8b428163a139c6d55ce1e2bfc023a325d25bc56bc2119acb9bd0b57d55d7f",
+    "offline/command-01.log": "7358229cb9451cca3527af042a837709ad9f12a70a17c9338cd26425ee177ef8",
+    "offline/junit.xml": "b01abcbb5122342d59b7558f30ebcc0c6c14024a6d379af97b7a1fb2616b57c0",
+    "focused-complete/result.json": "142259d701c28b76e2d973f84a3b3a5da82e39cd92a7b733b2625f14d788f0fd",
+    "focused-complete/command-01.log": "a98686d99a5a0925784b53f9e6aeb406c208e534d413938f08636866e8a82776",
+    "focused-complete/junit.xml": "7571b0b891b3d27b6ab0e2e455b0de886c46fea1c8b8099ee1748b84d14a51a4",
+    "static-complete/result.json": "7856b2e4c8cc7235e533749eb5a50a80de73fcc05ee4afcd089fd0dd1712c4eb",
+    "static-complete/command-02.log": "f36b4fb3218f12e3995320c733435e653e7140d30f5d071fbadca31291aa1fdc",
+    "static-complete/command-03.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "static-complete/command-01.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "offline-complete/result.json": "21c9da69fd79992c4844455c1c9a0d880f53ff7b0df53df84fb72aa31fb2e609",
+    "offline-complete/command-01.log": "e93e38ac6b19dda9b9895a3a3d6cecabab661ebc5da4c3dd612f650e9b686ed5",
+    "offline-complete/junit.xml": "3870fa6ccf0bdd16fcb7831d5f5a857e31bf4e47b8474e2cbd308e30b89f3e40"
+  },
+  "failures": {
+    "focused-initial": [
+      "test_original_plan_agrees_with_hand_card_values[reference-coincidental-named_ratio]",
+      "test_original_plan_agrees_with_hand_card_values[reference-asymmetric-named_ratio]",
+      "test_original_plan_agrees_with_hand_card_values[reference-null_zero-named_ratio]"
+    ],
+    "focused-final": [
+      "test_original_plan_agrees_with_hand_card_values[reference-coincidental-named_ratio]",
+      "test_original_plan_agrees_with_hand_card_values[reference-asymmetric-named_ratio]",
+      "test_original_plan_agrees_with_hand_card_values[reference-null_zero-named_ratio]"
+    ],
+    "offline": [
+      "test_original_plan_agrees_with_hand_card_values[reference-coincidental-named_ratio]",
+      "test_original_plan_agrees_with_hand_card_values[reference-asymmetric-named_ratio]",
+      "test_original_plan_agrees_with_hand_card_values[reference-null_zero-named_ratio]"
+    ],
+    "focused-complete": [
+      "test_original_plan_agrees_with_hand_card_values[reference-coincidental-named_ratio]",
+      "test_original_plan_agrees_with_hand_card_values[reference-asymmetric-named_ratio]",
+      "test_original_plan_agrees_with_hand_card_values[reference-null_zero-named_ratio]"
+    ],
+    "offline-complete": [
+      "test_original_plan_agrees_with_hand_card_values[reference-coincidental-named_ratio]",
+      "test_original_plan_agrees_with_hand_card_values[reference-asymmetric-named_ratio]",
+      "test_original_plan_agrees_with_hand_card_values[reference-null_zero-named_ratio]"
+    ]
+  },
+  "fixture": {
+    "path": "evals/fixtures/metric_selection.json",
+    "sha256": "9a4c6440369acbd8dbe2d5dc19ebf11701bdc1d6131389b23c92def03edbdcf9",
+    "provenance": "New hand-authored specification vectors using existing fictional metric_selection instances; no live or customer data."
+  },
+  "specification": "docs/plan/editable-query-stage0-rulers.md",
+  "test_file": "tests/contract/t0/test_editable_query_rulers.py",
+  "fixture_file": "tests/fixtures/editable_query_rulers.json",
+  "counts": {
+    "hand_cards": 19,
+    "base_instances": 3,
+    "original_plan_sql_checks": {
+      "total": 57,
+      "hand_agreements": 57
+    },
+    "original_plan_reference_checks": {
+      "total": 57,
+      "hand_agreements": 54,
+      "disagreements": 3
+    },
+    "expanded_hand_fact_checks": {
+      "total": 114,
+      "hand_agreements": 114
+    },
+    "empty_or_null_aggregate_checks": {
+      "total": 16,
+      "hand_agreements": 16
+    },
+    "null_ratio_operand_checks": {
+      "total": 12,
+      "hand_agreements": 12
+    },
+    "whole_operand_edit_checks": {
+      "total": 6,
+      "hand_agreements": 6
+    },
+    "actual_ask_controls": {
+      "workflows": 3,
+      "sql_executions": 2,
+      "wrong_answers_preserved": 2,
+      "correct_plan_refused": 1,
+      "model_calls": 0
+    },
+    "final_focused": {
+      "passed": 272,
+      "failed": 3,
+      "skipped": 0,
+      "errors": 0
+    },
+    "final_offline": {
+      "passed": 1858,
+      "failed": 3,
+      "skipped": 0,
+      "errors": 0
+    },
+    "final_static": "pass"
+  },
+  "findings": [
+    {
+      "id": "named_segment_reference_omission",
+      "kind": "existing_contract_violation",
+      "source": "evals/reference_eval.py",
+      "detail": "named_segments is accepted in the signature but not consumed; default exclusion loop processes exclude_segments only.",
+      "comparison": "Reviewed return-count numerator, raw row-count denominator, named returns segment: contract/compiler exclude return rows from the nonreferencing denominator.",
+      "hand_and_sql": [
+        1,
+        1.5,
+        0.5
+      ],
+      "reference": [
+        0.5,
+        0.6,
+        0.3333333333333333
+      ],
+      "instances": [
+        "coincidental",
+        "asymmetric",
+        "null_zero"
+      ],
+      "controls": "Named all-count lifting and default-excluded ratio both agree; only named operand-level path fails.",
+      "repaired": false,
+      "xfail": false,
+      "stage0_ready": false
+    },
+    {
+      "id": "interpretation_sentence_not_full_card",
+      "kind": "existing_surface_characterization",
+      "detail": "The sentence names return_count without its defining predicate; lineage contains the predicate. This is not a claim the complete response hides it.",
+      "existing_contract_changed": false
+    },
+    {
+      "id": "plan_only_identity_insufficient",
+      "kind": "specification_counterexample",
+      "detail": "Same plan and interpretation can have different applied segment populations; aliases, provenance and review revisions also need identity binding.",
+      "persistent_api_or_security_claim": false
+    }
+  ],
+  "card_vectors": [
+    {
+      "id": "all_rows",
+      "plan_id": "all_count",
+      "segment_mode": "none",
+      "expected": [
+        4,
+        5,
+        3
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": []
+    },
+    {
+      "id": "returns_metric",
+      "plan_id": "returns_count_metric",
+      "segment_mode": "none",
+      "expected": [
+        2,
+        3,
+        1
+      ],
+      "verification": "verified",
+      "applied_segments": []
+    },
+    {
+      "id": "returns_amount",
+      "plan_id": "returns_sum_metric",
+      "segment_mode": "none",
+      "expected": [
+        50,
+        60,
+        5
+      ],
+      "verification": "verified",
+      "applied_segments": []
+    },
+    {
+      "id": "nullable_count",
+      "plan_id": "member_column_count",
+      "segment_mode": "none",
+      "expected": [
+        3,
+        2,
+        1
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": []
+    },
+    {
+      "id": "distinct_member",
+      "plan_id": "member_distinct",
+      "segment_mode": "none",
+      "expected": [
+        2,
+        1,
+        1
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": []
+    },
+    {
+      "id": "log_rows",
+      "plan_id": "log_count",
+      "segment_mode": "none",
+      "expected": [
+        3,
+        2,
+        3
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": []
+    },
+    {
+      "id": "ticket_entities",
+      "plan_id": "logged_ticket_count",
+      "segment_mode": "none",
+      "expected": [
+        2,
+        1,
+        2
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": []
+    },
+    {
+      "id": "minutes_total",
+      "plan_id": "minutes_sum",
+      "segment_mode": "none",
+      "expected": [
+        60,
+        15,
+        0
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": []
+    },
+    {
+      "id": "count_ratio",
+      "plan_id": "return_ratio",
+      "segment_mode": "none",
+      "expected": [
+        0.5,
+        0.6,
+        0.3333333333333333
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": []
+    },
+    {
+      "id": "amount_ratio",
+      "plan_id": "return_amount_ratio",
+      "segment_mode": "none",
+      "expected": [
+        0.25,
+        0.3157894736842105,
+        1
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": []
+    },
+    {
+      "id": "inverse_ratio",
+      "plan_id": "inverse_ratio",
+      "segment_mode": "none",
+      "expected": [
+        2,
+        1.6666666666666667,
+        3
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": []
+    },
+    {
+      "id": "scoped_ratio",
+      "plan_id": "scoped_ratio",
+      "segment_mode": "none",
+      "expected": [
+        0.5,
+        0.2,
+        0.5
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": []
+    },
+    {
+      "id": "default_exclusion",
+      "plan_id": "all_count",
+      "segment_mode": "default",
+      "expected": [
+        2,
+        2,
+        2
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": [
+        "returns"
+      ]
+    },
+    {
+      "id": "named_lift",
+      "plan_id": "all_count",
+      "segment_mode": "named",
+      "expected": [
+        4,
+        5,
+        3
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": []
+    },
+    {
+      "id": "default_ratio",
+      "plan_id": "metric_ratio",
+      "segment_mode": "default",
+      "expected": [
+        1,
+        1.5,
+        0.5
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": [
+        "returns"
+      ]
+    },
+    {
+      "id": "named_ratio",
+      "plan_id": "metric_ratio",
+      "segment_mode": "named",
+      "expected": [
+        1,
+        1.5,
+        0.5
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": [
+        "returns"
+      ]
+    },
+    {
+      "id": "zero_denominator",
+      "plan_id": "zero_denominator",
+      "segment_mode": "none",
+      "expected": [
+        null,
+        null,
+        null
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": []
+    },
+    {
+      "id": "empty_sum",
+      "plan_id": "empty_sum",
+      "segment_mode": "none",
+      "expected": [
+        null,
+        50,
+        null
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": []
+    },
+    {
+      "id": "label_not_filter",
+      "plan_id": "all_count",
+      "segment_mode": "none",
+      "expected": [
+        4,
+        5,
+        3
+      ],
+      "verification": "unverified_semantics",
+      "applied_segments": []
+    }
+  ],
+  "limits": [
+    "Static card/edit/identity vectors are specification, not a measured renderer/editor or user recognition.",
+    "NULL-predicate, single-table scalar fragment only; unsupported constructs must remain explicit.",
+    "No human confirmation or intent certificate is inferred from a matching identity.",
+    "Historical differential reports and scores were not rerun, rewritten or invalidated wholesale by the new named-segment counterexample.",
+    "The full offline gate remains failed on three visible behavior tests; do not report Stage-0 ready.",
+    "One earlier broad gate preceded addition of direct NULL-ratio composition coverage; final focused/static/offline share the final source."
+  ]
+}

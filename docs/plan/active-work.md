@@ -1,5 +1,28 @@
 # Active work: evaluation repairs and accepted period semantics
 
+Active slice: editable-query Stage-0 RULERS ONLY. Exact owner authorization:
+"好...可以開始下一步 應該是 主線照常推進 editable-query Stage-0 rulers?".
+Baseline clean dev `8c9e7c5`; root owns this coupled specification/test surface.
+Scope: new contract fixtures/tests, hand-value/compiled/reference checks and
+documentation. No editor, confirmation runtime, evals/src change, model/DB call,
+participant contact or production promotion. Existing model budgets are closed.
+Standing permission permits local commits without asking, never push. After
+the ruler evidence, stop for explicit post-checkpoint implementation authority.
+See `editable-query-stage0-rulers.md` for the exact research contract. A process-
+name-only check found no Python/pytest run; the unrelated Claude session is
+left alone per the owner's earlier "不用管他". Preserve unrelated changes.
+
+Ruler checkpoint COMPLETE, awaiting explicit follow-up. Final source d2588a9c:
+focused 272 pass / 3 fail, static pass, offline 1,858 pass / the same 3 fail,
+zero skips/errors. Nineteen hand cards, three instances, identity/edit vectors;
+no renderer/editor runtime. Reference evaluator ignores named_segments: compiler
+and hand values 1 / 1.5 / 0.5 versus reference 0.5 / 0.6 / 1/3. Do not hide the
+red tests or claim Stage-0 ready. `../research/editable-query-ruler-01.md` and
+`evidence/editable-query-ruler-01.json` record exact evidence. Proposed follow-up:
+repair that existing reference contract, then implement the approved research
+card/edit/confirmation surface; no production changes, model calls or human pilot.
+
+
 Latest slice COMPLETE: cross-language disagreement. The owner's explicit "同意"
 approved the ruler and at most 48 Gemma attempts; all 48 succeeded, budget closed.
 See `cross-language-disagreement.md` for authority/data limits and

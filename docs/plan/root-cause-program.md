@@ -121,6 +121,14 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
+Latest 2026-09-12: editable-query Stage-0 ruler checkpoint is complete, not its
+implementation. `../research/editable-query-ruler-01.md`: 19 hand cards and
+edit/identity vectors, focused 272 pass / 3 fail, static pass, offline 1,858 pass
+/ the same 3 fail. The named-segment reference path ignores its argument;
+compiled SQL agrees with the three hand values. Preserve this visible oracle
+gap and stop for the requested contract review before reference repair and the
+research renderer/editor. No production, model/DB calls or human pilot.
+
 Current 2026-09-12: the approved 48-call cross-language slice is complete;
 see `../research/cross-language-study-01.md`. Identical repeats agree 12/12;
 translated planning exposes the known return-count misreading but shares the

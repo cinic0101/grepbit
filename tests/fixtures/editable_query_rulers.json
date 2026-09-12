@@ -1,0 +1,1058 @@
+{
+  "revision": "editable-query-ruler-v1",
+  "provenance": "New hand-authored specification vectors using existing fictional metric_selection instances; no live or customer data.",
+  "fixture_file": "evals/fixtures/metric_selection.json",
+  "fixture_sha256": "9a4c6440369acbd8dbe2d5dc19ebf11701bdc1d6131389b23c92def03edbdcf9",
+  "segment": {
+    "id": "returns",
+    "names": [
+      "退貨"
+    ],
+    "table": "pos_sale",
+    "filter": {
+      "column": {
+        "table": "pos_sale",
+        "column": "origin_transaction_no"
+      },
+      "op": "not_null"
+    },
+    "default_exclude": true,
+    "note": "Fictional rows referencing an origin transaction."
+  },
+  "extra_plans": {
+    "metric_ratio": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "metric": "return_count"
+            },
+            "denominator": {
+              "aggregate": "count"
+            }
+          }
+        }
+      ]
+    },
+    "scoped_ratio": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "metric": "return_count",
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "member_id"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            },
+            "denominator": {
+              "aggregate": "count"
+            }
+          }
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "total_amount"
+          },
+          "op": "not_null"
+        }
+      ]
+    },
+    "zero_denominator": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "metric": "return_count"
+            },
+            "denominator": {
+              "aggregate": "count",
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "member_id"
+                  },
+                  "op": "is_null"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "member_id"
+          },
+          "op": "not_null"
+        }
+      ]
+    },
+    "empty_sum": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "sum",
+          "column": {
+            "table": "pos_sale",
+            "column": "total_amount"
+          }
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "member_id"
+          },
+          "op": "is_null"
+        },
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "origin_transaction_no"
+          },
+          "op": "not_null"
+        }
+      ]
+    }
+  },
+  "cards": [
+    {
+      "id": "all_rows",
+      "plan_id": "all_count",
+      "base_table": "pos_sale",
+      "segment_mode": "none",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": null,
+      "slots": {
+        "value": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": []
+        }
+      },
+      "expected": [
+        4,
+        5,
+        3
+      ]
+    },
+    {
+      "id": "returns_metric",
+      "plan_id": "returns_count_metric",
+      "base_table": "pos_sale",
+      "segment_mode": "none",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [],
+      "verification": "verified",
+      "ratio_zero_denominator": null,
+      "slots": {
+        "value": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "overlay.metrics.return_count",
+          "predicates": [
+            {
+              "column": "pos_sale.origin_transaction_no",
+              "op": "not_null",
+              "values": [],
+              "source": "metric"
+            }
+          ]
+        }
+      },
+      "expected": [
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "id": "returns_amount",
+      "plan_id": "returns_sum_metric",
+      "base_table": "pos_sale",
+      "segment_mode": "none",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [],
+      "verification": "verified",
+      "ratio_zero_denominator": null,
+      "slots": {
+        "value": {
+          "aggregate": "sum",
+          "column": "pos_sale.total_amount",
+          "unit_label": "交易金額",
+          "null_policy": "ignore_null_values",
+          "empty_result": null,
+          "definition": "overlay.metrics.return_amount",
+          "predicates": [
+            {
+              "column": "pos_sale.origin_transaction_no",
+              "op": "not_null",
+              "values": [],
+              "source": "metric"
+            }
+          ]
+        }
+      },
+      "expected": [
+        50,
+        60,
+        5
+      ]
+    },
+    {
+      "id": "nullable_count",
+      "plan_id": "member_column_count",
+      "base_table": "pos_sale",
+      "segment_mode": "none",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": null,
+      "slots": {
+        "value": {
+          "aggregate": "count",
+          "column": "pos_sale.member_id",
+          "unit_label": "非空會員欄位的交易紀錄",
+          "null_policy": "ignore_null_values",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": []
+        }
+      },
+      "expected": [
+        3,
+        2,
+        1
+      ]
+    },
+    {
+      "id": "distinct_member",
+      "plan_id": "member_distinct",
+      "base_table": "pos_sale",
+      "segment_mode": "none",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": null,
+      "slots": {
+        "value": {
+          "aggregate": "count_distinct",
+          "column": "pos_sale.member_id",
+          "unit_label": "不同會員識別值",
+          "null_policy": "ignore_null_values",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": []
+        }
+      },
+      "expected": [
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "log_rows",
+      "plan_id": "log_count",
+      "base_table": "work_logs",
+      "segment_mode": "none",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": null,
+      "slots": {
+        "value": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "工時紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": []
+        }
+      },
+      "expected": [
+        3,
+        2,
+        3
+      ]
+    },
+    {
+      "id": "ticket_entities",
+      "plan_id": "logged_ticket_count",
+      "base_table": "work_logs",
+      "segment_mode": "none",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": null,
+      "slots": {
+        "value": {
+          "aggregate": "count_distinct",
+          "column": "work_logs.ticket_id",
+          "unit_label": "不同工單識別值",
+          "null_policy": "ignore_null_values",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": []
+        }
+      },
+      "expected": [
+        2,
+        1,
+        2
+      ]
+    },
+    {
+      "id": "minutes_total",
+      "plan_id": "minutes_sum",
+      "base_table": "work_logs",
+      "segment_mode": "none",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": null,
+      "slots": {
+        "value": {
+          "aggregate": "sum",
+          "column": "work_logs.minutes",
+          "unit_label": "工時分鐘",
+          "null_policy": "ignore_null_values",
+          "empty_result": null,
+          "definition": "raw",
+          "predicates": []
+        }
+      },
+      "expected": [
+        60,
+        15,
+        0
+      ]
+    },
+    {
+      "id": "count_ratio",
+      "plan_id": "return_ratio",
+      "base_table": "pos_sale",
+      "segment_mode": "none",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": "null",
+      "slots": {
+        "numerator": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": [
+            {
+              "column": "pos_sale.origin_transaction_no",
+              "op": "not_null",
+              "values": [],
+              "source": "operand"
+            }
+          ]
+        },
+        "denominator": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": []
+        }
+      },
+      "expected": [
+        0.5,
+        0.6,
+        0.3333333333333333
+      ]
+    },
+    {
+      "id": "amount_ratio",
+      "plan_id": "return_amount_ratio",
+      "base_table": "pos_sale",
+      "segment_mode": "none",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": "null",
+      "slots": {
+        "numerator": {
+          "aggregate": "sum",
+          "column": "pos_sale.total_amount",
+          "unit_label": "交易金額",
+          "null_policy": "ignore_null_values",
+          "empty_result": null,
+          "definition": "raw",
+          "predicates": [
+            {
+              "column": "pos_sale.origin_transaction_no",
+              "op": "not_null",
+              "values": [],
+              "source": "operand"
+            }
+          ]
+        },
+        "denominator": {
+          "aggregate": "sum",
+          "column": "pos_sale.total_amount",
+          "unit_label": "交易金額",
+          "null_policy": "ignore_null_values",
+          "empty_result": null,
+          "definition": "raw",
+          "predicates": []
+        }
+      },
+      "expected": [
+        0.25,
+        0.3157894736842105,
+        1
+      ]
+    },
+    {
+      "id": "inverse_ratio",
+      "plan_id": "inverse_ratio",
+      "base_table": "pos_sale",
+      "segment_mode": "none",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": "null",
+      "slots": {
+        "numerator": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": []
+        },
+        "denominator": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": [
+            {
+              "column": "pos_sale.origin_transaction_no",
+              "op": "not_null",
+              "values": [],
+              "source": "operand"
+            }
+          ]
+        }
+      },
+      "expected": [
+        2,
+        1.6666666666666667,
+        3
+      ]
+    },
+    {
+      "id": "scoped_ratio",
+      "plan_id": "scoped_ratio",
+      "base_table": "pos_sale",
+      "segment_mode": "none",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [
+        {
+          "column": "pos_sale.total_amount",
+          "op": "not_null",
+          "values": [],
+          "source": "plan"
+        }
+      ],
+      "applied_segments": [],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": "null",
+      "slots": {
+        "numerator": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "overlay.metrics.return_count",
+          "predicates": [
+            {
+              "column": "pos_sale.origin_transaction_no",
+              "op": "not_null",
+              "values": [],
+              "source": "metric"
+            },
+            {
+              "column": "pos_sale.member_id",
+              "op": "not_null",
+              "values": [],
+              "source": "operand"
+            }
+          ]
+        },
+        "denominator": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": []
+        }
+      },
+      "expected": [
+        0.5,
+        0.2,
+        0.5
+      ]
+    },
+    {
+      "id": "default_exclusion",
+      "plan_id": "all_count",
+      "base_table": "pos_sale",
+      "segment_mode": "default",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [
+        "returns"
+      ],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": null,
+      "slots": {
+        "value": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": [
+            {
+              "column": "pos_sale.origin_transaction_no",
+              "op": "is_null",
+              "values": [],
+              "source": "segment"
+            }
+          ]
+        }
+      },
+      "expected": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "id": "named_lift",
+      "plan_id": "all_count",
+      "base_table": "pos_sale",
+      "segment_mode": "named",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": null,
+      "slots": {
+        "value": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": []
+        }
+      },
+      "expected": [
+        4,
+        5,
+        3
+      ]
+    },
+    {
+      "id": "default_ratio",
+      "plan_id": "metric_ratio",
+      "base_table": "pos_sale",
+      "segment_mode": "default",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [
+        "returns"
+      ],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": "null",
+      "slots": {
+        "numerator": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "overlay.metrics.return_count",
+          "predicates": [
+            {
+              "column": "pos_sale.origin_transaction_no",
+              "op": "not_null",
+              "values": [],
+              "source": "metric"
+            }
+          ]
+        },
+        "denominator": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": [
+            {
+              "column": "pos_sale.origin_transaction_no",
+              "op": "is_null",
+              "values": [],
+              "source": "segment"
+            }
+          ]
+        }
+      },
+      "expected": [
+        1,
+        1.5,
+        0.5
+      ]
+    },
+    {
+      "id": "named_ratio",
+      "plan_id": "metric_ratio",
+      "base_table": "pos_sale",
+      "segment_mode": "named",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [
+        "returns"
+      ],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": "null",
+      "slots": {
+        "numerator": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "overlay.metrics.return_count",
+          "predicates": [
+            {
+              "column": "pos_sale.origin_transaction_no",
+              "op": "not_null",
+              "values": [],
+              "source": "metric"
+            }
+          ]
+        },
+        "denominator": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": [
+            {
+              "column": "pos_sale.origin_transaction_no",
+              "op": "is_null",
+              "values": [],
+              "source": "segment"
+            }
+          ]
+        }
+      },
+      "expected": [
+        1,
+        1.5,
+        0.5
+      ]
+    },
+    {
+      "id": "zero_denominator",
+      "plan_id": "zero_denominator",
+      "base_table": "pos_sale",
+      "segment_mode": "none",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [
+        {
+          "column": "pos_sale.member_id",
+          "op": "not_null",
+          "values": [],
+          "source": "plan"
+        }
+      ],
+      "applied_segments": [],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": "null",
+      "slots": {
+        "numerator": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "overlay.metrics.return_count",
+          "predicates": [
+            {
+              "column": "pos_sale.origin_transaction_no",
+              "op": "not_null",
+              "values": [],
+              "source": "metric"
+            }
+          ]
+        },
+        "denominator": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": [
+            {
+              "column": "pos_sale.member_id",
+              "op": "is_null",
+              "values": [],
+              "source": "operand"
+            }
+          ]
+        }
+      },
+      "expected": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "id": "empty_sum",
+      "plan_id": "empty_sum",
+      "base_table": "pos_sale",
+      "segment_mode": "none",
+      "output_label": "結果",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [
+        {
+          "column": "pos_sale.member_id",
+          "op": "is_null",
+          "values": [],
+          "source": "plan"
+        },
+        {
+          "column": "pos_sale.origin_transaction_no",
+          "op": "not_null",
+          "values": [],
+          "source": "plan"
+        }
+      ],
+      "applied_segments": [],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": null,
+      "slots": {
+        "value": {
+          "aggregate": "sum",
+          "column": "pos_sale.total_amount",
+          "unit_label": "交易金額",
+          "null_policy": "ignore_null_values",
+          "empty_result": null,
+          "definition": "raw",
+          "predicates": []
+        }
+      },
+      "expected": [
+        null,
+        50,
+        null
+      ]
+    },
+    {
+      "id": "label_not_filter",
+      "plan_id": "all_count",
+      "base_table": "pos_sale",
+      "segment_mode": "none",
+      "output_label": "退貨統計",
+      "time": "unrestricted",
+      "grouping": "none",
+      "common_predicates": [],
+      "applied_segments": [],
+      "verification": "unverified_semantics",
+      "ratio_zero_denominator": null,
+      "slots": {
+        "value": {
+          "aggregate": "count",
+          "column": null,
+          "unit_label": "交易紀錄",
+          "null_policy": "count_every_row",
+          "empty_result": 0,
+          "definition": "raw",
+          "predicates": []
+        }
+      },
+      "expected": [
+        4,
+        5,
+        3
+      ]
+    }
+  ],
+  "witnesses": [
+    {
+      "left": "all_rows",
+      "right": "returns_metric",
+      "instance": "coincidental"
+    },
+    {
+      "left": "log_rows",
+      "right": "ticket_entities",
+      "instance": "coincidental"
+    },
+    {
+      "left": "nullable_count",
+      "right": "distinct_member",
+      "instance": "coincidental"
+    },
+    {
+      "left": "count_ratio",
+      "right": "amount_ratio",
+      "instance": "coincidental"
+    },
+    {
+      "left": "count_ratio",
+      "right": "named_ratio",
+      "instance": "asymmetric"
+    }
+  ],
+  "required_identity_fields": [
+    "request_id",
+    "question_sha256",
+    "schema_sha256",
+    "overlay_sha256",
+    "segment_state_sha256",
+    "as_of",
+    "source_sha256",
+    "display_revision",
+    "catalog_sha256",
+    "plan_sha256",
+    "effective_facts_sha256",
+    "gate_sha256",
+    "fixture_sha256",
+    "review_revision"
+  ],
+  "confirmation_vectors": [
+    {
+      "id": "explicit_matching_review",
+      "event": "confirm",
+      "same_identity": true,
+      "gate": "answered",
+      "actor": "human",
+      "accepted": true
+    },
+    {
+      "id": "unreviewed",
+      "event": "none",
+      "same_identity": true,
+      "gate": "answered",
+      "actor": "human",
+      "accepted": false
+    },
+    {
+      "id": "timeout",
+      "event": "timeout",
+      "same_identity": true,
+      "gate": "answered",
+      "actor": "human",
+      "accepted": false
+    },
+    {
+      "id": "none_of_these",
+      "event": "none_of_these",
+      "same_identity": true,
+      "gate": "answered",
+      "actor": "human",
+      "accepted": false
+    },
+    {
+      "id": "missing_definition",
+      "event": "missing_definition",
+      "same_identity": true,
+      "gate": "answered",
+      "actor": "human",
+      "accepted": false
+    },
+    {
+      "id": "cannot_decide",
+      "event": "cannot_decide",
+      "same_identity": true,
+      "gate": "answered",
+      "actor": "human",
+      "accepted": false
+    },
+    {
+      "id": "model_inferred_agreement",
+      "event": "confirm",
+      "same_identity": true,
+      "gate": "answered",
+      "actor": "agent",
+      "accepted": false
+    },
+    {
+      "id": "stale",
+      "event": "confirm",
+      "same_identity": false,
+      "gate": "answered",
+      "actor": "human",
+      "accepted": false
+    },
+    {
+      "id": "refusal",
+      "event": "confirm",
+      "same_identity": true,
+      "gate": "clarify",
+      "actor": "human",
+      "accepted": false
+    },
+    {
+      "id": "unsafe",
+      "event": "confirm",
+      "same_identity": true,
+      "gate": "unsafe",
+      "actor": "human",
+      "accepted": false
+    }
+  ],
+  "edit_vectors": [
+    {
+      "id": "no_op",
+      "kind": "noop",
+      "before": "all_rows",
+      "after": "all_rows",
+      "changed": false,
+      "preserve_confirmation": true,
+      "old_result": "current"
+    },
+    {
+      "id": "label_only",
+      "kind": "label",
+      "before": "all_rows",
+      "after": "label_not_filter",
+      "changed": true,
+      "preserve_confirmation": false,
+      "old_result": "stale"
+    },
+    {
+      "id": "whole_candidate",
+      "kind": "candidate",
+      "before": "returns_metric",
+      "after": "all_rows",
+      "changed": true,
+      "preserve_confirmation": false,
+      "old_result": "stale"
+    },
+    {
+      "id": "count_unit",
+      "kind": "candidate",
+      "before": "ticket_entities",
+      "after": "log_rows",
+      "changed": true,
+      "preserve_confirmation": false,
+      "old_result": "stale"
+    },
+    {
+      "id": "invalid_edit",
+      "kind": "invalid",
+      "before": "all_rows",
+      "after": "all_rows",
+      "changed": false,
+      "preserve_confirmation": true,
+      "old_result": "current"
+    }
+  ],
+  "nonclaims": [
+    "human_comprehension",
+    "intent_certification",
+    "production_gate_change",
+    "editor_implemented",
+    "new_model_accuracy"
+  ]
+}
