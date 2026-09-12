@@ -1,0 +1,148 @@
+revision: concept-obligations-v2-draft1
+status: author_proposed_rulers_not_model_results
+historical_inputs: unchanged_concept_fixed_plans_v1
+# Cores omit spans for readability. Tests instantiate exact full-question spans.
+# Spans establish provenance, not correctness of the author's interpretation.
+concepts:
+  member:
+    definition: A transaction with a non-NULL member_id.
+    binding: {column: pos_sale.member_id, op: not_null}
+  returns:
+    definition: A transaction with a non-NULL origin_transaction_no.
+    binding: {column: pos_sale.origin_transaction_no, op: not_null}
+  refund:
+    definition: A refunded service ticket; no reviewed operational definition is available.
+    binding: null
+
+families:
+  - id: unrestricted_population
+    questions:
+      zh: 計算交易筆數，會員與非會員都要納入，不要依會員身分篩選。
+      en: Count transactions, including members and nonmembers; do not filter by membership.
+      ja: 会員と非会員の両方を含めて取引件数を数えてください。会員資格で絞り込まないでください。
+    requirements: [{concept: member, polarity: unrestricted, role: population}]
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[count_all, pass], [member_count, fail], [nonmember_count, fail], [count_member_column, fail], [count_member_distinct, fail]]
+
+  - id: forbidden_grouping_only
+    questions:
+      zh: 回報交易筆數，不要依 member_id 拆分結果。
+      en: Report the transaction count; do not split results by member_id.
+      ja: 取引件数を報告してください。結果を member_id ごとに分けないでください。
+    requirements: []
+    forbidden_groupings: [{concept: member}]
+    unresolved: []
+    # A grouping-only pass says nothing about an unrequested population filter.
+    pairs: [[count_all, pass], [member_dimension_only, fail]]
+
+  - id: unrestricted_and_ungrouped
+    questions:
+      zh: 計算交易筆數，會員與非會員都要納入；不要依會員身分篩選或按 member_id 分組。
+      en: Count transactions including members and nonmembers; neither filter by membership nor group by member_id.
+      ja: 会員と非会員を含めて取引件数を数え、会員資格で絞り込まず、member_id ごとにも集計しないでください。
+    requirements: [{concept: member, polarity: unrestricted, role: population}]
+    forbidden_groupings: [{concept: member}]
+    unresolved: []
+    pairs: [[count_all, pass], [member_count, fail], [count_member_column, fail], [member_dimension_only, fail]]
+
+  - id: member_numerator_unrestricted_denominator
+    questions:
+      zh: 會員交易筆數除以全部交易筆數，分母不要依會員身分篩選。
+      en: Divide the number of member transactions by the number of all transactions, without restricting the denominator by membership.
+      ja: 会員の取引件数を全取引件数で割ってください。分母は会員資格で絞り込まないでください。
+    requirements:
+      - {concept: member, polarity: include, role: numerator}
+      - {concept: member, polarity: unrestricted, role: denominator}
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[member_ratio, pass], [member_ratio_reversed, fail], [member_ratio_implicit_denominator, fail]]
+
+  - id: member_denominator_unrestricted_numerator
+    questions:
+      zh: 全部交易筆數除以會員交易筆數，分子不要依會員身分篩選。
+      en: Divide the number of all transactions by the number of member transactions, without restricting the numerator by membership.
+      ja: 全取引件数を会員の取引件数で割ってください。分子は会員資格で絞り込まないでください。
+    requirements:
+      - {concept: member, polarity: unrestricted, role: numerator}
+      - {concept: member, polarity: include, role: denominator}
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[member_ratio_reversed, pass], [member_ratio, fail]]
+
+  - id: same_concept_multiple_roles
+    questions:
+      zh: 會員退貨交易筆數除以會員交易總筆數；分母包含退貨與非退貨。
+      en: Divide the count of member return transactions by the total count of member transactions; the denominator includes returns and nonreturns.
+      ja: 会員の返品取引件数を会員の全取引件数で割ってください。分母には返品と返品以外の両方を含めます。
+    requirements:
+      - {concept: member, polarity: include, role: numerator}
+      - {concept: member, polarity: include, role: denominator}
+      - {concept: returns, polarity: include, role: numerator}
+      - {concept: returns, polarity: unrestricted, role: denominator}
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[member_return_over_members, pass], [member_return_over_all, fail], [member_return_over_returns, fail]]
+
+  - id: exclude_members
+    questions:
+      zh: 只計算非會員的交易筆數。
+      en: Count only nonmember transactions.
+      ja: 非会員の取引件数だけを数えてください。
+    requirements: [{concept: member, polarity: exclude, role: population}]
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[nonmember_count, pass], [member_count, fail], [count_member_column, fail]]
+
+  - id: implicit_member_count_positive_control
+    questions:
+      zh: 計算會員交易筆數。
+      en: Count member transactions.
+      ja: 会員の取引件数を数えてください。
+    requirements: [{concept: member, polarity: include, role: population}]
+    forbidden_groupings: []
+    unresolved: []
+    # DISTINCT also includes only members, but is NOT a correct full row count.
+    pairs: [[member_count, pass], [count_member_column, pass], [count_member_distinct, pass], [count_all, fail]]
+
+  - id: partial_ambiguity_with_known_member_scopes
+    questions:
+      zh: 退貨率是多少？分子和分母都只限會員交易。
+      en: What is the return rate? Restrict both numerator and denominator to member transactions.
+      ja: 返品率はいくらですか。分子と分母はどちらも会員の取引だけに限定してください。
+    requirements:
+      - {concept: member, polarity: include, role: numerator}
+      - {concept: member, polarity: include, role: denominator}
+    forbidden_groupings: []
+    unresolved: [{aspect: measure_basis}, {aspect: denominator_population}]
+    pairs: [[member_return_over_members, unknown], [return_count_ratio, unknown], [return_amount_ratio, unknown]]
+
+  - id: unresolved_return_rate
+    questions:
+      zh: 退貨率是多少？
+      en: What is the return rate?
+      ja: 返品率はいくらですか。
+    requirements: []
+    forbidden_groupings: []
+    unresolved: [{aspect: measure_basis}, {aspect: denominator_population}]
+    pairs: [[return_count_ratio, unknown], [return_amount_ratio, unknown]]
+
+  - id: requested_but_unbound
+    questions:
+      zh: 計算已退款的服務工單數量。
+      en: Count refunded service tickets.
+      ja: 返金済みのサービスチケットの件数を数えてください。
+    requirements: [{concept: refund, polarity: include, role: population}]
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[service_count, unknown]]
+
+  - id: output_verb_control
+    questions:
+      zh: 回傳交易筆數。
+      en: Return the transaction count.
+      ja: 取引件数を返してください。
+    requirements: []
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[count_all, not_applicable]]

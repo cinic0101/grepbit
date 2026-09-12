@@ -1,0 +1,207 @@
+revision: semantic-contrast-data-v1
+status: authored_development_and_frozen_author_visible_challenge
+definitions:
+  member: A member transaction is a transaction associated with a registered member. In this fixture its operational definition is a non-NULL member_id.
+  returns: A return transaction is a business transaction recording returned or exchanged merchandise and referencing the original transaction. In this fixture its operational definition is a non-NULL origin_transaction_no.
+  refund: A refunded service ticket is a ticket for which money has been paid back. No reviewed operational definition is available in this fixture.
+families:
+  - id: output_count
+    split: development
+    pair: output_vs_subset_count
+    source: pos
+    questions: {zh: 回傳交易筆數。, en: Return the transaction count., ja: 取引件数を返してください。}
+    requirements: []
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[count_all, not_applicable], [raw_return_count, not_applicable]]
+    correct_answers: [count_all]
+    wrong_answers: [raw_return_count]
+  - id: subset_count
+    split: development
+    pair: output_vs_subset_count
+    source: pos
+    questions: {zh: 計算退貨交易筆數。, en: Count the returned transactions., ja: 返品取引の件数を数えてください。}
+    requirements: [{concept: returns, polarity: include, role: population}]
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[raw_return_count, pass], [count_all, fail]]
+    correct_answers: [raw_return_count]
+    wrong_answers: [count_all]
+  - id: output_amount
+    split: development
+    pair: output_vs_subset_amount
+    source: pos
+    questions: {zh: 回傳交易總金額。, en: Return the total transaction amount., ja: 取引金額の合計を返してください。}
+    requirements: []
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[sum_all, not_applicable], [raw_return_sum, not_applicable]]
+    correct_answers: [sum_all]
+    wrong_answers: [raw_return_sum]
+  - id: subset_amount
+    split: development
+    pair: output_vs_subset_amount
+    source: pos
+    questions: {zh: 計算退貨交易總金額。, en: Sum the amounts of returned transactions., ja: 返品取引の金額を合計してください。}
+    requirements: [{concept: returns, polarity: include, role: population}]
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[raw_return_sum, pass], [sum_all, fail]]
+    correct_answers: [raw_return_sum]
+    wrong_answers: [sum_all]
+  - id: explicit_basis
+    split: development
+    pair: count_vs_ambiguous_rate
+    source: pos
+    questions: {zh: 回報退貨交易的筆數。, en: Report the number of return transactions., ja: 返品取引の件数を報告してください。}
+    requirements: [{concept: returns, polarity: include, role: population}]
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[raw_return_count, pass], [count_all, fail]]
+    correct_answers: [raw_return_count]
+    wrong_answers: [count_all]
+  - id: ambiguous_basis
+    split: development
+    pair: count_vs_ambiguous_rate
+    source: pos
+    questions: {zh: 回報退貨率。, en: Report the return rate., ja: 返品率を報告してください。}
+    requirements: []
+    forbidden_groupings: []
+    unresolved: [{aspect: measure_basis}, {aspect: denominator_population}]
+    pairs: [[return_count_ratio, unknown], [return_amount_ratio, unknown], [raw_return_count, unknown]]
+    correct_answers: []
+    wrong_answers: []
+  - id: include_returns
+    split: development
+    pair: include_vs_exclude
+    source: pos
+    questions: {zh: 只計算退貨交易筆數。, en: Count only return transactions., ja: 返品取引だけの件数を数えてください。}
+    requirements: [{concept: returns, polarity: include, role: population}]
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[raw_return_count, pass], [nonreturn_count, fail]]
+    correct_answers: [raw_return_count]
+    wrong_answers: [nonreturn_count]
+  - id: exclude_returns
+    split: development
+    pair: include_vs_exclude
+    source: pos
+    questions: {zh: 排除退貨後計算交易筆數。, en: Count transactions excluding returns., ja: 返品を除いた取引件数を数えてください。}
+    requirements: [{concept: returns, polarity: exclude, role: population}]
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[nonreturn_count, pass], [raw_return_count, fail]]
+    correct_answers: [nonreturn_count]
+    wrong_answers: [raw_return_count]
+  - id: unrestricted_members
+    split: development
+    pair: all_vs_members
+    source: pos
+    questions: {zh: 計算交易筆數，會員與非會員都包含。, en: Count transactions including both members and nonmembers., ja: 会員と非会員の両方を含めて取引件数を数えてください。}
+    requirements: [{concept: member, polarity: unrestricted, role: population}]
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[count_all, pass], [member_count, fail]]
+    correct_answers: [count_all]
+    wrong_answers: [member_count]
+  - id: member_subset
+    split: development
+    pair: all_vs_members
+    source: pos
+    questions: {zh: 計算會員交易筆數。, en: Count member transactions., ja: 会員の取引件数を数えてください。}
+    requirements: [{concept: member, polarity: include, role: population}]
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[member_count, pass], [count_all, fail]]
+    correct_answers: [member_count]
+    wrong_answers: [count_all]
+  - id: explicit_ratio
+    split: development
+    pair: defined_vs_undefined_ratio
+    source: pos
+    questions: {zh: 退貨交易筆數除以全部交易筆數，分母不排除退貨。, en: Divide return transaction count by all transaction count; do not exclude returns from the denominator., ja: 返品取引件数を全取引件数で割ってください。分母から返品を除かないでください。}
+    requirements: [{concept: returns, polarity: include, role: numerator}, {concept: returns, polarity: unrestricted, role: denominator}]
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[return_count_ratio, pass], [return_count_over_nonreturn, fail]]
+    correct_answers: [return_count_ratio]
+    wrong_answers: [return_count_over_nonreturn]
+  - id: undefined_ratio
+    split: development
+    pair: defined_vs_undefined_ratio
+    source: pos
+    questions: {zh: 退貨佔比是多少？, en: "What proportion are returns?", ja: 返品の割合はいくらですか？}
+    requirements: []
+    forbidden_groupings: []
+    unresolved: [{aspect: measure_basis}, {aspect: denominator_population}]
+    pairs: [[return_count_ratio, unknown], [return_amount_ratio, unknown], [raw_return_sum, unknown]]
+    correct_answers: []
+    wrong_answers: []
+  - id: quoted_heading
+    split: challenge
+    source: pos
+    questions: {zh: 報表標題用「退貨」，內容計算全部交易筆數，不按退貨狀態篩選。, en: Title the report "Returns" but count all transactions without filtering by return status., ja: 見出しを「返品」にして、返品状態で絞り込まず全取引件数を数えてください。}
+    requirements: [{concept: returns, polarity: unrestricted, role: population}]
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[count_all, pass], [raw_return_count, fail]]
+    correct_answers: [count_all]
+    wrong_answers: [raw_return_count]
+  - id: qualified_ungrouped
+    split: challenge
+    source: pos
+    questions: {zh: 只計算會員交易筆數，不要依 member_id 分組。, en: Count only member transactions without grouping by member_id., ja: 会員の取引だけを数え、member_id ごとには集計しないでください。}
+    requirements: [{concept: member, polarity: include, role: population}]
+    forbidden_groupings: [{concept: member}]
+    unresolved: []
+    pairs: [[member_count, pass], [count_all, fail], [member_dimension_only, fail]]
+    correct_answers: [member_count]
+    wrong_answers: [count_all, member_dimension_only]
+  - id: conjunction_exclusions
+    split: challenge
+    source: pos
+    questions: {zh: 計算非會員而且不是退貨的交易筆數。, en: Count transactions that are neither member transactions nor returns., ja: 非会員かつ返品ではない取引の件数を数えてください。}
+    requirements: [{concept: member, polarity: exclude, role: population}, {concept: returns, polarity: exclude, role: population}]
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[nonmember_nonreturn_count, pass], [nonreturn_count, fail], [nonmember_count, fail]]
+    correct_answers: [nonmember_nonreturn_count]
+    wrong_answers: [nonreturn_count, nonmember_count]
+  - id: unavailable_service_refund
+    split: challenge
+    source: service
+    questions: {zh: 計算已退款的服務單筆數。, en: Count the refunded service tickets., ja: 返金済みのサービスチケット件数を数えてください。}
+    requirements: [{concept: refund, polarity: include, role: population}]
+    forbidden_groupings: []
+    unresolved: []
+    pairs: [[service_count, unknown]]
+    correct_answers: []
+    wrong_answers: []
+plans:
+  raw_return_count:
+    base_table: pos_sale
+    measures: [{aggregate: count}]
+    filters: [{column: {table: pos_sale, column: origin_transaction_no}, op: not_null}]
+  raw_return_sum:
+    base_table: pos_sale
+    measures: [{aggregate: sum, column: {table: pos_sale, column: total_amount}}]
+    filters: [{column: {table: pos_sale, column: origin_transaction_no}, op: not_null}]
+  sum_all:
+    base_table: pos_sale
+    measures: [{aggregate: sum, column: {table: pos_sale, column: total_amount}}]
+  nonreturn_count:
+    base_table: pos_sale
+    measures: [{aggregate: count}]
+    filters: [{column: {table: pos_sale, column: origin_transaction_no}, op: is_null}]
+  return_count_over_nonreturn:
+    base_table: pos_sale
+    measures:
+      - ratio:
+          numerator: {aggregate: count, filters: [{column: {table: pos_sale, column: origin_transaction_no}, op: not_null}]}
+          denominator: {aggregate: count, filters: [{column: {table: pos_sale, column: origin_transaction_no}, op: is_null}]}
+  nonmember_nonreturn_count:
+    base_table: pos_sale
+    measures: [{aggregate: count}]
+    filters:
+      - {column: {table: pos_sale, column: member_id}, op: is_null}
+      - {column: {table: pos_sale, column: origin_transaction_no}, op: is_null}

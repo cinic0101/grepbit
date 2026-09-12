@@ -1,0 +1,406 @@
+{
+  "revision": "concept-fixed-plans-v1",
+  "scope": "synthetic_projected_schema_not_full_datasource",
+  "sources": {
+    "pos": {
+      "tables": {
+        "pos_sale": {
+          "transaction_no": "numeric primary key",
+          "total_amount": "numeric",
+          "origin_transaction_no": "nullable text",
+          "member_id": "nullable text",
+          "sale_date": "nullable timestamp"
+        }
+      },
+      "available_concepts": [
+        "returns",
+        "member"
+      ],
+      "overlay": "evals/fixtures/pos_overlay.json"
+    },
+    "service": {
+      "tables": {
+        "teams": {
+          "id": "integer primary key",
+          "team_code": "text",
+          "team_name": "text"
+        },
+        "projects": {
+          "id": "integer primary key",
+          "project_key": "text",
+          "project_name": "text",
+          "team_code": "text"
+        },
+        "tickets": {
+          "id": "integer primary key",
+          "project_key": "text",
+          "status": "text",
+          "created_at": "timestamp",
+          "closed_at": "nullable timestamp",
+          "estimate_minutes": "numeric"
+        },
+        "work_logs": {
+          "id": "integer primary key",
+          "ticket_id": "integer",
+          "logged_at": "nullable timestamp",
+          "minutes": "numeric"
+        },
+        "ticket_events": {
+          "id": "integer primary key",
+          "ticket_id": "integer",
+          "occurred_at": "timestamp",
+          "event_type": "text"
+        },
+        "team_links": {
+          "id": "integer primary key",
+          "source_team": "text",
+          "target_team": "text"
+        }
+      },
+      "available_concepts": [],
+      "overlay": "evals/fixtures/service_v1/overlay.json"
+    }
+  },
+  "plans": {
+    "return_metric": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "metric": "return_amount"
+        }
+      ]
+    },
+    "return_raw": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "sum",
+          "column": {
+            "table": "pos_sale",
+            "column": "total_amount"
+          }
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "origin_transaction_no"
+          },
+          "op": "not_null"
+        }
+      ]
+    },
+    "return_operand": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "sum",
+          "column": {
+            "table": "pos_sale",
+            "column": "total_amount"
+          },
+          "filters": [
+            {
+              "column": {
+                "table": "pos_sale",
+                "column": "origin_transaction_no"
+              },
+              "op": "not_null"
+            }
+          ]
+        }
+      ]
+    },
+    "return_missing": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "sum",
+          "column": {
+            "table": "pos_sale",
+            "column": "total_amount"
+          }
+        }
+      ]
+    },
+    "return_inverted": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "sum",
+          "column": {
+            "table": "pos_sale",
+            "column": "total_amount"
+          }
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "origin_transaction_no"
+          },
+          "op": "is_null"
+        }
+      ]
+    },
+    "member_count": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "member_id"
+          },
+          "op": "not_null"
+        }
+      ]
+    },
+    "nonmember_count": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "member_id"
+          },
+          "op": "is_null"
+        }
+      ]
+    },
+    "count_all": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ]
+    },
+    "member_ratio": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "aggregate": "count",
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "member_id"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            },
+            "denominator": {
+              "aggregate": "count"
+            }
+          }
+        }
+      ]
+    },
+    "member_ratio_reversed": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "aggregate": "count"
+            },
+            "denominator": {
+              "aggregate": "count",
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "member_id"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "member_whole_share": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count",
+          "filters": [
+            {
+              "column": {
+                "table": "pos_sale",
+                "column": "member_id"
+              },
+              "op": "not_null"
+            }
+          ],
+          "share_of_total": true
+        }
+      ]
+    },
+    "return_dimension_only": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "sum",
+          "column": {
+            "table": "pos_sale",
+            "column": "total_amount"
+          }
+        }
+      ],
+      "dimensions": [
+        {
+          "table": "pos_sale",
+          "column": "origin_transaction_no"
+        }
+      ]
+    },
+    "member_dimension_only": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ],
+      "dimensions": [
+        {
+          "table": "pos_sale",
+          "column": "member_id"
+        }
+      ]
+    },
+    "service_units": {
+      "base_table": "work_logs",
+      "measures": [
+        {
+          "aggregate": "count"
+        },
+        {
+          "aggregate": "count_distinct",
+          "column": {
+            "table": "work_logs",
+            "column": "ticket_id"
+          }
+        }
+      ]
+    },
+    "service_minutes": {
+      "base_table": "work_logs",
+      "measures": [
+        {
+          "aggregate": "sum",
+          "column": {
+            "table": "work_logs",
+            "column": "minutes"
+          }
+        }
+      ]
+    }
+  },
+  "pairs": {
+    "return_amount": [
+      [
+        "return_metric",
+        "pass"
+      ],
+      [
+        "return_inverted",
+        "fail"
+      ]
+    ],
+    "return_reference": [
+      [
+        "return_raw",
+        "pass"
+      ],
+      [
+        "return_missing",
+        "fail"
+      ]
+    ],
+    "exclude_returns": [
+      [
+        "return_inverted",
+        "pass"
+      ],
+      [
+        "return_raw",
+        "fail"
+      ]
+    ],
+    "member_count": [
+      [
+        "member_count",
+        "pass"
+      ],
+      [
+        "member_dimension_only",
+        "fail"
+      ]
+    ],
+    "member_share": [
+      [
+        "member_ratio",
+        "pass"
+      ],
+      [
+        "member_ratio_reversed",
+        "fail"
+      ]
+    ],
+    "exclude_members": [
+      [
+        "nonmember_count",
+        "pass"
+      ],
+      [
+        "member_count",
+        "fail"
+      ]
+    ],
+    "service_return_verb": [
+      [
+        "service_units",
+        "not_applicable"
+      ]
+    ],
+    "service_refunds": [
+      [
+        "service_minutes",
+        "unknown"
+      ]
+    ],
+    "ambiguous_return_rate": [
+      [
+        "member_ratio",
+        "unknown"
+      ],
+      [
+        "return_raw",
+        "unknown"
+      ]
+    ],
+    "unrestricted_membership": [
+      [
+        "count_all",
+        "not_applicable"
+      ]
+    ]
+  }
+}

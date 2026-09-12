@@ -1,0 +1,19 @@
+{
+  "kind": "mid_run_authored_scope_probe_not_in_main_scores",
+  "model_calls": 0,
+  "db_calls": 0,
+  "source_digest": "sha256:aa1a6ce8a46ce7739bebe9dfe375e270c855e4f788160b06e7bfe7ab26017521",
+  "base_fixture": "evals/fixtures/concept_obligations_v2.json",
+  "base_plan": "member_ratio",
+  "mutation": {
+    "path": "measures[0].filters",
+    "value": [{"column": {"table": "pos_sale", "column": "origin_transaction_no"}, "op": "not_null"}]
+  },
+  "domain_validation": "accepted",
+  "compiled_physical_sql_equal_to_unmutated": true,
+  "checker_observed": ["pass", "supplied_obligations_only"],
+  "checker_expected_under_approved_unsupported_shape_rule": "unknown",
+  "production_change": false,
+  "main_fixture_contains_this_shape": false,
+  "action": "after live freeze, add research-only unsupported-shape guard and test; preserve main evidence; production omission remains separate"
+}

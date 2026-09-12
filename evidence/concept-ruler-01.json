@@ -1,0 +1,60 @@
+{
+  "experiment": "concept-validation-ruler-v1",
+  "date": "2026-09-12",
+  "phase": "ruler_checkpoint_only",
+  "git_head": "746f1689ad812088ed2cca6cc3bcde3e85a006b8",
+  "dirty_worktree": true,
+  "tested_source_digest": "sha256:773e389232d030825d1ce23cd8644140aeb0508266f4f704633b94e87320bfe5",
+  "files_sha256": {
+    "evals/cases/concepts/pilot.yaml": "4fa030a16d4803a3381a991bbb94773de5cf442c1d1ab742c8cced7cdc5c069f",
+    "tests/contract/t0/test_concept_validation_ruler.py": "82bea55ec51b4b2d2c54d628d878db666f04a5fc52c738b892f2ef7391bc3222"
+  },
+  "pilot": {
+    "families": 10,
+    "questions": 30,
+    "languages": ["zh", "en", "ja"],
+    "sources": ["pos", "service"],
+    "author_written": true,
+    "holdout": false,
+    "live_answers": 0
+  },
+  "validation": {
+    "focused": {
+      "artifact": ".artifacts/concept-ruler-20260912/focused-01/result.json",
+      "passed": 47,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "static": {
+      "artifact": ".artifacts/concept-ruler-20260912/static-01/result.json",
+      "passed": true
+    },
+    "offline": {
+      "artifact": ".artifacts/concept-ruler-20260912/offline-01/result.json",
+      "passed": 443,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "hand_computed_scalar_plan_instance_pairs": 33,
+    "in_memory_instances": 3,
+    "engines": ["compiled_postgresql_sql_in_duckdb", "python_reference"],
+    "golden_source": "hand_computed_not_either_engine"
+  },
+  "observations": [
+    "Return both totals triggers returns only in the English imperative control.",
+    "The legacy gate misses reversed NULL predicates and numerator/denominator swaps.",
+    "A related dimension satisfies name presence without the requested filtering.",
+    "An explicit defining predicate can be missed without a matching business noun.",
+    "A question forbidding membership restriction still triggers missing member.",
+    "One fictional instance hides inverted predicates by accidental value agreement."
+  ],
+  "limits": [
+    "Characterization passes describe known heuristic limitations, not corrected runtime behavior.",
+    "No new grader, promotion threshold, production policy or model quality is validated.",
+    "No PostgreSQL or model calls; no real rows or credential access.",
+    "Prior uncommitted source changes remain preserved; no stage, commit or push.",
+    "Process-list preflight unavailable; this does not prove global quiescence."
+  ]
+}

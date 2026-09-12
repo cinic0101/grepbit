@@ -1,0 +1,351 @@
+{
+  "revision": "concept-obligations-plans-v2",
+  "source_concepts": {"pos": ["member", "returns"], "service": ["refund"]},
+  "family_sources": {
+    "unrestricted_population": "pos",
+    "forbidden_grouping_only": "pos",
+    "unrestricted_and_ungrouped": "pos",
+    "member_numerator_unrestricted_denominator": "pos",
+    "member_denominator_unrestricted_numerator": "pos",
+    "same_concept_multiple_roles": "pos",
+    "exclude_members": "pos",
+    "implicit_member_count_positive_control": "pos",
+    "partial_ambiguity_with_known_member_scopes": "pos",
+    "unresolved_return_rate": "pos",
+    "requested_but_unbound": "service",
+    "output_verb_control": "pos"
+  },
+  "plans": {
+    "count_all": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ]
+    },
+    "count_member_column": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count",
+          "column": {
+            "table": "pos_sale",
+            "column": "member_id"
+          }
+        }
+      ]
+    },
+    "count_member_distinct": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count_distinct",
+          "column": {
+            "table": "pos_sale",
+            "column": "member_id"
+          }
+        }
+      ]
+    },
+    "member_count": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "member_id"
+          },
+          "op": "not_null"
+        }
+      ]
+    },
+    "member_dimension_only": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ],
+      "dimensions": [
+        {
+          "table": "pos_sale",
+          "column": "member_id"
+        }
+      ]
+    },
+    "member_ratio": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "aggregate": "count",
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "member_id"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            },
+            "denominator": {
+              "aggregate": "count"
+            }
+          }
+        }
+      ]
+    },
+    "member_ratio_implicit_denominator": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "aggregate": "count",
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "member_id"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            },
+            "denominator": {
+              "aggregate": "count",
+              "column": {
+                "table": "pos_sale",
+                "column": "member_id"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "member_ratio_reversed": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "aggregate": "count"
+            },
+            "denominator": {
+              "aggregate": "count",
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "member_id"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "member_return_over_all": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "aggregate": "count",
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "member_id"
+                  },
+                  "op": "not_null"
+                },
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "origin_transaction_no"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            },
+            "denominator": {
+              "aggregate": "count"
+            }
+          }
+        }
+      ]
+    },
+    "member_return_over_members": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "aggregate": "count",
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "member_id"
+                  },
+                  "op": "not_null"
+                },
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "origin_transaction_no"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            },
+            "denominator": {
+              "aggregate": "count",
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "member_id"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "member_return_over_returns": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "aggregate": "count",
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "member_id"
+                  },
+                  "op": "not_null"
+                },
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "origin_transaction_no"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            },
+            "denominator": {
+              "aggregate": "count",
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "origin_transaction_no"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nonmember_count": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "member_id"
+          },
+          "op": "is_null"
+        }
+      ]
+    },
+    "return_amount_ratio": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "aggregate": "sum",
+              "column": {
+                "table": "pos_sale",
+                "column": "total_amount"
+              },
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "origin_transaction_no"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            },
+            "denominator": {
+              "aggregate": "sum",
+              "column": {
+                "table": "pos_sale",
+                "column": "total_amount"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "return_count_ratio": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "aggregate": "count",
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "origin_transaction_no"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            },
+            "denominator": {
+              "aggregate": "count"
+            }
+          }
+        }
+      ]
+    },
+    "service_count": {
+      "base_table": "tickets",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ]
+    }
+  }
+}

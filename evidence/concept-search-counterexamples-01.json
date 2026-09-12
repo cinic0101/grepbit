@@ -1,0 +1,184 @@
+{
+  "kind": "post_run_authored_counterexamples_not_added_to_frozen_scores",
+  "model_calls": 0,
+  "db_calls": 0,
+  "probes": [
+    {
+      "case_id": "ambiguous_return_rate_ja",
+      "intent_call_message_hash": "ec8b78fb613a866bbd939ab7f22d2cdbbedb9381201f77eafd2dbc116f2930ed",
+      "observed_intent": {
+        "intent": "required",
+        "requirements": [
+          {
+            "concept": "returns",
+            "polarity": "include",
+            "role": "numerator"
+          }
+        ]
+      },
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "ratio": {
+              "numerator": {
+                "aggregate": "count",
+                "filters": [
+                  {
+                    "column": {
+                      "table": "pos_sale",
+                      "column": "origin_transaction_no"
+                    },
+                    "op": "not_null"
+                  }
+                ]
+              },
+              "denominator": {
+                "aggregate": "count"
+              }
+            }
+          }
+        ]
+      },
+      "observed_verdict": "pass",
+      "checker_reason": "predicate_binding_only",
+      "diagnostic_expected": "unknown",
+      "why": "unresolved_count_versus_amount_rate"
+    },
+    {
+      "case_id": "unrestricted_membership_zh",
+      "intent_call_message_hash": "699d92b39a4f0e6cf33fff871285de38dd561a105396c0d9c72aac3bea3dcd59",
+      "observed_intent": {
+        "intent": "not_requested",
+        "requirements": []
+      },
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "count"
+          }
+        ],
+        "filters": [
+          {
+            "column": {
+              "table": "pos_sale",
+              "column": "member_id"
+            },
+            "op": "not_null"
+          }
+        ]
+      },
+      "observed_verdict": "not_applicable",
+      "checker_reason": "no_requested_qualifier",
+      "diagnostic_expected": "fail",
+      "why": "explicit_prohibition_on_membership_filter"
+    },
+    {
+      "case_id": "unrestricted_membership_en",
+      "intent_call_message_hash": "aebf2ed6be67c54060ced8f3184c9fd1bb7fdd4721ac6817da70d7245d47189a",
+      "observed_intent": {
+        "intent": "not_requested",
+        "requirements": []
+      },
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "count"
+          }
+        ],
+        "filters": [
+          {
+            "column": {
+              "table": "pos_sale",
+              "column": "member_id"
+            },
+            "op": "not_null"
+          }
+        ]
+      },
+      "observed_verdict": "not_applicable",
+      "checker_reason": "no_requested_qualifier",
+      "diagnostic_expected": "fail",
+      "why": "explicit_prohibition_on_membership_filter"
+    },
+    {
+      "case_id": "unrestricted_membership_ja",
+      "intent_call_message_hash": "2b6897d323b2f99c15ba3fdf2f43a30889bcccced33f5934de99e2321cdff7fa",
+      "observed_intent": {
+        "intent": "not_requested",
+        "requirements": []
+      },
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "aggregate": "count"
+          }
+        ],
+        "filters": [
+          {
+            "column": {
+              "table": "pos_sale",
+              "column": "member_id"
+            },
+            "op": "not_null"
+          }
+        ]
+      },
+      "observed_verdict": "not_applicable",
+      "checker_reason": "no_requested_qualifier",
+      "diagnostic_expected": "fail",
+      "why": "explicit_prohibition_on_membership_filter"
+    },
+    {
+      "case_id": "ambiguous_return_rate_en",
+      "intent_call_message_hash": "73575afe71e7c62b051188c1398bcb8044c1f3e6631e223dc73616b8b2c50e7c",
+      "observed_intent": {
+        "intent": "required",
+        "requirements": [
+          {
+            "concept": "returns",
+            "polarity": "include",
+            "role": "numerator"
+          }
+        ]
+      },
+      "plan": {
+        "base_table": "pos_sale",
+        "measures": [
+          {
+            "ratio": {
+              "numerator": {
+                "aggregate": "count",
+                "filters": [
+                  {
+                    "column": {
+                      "table": "pos_sale",
+                      "column": "origin_transaction_no"
+                    },
+                    "op": "not_null"
+                  }
+                ]
+              },
+              "denominator": {
+                "aggregate": "count"
+              }
+            }
+          }
+        ]
+      },
+      "observed_verdict": "pass",
+      "checker_reason": "predicate_binding_only",
+      "diagnostic_expected": "unknown",
+      "why": "unresolved_count_versus_amount_rate"
+    }
+  ],
+  "fictional_instance": {
+    "all_count": 4,
+    "member_count": 2,
+    "return_count_ratio": 0.5,
+    "return_amount_ratio": 0.13043478260869565
+  }
+}

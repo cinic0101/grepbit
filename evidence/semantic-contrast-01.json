@@ -1,0 +1,1063 @@
+{
+  "revision": "semantic-contrast-evidence-01",
+  "date": "2026-09-12",
+  "status": "complete",
+  "authority": {
+    "work": "幫我組織整體計劃，並開始實作、測試、驗證",
+    "ratio_after_red_checkpoint": "同意，實作拒絕規則"
+  },
+  "head": "746f1689ad812088ed2cca6cc3bcde3e85a006b8",
+  "source_digest": "sha256:ab54a0c773cba81dbc2a90eaf323e17bbbf31b2b50df9e7bf13ebc6c4002436d",
+  "input_digest": "66b5b9f7dbb4d340520e940c3e0655f87bb33df1d934ac266e827f7666c3557f",
+  "settings": {
+    "max_calls": 108,
+    "temperature": 0,
+    "thinking": "off",
+    "max_tokens": 4096,
+    "timeout_seconds": 60,
+    "retries": 0,
+    "model": "gemma-4-31b"
+  },
+  "prompt_revisions": {
+    "baseline": "concept-obligations-extract-v2-01",
+    "definitions": "semantic-contrast-v1-definitions",
+    "task": "semantic-contrast-v1-task"
+  },
+  "summaries": {
+    "baseline": {
+      "intents": 36,
+      "intent_exact": 27,
+      "pairs": 78,
+      "verdict_exact": 72,
+      "correct_controls": 36,
+      "correct_controls_allowed": 32,
+      "wrong_plans": 24,
+      "wrong_allowed": 0,
+      "unresolved_pairs": 18,
+      "unresolved_allowed": 0,
+      "call_status": {
+        "ok": 36
+      },
+      "latency_all_attempts": {
+        "p50": 1.6491,
+        "p95": 2.5592
+      },
+      "reported_total_tokens": 48999,
+      "calls_without_usage": 0,
+      "failed_extractions": 0,
+      "correct_full_answer_controls": 30,
+      "correct_full_answer_no_block": 27,
+      "correct_full_answer_pass": 24,
+      "wrong_full_answer_controls": 30,
+      "wrong_full_answer_no_block": 5,
+      "wrong_full_answer_pass": 2
+    },
+    "definitions": {
+      "intents": 36,
+      "intent_exact": 27,
+      "pairs": 78,
+      "verdict_exact": 72,
+      "correct_controls": 36,
+      "correct_controls_allowed": 32,
+      "wrong_plans": 24,
+      "wrong_allowed": 0,
+      "unresolved_pairs": 18,
+      "unresolved_allowed": 0,
+      "call_status": {
+        "ok": 36
+      },
+      "latency_all_attempts": {
+        "p50": 1.6851,
+        "p95": 2.6294
+      },
+      "reported_total_tokens": 50317,
+      "calls_without_usage": 0,
+      "failed_extractions": 0,
+      "correct_full_answer_controls": 30,
+      "correct_full_answer_no_block": 27,
+      "correct_full_answer_pass": 24,
+      "wrong_full_answer_controls": 30,
+      "wrong_full_answer_no_block": 5,
+      "wrong_full_answer_pass": 2
+    },
+    "task": {
+      "intents": 36,
+      "intent_exact": 27,
+      "pairs": 78,
+      "verdict_exact": 72,
+      "correct_controls": 36,
+      "correct_controls_allowed": 32,
+      "wrong_plans": 24,
+      "wrong_allowed": 0,
+      "unresolved_pairs": 18,
+      "unresolved_allowed": 0,
+      "call_status": {
+        "ok": 36
+      },
+      "latency_all_attempts": {
+        "p50": 1.7394,
+        "p95": 2.6611
+      },
+      "reported_total_tokens": 54026,
+      "calls_without_usage": 0,
+      "failed_extractions": 0,
+      "correct_full_answer_controls": 30,
+      "correct_full_answer_no_block": 27,
+      "correct_full_answer_pass": 24,
+      "wrong_full_answer_controls": 30,
+      "wrong_full_answer_no_block": 5,
+      "wrong_full_answer_pass": 2
+    }
+  },
+  "pairwise_contrasts": {
+    "definitions": {
+      "equal_cores": 33,
+      "different_request_hashes": 36,
+      "cases": 36
+    },
+    "task": {
+      "equal_cores": 30,
+      "different_request_hashes": 36,
+      "cases": 36
+    }
+  },
+  "selected_candidate": null,
+  "model_calls": 108,
+  "conditional_model_calls": 0,
+  "old_v2_analysis_identical": true,
+  "validation": {
+    "ratio-ruler": {
+      "status": "failed",
+      "counts": {
+        "errors": 0,
+        "failures": 3,
+        "skipped": 0,
+        "tests": 6
+      },
+      "source_stable": true,
+      "source_start": "sha256:3599d01b78aba0c6ade80beb4f138dfc22e06757b72e1717d29548a7e5ad0e70",
+      "source_end": "sha256:3599d01b78aba0c6ade80beb4f138dfc22e06757b72e1717d29548a7e5ad0e70"
+    },
+    "focused": {
+      "status": "failed",
+      "counts": {
+        "errors": 0,
+        "failures": 1,
+        "skipped": 0,
+        "tests": 157
+      },
+      "source_stable": true,
+      "source_start": "sha256:2fdf844361a17bc8dcb76f5427fbd7c80c1e51f00b785c2d6196c05349bdffd9",
+      "source_end": "sha256:2fdf844361a17bc8dcb76f5427fbd7c80c1e51f00b785c2d6196c05349bdffd9"
+    },
+    "focused-02": {
+      "status": "pass",
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 154
+      },
+      "source_stable": true,
+      "source_start": "sha256:3aa77a3e108439fe1e68dd2eae6f942d16a43b50de1a4179659e333461ac780e",
+      "source_end": "sha256:3aa77a3e108439fe1e68dd2eae6f942d16a43b50de1a4179659e333461ac780e"
+    },
+    "focused-03": {
+      "status": "pass",
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 193
+      },
+      "source_stable": true,
+      "source_start": "sha256:ab54a0c773cba81dbc2a90eaf323e17bbbf31b2b50df9e7bf13ebc6c4002436d",
+      "source_end": "sha256:ab54a0c773cba81dbc2a90eaf323e17bbbf31b2b50df9e7bf13ebc6c4002436d"
+    },
+    "static": {
+      "status": "failed",
+      "counts": null,
+      "source_stable": true,
+      "source_start": "sha256:2fdf844361a17bc8dcb76f5427fbd7c80c1e51f00b785c2d6196c05349bdffd9",
+      "source_end": "sha256:2fdf844361a17bc8dcb76f5427fbd7c80c1e51f00b785c2d6196c05349bdffd9"
+    },
+    "static-02": {
+      "status": "pass",
+      "counts": null,
+      "source_stable": true,
+      "source_start": "sha256:ab54a0c773cba81dbc2a90eaf323e17bbbf31b2b50df9e7bf13ebc6c4002436d",
+      "source_end": "sha256:ab54a0c773cba81dbc2a90eaf323e17bbbf31b2b50df9e7bf13ebc6c4002436d"
+    },
+    "offline": {
+      "status": "pass",
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 760
+      },
+      "source_stable": true,
+      "source_start": "sha256:ab54a0c773cba81dbc2a90eaf323e17bbbf31b2b50df9e7bf13ebc6c4002436d",
+      "source_end": "sha256:ab54a0c773cba81dbc2a90eaf323e17bbbf31b2b50df9e7bf13ebc6c4002436d"
+    },
+    "properties-10000": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "1",
+      "time": "37.550",
+      "timestamp": "2026-09-12T14:45:57.373179+08:00",
+      "hostname": "senaodeMacBook-Pro-4.local",
+      "requested_max_examples": 10000,
+      "explicit_seed": null
+    }
+  },
+  "artifact_sha256": {
+    ".artifacts/semantic-contrast-20260912/development.json": "f329f4ec7e94a7553efe53d1bca150f1bedcf35124f9b777213e7d8c029a32e3",
+    ".artifacts/semantic-contrast-20260912/development.jsonl": "b2d0c8e13de4ba02bbb60504569b79791f86d1bf8731811c8d53f16b468a4029",
+    ".artifacts/semantic-contrast-20260912/replay_ask.py": "6bcf02763847edeecef9d467c3ee6fff3433ca7558c5f83eb5006d384b420f5b",
+    ".artifacts/semantic-contrast-20260912/properties-10000.xml": "1b005d6847974176e6d33da976afe34178c5b34e6706e7d9f10e4c1dff559220",
+    "evidence/semantic-contrast-ask-replay-01.json": "de898031c54e87da9c9c662d63643bb4c0137ecbafa39b94165ec5a551833c77",
+    "evals/cases/concepts/contrast_v1.yaml": "c648f92db4237838daa274b0b189a72b569b5155e673beb17b2c005102b39baa",
+    ".artifacts/semantic-contrast-20260912/ratio-ruler/result.json": "1939304e5ccb9c6f7fd8c8fc46c1a98b05dec2f9f9446ba7024af08504d29a0e",
+    ".artifacts/semantic-contrast-20260912/focused/result.json": "0ef8b2f3f2fe1d16eda3a1ff167b2eac717c4530605830d512c048e323bc7e88",
+    ".artifacts/semantic-contrast-20260912/focused-02/result.json": "4c0aa2b2fbeff99ac9848bd96e19256cb6d223311fa786184600735aff72b0e7",
+    ".artifacts/semantic-contrast-20260912/focused-03/result.json": "0563d61069a1e3524932907555cdb7438117d12d5f0a75e3c8c33d13f825db11",
+    ".artifacts/semantic-contrast-20260912/static/result.json": "b05ab87051582d04e404a156cf7b7fc000ea68cbcf5ee59e94577826d5d5156b",
+    ".artifacts/semantic-contrast-20260912/static-02/result.json": "88f2c72b23bd35eb8e4b22bb99779d82a5ac66a92f895f2f5a10e8accb1fd8e4",
+    ".artifacts/semantic-contrast-20260912/offline/result.json": "01653dbabaa8083f0e316f593e2d4daf11ea63c211367c0f79a21a959818dccf"
+  },
+  "baseline_core_mismatches": [
+    {
+      "case_id": "undefined_ratio_ja",
+      "family_id": "undefined_ratio",
+      "language": "ja",
+      "arm": "baseline",
+      "round": 1,
+      "expected": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "aspect": "denominator_population"
+          },
+          {
+            "aspect": "measure_basis"
+          }
+        ]
+      },
+      "actual": {
+        "requirements": [
+          {
+            "concept": "returns",
+            "polarity": "include",
+            "role": "numerator"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "aspect": "denominator_population"
+          }
+        ]
+      },
+      "exact": false
+    },
+    {
+      "case_id": "undefined_ratio_zh",
+      "family_id": "undefined_ratio",
+      "language": "zh",
+      "arm": "baseline",
+      "round": 1,
+      "expected": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "aspect": "denominator_population"
+          },
+          {
+            "aspect": "measure_basis"
+          }
+        ]
+      },
+      "actual": {
+        "requirements": [
+          {
+            "concept": "returns",
+            "polarity": "include",
+            "role": "numerator"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "aspect": "denominator_population"
+          },
+          {
+            "aspect": "measure_basis"
+          }
+        ]
+      },
+      "exact": false
+    },
+    {
+      "case_id": "output_amount_zh",
+      "family_id": "output_amount",
+      "language": "zh",
+      "arm": "baseline",
+      "round": 1,
+      "expected": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "actual": {
+        "requirements": [
+          {
+            "concept": "returns",
+            "polarity": "include",
+            "role": "population"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "exact": false
+    },
+    {
+      "case_id": "ambiguous_basis_en",
+      "family_id": "ambiguous_basis",
+      "language": "en",
+      "arm": "baseline",
+      "round": 1,
+      "expected": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "aspect": "denominator_population"
+          },
+          {
+            "aspect": "measure_basis"
+          }
+        ]
+      },
+      "actual": {
+        "requirements": [
+          {
+            "concept": "returns",
+            "polarity": "include",
+            "role": "numerator"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "aspect": "denominator_population"
+          }
+        ]
+      },
+      "exact": false
+    },
+    {
+      "case_id": "output_count_zh",
+      "family_id": "output_count",
+      "language": "zh",
+      "arm": "baseline",
+      "round": 1,
+      "expected": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "actual": {
+        "requirements": [
+          {
+            "concept": "returns",
+            "polarity": "include",
+            "role": "population"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "exact": false
+    },
+    {
+      "case_id": "ambiguous_basis_ja",
+      "family_id": "ambiguous_basis",
+      "language": "ja",
+      "arm": "baseline",
+      "round": 1,
+      "expected": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "aspect": "denominator_population"
+          },
+          {
+            "aspect": "measure_basis"
+          }
+        ]
+      },
+      "actual": {
+        "requirements": [
+          {
+            "concept": "returns",
+            "polarity": "include",
+            "role": "numerator"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "aspect": "denominator_population"
+          }
+        ]
+      },
+      "exact": false
+    },
+    {
+      "case_id": "ambiguous_basis_zh",
+      "family_id": "ambiguous_basis",
+      "language": "zh",
+      "arm": "baseline",
+      "round": 1,
+      "expected": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "aspect": "denominator_population"
+          },
+          {
+            "aspect": "measure_basis"
+          }
+        ]
+      },
+      "actual": {
+        "requirements": [
+          {
+            "concept": "returns",
+            "polarity": "include",
+            "role": "numerator"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "aspect": "denominator_population"
+          }
+        ]
+      },
+      "exact": false
+    },
+    {
+      "case_id": "undefined_ratio_en",
+      "family_id": "undefined_ratio",
+      "language": "en",
+      "arm": "baseline",
+      "round": 1,
+      "expected": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "aspect": "denominator_population"
+          },
+          {
+            "aspect": "measure_basis"
+          }
+        ]
+      },
+      "actual": {
+        "requirements": [
+          {
+            "concept": "returns",
+            "polarity": "include",
+            "role": "numerator"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "aspect": "denominator_population"
+          },
+          {
+            "aspect": "measure_basis"
+          }
+        ]
+      },
+      "exact": false
+    },
+    {
+      "case_id": "output_count_en",
+      "family_id": "output_count",
+      "language": "en",
+      "arm": "baseline",
+      "round": 1,
+      "expected": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "actual": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "aspect": "measure_basis"
+          }
+        ]
+      },
+      "exact": false
+    }
+  ],
+  "selected_observations": [
+    {
+      "family_id": "output_count",
+      "case_id": "output_count_ja",
+      "language": "ja",
+      "arm": "definitions",
+      "round": 1,
+      "request_sha256": "aa61bfd0408f3e9f81ec53d6508ccf2e202f7415e504532206b9ddd08530c78a",
+      "started_at": "2026-09-12T06:46:32.426114+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "tokens": {
+        "prompt_tokens": 1350,
+        "completion_tokens": 18,
+        "total_tokens": 1368
+      },
+      "seconds": 1.0248
+    },
+    {
+      "family_id": "output_amount",
+      "case_id": "output_amount_en",
+      "language": "en",
+      "arm": "task",
+      "round": 1,
+      "request_sha256": "0e1648c85962ef08a5a1a895175c9ca1440627ca23a37b0eafbaa85117432927",
+      "started_at": "2026-09-12T06:46:44.724004+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "tokens": {
+        "prompt_tokens": 1450,
+        "completion_tokens": 18,
+        "total_tokens": 1468
+      },
+      "seconds": 0.9153
+    },
+    {
+      "family_id": "output_amount",
+      "case_id": "output_amount_zh",
+      "language": "zh",
+      "arm": "baseline",
+      "round": 1,
+      "request_sha256": "2adbadab87c2c7fee31cbbfa844a2be957768009614c131ff4573fe40befd2a9",
+      "started_at": "2026-09-12T06:46:51.474644+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [
+          {
+            "span": "交易",
+            "concept": "returns",
+            "polarity": "include",
+            "role": "population"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "tokens": {
+        "prompt_tokens": 1312,
+        "completion_tokens": 42,
+        "total_tokens": 1354
+      },
+      "seconds": 1.6169
+    },
+    {
+      "family_id": "output_amount",
+      "case_id": "output_amount_ja",
+      "language": "ja",
+      "arm": "definitions",
+      "round": 1,
+      "request_sha256": "3bdc017664a6fc42813dc4e3c5281758cab943442e147ad82ccdd16c62cbb1af",
+      "started_at": "2026-09-12T06:46:53.092930+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "tokens": {
+        "prompt_tokens": 1352,
+        "completion_tokens": 18,
+        "total_tokens": 1370
+      },
+      "seconds": 0.9505
+    },
+    {
+      "family_id": "output_count",
+      "case_id": "output_count_en",
+      "language": "en",
+      "arm": "definitions",
+      "round": 1,
+      "request_sha256": "1235dcc4b982d9f32b67b1380acf5c19acc4d27a1696701facce2bfb257b4f19",
+      "started_at": "2026-09-12T06:46:59.988378+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "span": "transaction count",
+            "aspect": "measure_basis"
+          }
+        ]
+      },
+      "tokens": {
+        "prompt_tokens": 1349,
+        "completion_tokens": 32,
+        "total_tokens": 1381
+      },
+      "seconds": 1.3698
+    },
+    {
+      "family_id": "output_amount",
+      "case_id": "output_amount_en",
+      "language": "en",
+      "arm": "baseline",
+      "round": 1,
+      "request_sha256": "bde08202377c6cde2b994d65b55e792dea30503716417b49256f11393ad27ba4",
+      "started_at": "2026-09-12T06:47:01.359630+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "tokens": {
+        "prompt_tokens": 1312,
+        "completion_tokens": 18,
+        "total_tokens": 1330
+      },
+      "seconds": 0.9271
+    },
+    {
+      "family_id": "output_count",
+      "case_id": "output_count_zh",
+      "language": "zh",
+      "arm": "baseline",
+      "round": 1,
+      "request_sha256": "779f098d7f3d95d8bc61c7778295beab6a76d086f8fc4bbca900f85c5d49ba55",
+      "started_at": "2026-09-12T06:47:21.675267+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [
+          {
+            "span": "回傳交易",
+            "concept": "returns",
+            "polarity": "include",
+            "role": "population"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "tokens": {
+        "prompt_tokens": 1312,
+        "completion_tokens": 44,
+        "total_tokens": 1356
+      },
+      "seconds": 1.3621
+    },
+    {
+      "family_id": "output_count",
+      "case_id": "output_count_ja",
+      "language": "ja",
+      "arm": "task",
+      "round": 1,
+      "request_sha256": "238152eda966d712e566d3143e4463d6b5d2a7b0a6d499f604b6bd7c59dd2b61",
+      "started_at": "2026-09-12T06:47:46.357151+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "span": "取引件数",
+            "aspect": "measure_basis"
+          }
+        ]
+      },
+      "tokens": {
+        "prompt_tokens": 1450,
+        "completion_tokens": 33,
+        "total_tokens": 1483
+      },
+      "seconds": 1.4342
+    },
+    {
+      "family_id": "output_amount",
+      "case_id": "output_amount_ja",
+      "language": "ja",
+      "arm": "task",
+      "round": 1,
+      "request_sha256": "72c2ce8247bdca4ef683ecfc876e221b581d26fb1f2e74a1acbe8c214ec7280b",
+      "started_at": "2026-09-12T06:47:53.587060+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "tokens": {
+        "prompt_tokens": 1452,
+        "completion_tokens": 18,
+        "total_tokens": 1470
+      },
+      "seconds": 1.0659
+    },
+    {
+      "family_id": "output_count",
+      "case_id": "output_count_zh",
+      "language": "zh",
+      "arm": "definitions",
+      "round": 1,
+      "request_sha256": "706a2d12d095fb0443794d1e1d79fa964ab8dabab6dbb9104e6aa8d420b8b803",
+      "started_at": "2026-09-12T06:48:00.456954+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [
+          {
+            "span": "回傳",
+            "concept": "returns",
+            "polarity": "include",
+            "role": "population"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "tokens": {
+        "prompt_tokens": 1350,
+        "completion_tokens": 43,
+        "total_tokens": 1393
+      },
+      "seconds": 1.6711
+    },
+    {
+      "family_id": "output_count",
+      "case_id": "output_count_en",
+      "language": "en",
+      "arm": "baseline",
+      "round": 1,
+      "request_sha256": "f55814cd0562f4c0db3dcd9e759f0dd3f219d1ed038fb17c94fb559ec6757efd",
+      "started_at": "2026-09-12T06:48:02.129809+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "span": "transaction count",
+            "aspect": "measure_basis"
+          }
+        ]
+      },
+      "tokens": {
+        "prompt_tokens": 1311,
+        "completion_tokens": 32,
+        "total_tokens": 1343
+      },
+      "seconds": 1.016
+    },
+    {
+      "family_id": "output_amount",
+      "case_id": "output_amount_ja",
+      "language": "ja",
+      "arm": "baseline",
+      "round": 1,
+      "request_sha256": "78724c2f93ad160faff36800a0ee20971402a9c8d602f71192708ee23c22a060",
+      "started_at": "2026-09-12T06:48:05.817009+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "tokens": {
+        "prompt_tokens": 1314,
+        "completion_tokens": 18,
+        "total_tokens": 1332
+      },
+      "seconds": 0.884
+    },
+    {
+      "family_id": "output_amount",
+      "case_id": "output_amount_en",
+      "language": "en",
+      "arm": "definitions",
+      "round": 1,
+      "request_sha256": "64f04a323f454aecc0bd90ffb92a3c9788e6363eb5bb32f85f8c90837923cc82",
+      "started_at": "2026-09-12T06:48:08.373828+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "tokens": {
+        "prompt_tokens": 1350,
+        "completion_tokens": 18,
+        "total_tokens": 1368
+      },
+      "seconds": 0.9212
+    },
+    {
+      "family_id": "output_count",
+      "case_id": "output_count_ja",
+      "language": "ja",
+      "arm": "baseline",
+      "round": 1,
+      "request_sha256": "a877f5fe8819d414d1483831ec944690bb02d3848a9162d17cb14d48518f6625",
+      "started_at": "2026-09-12T06:48:10.912478+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "tokens": {
+        "prompt_tokens": 1312,
+        "completion_tokens": 18,
+        "total_tokens": 1330
+      },
+      "seconds": 0.6372
+    },
+    {
+      "family_id": "output_count",
+      "case_id": "output_count_en",
+      "language": "en",
+      "arm": "task",
+      "round": 1,
+      "request_sha256": "f1c95ecdcbaa6a77ef73fb64fed6e0c9de1d6cbbd78ed87941d0d7453923a862",
+      "started_at": "2026-09-12T06:48:11.550979+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "tokens": {
+        "prompt_tokens": 1449,
+        "completion_tokens": 18,
+        "total_tokens": 1467
+      },
+      "seconds": 0.9156
+    },
+    {
+      "family_id": "output_amount",
+      "case_id": "output_amount_zh",
+      "language": "zh",
+      "arm": "definitions",
+      "round": 1,
+      "request_sha256": "a48c67e5134ca188647aa68a60652239ef1822cd6017a2c16d4945f76557c034",
+      "started_at": "2026-09-12T06:48:21.906069+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [
+          {
+            "span": "回傳交易",
+            "concept": "returns",
+            "polarity": "include",
+            "role": "population"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "tokens": {
+        "prompt_tokens": 1350,
+        "completion_tokens": 44,
+        "total_tokens": 1394
+      },
+      "seconds": 1.654
+    },
+    {
+      "family_id": "output_count",
+      "case_id": "output_count_zh",
+      "language": "zh",
+      "arm": "task",
+      "round": 1,
+      "request_sha256": "667620daefcaf65bb38c03b6ebd2789cc723e00f2198fbab8b38c74d6d8ba915",
+      "started_at": "2026-09-12T06:48:57.221860+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [
+          {
+            "span": "交易",
+            "concept": "returns",
+            "polarity": "include",
+            "role": "population"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "tokens": {
+        "prompt_tokens": 1450,
+        "completion_tokens": 42,
+        "total_tokens": 1492
+      },
+      "seconds": 1.7392
+    },
+    {
+      "family_id": "output_amount",
+      "case_id": "output_amount_zh",
+      "language": "zh",
+      "arm": "task",
+      "round": 1,
+      "request_sha256": "214dfb4b030d04bec6bdc6d23525a046f8cbde71cce9df1342180073e86d867d",
+      "started_at": "2026-09-12T06:49:04.696619+00:00",
+      "reasoning_characters": 0,
+      "finish_reason": "stop",
+      "status": "ok",
+      "result": {
+        "requirements": [
+          {
+            "span": "交易",
+            "concept": "returns",
+            "polarity": "include",
+            "role": "population"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": []
+      },
+      "tokens": {
+        "prompt_tokens": 1450,
+        "completion_tokens": 42,
+        "total_tokens": 1492
+      },
+      "seconds": 1.6637
+    }
+  ],
+  "limits": [
+    "Authored development data, not blind user holdout.",
+    "No eligible candidate; replication/challenge and fresh ask model calls not run.",
+    "No new PostgreSQL measurements; prior database scores are not this run results.",
+    "Actual ask replay reused old captured outputs and local fictional DuckDB, not new model observations.",
+    "No production prompt, verifier promotion, status-contract or lexical-gate changes.",
+    "Definitions/task counts tie but cores are not all identical; no caching/backend-cause claim.",
+    "The shown schema remains a domain-validated overapproximation, not every combination is executable."
+  ],
+  "source_delta": {
+    "baseline": "sha256:e2ec1c886fb6995372496bfbff48da27482cc74352f0d6f27b4148e688d85b00",
+    "files": [
+      {
+        "path": "src/grepbit/adapters/litellm/plan_client.py",
+        "before": "b32c82c56148af338e1c9eea8d62409a09f85781653cf1a8ca2c14974ac5163f",
+        "after": "f49ebdce06aabdd4fb5b4e5344903cf3a27fec6ecdc898ee2b10f35a40b9133c"
+      },
+      {
+        "path": "src/grepbit/adapters/litellm/plan_wire.py",
+        "before": "5a0af72a745cf06a6f41985ee32ed0d80c39b82b7d14f7a7ffc6fc7e8b583d48",
+        "after": "35a79340bbb2b5ccb7fdcdce8756739081c373a906303b8946df0355664a8da9"
+      },
+      {
+        "path": "src/grepbit/adapters/sqlglot/plan_check.py",
+        "before": "f6fd6664d057c2850f04688109cb80ec75e7acb509b7a1064735ac48ae7158b6",
+        "after": "acdf8e452c064a6bef5398d8b134ecabace335b11804adff9a3633366154f0ee"
+      },
+      {
+        "path": "src/grepbit/adapters/sqlglot/plan_compiler.py",
+        "before": "ace2f6e4051e809158bae34b63662c2ef1750226c0bb4d6657bd63f5dbd2014d",
+        "after": "5040c8c49b09ee39e0b2b9af3d324c7e25853985c93627ae998206d1ec4d702a"
+      },
+      {
+        "path": "src/grepbit/domain/plan.py",
+        "before": "9a4d6e28877b51927736c754aecd4367c8b8a175891ba5aa95e6509b6c1e5507",
+        "after": "a56aa7438aa2851c78f56efdf40aecb0817a61173d976c110c26d0067a9a8158"
+      },
+      {
+        "path": "tests/contract/t0/test_concept_obligations_contract.py",
+        "before": "1508bae5ca63d542357aec6e2485bb227b790cf1e606d3a2205bb4b5222172d8",
+        "after": "dc0266326717504d81204af1d0fc96bf15113a2a17171f8027367b172b954a11"
+      },
+      {
+        "path": "evals/cases/concepts/contrast_v1.yaml",
+        "before": null,
+        "after": "c648f92db4237838daa274b0b189a72b569b5155e673beb17b2c005102b39baa"
+      },
+      {
+        "path": "evals/semantic_contrast.py",
+        "before": null,
+        "after": "04bacc73f19fcbd04ea58ce0696dd7e4723ab842deb58905cbf2095e1cbeac98"
+      },
+      {
+        "path": "tests/contract/t0/test_ratio_wrapper_ruler.py",
+        "before": null,
+        "after": "95d01268d959792735aff9c7b4c97ad0e95b7b07c4fce9ca56aee85e2028e6e5"
+      },
+      {
+        "path": "tests/contract/t0/test_semantic_contrast_contract.py",
+        "before": null,
+        "after": "0e9399eb10b80071eb133529fe2c902309ac19a2047e9f8a6cd4802d99fc8d43"
+      }
+    ]
+  },
+  "production_snippet_reversal_matches_baseline": {
+    "src/grepbit/domain/plan.py": "9a4d6e28877b51927736c754aecd4367c8b8a175891ba5aa95e6509b6c1e5507",
+    "src/grepbit/adapters/sqlglot/plan_compiler.py": "ace2f6e4051e809158bae34b63662c2ef1750226c0bb4d6657bd63f5dbd2014d",
+    "src/grepbit/adapters/sqlglot/plan_check.py": "f6fd6664d057c2850f04688109cb80ec75e7acb509b7a1064735ac48ae7158b6",
+    "src/grepbit/adapters/litellm/plan_client.py": "b32c82c56148af338e1c9eea8d62409a09f85781653cf1a8ca2c14974ac5163f",
+    "src/grepbit/adapters/litellm/plan_wire.py": "5a0af72a745cf06a6f41985ee32ed0d80c39b82b7d14f7a7ffc6fc7e8b583d48"
+  }
+}

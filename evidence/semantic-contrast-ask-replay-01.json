@@ -1,0 +1,429 @@
+{
+  "revision": "captured-plan-ask-replay-01",
+  "model_calls": 0,
+  "prior_sha256": "18659dca8061580e76de8b79d0777248901f42bb43097c2ab035c81f28e6e87b",
+  "driver_sha256": "6bcf02763847edeecef9d467c3ee6fff3433ca7558c5f83eb5006d384b420f5b",
+  "source_digest": "sha256:ab54a0c773cba81dbc2a90eaf323e17bbbf31b2b50df9e7bf13ebc6c4002436d",
+  "records": [
+    {
+      "round": 1,
+      "language": "zh",
+      "instance": "coincidental",
+      "status": "answered",
+      "reason": null,
+      "verification": "verified",
+      "expected": 4,
+      "actual": 2,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 1,
+      "correct_scalar": false,
+      "verifiers": {
+        "off": [
+          "pass",
+          "supplied_obligations_only"
+        ],
+        "on": [
+          "pass",
+          "supplied_obligations_only"
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "language": "zh",
+      "instance": "asymmetric",
+      "status": "answered",
+      "reason": null,
+      "verification": "verified",
+      "expected": 5,
+      "actual": 3,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 1,
+      "correct_scalar": false,
+      "verifiers": {
+        "off": [
+          "pass",
+          "supplied_obligations_only"
+        ],
+        "on": [
+          "pass",
+          "supplied_obligations_only"
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "language": "zh",
+      "instance": "nullable_amount",
+      "status": "answered",
+      "reason": null,
+      "verification": "verified",
+      "expected": 3,
+      "actual": 1,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 1,
+      "correct_scalar": false,
+      "verifiers": {
+        "off": [
+          "pass",
+          "supplied_obligations_only"
+        ],
+        "on": [
+          "pass",
+          "supplied_obligations_only"
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "language": "en",
+      "instance": "coincidental",
+      "status": "clarify",
+      "reason": "concept_not_mapped",
+      "verification": null,
+      "expected": 4,
+      "actual": null,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 0,
+      "correct_scalar": false,
+      "verifiers": {
+        "off": [
+          "unknown",
+          "unresolved_obligation"
+        ],
+        "on": [
+          "unknown",
+          "unresolved_obligation"
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "language": "en",
+      "instance": "asymmetric",
+      "status": "clarify",
+      "reason": "concept_not_mapped",
+      "verification": null,
+      "expected": 5,
+      "actual": null,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 0,
+      "correct_scalar": false,
+      "verifiers": {
+        "off": [
+          "unknown",
+          "unresolved_obligation"
+        ],
+        "on": [
+          "unknown",
+          "unresolved_obligation"
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "language": "en",
+      "instance": "nullable_amount",
+      "status": "clarify",
+      "reason": "concept_not_mapped",
+      "verification": null,
+      "expected": 3,
+      "actual": null,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 0,
+      "correct_scalar": false,
+      "verifiers": {
+        "off": [
+          "unknown",
+          "unresolved_obligation"
+        ],
+        "on": [
+          "unknown",
+          "unresolved_obligation"
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "language": "ja",
+      "instance": "coincidental",
+      "status": "answered",
+      "reason": null,
+      "verification": "unverified_semantics",
+      "expected": 4,
+      "actual": 4,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 1,
+      "correct_scalar": true,
+      "verifiers": {
+        "off": [
+          "not_applicable",
+          "no_extracted_obligations"
+        ],
+        "on": [
+          "unknown",
+          "unresolved_obligation"
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "language": "ja",
+      "instance": "asymmetric",
+      "status": "answered",
+      "reason": null,
+      "verification": "unverified_semantics",
+      "expected": 5,
+      "actual": 5,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 1,
+      "correct_scalar": true,
+      "verifiers": {
+        "off": [
+          "not_applicable",
+          "no_extracted_obligations"
+        ],
+        "on": [
+          "unknown",
+          "unresolved_obligation"
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "language": "ja",
+      "instance": "nullable_amount",
+      "status": "answered",
+      "reason": null,
+      "verification": "unverified_semantics",
+      "expected": 3,
+      "actual": 3,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 1,
+      "correct_scalar": true,
+      "verifiers": {
+        "off": [
+          "not_applicable",
+          "no_extracted_obligations"
+        ],
+        "on": [
+          "unknown",
+          "unresolved_obligation"
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "language": "zh",
+      "instance": "coincidental",
+      "status": "answered",
+      "reason": null,
+      "verification": "verified",
+      "expected": 4,
+      "actual": 2,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 1,
+      "correct_scalar": false,
+      "verifiers": {
+        "off": [
+          "pass",
+          "supplied_obligations_only"
+        ],
+        "on": [
+          "pass",
+          "supplied_obligations_only"
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "language": "zh",
+      "instance": "asymmetric",
+      "status": "answered",
+      "reason": null,
+      "verification": "verified",
+      "expected": 5,
+      "actual": 3,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 1,
+      "correct_scalar": false,
+      "verifiers": {
+        "off": [
+          "pass",
+          "supplied_obligations_only"
+        ],
+        "on": [
+          "pass",
+          "supplied_obligations_only"
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "language": "zh",
+      "instance": "nullable_amount",
+      "status": "answered",
+      "reason": null,
+      "verification": "verified",
+      "expected": 3,
+      "actual": 1,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 1,
+      "correct_scalar": false,
+      "verifiers": {
+        "off": [
+          "pass",
+          "supplied_obligations_only"
+        ],
+        "on": [
+          "pass",
+          "supplied_obligations_only"
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "language": "en",
+      "instance": "coincidental",
+      "status": "clarify",
+      "reason": "concept_not_mapped",
+      "verification": null,
+      "expected": 4,
+      "actual": null,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 0,
+      "correct_scalar": false,
+      "verifiers": {
+        "off": [
+          "unknown",
+          "unresolved_obligation"
+        ],
+        "on": [
+          "unknown",
+          "unresolved_obligation"
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "language": "en",
+      "instance": "asymmetric",
+      "status": "clarify",
+      "reason": "concept_not_mapped",
+      "verification": null,
+      "expected": 5,
+      "actual": null,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 0,
+      "correct_scalar": false,
+      "verifiers": {
+        "off": [
+          "unknown",
+          "unresolved_obligation"
+        ],
+        "on": [
+          "unknown",
+          "unresolved_obligation"
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "language": "en",
+      "instance": "nullable_amount",
+      "status": "clarify",
+      "reason": "concept_not_mapped",
+      "verification": null,
+      "expected": 3,
+      "actual": null,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 0,
+      "correct_scalar": false,
+      "verifiers": {
+        "off": [
+          "unknown",
+          "unresolved_obligation"
+        ],
+        "on": [
+          "unknown",
+          "unresolved_obligation"
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "language": "ja",
+      "instance": "coincidental",
+      "status": "answered",
+      "reason": null,
+      "verification": "unverified_semantics",
+      "expected": 4,
+      "actual": 4,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 1,
+      "correct_scalar": true,
+      "verifiers": {
+        "off": [
+          "not_applicable",
+          "no_extracted_obligations"
+        ],
+        "on": [
+          "unknown",
+          "unresolved_obligation"
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "language": "ja",
+      "instance": "asymmetric",
+      "status": "answered",
+      "reason": null,
+      "verification": "unverified_semantics",
+      "expected": 5,
+      "actual": 5,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 1,
+      "correct_scalar": true,
+      "verifiers": {
+        "off": [
+          "not_applicable",
+          "no_extracted_obligations"
+        ],
+        "on": [
+          "unknown",
+          "unresolved_obligation"
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "language": "ja",
+      "instance": "nullable_amount",
+      "status": "answered",
+      "reason": null,
+      "verification": "unverified_semantics",
+      "expected": 3,
+      "actual": 3,
+      "replayed_planner_calls": 1,
+      "sql_execution_calls": 1,
+      "correct_scalar": true,
+      "verifiers": {
+        "off": [
+          "not_applicable",
+          "no_extracted_obligations"
+        ],
+        "on": [
+          "unknown",
+          "unresolved_obligation"
+        ]
+      }
+    }
+  ],
+  "limits": [
+    "Reuses six captured planner outputs and their independent extractions, not fresh model calls.",
+    "Runs actual ask orchestration/gates/compiler/policy with local DuckDB and no-literal assertion.",
+    "No PostgreSQL driver, MCP surface, grounding retrieval or release validation claimed.",
+    "Three fictional instances and repeated outputs are not independent product-risk samples."
+  ]
+}

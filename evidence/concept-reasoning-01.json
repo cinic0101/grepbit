@@ -1,0 +1,330 @@
+{
+  "experiment": "concept-shadow-v1-reasoning-ablation",
+  "date": "2026-09-12",
+  "authority_record": "docs/plan/concept-reasoning-ablation.md",
+  "research": "docs/research/concept-reasoning-01.md",
+  "head": "746f1689ad812088ed2cca6cc3bcde3e85a006b8",
+  "dirty_worktree": true,
+  "decision": "helps_but_research_only_no_production_promotion",
+  "model_requests": 162,
+  "postgres_calls": 0,
+  "unique_questions": 30,
+  "families": 10,
+  "pairs_per_mode": 51,
+  "holdout": false,
+  "matching_message_hashes": 81,
+  "source_digest": "sha256:40a6d8bcbf0f0151abcdede81790d0450e44283e56275872ae4e534e0e0b494d",
+  "files_sha256": {
+    "evals/concept_pilot.py": "526b3743075dcddffe6d76e867151a22d997bc643a3c10a39639a336ad6744ce",
+    "tests/contract/t0/test_concept_pilot_contract.py": "b7ea7fd8ae4fae7c96d19accb29d0c0e192b3740d89ff0e604504d2a8dac0e10",
+    "evals/concept_check.py": "46f0fc376727b3674e1fb86a45ffadc11c80538eadab69aff74406a8b95c6e3d",
+    "evals/cases/concepts/pilot.yaml": "4fa030a16d4803a3381a991bbb94773de5cf442c1d1ab742c8cced7cdc5c069f",
+    "evals/fixtures/concept_pilot.json": "c0005e90ad4f9148ba2131e98253761b62b34f7f087d5a823ec869209e48f77f"
+  },
+  "modes": {
+    "off": {
+      "artifact": ".artifacts/concept-reasoning-20260912/off.json",
+      "sha256": "c0a6767569db0d451a4e4e7080578dc839ea18f49148742dbf1aca7c4727422e",
+      "settings": {
+        "temperature": 0,
+        "max_tokens": 4096,
+        "timeout_seconds": 60.0,
+        "thinking": false,
+        "retries": 0
+      },
+      "completed": true,
+      "source_unchanged": true,
+      "source_digest": "sha256:40a6d8bcbf0f0151abcdede81790d0450e44283e56275872ae4e534e0e0b494d",
+      "inputs_sha256": "47665256c0d3eb8a0f178c569a2e6a471f145be682c270403529523adb360eb8",
+      "intent_exact": {
+        "correct": 22,
+        "total": 30
+      },
+      "summary": {
+        "pair_records": 51,
+        "calls": 81,
+        "call_status": {
+          "format_error": 2,
+          "ok": 79
+        },
+        "A": {
+          "counts": {
+            "pass": 37,
+            "fail": 14
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 15,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 7,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 5,
+          "accepted_pairs": 37,
+          "wrong_among_accepted": 15
+        },
+        "B": {
+          "counts": {
+            "unknown": 41,
+            "not_applicable": 10
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 3,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 19,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 2,
+          "accepted_pairs": 10,
+          "wrong_among_accepted": 3
+        },
+        "C": {
+          "counts": {
+            "error": 4,
+            "not_applicable": 10,
+            "pass": 12,
+            "fail": 15,
+            "unknown": 10
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 1,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 5,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 2,
+          "accepted_pairs": 22,
+          "wrong_among_accepted": 1,
+          "successful_call_latency": {
+            "n": 28,
+            "p50": 1.1237,
+            "p95": 2.1562
+          }
+        },
+        "D": {
+          "counts": {
+            "pass": 19,
+            "fail": 26,
+            "not_applicable": 6
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 0,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 0,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 1,
+          "accepted_pairs": 25,
+          "wrong_among_accepted": 0,
+          "successful_call_latency": {
+            "n": 51,
+            "p50": 0.4032,
+            "p95": 0.4968
+          }
+        },
+        "oracle": {
+          "counts": {
+            "pass": 18,
+            "fail": 18,
+            "not_applicable": 6,
+            "unknown": 9
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 0,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 0,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 0,
+          "accepted_pairs": 24,
+          "wrong_among_accepted": 0
+        }
+      },
+      "reasoning_present_calls": 0,
+      "length_stops": 0,
+      "reported_reasoning_token_field_calls": 0,
+      "tokens": {
+        "prompt_tokens": 77127,
+        "completion_tokens": 1317,
+        "total_tokens": 78444
+      },
+      "all_call_latency": {
+        "C": {
+          "n": 30,
+          "p50": 1.1142,
+          "p95": 2.1562
+        },
+        "D": {
+          "n": 51,
+          "p50": 0.4032,
+          "p95": 0.4968
+        }
+      }
+    },
+    "on": {
+      "artifact": ".artifacts/concept-reasoning-20260912/on.json",
+      "sha256": "414670ee9cf2d00c88d3f922951a43e1cb77622c1f2760b57b72d37c61da7c0b",
+      "settings": {
+        "temperature": 0,
+        "max_tokens": 4096,
+        "timeout_seconds": 60.0,
+        "thinking": true,
+        "retries": 0
+      },
+      "completed": true,
+      "source_unchanged": true,
+      "source_digest": "sha256:40a6d8bcbf0f0151abcdede81790d0450e44283e56275872ae4e534e0e0b494d",
+      "inputs_sha256": "47665256c0d3eb8a0f178c569a2e6a471f145be682c270403529523adb360eb8",
+      "intent_exact": {
+        "correct": 26,
+        "total": 30
+      },
+      "summary": {
+        "pair_records": 51,
+        "calls": 81,
+        "call_status": {
+          "ok": 80,
+          "format_error": 1
+        },
+        "A": {
+          "counts": {
+            "pass": 37,
+            "fail": 14
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 15,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 7,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 5,
+          "accepted_pairs": 37,
+          "wrong_among_accepted": 15
+        },
+        "B": {
+          "counts": {
+            "unknown": 41,
+            "not_applicable": 10
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 3,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 19,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 2,
+          "accepted_pairs": 10,
+          "wrong_among_accepted": 3
+        },
+        "C": {
+          "counts": {
+            "pass": 15,
+            "fail": 17,
+            "error": 2,
+            "unknown": 11,
+            "not_applicable": 6
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 0,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 3,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 0,
+          "accepted_pairs": 21,
+          "wrong_among_accepted": 0,
+          "successful_call_latency": {
+            "n": 29,
+            "p50": 15.1481,
+            "p95": 39.999
+          }
+        },
+        "D": {
+          "counts": {
+            "pass": 19,
+            "fail": 25,
+            "not_applicable": 5,
+            "unknown": 2
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 0,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 0,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 0,
+          "accepted_pairs": 24,
+          "wrong_among_accepted": 0,
+          "successful_call_latency": {
+            "n": 51,
+            "p50": 8.1887,
+            "p95": 24.829
+          }
+        },
+        "oracle": {
+          "counts": {
+            "pass": 18,
+            "fail": 18,
+            "not_applicable": 6,
+            "unknown": 9
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 0,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 0,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 0,
+          "accepted_pairs": 24,
+          "wrong_among_accepted": 0
+        }
+      },
+      "reasoning_present_calls": 81,
+      "length_stops": 0,
+      "reported_reasoning_token_field_calls": 0,
+      "tokens": {
+        "prompt_tokens": 76965,
+        "completion_tokens": 37364,
+        "total_tokens": 114329
+      },
+      "all_call_latency": {
+        "C": {
+          "n": 30,
+          "p50": 15.1481,
+          "p95": 40.4292
+        },
+        "D": {
+          "n": 51,
+          "p50": 8.1887,
+          "p95": 24.829
+        }
+      }
+    }
+  },
+  "validation": {
+    "focused": {
+      "artifact": ".artifacts/concept-reasoning-20260912/focused/result.json",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 45
+      },
+      "source_digest": "sha256:40a6d8bcbf0f0151abcdede81790d0450e44283e56275872ae4e534e0e0b494d"
+    },
+    "static": {
+      "artifact": ".artifacts/concept-reasoning-20260912/static/result.json",
+      "passed": true,
+      "counts": null,
+      "source_digest": "sha256:40a6d8bcbf0f0151abcdede81790d0450e44283e56275872ae4e534e0e0b494d"
+    },
+    "offline": {
+      "artifact": ".artifacts/concept-reasoning-20260912/offline/result.json",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 488
+      },
+      "source_digest": "sha256:40a6d8bcbf0f0151abcdede81790d0450e44283e56275872ae4e534e0e0b494d"
+    }
+  },
+  "limits": [
+    "One sequential off/on block, not a repeatability or randomized load study.",
+    "Author-written fixed synthetic plans, not unseen real-user question accuracy.",
+    "Qualifiers only; errors and Unknown do not mean successful semantic verification.",
+    "Reasoning text never retained; the provider does not report separate reasoning tokens.",
+    "No promotion, production change, DB access, credential copies, stage, commit or push."
+  ]
+}

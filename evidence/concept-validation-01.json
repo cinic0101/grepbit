@@ -1,0 +1,286 @@
+{
+  "experiment": "concept-shadow-v1",
+  "date": "2026-09-12",
+  "decision": "do_not_promote_or_expand",
+  "production_changed": false,
+  "head": "746f1689ad812088ed2cca6cc3bcde3e85a006b8",
+  "dirty_worktree": true,
+  "authority_record": "docs/plan/concept-validation-pilot.md",
+  "research": "docs/research/concept-validation-01.md",
+  "scope": "qualifier_constraints_only_not_full_answer_verification",
+  "unique_questions": 30,
+  "semantic_families": 10,
+  "fixed_question_plan_pairs_per_round": 51,
+  "holdout": false,
+  "real_model_requests": 162,
+  "postgres_calls": 0,
+  "transport_failures": 0,
+  "format_failures": 5,
+  "setup_failure_requests": 0,
+  "identical_corresponding_request_hashes": 81,
+  "files_sha256": {
+    "evals/concept_check.py": "46f0fc376727b3674e1fb86a45ffadc11c80538eadab69aff74406a8b95c6e3d",
+    "evals/concept_pilot.py": "4ff81f9231d901ab24de2c02d2ee32736878f664220bf4b1a08ba779b80d0240",
+    "evals/cases/concepts/pilot.yaml": "4fa030a16d4803a3381a991bbb94773de5cf442c1d1ab742c8cced7cdc5c069f",
+    "evals/fixtures/concept_pilot.json": "c0005e90ad4f9148ba2131e98253761b62b34f7f087d5a823ec869209e48f77f",
+    "tests/contract/t0/test_concept_pilot_contract.py": "c984f8ece2d7ca2ff69dc92e1404fdff162152acb0425f34c9234daf30082f0f"
+  },
+  "rounds": [
+    {
+      "artifact": ".artifacts/concept-pilot-20260912/live-02.json",
+      "sha256": "e02b592f17e7168a214caa8d6ca0d76adffa3ddd41012f328e851cc972ccb7bd",
+      "source_digest": "sha256:e2b013aec101d2742a5956e5e122164ddb2d35c11e57b388ffdcf5a7220f1198",
+      "source_unchanged": true,
+      "completed": true,
+      "input_sha256": "47665256c0d3eb8a0f178c569a2e6a471f145be682c270403529523adb360eb8",
+      "started_at": "2026-09-12T02:26:18.290104+00:00",
+      "last_call_started_at": "2026-09-12T02:27:12.132829+00:00",
+      "intent_exact": {
+        "correct": 22,
+        "total": 30
+      },
+      "summary": {
+        "pair_records": 51,
+        "calls": 81,
+        "call_status": {
+          "format_error": 3,
+          "ok": 78
+        },
+        "A": {
+          "counts": {
+            "pass": 37,
+            "fail": 14
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 15,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 7,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 5,
+          "accepted_pairs": 37,
+          "wrong_among_accepted": 15
+        },
+        "B": {
+          "counts": {
+            "unknown": 41,
+            "not_applicable": 10
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 3,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 19,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 2,
+          "accepted_pairs": 10,
+          "wrong_among_accepted": 3
+        },
+        "C": {
+          "counts": {
+            "error": 6,
+            "pass": 12,
+            "fail": 15,
+            "unknown": 10,
+            "not_applicable": 8
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 0,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 6,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 2,
+          "accepted_pairs": 20,
+          "wrong_among_accepted": 0,
+          "successful_call_latency": {
+            "n": 27,
+            "p50": 1.1623,
+            "p95": 2.2396
+          }
+        },
+        "D": {
+          "counts": {
+            "pass": 19,
+            "fail": 26,
+            "not_applicable": 6
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 0,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 0,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 1,
+          "accepted_pairs": 25,
+          "wrong_among_accepted": 0,
+          "successful_call_latency": {
+            "n": 51,
+            "p50": 0.4086,
+            "p95": 0.6118
+          }
+        },
+        "oracle": {
+          "counts": {
+            "pass": 18,
+            "fail": 18,
+            "not_applicable": 6,
+            "unknown": 9
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 0,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 0,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 0,
+          "accepted_pairs": 24,
+          "wrong_among_accepted": 0
+        }
+      },
+      "total_tokens": 78442
+    },
+    {
+      "artifact": ".artifacts/concept-pilot-20260912/live-03.json",
+      "sha256": "5f0c76ba3a367c1f03b8b887c96f259ccab8af0b3e4ae418dbd2065af8bf7b6e",
+      "source_digest": "sha256:6e69e33f951ca347afc29a45f6ff023e204185d976f7da53f8b51c4147956657",
+      "source_unchanged": true,
+      "completed": true,
+      "input_sha256": "47665256c0d3eb8a0f178c569a2e6a471f145be682c270403529523adb360eb8",
+      "started_at": "2026-09-12T02:28:54.547120+00:00",
+      "last_call_started_at": "2026-09-12T02:29:43.625730+00:00",
+      "intent_exact": {
+        "correct": 22,
+        "total": 30
+      },
+      "summary": {
+        "pair_records": 51,
+        "calls": 81,
+        "call_status": {
+          "format_error": 2,
+          "ok": 79
+        },
+        "A": {
+          "counts": {
+            "pass": 37,
+            "fail": 14
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 15,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 7,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 5,
+          "accepted_pairs": 37,
+          "wrong_among_accepted": 15
+        },
+        "B": {
+          "counts": {
+            "unknown": 41,
+            "not_applicable": 10
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 3,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 19,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 2,
+          "accepted_pairs": 10,
+          "wrong_among_accepted": 3
+        },
+        "C": {
+          "counts": {
+            "error": 4,
+            "not_applicable": 10,
+            "pass": 12,
+            "fail": 15,
+            "unknown": 10
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 1,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 5,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 2,
+          "accepted_pairs": 22,
+          "wrong_among_accepted": 1,
+          "successful_call_latency": {
+            "n": 28,
+            "p50": 1.1274,
+            "p95": 2.1368
+          }
+        },
+        "D": {
+          "counts": {
+            "pass": 19,
+            "fail": 26,
+            "not_applicable": 6
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 0,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 0,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 1,
+          "accepted_pairs": 25,
+          "wrong_among_accepted": 0,
+          "successful_call_latency": {
+            "n": 51,
+            "p50": 0.4072,
+            "p95": 0.4187
+          }
+        },
+        "oracle": {
+          "counts": {
+            "pass": 18,
+            "fail": 18,
+            "not_applicable": 6,
+            "unknown": 9
+          },
+          "wrong_pairs": 18,
+          "wrong_allowed": 0,
+          "correct_pairs": 24,
+          "correct_blocked_or_unknown": 0,
+          "unresolved_pairs": 9,
+          "unresolved_allowed": 0,
+          "accepted_pairs": 24,
+          "wrong_among_accepted": 0
+        }
+      },
+      "total_tokens": 78444
+    }
+  ],
+  "validation": {
+    "focused_instrument": {
+      "artifact": ".artifacts/concept-pilot-20260912/focused-04/result.json",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 41
+      },
+      "source_digest": "sha256:6066bcadb58d829724ebae5978b11ee1980db0664c75d3a95c3f2d810ec04326"
+    },
+    "static": {
+      "artifact": ".artifacts/concept-pilot-20260912/static-final/result.json",
+      "passed": true,
+      "counts": null,
+      "source_digest": "sha256:6e69e33f951ca347afc29a45f6ff023e204185d976f7da53f8b51c4147956657"
+    },
+    "offline": {
+      "artifact": ".artifacts/concept-pilot-20260912/offline-final/result.json",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 484
+      },
+      "source_digest": "sha256:6e69e33f951ca347afc29a45f6ff023e204185d976f7da53f8b51c4147956657"
+    }
+  },
+  "limits": [
+    "Author-written synthetic projected-schema probes, not real-user generalization.",
+    "Repeated translations and fixed-plan pairs are not independent observations.",
+    "No-request bypass counts as an escape on a required concept; errors are not successful refusals.",
+    "Unresolved-pair escapes are reported separately from the 18 known wrong mutations.",
+    "Short time-separated repeats do not identify the cause of endpoint variation.",
+    "No source runtime changes, credentials in outputs, SQL/rows sent to models, or Git writes."
+  ]
+}

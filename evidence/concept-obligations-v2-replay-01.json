@@ -1,0 +1,1110 @@
+{
+  "revision": "concept-obligations-v2-post-live-replay-01",
+  "model_calls": 0,
+  "driver_sha256": "5231508fc2370642169c051f1b65c20052000cb15c3aef5486e047fd0286a108",
+  "main_report": ".artifacts/concept-obligations-v2-impl-20260912/live.json",
+  "main_report_sha256": "2a43ba8aaf744fff07b29acbe4c467f026a9c94c4c9dac8711f6ab233d57a3bd",
+  "main_source_digest": "sha256:aa1a6ce8a46ce7739bebe9dfe375e270c855e4f788160b06e7bfe7ab26017521",
+  "post_guard_source_digest": "sha256:e2ec1c886fb6995372496bfbff48da27482cc74352f0d6f27b4148e688d85b00",
+  "inputs_sha256": "34e6ccd3a0c3c35869abc64726ebfd51218c3e48d3db80eb4b4a8763308578b5",
+  "original_analysis_identical": true,
+  "original_oracle_pairs_identical": 99,
+  "repeat_stability": {
+    "off": {
+      "pairs": 36,
+      "both_valid": 35,
+      "identical_valid_cores": 35,
+      "identical_status": 36,
+      "identical_requests": true
+    },
+    "on": {
+      "pairs": 36,
+      "both_valid": 34,
+      "identical_valid_cores": 34,
+      "identical_status": 36,
+      "identical_requests": true
+    }
+  },
+  "supplementary_plans": {
+    "raw_return_count": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "origin_transaction_no"
+          },
+          "op": "not_null"
+        }
+      ]
+    },
+    "raw_return_sum": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "sum",
+          "column": {
+            "table": "pos_sale",
+            "column": "total_amount"
+          }
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "origin_transaction_no"
+          },
+          "op": "not_null"
+        }
+      ]
+    }
+  },
+  "hand_value_checks": [
+    {
+      "plan_id": "raw_return_count",
+      "instance": "coincidental",
+      "expected": 2,
+      "actual": 2
+    },
+    {
+      "plan_id": "raw_return_count",
+      "instance": "asymmetric",
+      "expected": 3,
+      "actual": 3
+    },
+    {
+      "plan_id": "raw_return_sum",
+      "instance": "coincidental",
+      "expected": 30,
+      "actual": 30
+    },
+    {
+      "plan_id": "raw_return_sum",
+      "instance": "asymmetric",
+      "expected": 60,
+      "actual": 60
+    }
+  ],
+  "output_verb_correct_hand_values": [
+    4,
+    5
+  ],
+  "summary": {
+    "off:must_remain_unknown": {
+      "unknown": 24
+    },
+    "off:wrong_full_answer": {
+      "pass": 4,
+      "unknown": 4,
+      "not_applicable": 4
+    },
+    "on:must_remain_unknown": {
+      "unknown": 20,
+      "error": 4
+    },
+    "on:wrong_full_answer": {
+      "unknown": 8,
+      "pass": 4
+    }
+  },
+  "comparisons": [
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_en",
+      "language": "en",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "wrong_full_answer",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_en",
+      "language": "en",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "wrong_full_answer",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_ja",
+      "language": "ja",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_ja",
+      "language": "ja",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_zh",
+      "language": "zh",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_zh",
+      "language": "zh",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_zh",
+      "language": "zh",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "wrong_full_answer",
+      "verdict": "pass",
+      "reason": "supplied_obligations_only"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_zh",
+      "language": "zh",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "wrong_full_answer",
+      "verdict": "pass",
+      "reason": "supplied_obligations_only"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_ja",
+      "language": "ja",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_ja",
+      "language": "ja",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_ja",
+      "language": "ja",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "wrong_full_answer",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_ja",
+      "language": "ja",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "wrong_full_answer",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_zh",
+      "language": "zh",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "wrong_full_answer",
+      "verdict": "pass",
+      "reason": "supplied_obligations_only"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_zh",
+      "language": "zh",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "wrong_full_answer",
+      "verdict": "pass",
+      "reason": "supplied_obligations_only"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_zh",
+      "language": "zh",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_zh",
+      "language": "zh",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_ja",
+      "language": "ja",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_ja",
+      "language": "ja",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_zh",
+      "language": "zh",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_zh",
+      "language": "zh",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_ja",
+      "language": "ja",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_ja",
+      "language": "ja",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_en",
+      "language": "en",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_en",
+      "language": "en",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_zh",
+      "language": "zh",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_zh",
+      "language": "zh",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_en",
+      "language": "en",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_en",
+      "language": "en",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_en",
+      "language": "en",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "wrong_full_answer",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_en",
+      "language": "en",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "wrong_full_answer",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_ja",
+      "language": "ja",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "wrong_full_answer",
+      "verdict": "not_applicable",
+      "reason": "no_extracted_obligations"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_ja",
+      "language": "ja",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "wrong_full_answer",
+      "verdict": "not_applicable",
+      "reason": "no_extracted_obligations"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_en",
+      "language": "en",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "error",
+      "reason": "transport_error"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_en",
+      "language": "en",
+      "arm": "on",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "error",
+      "reason": "transport_error"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_en",
+      "language": "en",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_en",
+      "language": "en",
+      "arm": "off",
+      "round": 1,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_en",
+      "language": "en",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "wrong_full_answer",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_en",
+      "language": "en",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "wrong_full_answer",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_ja",
+      "language": "ja",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_ja",
+      "language": "ja",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_zh",
+      "language": "zh",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_zh",
+      "language": "zh",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_zh",
+      "language": "zh",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "wrong_full_answer",
+      "verdict": "pass",
+      "reason": "supplied_obligations_only"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_zh",
+      "language": "zh",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "wrong_full_answer",
+      "verdict": "pass",
+      "reason": "supplied_obligations_only"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_ja",
+      "language": "ja",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_ja",
+      "language": "ja",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_ja",
+      "language": "ja",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "wrong_full_answer",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_ja",
+      "language": "ja",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "wrong_full_answer",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_zh",
+      "language": "zh",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "wrong_full_answer",
+      "verdict": "pass",
+      "reason": "supplied_obligations_only"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_zh",
+      "language": "zh",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "wrong_full_answer",
+      "verdict": "pass",
+      "reason": "supplied_obligations_only"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_zh",
+      "language": "zh",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_zh",
+      "language": "zh",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_ja",
+      "language": "ja",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_ja",
+      "language": "ja",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_zh",
+      "language": "zh",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_zh",
+      "language": "zh",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_ja",
+      "language": "ja",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_ja",
+      "language": "ja",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_en",
+      "language": "en",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_en",
+      "language": "en",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_zh",
+      "language": "zh",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_zh",
+      "language": "zh",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_en",
+      "language": "en",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "unresolved_return_rate",
+      "case_id": "unresolved_return_rate_en",
+      "language": "en",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_en",
+      "language": "en",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "wrong_full_answer",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_en",
+      "language": "en",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "wrong_full_answer",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_ja",
+      "language": "ja",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "wrong_full_answer",
+      "verdict": "not_applicable",
+      "reason": "no_extracted_obligations"
+    },
+    {
+      "family_id": "output_verb_control",
+      "case_id": "output_verb_control_ja",
+      "language": "ja",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "wrong_full_answer",
+      "verdict": "not_applicable",
+      "reason": "no_extracted_obligations"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_en",
+      "language": "en",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "error",
+      "reason": "transport_error"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_en",
+      "language": "en",
+      "arm": "on",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "error",
+      "reason": "transport_error"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_en",
+      "language": "en",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_count",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    },
+    {
+      "family_id": "partial_ambiguity_with_known_member_scopes",
+      "case_id": "partial_ambiguity_with_known_member_scopes_en",
+      "language": "en",
+      "arm": "off",
+      "round": 2,
+      "plan_id": "raw_return_sum",
+      "target": "must_remain_unknown",
+      "verdict": "unknown",
+      "reason": "unresolved_obligation"
+    }
+  ],
+  "output_verb_observed_intents": [
+    {
+      "case_id": "output_verb_control_en",
+      "arm": "on",
+      "round": 1,
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "span": "transaction count",
+            "aspect": "measure_basis"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "output_verb_control_zh",
+      "arm": "off",
+      "round": 1,
+      "status": "ok",
+      "result": {
+        "requirements": [
+          {
+            "span": "回傳交易",
+            "concept": "returns",
+            "polarity": "include",
+            "role": "population"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": []
+      }
+    },
+    {
+      "case_id": "output_verb_control_ja",
+      "arm": "on",
+      "round": 1,
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "span": "取引件数",
+            "aspect": "measure_basis"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "output_verb_control_zh",
+      "arm": "on",
+      "round": 1,
+      "status": "ok",
+      "result": {
+        "requirements": [
+          {
+            "span": "回傳",
+            "concept": "returns",
+            "polarity": "include",
+            "role": "population"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": []
+      }
+    },
+    {
+      "case_id": "output_verb_control_en",
+      "arm": "off",
+      "round": 1,
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "span": "transaction count",
+            "aspect": "measure_basis"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "output_verb_control_ja",
+      "arm": "off",
+      "round": 1,
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": []
+      }
+    },
+    {
+      "case_id": "output_verb_control_en",
+      "arm": "on",
+      "round": 2,
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "span": "transaction count",
+            "aspect": "measure_basis"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "output_verb_control_zh",
+      "arm": "off",
+      "round": 2,
+      "status": "ok",
+      "result": {
+        "requirements": [
+          {
+            "span": "回傳交易",
+            "concept": "returns",
+            "polarity": "include",
+            "role": "population"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": []
+      }
+    },
+    {
+      "case_id": "output_verb_control_ja",
+      "arm": "on",
+      "round": 2,
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "span": "取引件数",
+            "aspect": "measure_basis"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "output_verb_control_zh",
+      "arm": "on",
+      "round": 2,
+      "status": "ok",
+      "result": {
+        "requirements": [
+          {
+            "span": "回傳",
+            "concept": "returns",
+            "polarity": "include",
+            "role": "population"
+          }
+        ],
+        "forbidden_groupings": [],
+        "unresolved": []
+      }
+    },
+    {
+      "case_id": "output_verb_control_en",
+      "arm": "off",
+      "round": 2,
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": [
+          {
+            "span": "transaction count",
+            "aspect": "measure_basis"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "output_verb_control_ja",
+      "arm": "off",
+      "round": 2,
+      "status": "ok",
+      "result": {
+        "requirements": [],
+        "forbidden_groupings": [],
+        "unresolved": []
+      }
+    }
+  ],
+  "limits": [
+    "Authored post-hoc cross-plan diagnostics, not independent holdout or new main scores.",
+    "Wrong_full_answer is not a qualifier label: no obligations => not_applicable, not a certificate.",
+    "Pass certifies supplied obligations only; a mistaken returns obligation can accept a wrong count.",
+    "Fixed ratio cases are already in the main study; these 72 comparisons add only raw count/sum shapes.",
+    "Repeated calls, translations and reused outputs are correlated, not independent risk samples.",
+    "No claim the live planner proposed a supplementary plan; that is the separate shadow probe."
+  ]
+}

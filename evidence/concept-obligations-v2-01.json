@@ -1,0 +1,139 @@
+{
+  "revision": "concept-obligations-v2-ruler-evidence-01",
+  "date": "2026-09-12",
+  "status": "checkpoint_complete_with_newly_exposed_existing_reference_failures",
+  "head": "746f1689ad812088ed2cca6cc3bcde3e85a006b8",
+  "model_calls": 0,
+  "production_changes": false,
+  "v2_checker_implemented": false,
+  "historical_scores_changed": false,
+  "protocol": "docs/plan/concept-obligations-v2.md",
+  "report": "docs/research/concept-obligations-v2-01.md",
+  "source": {
+    "baseline_digest": "sha256:1a0f0052c4500f368079a3eeb647f00a6e6617bf2db0b869fea2c71ada071ce7",
+    "final_digest": "sha256:fe44bc0822a7b0776b8edd77d1fd01d76a326cc10b65d26f98da60023971d7d9",
+    "changed_inputs_or_code": [
+      "evals/cases/concepts/obligations_v2_ruler.yaml",
+      "tests/contract/t0/test_concept_obligations_v2_ruler.py"
+    ],
+    "unchanged_implementation_hashes": {
+      "evals/concept_check.py": "46f0fc376727b3674e1fb86a45ffadc11c80538eadab69aff74406a8b95c6e3d",
+      "evals/concept_pilot.py": "7bab518449e0bb3996f97b3b8eb2e54081f036eb96bb3ed68d05c9d2d2f00db4",
+      "evals/concept_search.py": "3cdb2fc854a26ac9b35d0aa976e582c03a639e523481c71bb2dcec6d6d1aaa96",
+      "evals/cases/concepts/pilot.yaml": "4fa030a16d4803a3381a991bbb94773de5cf442c1d1ab742c8cced7cdc5c069f",
+      "evals/fixtures/concept_pilot.json": "c0005e90ad4f9148ba2131e98253761b62b34f7f087d5a823ec869209e48f77f",
+      "evals/reference_eval.py": "0452d856d513213705748369ab278b844504dcf753999aa64ce5afc0c27c5855",
+      "evals/plan_generator.py": "25b314e4cba4256af7c96ffb51e21dd0b662f5256b661e11040c2dc60ce23a82"
+    }
+  },
+  "rulers": {
+    "families": 12,
+    "languages": [
+      "zh",
+      "en",
+      "ja"
+    ],
+    "authored_questions": 36,
+    "independent_review_completed": false,
+    "real_user_holdout": false,
+    "offline_tests_added": 96,
+    "recorded_legacy_escapes_replayed": 5,
+    "new_checker_probes": 3,
+    "new_model_outputs": 0
+  },
+  "validation": {
+    "static": "pass",
+    "offline": {
+      "tests": 605,
+      "passed": 601,
+      "failed": 4,
+      "errors": 0,
+      "skipped": 0,
+      "prior_tests_passed": 509
+    },
+    "compiled_duckdb_hand_values": {
+      "passed": 24,
+      "failed": 0
+    },
+    "reference_hand_values": {
+      "passed": 20,
+      "failed": 4
+    },
+    "postgres": {
+      "passed": 24,
+      "failed": 0,
+      "other_cases_deselected": 96,
+      "role": "grepbit_ro",
+      "destination": "localhost:5432",
+      "credential": "existing_opaque_read_only_password_file",
+      "dsn_env_name": "GREPBIT_POS_TEST_DSN",
+      "synthetic_selects": 24,
+      "role_and_timeout_selects": 48,
+      "real_table_reads": 0,
+      "persistent_writes": 0
+    }
+  },
+  "disagreements": [
+    {
+      "plan": "count_member_column",
+      "instance": "coincidental",
+      "hand_duckdb_postgres": 2,
+      "reference": 4
+    },
+    {
+      "plan": "count_member_column",
+      "instance": "asymmetric",
+      "hand_duckdb_postgres": 2,
+      "reference": 5
+    },
+    {
+      "plan": "member_ratio_implicit_denominator",
+      "instance": "coincidental",
+      "hand_duckdb_postgres": 1,
+      "reference": 0.5
+    },
+    {
+      "plan": "member_ratio_implicit_denominator",
+      "instance": "asymmetric",
+      "hand_duckdb_postgres": 1,
+      "reference": 0.4
+    }
+  ],
+  "new_checker_escape": {
+    "input": "correct_v1_member_numerator_requirement",
+    "plan": "member_ratio_implicit_denominator",
+    "observed_verdict": "pass",
+    "reason": "predicate_binding_only",
+    "diagnostic_expected": "fail",
+    "actual_values": [
+      1,
+      1
+    ],
+    "intended_values": [
+      0.5,
+      0.4
+    ]
+  },
+  "artifact_sha256": {
+    ".artifacts/concept-obligations-v2-20260912/offline/result.json": "6a559b028f0d79379567700928bff9d2a43daf00a566969f7b5fa15fd83174b2",
+    ".artifacts/concept-obligations-v2-20260912/offline/junit.xml": "b3c6397d87a66b46ac8c9f036a2223d914c69455451538d2387c2b9f59853f69",
+    ".artifacts/concept-obligations-v2-20260912/static/result.json": "6b419ae2a05f618c28d42e44d38bb1a07b9c898686ed606c59087b52e9655bfe",
+    ".artifacts/concept-obligations-v2-20260912/postgres.xml": "3368472b77c60b6ee4f8928d5a84817a0ce76d573899c92fb641413d6f8d7787",
+    "evidence/concept-search-01.json": "518ee5c6e012d128add1c0ebf4b67061f312b1327c7584368bddb01c077451cb",
+    "evidence/concept-search-counterexamples-01.json": "0d16cebf8af657f381c9edd57e6f3e092b21061dddd96a2a6acaaa07c58b4b2e",
+    "docs/plan/concept-obligations-v2.md": "a95ccf3e446b965802f92489f89ebceb2cda14dc3b00c3824b791d4a3915f906"
+  },
+  "git": {
+    "stage": false,
+    "commit": false,
+    "push": false,
+    "earlier_dirty_work_preserved": true
+  },
+  "limits": [
+    "Test-only schema and static labels are not v2 extraction or checker performance.",
+    "Four red value assertions are real existing-contract defects, not missing v2 implementation tests.",
+    "Translations and plan permutations are correlated observations.",
+    "Old 51-pair and 438-call results are neither overwritten nor extended.",
+    "No model sees rows, SQL or gold obligations. No new model calls in this slice."
+  ]
+}

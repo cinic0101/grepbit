@@ -1,0 +1,124 @@
+# Author-written development probes, NOT a holdout or production language pack.
+# A family is the statistical unit; translations are not independent examples.
+revision: concept-pilot-ruler-v1
+scope: development_only
+concepts:
+  returns:
+    provenance: evals/fixtures/pos_overlay.json#metrics/return_amount
+    definition: In the POS fixture, a return references an origin transaction.
+    binding: {column: pos_sale.origin_transaction_no, op: not_null}
+  member:
+    provenance: docs/knowledge/tier0-contract.md#QueryPlan
+    definition: These probes explicitly define membership by a non-NULL member_id.
+    binding: {column: pos_sale.member_id, op: not_null}
+families:
+  - family_id: return_amount
+    datasource: pos
+    category: explicit
+    intent: required
+    requirements: [{concept: returns, polarity: include, role: population}]
+    binding_status: available
+    rationale: Existing reviewed return_amount definition; sum, not count.
+    questions:
+      zh: 依此資料源的退貨定義，退貨金額總計是多少？
+      en: What is the total return amount under this datasource's definition of returns?
+      ja: このデータソースの返品の定義に従って、返品金額の合計を教えてください。
+  - family_id: return_reference
+    datasource: pos
+    category: paraphrase
+    intent: required
+    requirements: [{concept: returns, polarity: include, role: population}]
+    binding_status: available
+    rationale: An explicit defining predicate is sufficient even without a business noun.
+    questions:
+      zh: 只計算 origin_transaction_no 非 NULL 的交易，total_amount 加總是多少？
+      en: Sum total_amount only for transactions whose origin_transaction_no is not NULL.
+      ja: origin_transaction_no が NULL でない取引だけの total_amount を合計してください。
+  - family_id: exclude_returns
+    datasource: pos
+    category: negation
+    intent: required
+    requirements: [{concept: returns, polarity: exclude, role: population}]
+    binding_status: available
+    rationale: Exclusion is an inverse predicate, not an absent concept requirement.
+    questions:
+      zh: 排除退貨交易後，total_amount 的總和是多少？退貨指 origin_transaction_no 非 NULL。
+      en: Sum total_amount excluding returns, defined here as origin_transaction_no not NULL.
+      ja: 返品を除外した total_amount の合計は？ここで返品は origin_transaction_no が NULL でない取引です。
+  - family_id: member_count
+    datasource: pos
+    category: explicit
+    intent: required
+    requirements: [{concept: member, polarity: include, role: population}]
+    binding_status: available
+    rationale: Count transaction rows with a non-NULL member_id, not distinct members.
+    questions:
+      zh: 會員交易有幾筆？這裡會員交易指 member_id 非 NULL 的交易列。
+      en: Count member transactions, meaning transaction rows with member_id not NULL.
+      ja: 会員取引は何件ですか？ここでは member_id が NULL でない取引行を指します。
+  - family_id: member_share
+    datasource: pos
+    category: operand_role
+    intent: required
+    requirements: [{concept: member, polarity: include, role: numerator}]
+    binding_status: available
+    rationale: Numerator is member rows; denominator is ALL transaction rows, including returns.
+    questions:
+      zh: member_id 非 NULL 的會員交易筆數，除以全部交易筆數（包含退貨），比例是多少？
+      en: Divide the count of member transactions with member_id not NULL by ALL transaction rows, including returns. What is the ratio?
+      ja: member_id が NULL でない会員取引の件数を、返品も含む全取引件数で割った比率は？
+  - family_id: exclude_members
+    datasource: pos
+    category: negation
+    intent: required
+    requirements: [{concept: member, polarity: exclude, role: population}]
+    binding_status: available
+    rationale: Explicitly defined non-member rows require is_null, not not_null.
+    questions:
+      zh: 非會員交易有幾筆？這裡非會員指 member_id 為 NULL。
+      en: Count non-member transactions, defined here by member_id being NULL.
+      ja: 非会員の取引は何件ですか？ここで非会員は member_id が NULL の場合です。
+  - family_id: service_return_verb
+    datasource: service
+    category: non_business_homonym
+    intent: not_requested
+    requirements: []
+    binding_status: not_applicable
+    rationale: Return is an output instruction, not a refund qualifier; service has no refund field.
+    questions:
+      zh: work_logs 有幾筆紀錄、涵蓋幾個不重複的 ticket_id？請回傳這兩個總數。
+      en: How many work_logs records and distinct ticket_id values are there? Return both totals.
+      ja: work_logs の行数と ticket_id の異なる値の数を集計し、両方の合計を返してください。
+  - family_id: service_refunds
+    datasource: service
+    category: unavailable_definition
+    intent: required
+    requirements: [{concept: returns, polarity: include, role: population}]
+    binding_status: unavailable
+    rationale: A refund amount is requested, but the service fixture has neither refund amounts nor a reviewed mapping.
+    questions:
+      zh: 客服工單的退款金額總計是多少？
+      en: What is the total refunded amount for service tickets?
+      ja: サポートチケットの返金額の合計はいくらですか？
+  - family_id: ambiguous_return_rate
+    datasource: pos
+    category: ambiguous
+    intent: ambiguous
+    requirements: []
+    binding_status: unresolved
+    rationale: Returns is relevant, but count ratio versus amount ratio and the denominator are unspecified; do not invent a unique plan.
+    questions:
+      zh: 退貨率是多少？
+      en: What is the return rate?
+      ja: 返品率はいくらですか？
+  - family_id: unrestricted_membership
+    datasource: pos
+    category: no_restriction
+    intent: not_requested
+    requirements: []
+    binding_status: not_applicable
+    rationale: Membership is mentioned to prohibit restricting the population; this is not a request for member-only rows.
+    questions:
+      zh: 不要依會員身分篩選或分組，只計算全部交易列數。
+      en: Do not filter or group by membership; count all transaction rows only.
+      ja: 会員かどうかで絞り込んだり分類したりせず、全取引行数だけを数えてください。
