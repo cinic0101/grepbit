@@ -1,5 +1,28 @@
 # Active work: evaluation repairs and accepted period semantics
 
+Current slice: retire the calculation-card path and inventory existing evidence.
+Exact owner authority: "計算卡可以拿掉，保持 repo codebase 乾淨，我們做過很多次測試，
+在 .artifacts 裡，可以拿既有測試一起來量測嗎". Baseline `0d58029` plus root's
+uncommitted Stage-0 work. Remove the unfinished renderer/editor/confirmation
+code and card-only rulers; preserve historical research and the independently
+useful reference segment repair with focused computation regressions. The four
+uncommitted files are recoverable from the ignored archive under
+`.artifacts/card-retirement-20260912/`; committed rulers from `0d58029`.
+Read existing artifact metadata and outcomes without printing questions, rows,
+bindings or raw outputs. No old score rewriting, new model/DB calls, human
+correction workflow or production change. Local commits remain authorized;
+no push. Root sole writer. Historical authorizations below are superseded.
+
+Complete: card code/rulers retired, historical records marked, 60 independent
+segment value regressions retained. Final static/offline pass (1,646 tests,
+zero failures/errors/skips), source `e01de711`. Existing artifact inventory:
+166 non-dry runner reports / 2,027 repeated records, 33 complete matching
+verdict files, 17 differential reports. These are not pooled accuracy or new
+holdout evidence. See `../research/artifact-reuse-01.md` and
+`evidence/artifact-reuse-01.json`. No model/PostgreSQL call or production change.
+
+Historical checkpoint (retired by the cleanup decision above):
+
 Active slice: editable-query Stage-0 RULERS ONLY. Exact owner authorization:
 "好...可以開始下一步 應該是 主線照常推進 editable-query Stage-0 rulers?".
 Baseline clean dev `8c9e7c5`; root owns this coupled specification/test surface.

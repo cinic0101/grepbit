@@ -121,13 +121,17 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Latest 2026-09-12: editable-query Stage-0 ruler checkpoint is complete, not its
-implementation. `../research/editable-query-ruler-01.md`: 19 hand cards and
-edit/identity vectors, focused 272 pass / 3 fail, static pass, offline 1,858 pass
-/ the same 3 fail. The named-segment reference path ignores its argument;
-compiled SQL agrees with the three hand values. Preserve this visible oracle
-gap and stop for the requested contract review before reference repair and the
-research renderer/editor. No production, model/DB calls or human pilot.
+Latest 2026-09-12: the owner retired calculation cards and human correction.
+Remove unfinished runtime and card-only rulers; retain the reference segment
+repair and independent computation tests. The former ruler checkpoint and its
+three red oracle comparisons remain historical evidence at `0d58029`, not an
+active product requirement. First inventory/reuse existing `.artifacts` results
+by source, cohort and oracle strength; do not pool research arms, repeat runs,
+old prompts or SQL agreement into one product success rate. No new live run or
+production change in this cleanup. See `active-work.md` for exact authority.
+Cleanup and first reuse inventory are complete: `../research/artifact-reuse-01.md`.
+Static/offline pass, 1,646 tests; the next measurement reuses existing cohorts
+with provenance and oracle strength separated, not the retired card workflow.
 
 Current 2026-09-12: the approved 48-call cross-language slice is complete;
 see `../research/cross-language-study-01.md`. Identical repeats agree 12/12;
@@ -137,8 +141,7 @@ review, there is one incremental signal among two known errors and zero false
 alarms among nine correct controls. This is not independent human review:
 the frozen fidelity ledger remains 2 exact / 10 unreviewed and the formal screen
 is unpassed. No further calls or promotion; focused 85/static/offline 1,586 pass.
-Next discussion separates independently judged confirmation from the planned
-editable-query technical ruler/human-evidence route. Earlier metric wire/factor
+The earlier proposed human-evidence route is now retired. Earlier metric wire/factor
 candidates remain rejected; production and historical scores are unchanged.
 A5 is still provisional. Current authority and local closeout: `active-work.md`.
 

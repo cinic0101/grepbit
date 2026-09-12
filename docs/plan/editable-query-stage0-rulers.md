@@ -1,5 +1,11 @@
 # Editable-query Stage-0: calculation fidelity and review identity rulers
 
+RETIRED 2026-09-12 by owner request to remove calculation cards and human
+correction. This document is historical, not an implementation instruction.
+The committed specification files below are recoverable at `0d58029`; card-only
+tests/fixtures are removed from the active tree. The independent reference bug
+and its regression tests remain. The original checkpoint evidence is unchanged.
+
 2026-09-12. Status: ruler checkpoint complete, awaiting implementation approval.
 Final focused 272 pass / 3 fail; static pass; offline 1,858 pass / the same
 3 fail. They expose reference_eval ignoring named_segments; no missing-import

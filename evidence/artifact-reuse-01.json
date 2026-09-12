@@ -1,0 +1,395 @@
+{
+  "scope": "card retirement and historical artifact reuse inventory; no new model or PostgreSQL calls",
+  "baseline": "0d58029a89d104f44cd4a5bba631733e57dd52d4",
+  "inventory": {
+    "path": ".artifacts/card-retirement-20260912/inventory-v2.json",
+    "sha256": "01edfa1f2d99d81c641341d278fc51dfc98750591755e18f467debf90b60e636",
+    "script": ".artifacts/card-retirement-20260912/inventory.py",
+    "script_sha256": "e3035c6c6f91fa4436e914fad17d5a9c20a40abe40aa833b2984e1da47d932c5"
+  },
+  "summary": {
+    "json_files": 366,
+    "kinds": {
+      "verification_report": 130,
+      "differential_report": 17,
+      "other_json": 16,
+      "runner_report": 173,
+      "research_live_flag_false": 10,
+      "research_live_flag_true": 15,
+      "invalid_json": 3,
+      "research_live_flag_absent": 2
+    },
+    "runner_records_including_repeats": {
+      "records": 2213,
+      "recorded_correct": 522,
+      "recorded_incorrect": 81,
+      "recorded_unjudged": 1610,
+      "answered_reference_matched": 446,
+      "answered_reference_mismatched": 22,
+      "answered_without_reference_result": 1055,
+      "records_with_plan": 1192,
+      "records_with_plan_hash_only": 643
+    },
+    "observed_exact_question_source_hashes": 148,
+    "question_hash_limit": "Partial: hash-only reports excluded; equivalent paraphrases/languages not deduplicated.",
+    "runner_content_duplicates": 1,
+    "runner_metadata_inconsistencies": 0,
+    "runner_source_identity_recorded": 0,
+    "runner_dry_report_count": 7,
+    "runner_dry_report_records": 186,
+    "prompt_revisions": {
+      "plan-classify-json-v15": 46,
+      "plan-classify-json-v14": 40,
+      "trial-v15-forms-baseline": 8,
+      "trial-v15-forms-exclusive": 8,
+      "trial-v15-baseline": 6,
+      "trial-v15-no_metadata": 6,
+      "trial-v15-paired": 6,
+      "trial-v15-no_metadata-domain_path": 2,
+      "trial-v15-no_metadata-wire_path": 2,
+      "plan-classify-json-v9": 8,
+      "plan-classify-json-v8": 1,
+      "plan-classify-json-v10": 1,
+      "plan-classify-json-v11": 15,
+      "plan-classify-json-v12": 4,
+      "plan-classify-json-v13": 12,
+      "plan-classify-json-v7": 1,
+      "unknown": 7
+    },
+    "verdict_states": {
+      "report_not_in_inventory": 5,
+      "complete_existing_judgment": 33,
+      "incomplete": 27
+    }
+  },
+  "historical_examples_not_a_selected_best_run_score": [
+    {
+      "path": ".artifacts/a5-20260912/v15-batch1.json",
+      "sha256": "c7f8ebf17ad6695853794c789e01f1d9061005641674df0f39b78911065e0b7a",
+      "kind": "runner_report",
+      "metadata": {
+        "cases_file": "evals/cases/tier0/pos_real_batch1.yaml",
+        "datasource_id": "pos_real",
+        "prompt_revision": "plan-classify-json-v15",
+        "model": "gemma-4-31b",
+        "overlay_revision": "pos-real-overlay-v12",
+        "as_of": "2026-02-04T18:00:00+08:00",
+        "output_mode": "json_object",
+        "repair_turns_allowed": 1,
+        "metrics_only": true,
+        "rows_redacted": true
+      },
+      "counts": {
+        "records": 50,
+        "status_counts": {
+          "answered": 47,
+          "semantic_gap": 3
+        },
+        "recorded_correct": 50,
+        "recorded_incorrect": 0,
+        "recorded_unjudged": 0,
+        "answered_reference_matched": 47,
+        "answered_reference_mismatched": 0,
+        "answered_without_reference_result": 0,
+        "records_with_plan": 0,
+        "records_with_plan_hash_only": 50
+      },
+      "case_ids_sha256": "b03eb7bd97191393a71e2c8218f8a941d508ae1abd4d3d52f4a1bb1fa6030d95",
+      "case_ids_unique": true,
+      "declared_count_matches": true,
+      "source_identity_recorded": false,
+      "recorded_summary_correct": 50,
+      "summary_correct_matches_records": true,
+      "reported_p50_seconds": 4.086,
+      "reported_p95_seconds": 5.536,
+      "verdicts": [],
+      "content_duplicate_of": null
+    },
+    {
+      "path": ".artifacts/a5-20260912/v15-features.json",
+      "sha256": "88aa4a51ab3bb4e5be626601bf80669a3417ac31b1563e657cbab55f0197584c",
+      "kind": "runner_report",
+      "metadata": {
+        "cases_file": "evals/cases/tier0/pos_features.yaml",
+        "datasource_id": "pos_test",
+        "prompt_revision": "plan-classify-json-v15",
+        "model": "gemma-4-31b",
+        "overlay_revision": null,
+        "as_of": "2026-02-10T12:00:00+08:00",
+        "output_mode": "json_object",
+        "repair_turns_allowed": 1,
+        "metrics_only": true,
+        "rows_redacted": true
+      },
+      "counts": {
+        "records": 39,
+        "status_counts": {
+          "answered": 39
+        },
+        "recorded_correct": 37,
+        "recorded_incorrect": 2,
+        "recorded_unjudged": 0,
+        "answered_reference_matched": 37,
+        "answered_reference_mismatched": 2,
+        "answered_without_reference_result": 0,
+        "records_with_plan": 0,
+        "records_with_plan_hash_only": 39
+      },
+      "case_ids_sha256": "6a7bbdb7c85c6811d475b3bf4ebd4f37b2d52fb9b66b1466add7e2096cf89836",
+      "case_ids_unique": true,
+      "declared_count_matches": true,
+      "source_identity_recorded": false,
+      "recorded_summary_correct": 37,
+      "summary_correct_matches_records": true,
+      "reported_p50_seconds": 4.509,
+      "reported_p95_seconds": 7.538,
+      "verdicts": [],
+      "content_duplicate_of": null
+    },
+    {
+      "path": ".artifacts/holdout2/run-26.json",
+      "sha256": "b90281c1c76cc17a6ffea178d0622c6a27271028c2a7412b81c4221469e2c157",
+      "kind": "runner_report",
+      "metadata": {
+        "cases_file": ".artifacts/holdout2/cases.yaml",
+        "datasource_id": "pos_real",
+        "prompt_revision": "plan-classify-json-v14",
+        "model": "gemma-4-31b",
+        "overlay_revision": "pos-real-overlay-v12",
+        "as_of": "2026-02-04T18:00:00+08:00",
+        "thinking": "off",
+        "output_mode": "json_object",
+        "repair_turns_allowed": 1,
+        "rows_redacted": true,
+        "perturbation": null,
+        "schema_sha256": "8c1c4ba5c1a698f91e8e48066036ac76005954569f0a581f9c9342470dc2dd19",
+        "grounding_sha256": "8d22c72a5c7bb8950ec5ccc864a2309278fe80c69faf362b680567023e46827a"
+      },
+      "counts": {
+        "records": 30,
+        "status_counts": {
+          "answered": 26,
+          "clarify": 4
+        },
+        "recorded_correct": 0,
+        "recorded_incorrect": 0,
+        "recorded_unjudged": 30,
+        "answered_reference_matched": 0,
+        "answered_reference_mismatched": 0,
+        "answered_without_reference_result": 26,
+        "records_with_plan": 30,
+        "records_with_plan_hash_only": 0
+      },
+      "case_ids_sha256": "f10de54b607aee48f18c004e08480710993f23aee52d41aecc166a884a8a3275",
+      "case_ids_unique": true,
+      "declared_count_matches": true,
+      "source_identity_recorded": false,
+      "recorded_summary_correct": 0,
+      "summary_correct_matches_records": true,
+      "reported_p50_seconds": 4.735,
+      "reported_p95_seconds": 5.57,
+      "verdicts": [
+        {
+          "path": ".artifacts/holdout2/verdicts-26.yaml",
+          "sha256": "6dab981c5d26736f00ad3f61446a1e331dd3c534b6b8c506579b56363ff0a929",
+          "report": ".artifacts/holdout2/run-26.json",
+          "unfilled": 0,
+          "state": "complete_existing_judgment",
+          "counts": {
+            "correct": 26,
+            "wrong_exposed": 0,
+            "wrong_silent": 0,
+            "refusal_ok": 4,
+            "refusal_bad": 0,
+            "unsure": 0
+          },
+          "judged": 30,
+          "correct_including_refusal_ok": 30,
+          "nonclaim": "Existing judgment; no new independent review or source/data freshness proof."
+        }
+      ],
+      "content_duplicate_of": null
+    },
+    {
+      "path": ".artifacts/holdout3/run-13.json",
+      "sha256": "962643dc154ecffc6dd7521de688b1cb652780fa6470a825ce00ad354ba30e96",
+      "kind": "runner_report",
+      "metadata": {
+        "cases_file": ".artifacts/holdout3/cases.yaml",
+        "datasource_id": "pos_real",
+        "prompt_revision": "plan-classify-json-v14",
+        "model": "gemma-4-31b",
+        "overlay_revision": "pos-real-overlay-v12",
+        "as_of": "2026-02-04T18:00:00+08:00",
+        "thinking": "off",
+        "output_mode": "json_object",
+        "repair_turns_allowed": 1,
+        "rows_redacted": true,
+        "perturbation": null,
+        "schema_sha256": "8c1c4ba5c1a698f91e8e48066036ac76005954569f0a581f9c9342470dc2dd19",
+        "grounding_sha256": "efbfa09716d056c109aa89eab1f4095c83d6a98fd74ad0fa5014e35535b8e44a"
+      },
+      "counts": {
+        "records": 15,
+        "status_counts": {
+          "unsupported": 7,
+          "answered": 8
+        },
+        "recorded_correct": 0,
+        "recorded_incorrect": 0,
+        "recorded_unjudged": 15,
+        "answered_reference_matched": 0,
+        "answered_reference_mismatched": 0,
+        "answered_without_reference_result": 8,
+        "records_with_plan": 9,
+        "records_with_plan_hash_only": 0
+      },
+      "case_ids_sha256": "8bf251f38d9971d0b47f89c4f0b6bfc2b14f7130538ab7f0ec0a91710cddb45e",
+      "case_ids_unique": true,
+      "declared_count_matches": true,
+      "source_identity_recorded": false,
+      "recorded_summary_correct": 0,
+      "summary_correct_matches_records": true,
+      "reported_p50_seconds": 4.976,
+      "reported_p95_seconds": 5.932,
+      "verdicts": [
+        {
+          "path": ".artifacts/holdout3/verdicts-13.yaml",
+          "sha256": "eaafa075c4e230a29c08c1fd7eca73902541d9736575f9b1b8d870bc4f99389b",
+          "report": ".artifacts/holdout3/run-13.json",
+          "unfilled": 0,
+          "state": "complete_existing_judgment",
+          "counts": {
+            "correct": 7,
+            "wrong_exposed": 1,
+            "wrong_silent": 0,
+            "refusal_ok": 7,
+            "refusal_bad": 0,
+            "unsure": 0
+          },
+          "judged": 15,
+          "correct_including_refusal_ok": 14,
+          "nonclaim": "Existing judgment; no new independent review or source/data freshness proof."
+        }
+      ],
+      "content_duplicate_of": null
+    },
+    {
+      "path": ".artifacts/ratios-01/run-20.json",
+      "sha256": "9f7f6f3704f5784f85cd95770af251cf9c72b774075483cafbdaf1d255428ea5",
+      "kind": "runner_report",
+      "metadata": {
+        "cases_file": ".artifacts/ratios-01/cases.yaml",
+        "datasource_id": "pos_real",
+        "prompt_revision": "plan-classify-json-v14",
+        "model": "gemma-4-31b",
+        "overlay_revision": "pos-real-overlay-v12",
+        "as_of": "2026-02-04T18:00:00+08:00",
+        "thinking": "off",
+        "output_mode": "json_object",
+        "repair_turns_allowed": 1,
+        "rows_redacted": true,
+        "perturbation": null,
+        "schema_sha256": "8c1c4ba5c1a698f91e8e48066036ac76005954569f0a581f9c9342470dc2dd19",
+        "grounding_sha256": "718130ee55524c17d9610149695aae064a9b32aa17b618f77d241a6505368347"
+      },
+      "counts": {
+        "records": 12,
+        "status_counts": {
+          "answered": 11,
+          "clarify": 1
+        },
+        "recorded_correct": 0,
+        "recorded_incorrect": 0,
+        "recorded_unjudged": 12,
+        "answered_reference_matched": 0,
+        "answered_reference_mismatched": 0,
+        "answered_without_reference_result": 11,
+        "records_with_plan": 12,
+        "records_with_plan_hash_only": 0
+      },
+      "case_ids_sha256": "d220f441b36308ddaa5b6db7273f3f3fc184b755905176145591a11ab5a310e8",
+      "case_ids_unique": true,
+      "declared_count_matches": true,
+      "source_identity_recorded": false,
+      "recorded_summary_correct": 0,
+      "summary_correct_matches_records": true,
+      "reported_p50_seconds": 3.978,
+      "reported_p95_seconds": 5.636,
+      "verdicts": [
+        {
+          "path": ".artifacts/ratios-01/verdicts-20.yaml",
+          "sha256": "f3fda2dba93c7eeade0cb05096cdd2a2cd19f9dcb560393b6353b023ed651f08",
+          "report": ".artifacts/ratios-01/run-20.json",
+          "unfilled": 0,
+          "state": "complete_existing_judgment",
+          "counts": {
+            "correct": 11,
+            "wrong_exposed": 0,
+            "wrong_silent": 0,
+            "refusal_ok": 1,
+            "refusal_bad": 0,
+            "unsure": 0
+          },
+          "judged": 12,
+          "correct_including_refusal_ok": 12,
+          "nonclaim": "Existing judgment; no new independent review or source/data freshness proof."
+        }
+      ],
+      "content_duplicate_of": null
+    }
+  ],
+  "nonclaims": [
+    "no pooled accuracy",
+    "no new holdout",
+    "no current-code live measurement",
+    "no intent certification",
+    "no automatic promotion"
+  ],
+  "validation": {
+    "focused": {
+      "path": ".artifacts/card-retirement-20260912/focused/result.json",
+      "status": "source_identity_unavailable",
+      "passed": false,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 84
+      },
+      "source_available": false,
+      "source_stable": false,
+      "source_digest": null
+    },
+    "static": {
+      "path": ".artifacts/card-retirement-20260912/static/result.json",
+      "status": "pass",
+      "passed": true,
+      "junit_counts": null,
+      "source_available": true,
+      "source_stable": true,
+      "source_digest": "sha256:e01de711a9ebb6e0da5b67fe9b6b2773184f64bc5f6abf307b6ee71c53943361"
+    },
+    "offline": {
+      "path": ".artifacts/card-retirement-20260912/offline/result.json",
+      "status": "pass",
+      "passed": true,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 1646
+      },
+      "source_available": true,
+      "source_stable": true,
+      "source_digest": "sha256:e01de711a9ebb6e0da5b67fe9b6b2773184f64bc5f6abf307b6ee71c53943361"
+    }
+  },
+  "cleanup": {
+    "retired_tracked_card_tests": 275,
+    "retained_new_segment_value_tests": 60,
+    "uncommitted_backup": ".artifacts/card-retirement-20260912/uncommitted-card-backup.tar.gz",
+    "backup_sha256": "286015457e2c4d8eb612db74418a80a237e097a1592e4303749a12567d747a30",
+    "ruler_recovery_commit": "0d58029"
+  }
+}

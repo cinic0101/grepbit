@@ -5,12 +5,112 @@ from __future__ import annotations
 import importlib.util
 import json
 from copy import deepcopy
+from datetime import datetime
 from types import SimpleNamespace
 
 import pytest
 from t0_helpers import ROOT, iot_schema
 
 from grepbit.domain.plan import PlanError
+
+
+@pytest.mark.parametrize("engine", ["sql", "reference"])
+@pytest.mark.parametrize("instance_index", [0, 1, 2])
+@pytest.mark.parametrize(
+    "mode,kind,expected",
+    [
+        ("none", "all", [4, 5, 3]),
+        ("default", "all", [2, 2, 2]),
+        ("named", "all", [4, 5, 3]),
+        ("default", "metric", [2, 3, 1]),
+        ("named", "metric", [2, 3, 1]),
+        ("default", "ratio", [1, 1.5, 0.5]),
+        ("named", "ratio", [1, 1.5, 0.5]),
+        ("named", "plan_filter", [0, 0, 0]),
+        ("default", "shared", [2 / 50, 3 / 60, 1 / 5]),
+        ("named", "shared", [2 / 50, 3 / 60, 1 / 5]),
+    ],
+)
+def test_reference_segments_match_hand_values_and_sql(
+    engine, instance_index, mode, kind, expected
+):
+    """Preserve the computation defect discovered by the retired card study.
+
+    Naming lifts a query-wide default, not the inverse on a nonreferencing
+    ratio operand. Shared metric predicates must retain their original column
+    references even after the evaluator moves them to the row scope.
+    """
+    from evals.cross_language import fixture_data
+    from evals.metric_selection_study import AS_OF, context
+    from evals.reference_eval import evaluate
+    from evals.synthetic import DuckInstance
+    from grepbit.adapters.sqlglot.plan_compiler import PlanCompiler
+    from grepbit.domain.overlay import Segment
+    from grepbit.domain.plan import QueryPlan
+
+    fixture = json.loads((ROOT / "evals/fixtures/metric_selection.json").read_text())
+    schema, overlay, *_ = context("pos", "P0", fixture)
+    segment = Segment.model_validate(
+        {
+            "id": "returns",
+            "names": ["returns"],
+            "table": "pos_sale",
+            "filter": {
+                "column": {"table": "pos_sale", "column": "origin_transaction_no"},
+                "op": "not_null",
+            },
+            "default_exclude": True,
+            "note": "Fictional segment regression.",
+        }
+    )
+    overlay = overlay.model_copy(update={"segments": [segment]})
+    if kind == "all":
+        measure = {"aggregate": "count"}
+    elif kind == "metric":
+        measure = {"metric": "return_count"}
+    else:
+        measure = {
+            "ratio": {
+                "numerator": {"metric": "return_count"},
+                "denominator": {"metric": "return_amount"}
+                if kind == "shared"
+                else {"aggregate": "count"},
+            }
+        }
+    plan = QueryPlan.model_validate(
+        {
+            "base_table": "pos_sale",
+            "measures": [{**measure, "alias": "n"}],
+            "filters": [
+                {
+                    "column": {"table": "pos_sale", "column": "origin_transaction_no"},
+                    "op": "is_null",
+                }
+            ]
+            if kind == "plan_filter"
+            else [],
+        }
+    )
+    kwargs = {
+        "exclude_segments": [segment] if mode == "default" else [],
+        "named_segments": [segment] if mode == "named" else [],
+    }
+    data = fixture_data(schema, list(fixture["instances"].values())[instance_index])
+    if engine == "reference":
+        rows = evaluate(
+            plan, schema, overlay, datetime.fromisoformat(AS_OF), data, **kwargs
+        )
+        assert rows == [{"n": pytest.approx(expected[instance_index])}]
+    else:
+        compiled = PlanCompiler(schema, overlay=overlay).compile(
+            plan, as_of=AS_OF, **kwargs
+        )
+        database = DuckInstance(schema, data)
+        try:
+            _, rows = database.execute(compiled.compiled)
+            assert rows == [(pytest.approx(expected[instance_index]),)]
+        finally:
+            database.con.close()
 
 
 def _load(name):

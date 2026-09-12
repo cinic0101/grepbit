@@ -300,6 +300,13 @@ def evaluate(
         for parts in resolved
         for (_, _, defining, _) in parts
     ]
+    # Segment referencing belongs to the original definitions, before common
+    # metric predicates are moved to the row scope below.
+    operand_columns = [
+        {f.column.id for f in own} | {f.column.id for f in defining}
+        for parts in resolved
+        for (_, _, defining, own) in parts
+    ]
     shared_defining: list[Filter] = []
     if defining_sets and len(set(defining_sets)) == 1 and defining_sets[0]:
         # one reviewed definition for every operand: its filters act on the rows
@@ -327,14 +334,10 @@ def evaluate(
     # the column, then operand-level on the other operands; skipped when the
     # plan filters the column or the table is unreachable)
     plan_filter_columns = {f.column.id for f in plan.filters}
-    operand_columns = [
-        {f.column.id for f in own} | {f.column.id for f in defining}
-        for parts in resolved
-        for (_, _, defining, own) in parts
-    ]
     row_segment_filters: list[Filter] = []
     operand_segment_filters: list[tuple[Filter, set[int]]] = []
-    for segment in exclude_segments:
+    named_ids = {s.id for s in named_segments}
+    for segment in [*exclude_segments, *named_segments]:
         column_id = segment.filter.column.id
         if column_id in plan_filter_columns or segment.table not in reachable:
             continue
@@ -343,7 +346,7 @@ def evaluate(
         if referencing:
             others = set(range(len(operand_columns))) - referencing
             operand_segment_filters.append((inverse, others))
-        else:
+        elif segment.id not in named_ids:
             row_segment_filters.append(inverse)
 
     # ---- time column and window

@@ -1,5 +1,11 @@
 # Editable-query Stage-0 rulers: contract ready for review, oracle gap exposed
 
+Retirement note, 2026-09-12: the owner subsequently removed this product path.
+The report below records the original checkpoint unchanged. Its executable
+card rulers/fixture are available at commit `0d58029`, not in the active suite.
+The reference segment repair is retained independently in
+`tests/contract/t0/test_eval_tools_contract.py`; it is not editor readiness.
+
 2026-09-12. The ruler phase requested by the owner is complete. It does not
 implement a calculation-card renderer, editor or confirmation runtime. It does
 not measure human comprehension or approve a production behavior change.

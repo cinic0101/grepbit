@@ -1,5 +1,9 @@
 # Editable query definitions: feasibility experiment
 
+RETIRED 2026-09-12: the owner chose to remove calculation cards and human
+correction. No participant study or production adoption occurred. Keep the
+following protocol as historical research only; it is not the next roadmap step.
+
 2026-09-12 update: the owner authorized beginning the Stage-0 rulers, explicitly
 naming that phase. `editable-query-stage0-rulers.md` specifies the current
 test-only boundary, hand facts, whole-candidate edit and review identity.
