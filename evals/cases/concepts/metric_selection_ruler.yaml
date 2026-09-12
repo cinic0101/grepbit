@@ -1,0 +1,410 @@
+revision: metric-selection-ruler-v1
+status: proposed_annotation_contract
+scope: authored_development_and_author_visible_frozen_challenge
+description: >-
+  Fictional sale rows and work logs only. No default segment, hidden population
+  restriction, time window or inferred business definition. Gold is authored
+  interpretation, not a model output or a whole-answer certificate from v2.
+concepts:
+  returns: {column: pos_sale.origin_transaction_no, op: not_null}
+  member: {column: pos_sale.member_id, op: not_null}
+  refund: null
+profiles:
+  all_count:
+    state: clear
+    populations: {population: all_rows}
+    basis: [{role: value, aggregate: count, entity: pos_sale, column: null}]
+    requirements: []
+    grouping: none
+    unresolved: []
+  returns_count:
+    state: clear
+    populations: {population: constrained}
+    basis: [{role: value, aggregate: count, entity: pos_sale, column: null}]
+    requirements: [{concept: returns, polarity: include, role: population}]
+    grouping: none
+    unresolved: []
+  nonreturns_count:
+    state: clear
+    populations: {population: constrained}
+    basis: [{role: value, aggregate: count, entity: pos_sale, column: null}]
+    requirements: [{concept: returns, polarity: exclude, role: population}]
+    grouping: none
+    unresolved: []
+  all_sum:
+    state: clear
+    populations: {population: all_rows}
+    basis: [{role: value, aggregate: sum, entity: pos_sale, column: pos_sale.total_amount}]
+    requirements: []
+    grouping: none
+    unresolved: []
+  returns_sum:
+    state: clear
+    populations: {population: constrained}
+    basis: [{role: value, aggregate: sum, entity: pos_sale, column: pos_sale.total_amount}]
+    requirements: [{concept: returns, polarity: include, role: population}]
+    grouping: none
+    unresolved: []
+  member_count:
+    state: clear
+    populations: {population: constrained}
+    basis: [{role: value, aggregate: count, entity: pos_sale, column: null}]
+    requirements: [{concept: member, polarity: include, role: population}]
+    grouping: none
+    unresolved: []
+  nonmember_count:
+    state: clear
+    populations: {population: constrained}
+    basis: [{role: value, aggregate: count, entity: pos_sale, column: null}]
+    requirements: [{concept: member, polarity: exclude, role: population}]
+    grouping: none
+    unresolved: []
+  member_distinct:
+    state: clear
+    populations: {population: constrained}
+    basis: [{role: value, aggregate: count_distinct, entity: pos_sale, column: pos_sale.member_id}]
+    requirements: [{concept: member, polarity: include, role: population}]
+    grouping: none
+    unresolved: []
+  return_ratio:
+    state: clear
+    populations: {numerator: constrained, denominator: all_rows}
+    basis:
+      - {role: numerator, aggregate: count, entity: pos_sale, column: null}
+      - {role: denominator, aggregate: count, entity: pos_sale, column: null}
+    requirements:
+      - {concept: returns, polarity: include, role: numerator}
+      - {concept: returns, polarity: unrestricted, role: denominator}
+    grouping: none
+    unresolved: []
+  inverse_ratio:
+    state: clear
+    populations: {numerator: all_rows, denominator: constrained}
+    basis:
+      - {role: numerator, aggregate: count, entity: pos_sale, column: null}
+      - {role: denominator, aggregate: count, entity: pos_sale, column: null}
+    requirements:
+      - {concept: returns, polarity: unrestricted, role: numerator}
+      - {concept: returns, polarity: include, role: denominator}
+    grouping: none
+    unresolved: []
+  ambiguous_rate:
+    state: ambiguous
+    populations: {numerator: unresolved, denominator: unresolved}
+    basis: []
+    requirements: [{concept: returns, polarity: include, role: numerator}]
+    grouping: unspecified
+    unresolved: [measure_basis, denominator_population]
+  missing_refund:
+    state: missing_definition
+    populations: {population: unresolved}
+    basis: [{role: value, aggregate: count, entity: work_logs, column: null}]
+    requirements: [{concept: refund, polarity: include, role: population}]
+    grouping: none
+    unresolved: [business_binding]
+  log_count:
+    state: clear
+    populations: {population: all_rows}
+    basis: [{role: value, aggregate: count, entity: work_logs, column: null}]
+    requirements: []
+    grouping: none
+    unresolved: []
+  logged_ticket_count:
+    state: clear
+    populations: {population: all_rows}
+    basis: [{role: value, aggregate: count_distinct, entity: work_logs, column: work_logs.ticket_id}]
+    requirements: []
+    grouping: none
+    unresolved: []
+
+# Each case has three translations. Span offsets are derived only for the
+# test ruler from an authored exact quote and zero-based occurrence number.
+# They are not runtime vocabulary rules. role/scope are independent of concept.
+cases:
+  - id: output_count_all
+    family: output_count
+    split: development
+    profile: all_count
+    correct: [all_count]
+    wrong: [returns_count_metric, all_sum]
+    questions:
+      zh: 回傳交易筆數。
+      en: Return the transaction count.
+      ja: 取引件数を返してください。
+    spans:
+      zh: [{text: 回傳, role: output_action, scope: output}]
+      en: [{text: Return, role: output_action, scope: output}]
+      ja: [{text: 返してください, role: output_action, scope: output}]
+  - id: output_count_returns
+    family: output_count
+    split: development
+    profile: returns_count
+    correct: [returns_count_raw, returns_count_metric]
+    wrong: [all_count, returns_sum_metric]
+    questions:
+      zh: 回傳退貨交易筆數。
+      en: Return the count of returned transactions.
+      ja: 返品取引の件数を返してください。
+    spans:
+      zh: [{text: 回傳, role: output_action, scope: output}, {text: 退貨, role: business_predicate, scope: population, concept: returns}]
+      en: [{text: Return, role: output_action, scope: output}, {text: returned, role: business_predicate, scope: population, concept: returns}]
+      ja: [{text: 返品, role: business_predicate, scope: population, concept: returns}, {text: 返してください, role: output_action, scope: output}]
+  - id: output_amount_all
+    family: output_amount
+    split: development
+    profile: all_sum
+    correct: [all_sum]
+    wrong: [returns_sum_metric, all_count]
+    questions:
+      zh: 回傳所有交易的總金額。
+      en: Return the total amount of all transactions.
+      ja: すべての取引の合計金額を返してください。
+    spans:
+      zh: [{text: 回傳, role: output_action, scope: output}]
+      en: [{text: Return, role: output_action, scope: output}]
+      ja: [{text: 返してください, role: output_action, scope: output}]
+  - id: output_amount_returns
+    family: output_amount
+    split: development
+    profile: returns_sum
+    correct: [returns_sum_raw, returns_sum_metric]
+    wrong: [all_sum, returns_count_metric]
+    questions:
+      zh: 回傳退貨交易的總金額。
+      en: Return the total amount of returned transactions.
+      ja: 返品取引の合計金額を返してください。
+    spans:
+      zh: [{text: 回傳, role: output_action, scope: output}, {text: 退貨, role: business_predicate, scope: population, concept: returns}]
+      en: [{text: Return, role: output_action, scope: output}, {text: returned, role: business_predicate, scope: population, concept: returns}]
+      ja: [{text: 返品, role: business_predicate, scope: population, concept: returns}, {text: 返してください, role: output_action, scope: output}]
+  - id: label_only
+    family: label_vs_filter
+    split: development
+    profile: all_count
+    correct: [all_count]
+    wrong: [returns_count_metric, returns_sum_metric]
+    labels: {zh: 退貨統計, en: returns statistics, ja: 返品統計}
+    questions:
+      zh: 統計所有交易筆數，欄名用「退貨統計」。
+      en: Count all transactions and label the column "returns statistics".
+      ja: すべての取引件数を集計し、列名を「返品統計」にしてください。
+    spans:
+      zh: [{text: 退貨統計, role: mention_only, scope: output_label}]
+      en: [{text: returns statistics, role: mention_only, scope: output_label}]
+      ja: [{text: 返品統計, role: mention_only, scope: output_label}]
+  - id: label_and_filter
+    family: label_vs_filter
+    split: development
+    profile: returns_count
+    correct: [returns_count_raw, returns_count_metric]
+    wrong: [all_count, returns_sum_metric]
+    labels: {zh: 退貨統計, en: returns statistics, ja: 返品統計}
+    questions:
+      zh: 統計退貨交易筆數，欄名用「退貨統計」。
+      en: Count returned transactions and label the column "returns statistics".
+      ja: 返品取引の件数を集計し、列名を「返品統計」にしてください。
+    spans:
+      zh: [{text: 退貨, occurrence: 0, role: business_predicate, scope: population, concept: returns}, {text: 退貨統計, role: mention_only, scope: output_label}]
+      en: [{text: returned, role: business_predicate, scope: population, concept: returns}, {text: returns statistics, role: mention_only, scope: output_label}]
+      ja: [{text: 返品, occurrence: 0, role: business_predicate, scope: population, concept: returns}, {text: 返品統計, role: mention_only, scope: output_label}]
+  - id: negate_grouping
+    family: negation_scope
+    split: development
+    profile: member_count
+    correct: [member_count, member_column_count]
+    wrong: [nonmember_count, member_group]
+    questions:
+      zh: 不要按會員分組，只給會員交易的總筆數。
+      en: Do not group by member; give only the total count of member transactions.
+      ja: 会員別にグループ化せず、会員取引の総件数だけを示してください。
+    spans:
+      zh: [{text: 不要按會員分組, role: grouping_constraint, scope: grouping}, {text: 會員交易, role: business_predicate, scope: population, concept: member}]
+      en: [{text: Do not group by member, role: grouping_constraint, scope: grouping}, {text: member transactions, role: business_predicate, scope: population, concept: member}]
+      ja: [{text: 会員別にグループ化せず, role: grouping_constraint, scope: grouping}, {text: 会員取引, role: business_predicate, scope: population, concept: member}]
+  - id: negate_population
+    family: negation_scope
+    split: development
+    profile: nonmember_count
+    correct: [nonmember_count]
+    wrong: [member_count, all_count]
+    questions:
+      zh: 不要計入會員交易，只給非會員交易的總筆數。
+      en: Do not include member transactions; give only the total count of non-member transactions.
+      ja: 会員取引を含めず、非会員取引の総件数だけを示してください。
+    spans:
+      zh: [{text: 不要計入會員交易, role: business_predicate, scope: population, concept: member}]
+      en: [{text: Do not include member transactions, role: business_predicate, scope: population, concept: member}]
+      ja: [{text: 会員取引を含めず, role: business_predicate, scope: population, concept: member}]
+  - id: service_rows
+    family: service_entity_basis
+    split: development
+    profile: log_count
+    correct: [log_count]
+    wrong: [logged_ticket_count, minutes_sum]
+    questions:
+      zh: 回傳所有工時紀錄的總筆數，同一工單有多筆紀錄就各算一筆。
+      en: Return the total number of work log rows, counting multiple logs for one ticket separately.
+      ja: 同じチケットの複数の記録も別々に数え、全作業記録の総件数を返してください。
+    spans:
+      zh: [{text: 回傳, role: output_action, scope: output}]
+      en: [{text: Return, role: output_action, scope: output}]
+      ja: [{text: 返してください, role: output_action, scope: output}]
+  - id: service_entities
+    family: service_entity_basis
+    split: development
+    profile: logged_ticket_count
+    correct: [logged_ticket_count]
+    wrong: [log_count, minutes_sum]
+    questions:
+      zh: 回傳有工時紀錄的不同工單總數，同一工單只算一次。
+      en: Return the total number of distinct tickets with work logs, counting each ticket once.
+      ja: 作業記録のあるチケットの総数を、同じチケットは一度だけ数えて返してください。
+    spans:
+      zh: [{text: 回傳, role: output_action, scope: output}]
+      en: [{text: Return, role: output_action, scope: output}]
+      ja: [{text: 返してください, role: output_action, scope: output}]
+  - id: rate_unspecified
+    family: rate_basis
+    split: development
+    profile: ambiguous_rate
+    correct: []
+    wrong: []
+    unresolved_candidates: [return_ratio, return_amount_ratio]
+    questions:
+      zh: 退貨率是多少？
+      en: What is the return rate?
+      ja: 返品率はいくらですか？
+    spans:
+      zh: [{text: 退貨率, role: unresolved, scope: numerator, concept: returns}]
+      en: [{text: return rate, role: unresolved, scope: numerator, concept: returns}]
+      ja: [{text: 返品率, role: unresolved, scope: numerator, concept: returns}]
+  - id: rate_count_defined
+    family: rate_basis
+    split: development
+    profile: return_ratio
+    correct: [return_ratio]
+    wrong: [return_amount_ratio, inverse_ratio]
+    questions:
+      zh: 退貨交易筆數除以所有交易筆數，比例是多少？
+      en: What is the count of returned transactions divided by the count of all transactions?
+      ja: 返品取引件数をすべての取引件数で割った割合はいくらですか？
+    spans:
+      zh: [{text: 退貨交易筆數, role: business_predicate, scope: numerator, concept: returns}]
+      en: [{text: returned transactions, role: business_predicate, scope: numerator, concept: returns}]
+      ja: [{text: 返品取引件数, role: business_predicate, scope: numerator, concept: returns}]
+
+# Author-visible challenge: validate integrity, do not use for prompt tuning.
+  - id: schema_positive
+    family: schema_predicate
+    split: challenge
+    profile: returns_count
+    correct: [returns_count_raw, returns_count_metric]
+    wrong: [all_count, nonreturns_count]
+    questions:
+      zh: 原交易編號非空的交易總共有幾筆？
+      en: How many transaction rows have a non-NULL origin_transaction_no?
+      ja: origin_transaction_no が NULL でない取引は全部で何件ですか？
+    spans:
+      zh: [{text: 原交易編號非空, role: business_predicate, scope: population, concept: returns}]
+      en: [{text: non-NULL origin_transaction_no, role: business_predicate, scope: population, concept: returns}]
+      ja: [{text: origin_transaction_no が NULL でない, role: business_predicate, scope: population, concept: returns}]
+  - id: schema_negative
+    family: schema_predicate
+    split: challenge
+    profile: nonreturns_count
+    correct: [nonreturns_count]
+    wrong: [all_count, returns_count_metric]
+    questions:
+      zh: 原交易編號為空的交易總共有幾筆？
+      en: How many transaction rows have a NULL origin_transaction_no?
+      ja: origin_transaction_no が NULL の取引は全部で何件ですか？
+    spans:
+      zh: [{text: 原交易編號為空, role: business_predicate, scope: population, concept: returns}]
+      en: [{text: NULL origin_transaction_no, role: business_predicate, scope: population, concept: returns}]
+      ja: [{text: origin_transaction_no が NULL, role: business_predicate, scope: population, concept: returns}]
+  - id: ratio_direction_forward
+    family: ratio_direction
+    split: challenge
+    profile: return_ratio
+    correct: [return_ratio]
+    wrong: [inverse_ratio, return_amount_ratio]
+    questions:
+      zh: 分母用全部交易筆數，分子只用退貨交易筆數，計算比值。
+      en: Use all transactions as the denominator and only returned transactions as the numerator; calculate the ratio of counts.
+      ja: 分母を全取引件数、分子を返品取引件数として比率を計算してください。
+    spans:
+      zh: [{text: 退貨交易筆數, role: business_predicate, scope: numerator, concept: returns}]
+      en: [{text: returned transactions, role: business_predicate, scope: numerator, concept: returns}]
+      ja: [{text: 返品取引件数, role: business_predicate, scope: numerator, concept: returns}]
+  - id: ratio_direction_reverse
+    family: ratio_direction
+    split: challenge
+    profile: inverse_ratio
+    correct: [inverse_ratio]
+    wrong: [return_ratio, return_amount_ratio]
+    questions:
+      zh: 分子用全部交易筆數，分母只用退貨交易筆數，計算比值。
+      en: Use all transactions as the numerator and only returned transactions as the denominator; calculate the ratio of counts.
+      ja: 分子を全取引件数、分母を返品取引件数として比率を計算してください。
+    spans:
+      zh: [{text: 退貨交易筆數, role: business_predicate, scope: denominator, concept: returns}]
+      en: [{text: returned transactions, role: business_predicate, scope: denominator, concept: returns}]
+      ja: [{text: 返品取引件数, role: business_predicate, scope: denominator, concept: returns}]
+  - id: nullable_member_rows
+    family: nullable_distinct
+    split: challenge
+    profile: member_count
+    correct: [member_count, member_column_count]
+    wrong: [member_distinct, all_count]
+    questions:
+      zh: 會員編號有值的交易有幾筆？同一會員的多筆交易要分開計數。
+      en: Count transaction rows with a non-NULL member_id; count repeated transactions by the same member separately.
+      ja: member_id が NULL でない取引を、同じ会員の取引も別々に数えてください。
+    spans:
+      zh: [{text: 會員編號有值, role: business_predicate, scope: population, concept: member}]
+      en: [{text: non-NULL member_id, role: business_predicate, scope: population, concept: member}]
+      ja: [{text: member_id が NULL でない, role: business_predicate, scope: population, concept: member}]
+  - id: nullable_member_entities
+    family: nullable_distinct
+    split: challenge
+    profile: member_distinct
+    correct: [member_distinct]
+    wrong: [member_count, all_count]
+    questions:
+      zh: 交易中的不同會員編號有幾個？忽略空值，同一會員只算一次。
+      en: Count distinct member_id values in transactions; ignore NULL and count each member once.
+      ja: 取引に現れる異なる member_id の数を、NULL を除き同じ会員は一度だけ数えてください。
+    spans:
+      zh: [{text: 忽略空值, role: business_predicate, scope: population, concept: member}]
+      en: [{text: ignore NULL, role: business_predicate, scope: population, concept: member}]
+      ja: [{text: NULL を除き, role: business_predicate, scope: population, concept: member}]
+  - id: service_missing_refund
+    family: missing_business_binding
+    split: challenge
+    profile: missing_refund
+    correct: []
+    wrong: []
+    unresolved_candidates: [log_count, logged_ticket_count]
+    questions:
+      zh: 請計算需要退款的工時紀錄總筆數。
+      en: Count all work log rows that require a refund.
+      ja: 返金が必要な作業記録の総件数を集計してください。
+    spans:
+      zh: [{text: 需要退款, role: business_predicate, scope: population, concept: refund}]
+      en: [{text: require a refund, role: business_predicate, scope: population, concept: refund}]
+      ja: [{text: 返金が必要, role: business_predicate, scope: population, concept: refund}]
+  - id: service_refund_label
+    family: missing_business_binding
+    split: challenge
+    profile: log_count
+    correct: [log_count]
+    wrong: [logged_ticket_count, minutes_sum]
+    labels: {zh: 退款, en: refund, ja: 返金}
+    questions:
+      zh: 請計算全部工時紀錄筆數，欄名用「退款」。
+      en: Count all work log rows and label the column "refund".
+      ja: 全作業記録の件数を集計し、列名を「返金」にしてください。
+    spans:
+      zh: [{text: 退款, role: mention_only, scope: output_label}]
+      en: [{text: refund, role: mention_only, scope: output_label}]
+      ja: [{text: 返金, role: mention_only, scope: output_label}]

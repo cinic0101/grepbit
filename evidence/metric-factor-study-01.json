@@ -1,0 +1,620 @@
+{
+  "revision": "metric-factor-study-v1",
+  "status": "completed_no_candidate_promoted",
+  "head": "746f1689ad812088ed2cca6cc3bcde3e85a006b8",
+  "baseline_source": "sha256:b48a2bcd907ba88891c5ad2ec1e56a5c1584c4fa5bd9dd7373e163212440d6b0",
+  "source_digest": "sha256:592397dd10ff1e3478b225ab5e85e92186153a50c07f6a68837e97f69de83ee8",
+  "source_unchanged": true,
+  "inputs_sha256": "2182a1bb82fb9422a9d460f2d351642995f6dd5248de1d28dcc983534eeee2f4",
+  "artifact_directory": ".artifacts/metric-factor-study-20260912",
+  "artifact_hashes": {
+    "live.json": "ee5a88873f9931ded9a86ad32e2166918c45bd8b5c250eae1a51ea42be624f05",
+    "ask-replay.json": "75c8ffcb143ddb9ee0ab4ab33ac84334025ec08d2fe5419470ddc9c484acae0f",
+    "replay_ask.py": "4919d132905941f67453e365fc75eb6e60f26e7fd23f78a145008a2616fb5753",
+    "budget-check.json": "a4b7537ae7d1c43c8b5beceb3778ca9ad6a8da1ac7d2fb7335f6bc4b55344a35",
+    "check_budget.py": "b2ea8127c17072d090647a227797a61842ce9e701ae14ced5801121d3aacfe64",
+    "summarize.py": "f9b00f74f3b217b49adf028f459acbd4685a88d04d53b74beda6b7cf1c7b065c",
+    "static-final/result.json": "c5151f9dab45a6def51b199d0406033aa69de125b78524246616c188b1bc465a",
+    "offline-final/result.json": "99dd003723f974a5a73b005f62d2da8b4be6116e8207525c8eb667ffa04b84b8",
+    "focused-first/result.json": "5acb593ce64e87fba27a27b23af949d7a83dc5e438eb527c623f755cb1ced58d",
+    "closeout.json": "21334ba766eca9966ecfa86a04113fe096477a4e18cbfca5af106b27ac92093b",
+    "label-sensitivity.json": "15f523cd29ae484c6417debb5f284c5352826320258f143b96a3df7411858d8d",
+    "probe_labels.py": "3297192fe7c029bf4a953c73f9858d4f68592916a7b022e05b4e547e61c038ca"
+  },
+  "calls": 180,
+  "call_status": {
+    "ok": 142,
+    "format_error": 38
+  },
+  "settings": {
+    "model": "gemma-4-31b",
+    "temperature": 0,
+    "thinking": false,
+    "max_tokens": 4096,
+    "timeout_seconds": 60,
+    "max_retries": 0,
+    "max_calls": 180
+  },
+  "summaries": {
+    "B": {
+      "calls": 36,
+      "status": {
+        "format_error": 24,
+        "ok": 12
+      },
+      "core_exact": 7,
+      "spans_exact": 2,
+      "diagnostic_core_exact": 14,
+      "fixed_pairs": {
+        "pass:pass": 10,
+        "fail:fail": 23,
+        "pass:fail": 8,
+        "fail:pass": 1
+      }
+    },
+    "W": {
+      "calls": 36,
+      "status": {
+        "ok": 23,
+        "format_error": 13
+      },
+      "core_exact": 19,
+      "spans_exact": 2,
+      "diagnostic_core_exact": 25,
+      "fixed_pairs": {
+        "pass:pass": 27,
+        "fail:fail": 40,
+        "pass:fail": 1,
+        "unknown:fail": 6
+      }
+    },
+    "P": {
+      "calls": 36,
+      "status": {
+        "ok": 35,
+        "format_error": 1
+      },
+      "verdicts": {
+        "pass": 31,
+        "unknown": 2,
+        "fail": 2,
+        "unavailable": 1
+      },
+      "correct_refusals": 0,
+      "correct_false_blocks": 7,
+      "wrong_unblocked": 2
+    },
+    "S": {
+      "calls": 36,
+      "status": {
+        "ok": 36
+      },
+      "verdicts": {
+        "pass": 27,
+        "unknown": 3,
+        "fail": 6
+      },
+      "correct_refusals": 0,
+      "correct_false_blocks": 4,
+      "wrong_unblocked": 6
+    },
+    "F": {
+      "calls": 36,
+      "status": {
+        "ok": 36
+      },
+      "verdicts": {
+        "pass": 26,
+        "unknown": 3,
+        "fail": 6,
+        "candidate_missing": 1
+      },
+      "correct_refusals": 0,
+      "correct_false_blocks": 4,
+      "wrong_unblocked": 6
+    }
+  },
+  "screen": {
+    "W": {
+      "format_ready": false,
+      "correct_controls_retained": false,
+      "wrong_or_unresolved_passes": 0,
+      "eligible": false
+    },
+    "F": {
+      "improved": [
+        [
+          "service_rows",
+          "zh"
+        ]
+      ],
+      "improved_families": [
+        "service_entity_basis"
+      ],
+      "lost_correct": [
+        [
+          "service_entities",
+          "ja"
+        ],
+        [
+          "label_only",
+          "ja"
+        ],
+        [
+          "label_only",
+          "zh"
+        ],
+        [
+          "label_only",
+          "en"
+        ],
+        [
+          "output_count_all",
+          "ja"
+        ],
+        [
+          "service_entities",
+          "zh"
+        ]
+      ],
+      "unresolved_answered": 3,
+      "stable_errors_fixed": false,
+      "F_correct": 26,
+      "S_correct": 27,
+      "order_confirmation": "not_measured",
+      "eligible_for_confirmation": false
+    }
+  },
+  "annotation_details": {
+    "B": {
+      "accepted": {
+        "available": 12,
+        "total": 36,
+        "matching_fields": {
+          "state": 12,
+          "populations": 11,
+          "basis": 12,
+          "requirements": 11,
+          "grouping": 12,
+          "unresolved": 12,
+          "output_label": 8
+        }
+      },
+      "diagnostic_only": {
+        "available": 20,
+        "total": 36,
+        "matching_fields": {
+          "state": 20,
+          "populations": 19,
+          "basis": 20,
+          "requirements": 19,
+          "grouping": 20,
+          "unresolved": 20,
+          "output_label": 15
+        }
+      },
+      "responses_with_diagnostic": {
+        "invalid_span_scope": 8,
+        "predicate_requires_concept": 6,
+        "unknown_basis_identifier": 6,
+        "nonpredicate_cannot_activate_concept": 2,
+        "unknown_concept": 1,
+        "literal_error": 2,
+        "missing_population_scope": 1
+      },
+      "ambiguity": {
+        "format_error": 3
+      }
+    },
+    "W": {
+      "accepted": {
+        "available": 23,
+        "total": 36,
+        "matching_fields": {
+          "state": 20,
+          "populations": 20,
+          "basis": 20,
+          "requirements": 23,
+          "grouping": 20,
+          "unresolved": 20,
+          "output_label": 19
+        }
+      },
+      "diagnostic_only": {
+        "available": 35,
+        "total": 36,
+        "matching_fields": {
+          "state": 32,
+          "populations": 31,
+          "basis": 31,
+          "requirements": 31,
+          "grouping": 32,
+          "unresolved": 32,
+          "output_label": 29
+        }
+      },
+      "responses_with_diagnostic": {
+        "predicate_requires_concept": 11,
+        "occurrence_out_of_range": 1,
+        "extra_forbidden": 1
+      },
+      "ambiguity": {
+        "clear": 3
+      }
+    }
+  },
+  "compiler_reference": {
+    "proposals": 106,
+    "comparisons": 318,
+    "agreements": 318
+  },
+  "ask_replay": {
+    "model_calls": 0,
+    "workflows": 642,
+    "sql_executions": 591,
+    "summaries": {
+      "P:current": {
+        "workflows": 105,
+        "status": {
+          "answered": 84,
+          "clarify": 21
+        },
+        "correct_answered": 72,
+        "wrong_answered": 6,
+        "unresolved_answered": 6
+      },
+      "P:no_lexical_shadow": {
+        "workflows": 105,
+        "status": {
+          "answered": 105
+        },
+        "correct_answered": 93,
+        "wrong_answered": 6,
+        "unresolved_answered": 6
+      },
+      "S:current": {
+        "workflows": 108,
+        "status": {
+          "answered": 96,
+          "clarify": 12
+        },
+        "correct_answered": 69,
+        "wrong_answered": 18,
+        "unresolved_answered": 9
+      },
+      "S:no_lexical_shadow": {
+        "workflows": 108,
+        "status": {
+          "answered": 108
+        },
+        "correct_answered": 81,
+        "wrong_answered": 18,
+        "unresolved_answered": 9
+      },
+      "F:current": {
+        "workflows": 108,
+        "status": {
+          "clarify": 12,
+          "answered": 93,
+          "unsupported": 3
+        },
+        "correct_answered": 66,
+        "wrong_answered": 18,
+        "unresolved_answered": 9
+      },
+      "F:no_lexical_shadow": {
+        "workflows": 108,
+        "status": {
+          "answered": 105,
+          "unsupported": 3
+        },
+        "correct_answered": 78,
+        "wrong_answered": 18,
+        "unresolved_answered": 9
+      }
+    },
+    "unique_questions": {
+      "P:current": {
+        "questions": 35,
+        "statuses": {
+          "answered": 28,
+          "clarify": 7
+        },
+        "answered_grades": {
+          "pass": 24,
+          "unknown": 2,
+          "fail": 2
+        },
+        "wrong_verification": {
+          "verified": 1,
+          "unverified_semantics": 1
+        },
+        "contextual": {
+          "B": {
+            "pass:pass": 5,
+            "pass:unknown": 15,
+            "unknown:unknown": 2,
+            "pass:fail": 4,
+            "fail:pass": 1,
+            "fail:unknown": 1
+          },
+          "W": {
+            "pass:unknown": 11,
+            "unknown:fail": 2,
+            "pass:pass": 12,
+            "fail:unknown": 2,
+            "pass:fail": 1
+          }
+        }
+      },
+      "P:no_lexical_shadow": {
+        "questions": 35,
+        "statuses": {
+          "answered": 35
+        },
+        "answered_grades": {
+          "pass": 31,
+          "unknown": 2,
+          "fail": 2
+        },
+        "wrong_verification": {
+          "verified": 1,
+          "unverified_semantics": 1
+        },
+        "contextual": {
+          "B": {
+            "pass:pass": 7,
+            "pass:unknown": 20,
+            "unknown:unknown": 2,
+            "pass:fail": 4,
+            "fail:pass": 1,
+            "fail:unknown": 1
+          },
+          "W": {
+            "pass:unknown": 11,
+            "unknown:fail": 2,
+            "pass:pass": 19,
+            "fail:unknown": 2,
+            "pass:fail": 1
+          }
+        }
+      },
+      "S:current": {
+        "questions": 36,
+        "statuses": {
+          "answered": 32,
+          "clarify": 4
+        },
+        "answered_grades": {
+          "pass": 23,
+          "unknown": 3,
+          "fail": 6
+        },
+        "wrong_verification": {
+          "verified": 4,
+          "unverified_semantics": 2
+        },
+        "contextual": {
+          "B": {
+            "pass:pass": 5,
+            "unknown:unknown": 3,
+            "pass:unknown": 14,
+            "fail:unknown": 5,
+            "fail:pass": 1,
+            "pass:fail": 4
+          },
+          "W": {
+            "pass:unknown": 10,
+            "unknown:fail": 3,
+            "pass:pass": 12,
+            "fail:fail": 3,
+            "fail:unknown": 3,
+            "pass:fail": 1
+          }
+        }
+      },
+      "S:no_lexical_shadow": {
+        "questions": 36,
+        "statuses": {
+          "answered": 36
+        },
+        "answered_grades": {
+          "pass": 27,
+          "unknown": 3,
+          "fail": 6
+        },
+        "wrong_verification": {
+          "verified": 4,
+          "unverified_semantics": 2
+        },
+        "contextual": {
+          "B": {
+            "pass:pass": 7,
+            "unknown:unknown": 3,
+            "pass:unknown": 16,
+            "fail:unknown": 5,
+            "fail:pass": 1,
+            "pass:fail": 4
+          },
+          "W": {
+            "pass:unknown": 10,
+            "unknown:fail": 3,
+            "pass:pass": 16,
+            "fail:fail": 3,
+            "fail:unknown": 3,
+            "pass:fail": 1
+          }
+        }
+      },
+      "F:current": {
+        "questions": 36,
+        "statuses": {
+          "clarify": 4,
+          "answered": 31,
+          "unsupported": 1
+        },
+        "answered_grades": {
+          "pass": 22,
+          "unknown": 3,
+          "fail": 6
+        },
+        "wrong_verification": {
+          "unverified_semantics": 2,
+          "verified": 4
+        },
+        "contextual": {
+          "B": {
+            "pass:unknown": 14,
+            "unknown:unknown": 3,
+            "pass:fail": 4,
+            "fail:unknown": 5,
+            "pass:pass": 4,
+            "fail:pass": 1
+          },
+          "W": {
+            "pass:unknown": 10,
+            "pass:pass": 11,
+            "unknown:fail": 3,
+            "fail:unknown": 3,
+            "fail:fail": 3,
+            "pass:fail": 1
+          }
+        }
+      },
+      "F:no_lexical_shadow": {
+        "questions": 36,
+        "statuses": {
+          "answered": 35,
+          "unsupported": 1
+        },
+        "answered_grades": {
+          "pass": 26,
+          "unknown": 3,
+          "fail": 6
+        },
+        "wrong_verification": {
+          "unverified_semantics": 2,
+          "verified": 4
+        },
+        "contextual": {
+          "B": {
+            "pass:unknown": 16,
+            "unknown:unknown": 3,
+            "pass:fail": 4,
+            "fail:unknown": 5,
+            "pass:pass": 6,
+            "fail:pass": 1
+          },
+          "W": {
+            "pass:pass": 15,
+            "pass:unknown": 10,
+            "unknown:fail": 3,
+            "fail:unknown": 3,
+            "fail:fail": 3,
+            "pass:fail": 1
+          }
+        }
+      }
+    }
+  },
+  "post_hoc_label_sensitivity": {
+    "model_calls": 0,
+    "controls": 6,
+    "unresolved_pass_after_alias_alignment": 3,
+    "official_scores_unchanged": true,
+    "scope": "Synthetic alias-only counterexamples; not additional observed model plans"
+  },
+  "catalog_sizes": {
+    "pos": 39,
+    "service": 17
+  },
+  "factor_sizes": {
+    "pos": {
+      "bases": 6,
+      "populations": 19,
+      "allowed_pairs": 39
+    },
+    "service": {
+      "bases": 6,
+      "populations": 4,
+      "allowed_pairs": 17
+    }
+  },
+  "offline_catalog_coverage": {
+    "covered": 28,
+    "total": 28
+  },
+  "timing": {
+    "B": {
+      "p50_seconds": 5.37485,
+      "prompt_tokens_median": 1353.5,
+      "total_tokens": 55415
+    },
+    "W": {
+      "p50_seconds": 5.396100000000001,
+      "prompt_tokens_median": 3319.5,
+      "total_tokens": 125716
+    },
+    "P": {
+      "p50_seconds": 1.3105,
+      "prompt_tokens_median": 3844.5,
+      "total_tokens": 138135
+    },
+    "S": {
+      "p50_seconds": 1.5918999999999999,
+      "prompt_tokens_median": 4575.5,
+      "total_tokens": 150499
+    },
+    "F": {
+      "p50_seconds": 2.57335,
+      "prompt_tokens_median": 5023.5,
+      "total_tokens": 167215
+    }
+  },
+  "validation": {
+    "focused-first": {
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 188
+      },
+      "source_digest": "sha256:5f01a05f07e68b090dd1db2950032295f65223bb6722e69c258f6151cb067c86"
+    },
+    "static-final": {
+      "passed": true,
+      "counts": null,
+      "source_digest": "sha256:592397dd10ff1e3478b225ab5e85e92186153a50c07f6a68837e97f69de83ee8"
+    },
+    "offline-final": {
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 1495
+      },
+      "source_digest": "sha256:592397dd10ff1e3478b225ab5e85e92186153a50c07f6a68837e97f69de83ee8"
+    }
+  },
+  "analysis_replay_identical": true,
+  "new_source_files": [
+    "evals/metric_factor_selection.py",
+    "evals/metric_factor_study.py",
+    "tests/contract/t0/test_metric_factor_rulers.py",
+    "tests/contract/t0/test_metric_factor_study.py",
+    "tests/fixtures/metric_factor_rulers.json"
+  ],
+  "old_source_files_unchanged": true,
+  "limits": [
+    "Authored development set, not blind real-user generalization",
+    "One request per question per arm; no model order or cross-session confirmation",
+    "S/F have identical candidate universes, but presentation/ordering/layout differ",
+    "W displays constraints in the prompt; unchanged runtime still validates; no constrained decoding claim",
+    "Local fictional DuckDB replays, not fresh PostgreSQL validation",
+    "Diagnostic-only cores never become accepted interpretations",
+    "318 comparisons and 642 workflows reuse captured proposals",
+    "No production, prior annotations/golds, prior prompt revisions, database, Git stage/commit/push or credential changes"
+  ]
+}

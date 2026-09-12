@@ -1,0 +1,639 @@
+{
+  "study_revision": "metric-wire-selector-v1",
+  "status": "completed_no_candidate_promoted",
+  "head": "746f1689ad812088ed2cca6cc3bcde3e85a006b8",
+  "source_digest": "sha256:b48a2bcd907ba88891c5ad2ec1e56a5c1584c4fa5bd9dd7373e163212440d6b0",
+  "source_unchanged": true,
+  "inputs_sha256": "2182a1bb82fb9422a9d460f2d351642995f6dd5248de1d28dcc983534eeee2f4",
+  "artifact_directory": ".artifacts/metric-wire-study-20260912",
+  "artifact_hashes": {
+    "live.json": "eaa30ff2794273c04fbd66c3f8d6b2b0cbdb4bcf7978d7a834cd1bee3d9b6222",
+    "ask-replay.json": "e47059f04f680c442f38882610018b940010e0f75b5c4e362b44e9b3678933da",
+    "replay_ask.py": "4519fe06e2f44f405fdf25b9f58331638953edcd152df3d5114d223e567ce307",
+    "schema-gap.json": "e9901f141fbfa7bf2a1c4d418bdd5b8c849e3ede07993abeae59f3cbcd344248",
+    "summarize.py": "88a683927de9c403b2ea1148d6db2ecdc6c743acb54c85ba1f722d4b2c4f2091",
+    "static/result.json": "415ca5dbf7a1598382671e2b93d3cdf58a88f234e0995efd3a2433179bb0e7b1",
+    "offline/result.json": "dff91f7d032d8b411f4be82db5b58a14cfa31a24a0773d43fd10bf8e8401b344",
+    "focused-first/result.json": "c48869ca6fc2a8404b8e66fc6cac85472331fb658a5650f557121d39f06cdc44",
+    "closeout.json": "1054427d99eb08e0743dbc3852fed0fb29af4feddf71037f100de0ac20709c50"
+  },
+  "settings": {
+    "model": "gemma-4-31b",
+    "max_calls": 180,
+    "temperature": 0,
+    "thinking": false,
+    "max_tokens": 4096,
+    "timeout_seconds": 60,
+    "max_retries": 0
+  },
+  "calls": 180,
+  "transport_errors": 0,
+  "catalog_cardinalities": {
+    "pos": 39,
+    "service": 17
+  },
+  "offline_catalog_coverage": {
+    "covered": 28,
+    "total": 28,
+    "challenge_model_calls": 0
+  },
+  "summaries": {
+    "A": {
+      "calls": 36,
+      "status": {
+        "format_error": 35,
+        "ok": 1
+      },
+      "core_exact": 1,
+      "spans_exact": 0,
+      "diagnostic_core_exact": 16,
+      "fixed_pairs": {
+        "pass:pass": 2,
+        "fail:fail": 2
+      }
+    },
+    "B": {
+      "calls": 36,
+      "status": {
+        "format_error": 24,
+        "ok": 12
+      },
+      "core_exact": 6,
+      "spans_exact": 2,
+      "diagnostic_core_exact": 13,
+      "fixed_pairs": {
+        "pass:fail": 9,
+        "fail:pass": 1,
+        "fail:fail": 23,
+        "pass:pass": 9
+      }
+    },
+    "P": {
+      "calls": 36,
+      "status": {
+        "ok": 35,
+        "format_error": 1
+      },
+      "verdicts": {
+        "pass": 31,
+        "unavailable": 1,
+        "unknown": 2,
+        "fail": 2
+      },
+      "correct_refusals": 0,
+      "correct_false_blocks": 7,
+      "wrong_unblocked": 2
+    },
+    "S1": {
+      "calls": 36,
+      "status": {
+        "ok": 36
+      },
+      "verdicts": {
+        "pass": 27,
+        "fail": 6,
+        "unknown": 3
+      },
+      "correct_refusals": 0,
+      "correct_false_blocks": 4,
+      "wrong_unblocked": 6
+    },
+    "S2": {
+      "calls": 36,
+      "status": {
+        "ok": 36
+      },
+      "verdicts": {
+        "pass": 27,
+        "fail": 5,
+        "unknown": 3,
+        "candidate_missing": 1
+      },
+      "correct_refusals": 0,
+      "correct_false_blocks": 5,
+      "wrong_unblocked": 5
+    }
+  },
+  "screen": {
+    "B": {
+      "format_ready": false,
+      "correct_controls_retained": false,
+      "wrong_or_unresolved_passes": 1,
+      "eligible": false
+    },
+    "selectors": {
+      "S1": {
+        "improved": [
+          [
+            "service_rows",
+            "zh"
+          ]
+        ],
+        "improved_families": [
+          "service_entity_basis"
+        ],
+        "lost_correct": [
+          [
+            "label_only",
+            "zh"
+          ],
+          [
+            "label_only",
+            "en"
+          ],
+          [
+            "label_only",
+            "ja"
+          ],
+          [
+            "service_entities",
+            "ja"
+          ],
+          [
+            "service_entities",
+            "zh"
+          ]
+        ],
+        "unresolved_answered": 3,
+        "order_safe": false,
+        "eligible": false
+      },
+      "S2": {
+        "improved": [
+          [
+            "service_rows",
+            "zh"
+          ]
+        ],
+        "improved_families": [
+          "service_entity_basis"
+        ],
+        "lost_correct": [
+          [
+            "service_entities",
+            "zh"
+          ],
+          [
+            "service_entities",
+            "ja"
+          ],
+          [
+            "label_only",
+            "en"
+          ],
+          [
+            "label_only",
+            "zh"
+          ],
+          [
+            "output_count_all",
+            "ja"
+          ]
+        ],
+        "unresolved_answered": 3,
+        "order_safe": false,
+        "eligible": false
+      }
+    }
+  },
+  "annotation_details": {
+    "A": {
+      "accepted": {
+        "available": 1,
+        "total": 36,
+        "matching_fields": {
+          "state": 1,
+          "populations": 1,
+          "basis": 1,
+          "requirements": 1,
+          "grouping": 1,
+          "unresolved": 1,
+          "output_label": 1
+        }
+      },
+      "diagnostic_only": {
+        "available": 18,
+        "total": 36,
+        "matching_fields": {
+          "state": 18,
+          "populations": 17,
+          "basis": 18,
+          "requirements": 17,
+          "grouping": 18,
+          "unresolved": 18,
+          "output_label": 17
+        }
+      },
+      "diagnostic_entries": {
+        "predicate_requires_concept": 14,
+        "invalid_span_scope": 11,
+        "missing_population_scope": 2,
+        "span_not_in_question": 13,
+        "literal_error": 1,
+        "requirement_outside_measure_scope": 1
+      },
+      "responses_with_diagnostic": {
+        "invalid_span_scope": 10,
+        "predicate_requires_concept": 12,
+        "missing_population_scope": 2,
+        "span_not_in_question": 13,
+        "literal_error": 1,
+        "requirement_outside_measure_scope": 1
+      },
+      "ambiguity": {
+        "format_error": 3
+      }
+    },
+    "B": {
+      "accepted": {
+        "available": 12,
+        "total": 36,
+        "matching_fields": {
+          "state": 12,
+          "populations": 11,
+          "basis": 12,
+          "requirements": 11,
+          "grouping": 12,
+          "unresolved": 12,
+          "output_label": 7
+        }
+      },
+      "diagnostic_only": {
+        "available": 20,
+        "total": 36,
+        "matching_fields": {
+          "state": 20,
+          "populations": 19,
+          "basis": 20,
+          "requirements": 19,
+          "grouping": 20,
+          "unresolved": 20,
+          "output_label": 14
+        }
+      },
+      "diagnostic_entries": {
+        "invalid_span_scope": 9,
+        "predicate_requires_concept": 7,
+        "nonpredicate_cannot_activate_concept": 2,
+        "unknown_basis_identifier": 6,
+        "unknown_concept": 1,
+        "literal_error": 2,
+        "missing_population_scope": 1
+      },
+      "responses_with_diagnostic": {
+        "invalid_span_scope": 8,
+        "predicate_requires_concept": 7,
+        "nonpredicate_cannot_activate_concept": 2,
+        "unknown_basis_identifier": 6,
+        "unknown_concept": 1,
+        "literal_error": 2,
+        "missing_population_scope": 1
+      },
+      "ambiguity": {
+        "format_error": 3
+      }
+    }
+  },
+  "order": {
+    "same_selection": {
+      "True": 30,
+      "False": 6
+    },
+    "same_meaning": {
+      "True": 31,
+      "False": 4,
+      "None": 1
+    },
+    "same_outcome": {
+      "True": 34,
+      "False": 2
+    }
+  },
+  "ask_replay": {
+    "model_calls": 0,
+    "workflows": 642,
+    "sql_executions": 588,
+    "summaries": {
+      "P:current": {
+        "workflows": 105,
+        "status": {
+          "answered": 84,
+          "clarify": 21
+        },
+        "correct_answered": 72,
+        "wrong_answered": 6,
+        "unresolved_answered": 6
+      },
+      "P:no_lexical_shadow": {
+        "workflows": 105,
+        "status": {
+          "answered": 105
+        },
+        "correct_answered": 93,
+        "wrong_answered": 6,
+        "unresolved_answered": 6
+      },
+      "S1:current": {
+        "workflows": 108,
+        "status": {
+          "answered": 96,
+          "clarify": 12
+        },
+        "correct_answered": 69,
+        "wrong_answered": 18,
+        "unresolved_answered": 9
+      },
+      "S1:no_lexical_shadow": {
+        "workflows": 108,
+        "status": {
+          "answered": 108
+        },
+        "correct_answered": 81,
+        "wrong_answered": 18,
+        "unresolved_answered": 9
+      },
+      "S2:current": {
+        "workflows": 108,
+        "status": {
+          "answered": 90,
+          "clarify": 15,
+          "unsupported": 3
+        },
+        "correct_answered": 66,
+        "wrong_answered": 15,
+        "unresolved_answered": 9
+      },
+      "S2:no_lexical_shadow": {
+        "workflows": 108,
+        "status": {
+          "answered": 105,
+          "unsupported": 3
+        },
+        "correct_answered": 81,
+        "wrong_answered": 15,
+        "unresolved_answered": 9
+      }
+    },
+    "unique_questions": {
+      "P:current": {
+        "questions": 35,
+        "statuses": {
+          "answered": 28,
+          "clarify": 7
+        },
+        "answered_grades": {
+          "pass": 24,
+          "unknown": 2,
+          "fail": 2
+        },
+        "wrong_verification": {
+          "unverified_semantics": 1,
+          "verified": 1
+        },
+        "contextual": {
+          "A": {
+            "pass:unknown": 23,
+            "pass:pass": 1,
+            "unknown:unknown": 2,
+            "fail:unknown": 2
+          },
+          "B": {
+            "pass:unknown": 15,
+            "pass:fail": 5,
+            "pass:pass": 4,
+            "unknown:unknown": 2,
+            "fail:unknown": 1,
+            "fail:pass": 1
+          }
+        }
+      },
+      "P:no_lexical_shadow": {
+        "questions": 35,
+        "statuses": {
+          "answered": 35
+        },
+        "answered_grades": {
+          "pass": 31,
+          "unknown": 2,
+          "fail": 2
+        },
+        "wrong_verification": {
+          "unverified_semantics": 1,
+          "verified": 1
+        },
+        "contextual": {
+          "A": {
+            "pass:unknown": 30,
+            "pass:pass": 1,
+            "unknown:unknown": 2,
+            "fail:unknown": 2
+          },
+          "B": {
+            "pass:unknown": 20,
+            "pass:fail": 5,
+            "pass:pass": 6,
+            "unknown:unknown": 2,
+            "fail:unknown": 1,
+            "fail:pass": 1
+          }
+        }
+      },
+      "S1:current": {
+        "questions": 36,
+        "statuses": {
+          "answered": 32,
+          "clarify": 4
+        },
+        "answered_grades": {
+          "pass": 23,
+          "fail": 6,
+          "unknown": 3
+        },
+        "wrong_verification": {
+          "verified": 4,
+          "unverified_semantics": 2
+        },
+        "contextual": {
+          "A": {
+            "pass:unknown": 22,
+            "fail:unknown": 6,
+            "pass:pass": 1,
+            "unknown:unknown": 3
+          },
+          "B": {
+            "pass:unknown": 14,
+            "pass:fail": 4,
+            "fail:unknown": 5,
+            "pass:pass": 5,
+            "unknown:unknown": 3,
+            "fail:pass": 1
+          }
+        }
+      },
+      "S1:no_lexical_shadow": {
+        "questions": 36,
+        "statuses": {
+          "answered": 36
+        },
+        "answered_grades": {
+          "pass": 27,
+          "fail": 6,
+          "unknown": 3
+        },
+        "wrong_verification": {
+          "verified": 4,
+          "unverified_semantics": 2
+        },
+        "contextual": {
+          "A": {
+            "pass:unknown": 26,
+            "fail:unknown": 6,
+            "pass:pass": 1,
+            "unknown:unknown": 3
+          },
+          "B": {
+            "pass:unknown": 16,
+            "pass:fail": 4,
+            "pass:pass": 7,
+            "fail:unknown": 5,
+            "unknown:unknown": 3,
+            "fail:pass": 1
+          }
+        }
+      },
+      "S2:current": {
+        "questions": 36,
+        "statuses": {
+          "answered": 30,
+          "clarify": 5,
+          "unsupported": 1
+        },
+        "answered_grades": {
+          "pass": 22,
+          "fail": 5,
+          "unknown": 3
+        },
+        "wrong_verification": {
+          "verified": 3,
+          "unverified_semantics": 2
+        },
+        "contextual": {
+          "A": {
+            "pass:unknown": 21,
+            "fail:unknown": 5,
+            "unknown:unknown": 3,
+            "pass:pass": 1
+          },
+          "B": {
+            "pass:pass": 4,
+            "pass:fail": 4,
+            "fail:pass": 1,
+            "fail:unknown": 4,
+            "pass:unknown": 14,
+            "unknown:unknown": 3
+          }
+        }
+      },
+      "S2:no_lexical_shadow": {
+        "questions": 36,
+        "statuses": {
+          "answered": 35,
+          "unsupported": 1
+        },
+        "answered_grades": {
+          "pass": 27,
+          "fail": 5,
+          "unknown": 3
+        },
+        "wrong_verification": {
+          "verified": 3,
+          "unverified_semantics": 2
+        },
+        "contextual": {
+          "A": {
+            "pass:unknown": 26,
+            "fail:unknown": 5,
+            "unknown:unknown": 3,
+            "pass:pass": 1
+          },
+          "B": {
+            "pass:pass": 6,
+            "pass:unknown": 17,
+            "pass:fail": 4,
+            "fail:pass": 1,
+            "fail:unknown": 4,
+            "unknown:unknown": 3
+          }
+        }
+      }
+    }
+  },
+  "compiler_reference": {
+    "proposals": 106,
+    "instances_per_proposal": 3,
+    "comparisons": 318,
+    "agreements": 318,
+    "errors": 0
+  },
+  "schema_gap": {
+    "synthetic_counterexamples": 6,
+    "accepted_by_displayed_schema": 6,
+    "rejected_by_runtime": 6,
+    "recovered_model_responses": 0
+  },
+  "validation": {
+    "ruler_focused": 306,
+    "ruler_offline": 1221,
+    "implementation_focused": 182,
+    "implementation_offline": 1306,
+    "static_pass": true,
+    "analysis_replay_identical": true,
+    "source_by_phase": {
+      "implementation_focused": "sha256:c7620a4331f9d92d5aa1daa25d50f57547509b96f055aa237af3a0a77e3f7f01",
+      "final_static": "sha256:b48a2bcd907ba88891c5ad2ec1e56a5c1584c4fa5bd9dd7373e163212440d6b0",
+      "final_offline": "sha256:b48a2bcd907ba88891c5ad2ec1e56a5c1584c4fa5bd9dd7373e163212440d6b0",
+      "live": "sha256:b48a2bcd907ba88891c5ad2ec1e56a5c1584c4fa5bd9dd7373e163212440d6b0",
+      "ask_replay": "sha256:b48a2bcd907ba88891c5ad2ec1e56a5c1584c4fa5bd9dd7373e163212440d6b0"
+    },
+    "note": "Focused 182 was an iteration gate; final offline 1306 includes those tests and shares the frozen live source."
+  },
+  "new_source_files": [
+    "evals/metric_wire_selection.py",
+    "evals/metric_wire_study.py",
+    "tests/contract/t0/test_metric_wire_selection_rulers.py",
+    "tests/contract/t0/test_metric_wire_study.py",
+    "tests/fixtures/metric_wire_rulers.json"
+  ],
+  "old_source_files_unchanged": true,
+  "timing": {
+    "A": {
+      "p50_seconds": 6.13455,
+      "prompt_tokens_median": 1356.5
+    },
+    "B": {
+      "p50_seconds": 5.24385,
+      "prompt_tokens_median": 1353.5
+    },
+    "P": {
+      "p50_seconds": 1.322,
+      "prompt_tokens_median": 3844.5
+    },
+    "S1": {
+      "p50_seconds": 1.6388,
+      "prompt_tokens_median": 4575.5
+    },
+    "S2": {
+      "p50_seconds": 1.6216,
+      "prompt_tokens_median": 4575.5
+    }
+  },
+  "limits": [
+    "Authored development set; no real-user blind generalization claim",
+    "S versus P changes action space and candidate presentation; not a pure syntax ablation",
+    "One request per arm/question; order-associated differences do not isolate endpoint nondeterminism",
+    "Local fictional DuckDB only; not new PostgreSQL validation",
+    "Format errors and unavailable interpretations never count as semantic passes",
+    "318 comparisons and 642 workflows reuse captured plans; not independent model samples",
+    "No production, old annotation, prompt v15, Git stage/commit/push or secret changes"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "revision": "metric-factor-rulers-v1",
+  "status": "checkpoint_specification_only",
+  "baseline_source": "sha256:b48a2bcd907ba88891c5ad2ec1e56a5c1584c4fa5bd9dd7373e163212440d6b0",
+  "allocation": {"B": 36, "W": 36, "P": 36, "S": 36, "F": 36},
+  "max_model_attempts": 180,
+  "factor_contract": {
+    "required_fields": ["basis_id", "population_id"],
+    "missing_population": "invalid_not_all_rows",
+    "allowed_pairs_only": true,
+    "original_operand_and_provenance_unchanged": true,
+    "one_response_not_two_calls": true,
+    "stable_error_controls": ["output_count_all/zh", "service_rows/zh"]
+  },
+  "shown_schema_counterexamples": [
+    {"id": "span_scope", "runtime_reason": "invalid_span_scope"},
+    {"id": "predicate_concept", "runtime_reason": "predicate_requires_concept"},
+    {"id": "nonpredicate_concept", "runtime_reason": "nonpredicate_cannot_activate_concept"},
+    {"id": "basis_column", "runtime_reason": "basis_column_required"},
+    {"id": "state_uncertainty", "runtime_reason": "state_requires_matching_uncertainty"},
+    {"id": "empty_clear_basis", "runtime_reason": "clear_requires_measure_basis"},
+    {"id": "missing_binding_gap", "runtime_reason": "missing_definition_requires_binding_gap"},
+    {"id": "duplicate_basis", "runtime_reason": "duplicate_annotation"},
+    {"id": "partial_ratio", "runtime_reason": "incomplete_measure_roles"},
+    {"id": "requirement_scope", "runtime_reason": "requirement_outside_measure_scope"},
+    {"id": "missing_population", "runtime_reason": "missing_population_scope"},
+    {"id": "unresolved_population", "runtime_reason": "clear_with_unknown_population"},
+    {"id": "population_mismatch", "runtime_reason": "population_constraint_mismatch"}
+  ]
+}

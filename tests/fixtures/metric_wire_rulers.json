@@ -1,0 +1,46 @@
+{
+  "revision": "metric-wire-selection-rulers-v1",
+  "status": "checkpoint_specification_only",
+  "occurrence_convention": "zero_based_overlapping_exact_unicode_codepoint_matches",
+  "locations": [
+    {"id": "english_second", "question": "Return Return", "text": "Return", "occurrence": 1, "expected": [7, 13]},
+    {"id": "chinese_second", "question": "退貨、退貨", "text": "退貨", "occurrence": 1, "expected": [3, 5]},
+    {"id": "emoji_prefix", "question": "😀回傳筆數", "text": "回傳", "occurrence": 0, "expected": [1, 3]},
+    {"id": "overlapping", "question": "aaaa", "text": "aa", "occurrence": 2, "expected": [2, 4]},
+    {"id": "combining_codepoints", "question": "é total", "text": "total", "occurrence": 0, "expected": [3, 8]},
+    {"id": "no_unicode_normalisation", "question": "é total", "text": "é", "occurrence": 0, "error": "span_not_in_question"},
+    {"id": "no_case_folding", "question": "Return", "text": "return", "occurrence": 0, "error": "span_not_in_question"},
+    {"id": "no_whitespace_repair", "question": "return  count", "text": "return count", "occurrence": 0, "error": "span_not_in_question"},
+    {"id": "missing_occurrence", "question": "Return Return", "text": "Return", "occurrence": null, "error": "occurrence_required"},
+    {"id": "past_last_occurrence", "question": "Return Return", "text": "Return", "occurrence": 2, "error": "occurrence_out_of_range"},
+    {"id": "negative_index", "question": "Return", "text": "Return", "occurrence": -1, "error": "invalid_occurrence"},
+    {"id": "bool_is_not_index", "question": "Return Return", "text": "Return", "occurrence": true, "error": "invalid_occurrence"},
+    {"id": "float_is_not_index", "question": "Return", "text": "Return", "occurrence": 0.0, "error": "invalid_occurrence"}
+  ],
+  "catalog_language": {
+    "question_independent": true,
+    "max_candidates_per_source": 64,
+    "aggregates": ["count", "sum", "count_distinct"],
+    "predicates": ["none", "single_nullable_column_is_null", "single_nullable_column_not_null"],
+    "composition": ["single_operand", "same_table_ratio"],
+    "slots": ["value", "numerator", "denominator"],
+    "forbidden_inputs": ["gold", "profiles", "expected", "correct", "wrong", "questions", "rows", "instances"],
+    "out_of_catalog": "candidate_missing_not_a_correct_semantic_refusal"
+  },
+  "diagnostics": {
+    "allowed_output_fields": ["stage", "code", "schema_path", "count"],
+    "unknown_reason": "unclassified_validation",
+    "forbidden_output_fields": ["input", "ctx", "msg", "raw", "reasoning_content", "exception_text"],
+    "max_errors_per_response": 8
+  },
+  "allocation": {"A": 36, "B": 36, "P": 36, "S1": 36, "S2": 36},
+  "comparison": {
+    "format_readiness_numerator": 35,
+    "format_readiness_denominator": 36,
+    "required_improved_families": 2,
+    "allowed_lost_correct_controls": 0,
+    "allowed_wrong_or_unresolved_affirmative_passes": 0,
+    "challenge_model_calls": 0,
+    "production_changes": false
+  }
+}

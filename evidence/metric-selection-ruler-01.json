@@ -1,0 +1,39 @@
+{
+  "revision": "metric-selection-ruler-v1",
+  "status": "ruler_checkpoint_complete_awaiting_grader_approval",
+  "date": "2026-09-12",
+  "git_head": "746f1689ad812088ed2cca6cc3bcde3e85a006b8",
+  "source_digest": "sha256:d9630e4926826e84b40388becba03bf035a319eb2c61445d697d6fdea1105743",
+  "input_hashes": {
+    "evals/cases/concepts/metric_selection_ruler.yaml": "b460ca2c3e1520212db81b6fba485faf588e79da3b253fe18b535a81e6ebe4e9",
+    "tests/contract/t0/test_metric_selection_ruler.py": "c5a3becada8444c6f99ea8a86a8ebd4f5e7a5c93d654fdc5aab3ae431e475edb"
+  },
+  "validation": {
+    "focused": {"passed": 155, "failed": 0, "errors": 0, "skipped": 0, "artifact": ".artifacts/metric-selection-ruler-20260912/focused-final/result.json"},
+    "offline": {"passed": 915, "failed": 0, "errors": 0, "skipped": 0, "artifact": ".artifacts/metric-selection-ruler-20260912/offline/result.json"},
+    "static": {"passed": true, "artifact": ".artifacts/metric-selection-ruler-20260912/static/result.json"}
+  },
+  "ruler": {
+    "development_questions": 36,
+    "development_families": 6,
+    "challenge_questions": 24,
+    "challenge_families": 4,
+    "challenge_kind": "authored_author_visible_not_user_blind",
+    "languages": ["zh", "en", "ja"],
+    "plans": 18,
+    "fictional_instances": 3,
+    "plan_instance_pairs": 54,
+    "engine_hand_answer_checks": 108,
+    "engines": ["compiled_postgres_dialect_in_duckdb", "existing_python_reference"],
+    "case_level_witness_pairs": 48,
+    "unique_directed_witness_pairs": 37,
+    "unique_directed_pairs_distinguished": 37,
+    "common_distinguishing_instance": "asymmetric",
+    "legacy_gate_characterizations": 4,
+    "v2_measure_basis_scope_counterexamples": 3,
+    "semantic_grader_implemented": false
+  },
+  "external_actions": {"model_calls": 0, "postgres_calls": 0, "customer_data_used": false, "production_changes": false},
+  "non_claims": ["model_accuracy", "full_answer_certification", "general_semantic_equivalence", "postgres_validation", "blind_holdout_generalization", "production_gate_replacement"],
+  "git": {"staged": false, "committed": false, "pushed": false, "prior_dirty_work_preserved": true}
+}

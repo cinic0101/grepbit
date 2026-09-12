@@ -1,0 +1,281 @@
+{
+  "study_revision": "metric-selection-development-v1",
+  "status": "completed_no_candidate_promoted",
+  "artifact": ".artifacts/metric-selection-development-20260912/live.json",
+  "artifact_sha256": "a8490dab62cf2b065d1cca6b7d3574071bd1c3957874fb42ec6dad736a2f4fb8",
+  "source_digest": "sha256:5c53e1f6911e813e00e0d1edbedfa4ee5cad3fbcaea173e79b68a74ca6afb671",
+  "source_unchanged": true,
+  "inputs_sha256": "2182a1bb82fb9422a9d460f2d351642995f6dd5248de1d28dcc983534eeee2f4",
+  "head": "746f1689ad812088ed2cca6cc3bcde3e85a006b8",
+  "calls": 180,
+  "settings": {
+    "model": "gemma-4-31b",
+    "temperature": 0,
+    "thinking": false,
+    "max_tokens": 4096,
+    "timeout_seconds": 60,
+    "max_retries": 0,
+    "max_calls": 180
+  },
+  "call_status": {
+    "ok": 139,
+    "format_error": 41
+  },
+  "planner_summaries": {
+    "P0": {
+      "calls": 36,
+      "pre_gate": {
+        "pass": 30,
+        "fail": 2,
+        "unavailable": 2,
+        "unknown": 2
+      },
+      "correct_unblocked": 23,
+      "wrong_unblocked": 2,
+      "correct_false_blocks": 7,
+      "wrong_contextual_pass": 0,
+      "unresolved_contextual_pass": 0,
+      "correct_contextual_pass": 1
+    },
+    "P1": {
+      "calls": 36,
+      "pre_gate": {
+        "pass": 30,
+        "unknown": 3,
+        "fail": 2,
+        "unavailable": 1
+      },
+      "correct_unblocked": 23,
+      "wrong_unblocked": 2,
+      "correct_false_blocks": 7,
+      "wrong_contextual_pass": 0,
+      "unresolved_contextual_pass": 0,
+      "correct_contextual_pass": 1
+    },
+    "P2": {
+      "calls": 36,
+      "pre_gate": {
+        "pass": 31,
+        "fail": 2,
+        "unknown": 3
+      },
+      "correct_unblocked": 24,
+      "wrong_unblocked": 2,
+      "correct_false_blocks": 7,
+      "wrong_contextual_pass": 0,
+      "unresolved_contextual_pass": 0,
+      "correct_contextual_pass": 1
+    },
+    "P3": {
+      "calls": 36,
+      "pre_gate": {
+        "fail": 2,
+        "pass": 31,
+        "unavailable": 3
+      },
+      "correct_unblocked": 24,
+      "wrong_unblocked": 2,
+      "correct_false_blocks": 7,
+      "wrong_contextual_pass": 0,
+      "unresolved_contextual_pass": 0,
+      "correct_contextual_pass": 1
+    }
+  },
+  "candidate_screen": {
+    "P1": {
+      "improved_questions": [],
+      "improved_families": [],
+      "lost_correct_questions": [],
+      "eligible_for_confirmation": false
+    },
+    "P2": {
+      "improved_questions": [
+        [
+          "rate_count_defined",
+          "ja"
+        ]
+      ],
+      "improved_families": [
+        "rate_basis"
+      ],
+      "lost_correct_questions": [],
+      "eligible_for_confirmation": false
+    },
+    "P3": {
+      "improved_questions": [
+        [
+          "rate_count_defined",
+          "ja"
+        ]
+      ],
+      "improved_families": [
+        "rate_basis"
+      ],
+      "lost_correct_questions": [],
+      "eligible_for_confirmation": false
+    }
+  },
+  "l1": {
+    "calls": 36,
+    "valid": 1,
+    "core_exact": 1,
+    "spans_exact": 0,
+    "format_errors": {
+      "schema_validation": 22,
+      "span_not_in_question": 13
+    },
+    "fixed_pairs": [
+      {
+        "case_id": "output_count_returns",
+        "language": "zh",
+        "plan_id": "returns_count_raw",
+        "expected": "pass",
+        "verdict": "pass",
+        "reason": "bounded_match"
+      },
+      {
+        "case_id": "output_count_returns",
+        "language": "zh",
+        "plan_id": "returns_count_metric",
+        "expected": "pass",
+        "verdict": "pass",
+        "reason": "bounded_match"
+      },
+      {
+        "case_id": "output_count_returns",
+        "language": "zh",
+        "plan_id": "all_count",
+        "expected": "fail",
+        "verdict": "fail",
+        "reason": "population"
+      },
+      {
+        "case_id": "output_count_returns",
+        "language": "zh",
+        "plan_id": "returns_sum_metric",
+        "expected": "fail",
+        "verdict": "fail",
+        "reason": "measure_basis"
+      }
+    ]
+  },
+  "validation": {
+    "offline": 1124,
+    "static": "pass",
+    "focused_before_final_assertion": 364,
+    "fixed_oracle_pairs": 192,
+    "runtime_parser_gold_controls": 60,
+    "captured_plan_instances": 414,
+    "compiler_reference_agreements": 414,
+    "local_execution_errors": 0
+  },
+  "p50_seconds": {
+    "P0": 1.37655,
+    "P1": 1.3357,
+    "P2": 1.4351500000000001,
+    "P3": 1.505,
+    "L1": 6.24855
+  },
+  "total_tokens": 624611,
+  "observed_reasoning_calls": 0,
+  "artifact_pattern_scan": {
+    "dsn": 0,
+    "bearer": 0,
+    "credential_assignment": 0
+  },
+  "non_claims": [
+    "No real-user blind holdout",
+    "No production gate/prompt/v2 change",
+    "No PostgreSQL or real database call",
+    "No conditional challenge or P4 calls",
+    "No Git stage/commit/push",
+    "Actual ask replay is local synthetic execution, not fresh inference, PostgreSQL driver, MCP or deployment validation"
+  ],
+  "ask_replay": {
+    "artifact": ".artifacts/metric-selection-development-20260912/ask-replay.json",
+    "sha256": "a046084ec0251c61492c3be9b2b23f972c4ba21a8973e5f5359ba63bfe9048af",
+    "driver_sha256": "16e4dcf3f8f02e4027a9e881a919c652159b64635bada7a48534f95f72ad2305",
+    "source_digest": "sha256:5c53e1f6911e813e00e0d1edbedfa4ee5cad3fbcaea173e79b68a74ca6afb671",
+    "model_calls": 0,
+    "workflows": 828,
+    "sql_executions": 744,
+    "summaries": {
+      "P0:current": {
+        "workflows": 102,
+        "status": {
+          "answered": 81,
+          "clarify": 21
+        },
+        "correct_answered": 69,
+        "wrong_answered": 6,
+        "unresolved_answered": 6
+      },
+      "P0:no_lexical_shadow": {
+        "workflows": 102,
+        "status": {
+          "answered": 102
+        },
+        "correct_answered": 90,
+        "wrong_answered": 6,
+        "unresolved_answered": 6
+      },
+      "P1:current": {
+        "workflows": 105,
+        "status": {
+          "answered": 84,
+          "clarify": 21
+        },
+        "correct_answered": 69,
+        "wrong_answered": 6,
+        "unresolved_answered": 9
+      },
+      "P1:no_lexical_shadow": {
+        "workflows": 105,
+        "status": {
+          "answered": 105
+        },
+        "correct_answered": 90,
+        "wrong_answered": 6,
+        "unresolved_answered": 9
+      },
+      "P2:current": {
+        "workflows": 108,
+        "status": {
+          "answered": 87,
+          "clarify": 21
+        },
+        "correct_answered": 72,
+        "wrong_answered": 6,
+        "unresolved_answered": 9
+      },
+      "P2:no_lexical_shadow": {
+        "workflows": 108,
+        "status": {
+          "answered": 108
+        },
+        "correct_answered": 93,
+        "wrong_answered": 6,
+        "unresolved_answered": 9
+      },
+      "P3:current": {
+        "workflows": 99,
+        "status": {
+          "answered": 78,
+          "clarify": 21
+        },
+        "correct_answered": 72,
+        "wrong_answered": 6,
+        "unresolved_answered": 0
+      },
+      "P3:no_lexical_shadow": {
+        "workflows": 99,
+        "status": {
+          "answered": 99
+        },
+        "correct_answered": 93,
+        "wrong_answered": 6,
+        "unresolved_answered": 0
+      }
+    }
+  }
+}

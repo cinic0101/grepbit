@@ -119,24 +119,65 @@ the exit number. Baselines are today's numbers.
 Each sprint ends with the usual: scope, files, counts, gaps, git state; a
 prompt change bumps the revision and reruns every set that could move.
 
-## Status and next order (2026-09-11 night)
+## Status and next order (takeover checkpoint after 746f168)
 
-Done: sprint 1 (B1, B2, A1, C5, D1), sprint 2 except A4 (A2, A3), sprint 3
-except A5 (B3 10,000 plans clean; B4 the differential, 0 disagreements on two
-engines and five data sets, per-report counts in
-`../research/differential-01.md`; B5 the time-closure table; A6 as a metric
-only: variance sits between sessions, so Best-of-N by repeated calls is
-withdrawn, `../research/stability-01.md`). Waiting on the owner: the growth
-drop rule (withdraw or enable the narrow form), growth over a missing period,
-and confirmation of two defaults (NULL time rows out of a grain; having after
-share and growth).
+Latest 2026-09-12: `../research/semantic-contrast-01.md`. Owner-approved
+ratio-wrapper filter rejection is implemented through domain/compiler/self-check
+and normalization bypass protection. Static/offline 760 pass. A separate
+108-call three-arm semantic extraction study found no improvement; no arm is
+promoted or expanded. Actual ask replay still serves a wrong Chinese metric
+as verified and blocks a correct English count via the lexical concept gate.
+Keep those two remaining issues distinct from the completed compiler repair.
+A5 acceptance remains open; A4 is not started. Older measured slices below
+remain history, not current scores. Current authority/state: `active-work.md`.
+
+Latest combined batch: `../research/a5-forms-service-01.md`. Reference
+evaluation now filters absence rows before ordinary aggregation; generated
+plans cover multi-hop absence and non-count measures. Four named matrix gaps
+closed (17 remain), 396 offline tests and 2,489 new differential comparisons
+pass. The exclusive-form A5 prompt trial was rejected after q25 lost answer
+availability twice. New non-POS three-language cases score 10/12; diagnostics
+identify an imperative "return" concept false positive and omitted Japanese
+absence guidance. These need a separate policy/prompt design, not more
+ratio-repair guesses. Production v15 remains provisional; A4 is not started.
+
+Latest A5 follow-up: raw JSON mixes share/ratio and lacks a denominator.
+Three measured remedies did not recover a defensible end-to-end gain; no
+production prompt change. Twelve guards added, 355 offline tests pass. See
+`../research/a5-ratio-followup-01.md`; A5 acceptance remains open before A4.
+
+2026-09-12 update: A5 wire-v3 / prompt v15 is implemented but **not accepted**.
+The synthetic service source is provisioned; it exposed a natural-FK-target
+generator defect and a grain/growth normalisation assertion, both repaired.
+Same-index service v14/v15 controls are both 23/24; holdout 2 q25 repeats a
+missing-denominator failure under v15. Resolve this before stacking A4.
+Follow-up: the owner approved retiring lexical grain deletion. Orchestration
+v3 removes it; `grain-retirement.md` records this separate slice and validation.
+See `../research/a5-service-01.md` for current counts and non-claims; the
+historical tables above are not updated scores.
+
+The 746f168 handoff records A1/A2/A3, B1, C5 and D1 implemented, a historical
+B3 10,000-plan run, B4 differential evidence and a B5 time-closure table.
+These are bounded measurements, not proof that every exit is complete. B2's
+matrix exists but still has named-test gaps; B4 shares production window
+helpers. A6 remains measurement-only; batch composition is a hypothesis,
+not an established cause of all observed variation. Best-of-N is deferred.
+
+The owner has now explicitly accepted: no lexical growth deletion, NULL
+growth across absent calendar periods without zero-fill, exclusion of NULL
+times from periods, and thresholds after share/growth. Product direction is
+settled. The executable-ruler checkpoint was reviewed and the owner authorised
+implementation; compiler/reference adjacency and lexical-deletion retirement
+are implemented. See
+`active-work.md` for the current phase, original authority and test evidence.
 
 | Step | Items | Exit | Notes |
 |---|---|---|---|
-| 0 | the three rulings | recorded in `tier0-contract.md`; if zero-fill is chosen: compiler, evaluator, time-closure rows, one differential class | no phase-3 prompt work before this |
-| 1 | A5 literals by reference | `literal_misses` with a candidate 0 on holdout 2 and batch 1; PII columns stay out of the index | prompt change: revision bump, every set rerun |
-| 2 | A4 schema linking with fallback | table recall 100% on the 160 author cases and batch 1; prompt under 3,500 tokens | needed before a wide second schema; the fallback retry counts as a model call |
-| 3 | phase 4, datasource 2 (owner provides) | differential first (needs no questions, seconds), proposer-drafted overlay reviewed by the owner, 20 to 30 smoke cases, then the owner's blind holdout; within 5 points of POS | run with `--enum-distinct-limit 0 --redact-rows` from the first call |
+| 0A | evaluation-tool repairs | source sensitivity survives replay; stability preserves order and rejects incomplete runs; focused and offline checks | no semantic or prompt change; historical artifacts unchanged |
+| 0B | accepted semantic rulers and implementation | implemented after the authorised checkpoint; hand-computed gap, NULL-time and post-threshold results, PostgreSQL and differential checks recorded in active work | no zero-fill, new algebra or extra-measure score change |
+| 1 | A5 literals by reference; synthetic datasource preparation alongside | candidate recall, reference selection and final correctness measured separately; no candidate literal misses; PII stays out | A5 wire ruler first; freeze datasource/overlay before original-prompt baseline and A5 comparison; separate prompt revision |
+| 2 | non-POS generalisation and schema-size baseline | fixed synthetic cases, meaningful refusals, multilingual perturbations and touched matrix/generator gaps | synthetic questions are author tests, not a real blind holdout |
+| 3 | A4 only if the full-schema baseline warrants it | measured benefit in correctness/tokens/latency, including wrong-valid cases a missing-identifier fallback cannot detect | independent prompt revision and serial regression, not a prerequisite assumed in advance |
 | 4 | C4 second model, C2 round-trip oracle | model delta reported; agreement per construct pair | separates design from model; C2 gives thousands of cases without a human oracle |
 | 5 | C1 metamorphic round two, C6 judge assist, D2, D3 | as in the tables above | after the second datasource shows where the variance is |
 | 6 | tidy-up | PII column display settings and whitelist (owner: at the end), docs, generator gaps | |
@@ -144,9 +185,11 @@ share and growth).
 Standing cautions: the differential proves values given the window
 boundaries (the evaluator shares the time functions with production; windows
 are the golden table's job); reports before 586f130 compared ordered and
-limited plans as sets; the generator still cannot draw value-index literals,
-named segments or multi-hop `without` on the real schema; a one-run flip is
-not a regression until it repeats, and regressions run alone on the endpoint.
+limited plans as sets; the generator still cannot draw value-index literals
+or named segments. Multi-hop `without` is now drawn. A single confirmed
+wrong answer is defect evidence; recurrence is not required to record it.
+Attributing a regression or an endpoint cause requires separate evidence.
+Regressions run serially on frozen source and data; no source edits during a run.
 
 ## Sources
 

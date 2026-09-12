@@ -1,0 +1,102 @@
+{
+  "revision": "metric-factor-rulers-v1",
+  "status": "ruler_checkpoint_awaiting_explicit_followup",
+  "permission_source": "Owner: 好...按照你的計劃; supplied AGENTS requires follow-up after new evaluation/identity rulers",
+  "head": "746f1689ad812088ed2cca6cc3bcde3e85a006b8",
+  "baseline_source": "sha256:b48a2bcd907ba88891c5ad2ec1e56a5c1584c4fa5bd9dd7373e163212440d6b0",
+  "source_digest": "sha256:b990e846049f9e3e68dbdb00441e50304dc3edfd2188e7fed832717b5b0e8ba8",
+  "old_source_files_unchanged": true,
+  "new_source_files": [
+    "tests/contract/t0/test_metric_factor_rulers.py",
+    "tests/fixtures/metric_factor_rulers.json"
+  ],
+  "validation": {
+    "focused-final": {
+      "passed": false,
+      "counts": {
+        "errors": 0,
+        "failures": 13,
+        "skipped": 0,
+        "tests": 105
+      },
+      "artifact": ".artifacts/metric-factor-rulers-20260912/focused-final/result.json",
+      "sha256": "a1c77b00a6b13d23a7287cd2d10020be7298ffc53e5076f4a2a38f0c24766731",
+      "expected_failures": [
+        "test_shown_schema_must_expose_existing_conditional_constraint[span_scope]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[predicate_concept]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[nonpredicate_concept]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[basis_column]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[state_uncertainty]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[empty_clear_basis]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[missing_binding_gap]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[duplicate_basis]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[partial_ratio]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[requirement_scope]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[missing_population]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[unresolved_population]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[population_mismatch]"
+      ]
+    },
+    "static": {
+      "passed": true,
+      "counts": null,
+      "artifact": ".artifacts/metric-factor-rulers-20260912/static/result.json",
+      "sha256": "57538e672b2718c03d69fd28d75c72ef41b3739e395a3fc369536ec97ee153e6"
+    },
+    "offline": {
+      "passed": false,
+      "counts": {
+        "errors": 0,
+        "failures": 13,
+        "skipped": 0,
+        "tests": 1411
+      },
+      "artifact": ".artifacts/metric-factor-rulers-20260912/offline/result.json",
+      "sha256": "fe70802a63438750ae0579f136571628f1168b8572a65cd5b039b0c34a0a29fa",
+      "expected_failures": [
+        "test_shown_schema_must_expose_existing_conditional_constraint[span_scope]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[predicate_concept]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[nonpredicate_concept]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[basis_column]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[state_uncertainty]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[empty_clear_basis]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[missing_binding_gap]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[duplicate_basis]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[partial_ratio]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[requirement_scope]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[missing_population]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[unresolved_population]",
+        "test_shown_schema_must_expose_existing_conditional_constraint[population_mismatch]"
+      ]
+    }
+  },
+  "scope": {
+    "model_calls": 0,
+    "db_calls": 0,
+    "implementation_changes": 0,
+    "production_changes": 0,
+    "git_stage_commit_push": false
+  },
+  "catalog_specification": {
+    "pos_candidates": 39,
+    "service_candidates": 17,
+    "same_candidate_universe": true,
+    "original_operands_and_provenance_preserved": true,
+    "missing_population_is_invalid": true,
+    "unoffered_pair_is_invalid": true
+  },
+  "limits": [
+    "13 expected red shown-schema assertions; full offline gate is NOT green",
+    "Test-only factored identity specification; no implemented renderer or inference binder",
+    "Well-formed but semantically wrong returns interpretation remains accepted by structural checks",
+    "No new model effectiveness or generalization claim"
+  ],
+  "proposed_post_checkpoint_calls": {
+    "B": 36,
+    "W": 36,
+    "P": 36,
+    "S": 36,
+    "F": 36,
+    "max_attempts": 180
+  }
+}

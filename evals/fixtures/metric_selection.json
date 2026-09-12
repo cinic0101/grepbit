@@ -1,0 +1,518 @@
+{
+  "schema": {
+    "datasource_id": "metric_selection_ruler",
+    "schema_name": "public",
+    "business_timezone": "Asia/Taipei",
+    "tables": [
+      {
+        "name": "pos_sale",
+        "columns": [
+          {
+            "name": "transaction_no",
+            "data_type": "numeric",
+            "kind": "numeric",
+            "nullable": false,
+            "comment": null,
+            "sample_values": [],
+            "distinct_estimate": null,
+            "is_enum": false
+          },
+          {
+            "name": "total_amount",
+            "data_type": "numeric",
+            "kind": "numeric",
+            "nullable": true,
+            "comment": null,
+            "sample_values": [],
+            "distinct_estimate": null,
+            "is_enum": false
+          },
+          {
+            "name": "origin_transaction_no",
+            "data_type": "text",
+            "kind": "text",
+            "nullable": true,
+            "comment": null,
+            "sample_values": [],
+            "distinct_estimate": null,
+            "is_enum": false
+          },
+          {
+            "name": "member_id",
+            "data_type": "text",
+            "kind": "text",
+            "nullable": true,
+            "comment": null,
+            "sample_values": [],
+            "distinct_estimate": null,
+            "is_enum": false
+          }
+        ],
+        "primary_key": [
+          "transaction_no"
+        ],
+        "row_estimate": null,
+        "comment": null
+      },
+      {
+        "name": "work_logs",
+        "columns": [
+          {
+            "name": "id",
+            "data_type": "numeric",
+            "kind": "numeric",
+            "nullable": false,
+            "comment": null,
+            "sample_values": [],
+            "distinct_estimate": null,
+            "is_enum": false
+          },
+          {
+            "name": "ticket_id",
+            "data_type": "numeric",
+            "kind": "numeric",
+            "nullable": false,
+            "comment": null,
+            "sample_values": [],
+            "distinct_estimate": null,
+            "is_enum": false
+          },
+          {
+            "name": "minutes",
+            "data_type": "numeric",
+            "kind": "numeric",
+            "nullable": true,
+            "comment": null,
+            "sample_values": [],
+            "distinct_estimate": null,
+            "is_enum": false
+          }
+        ],
+        "primary_key": [
+          "id"
+        ],
+        "row_estimate": null,
+        "comment": null
+      }
+    ],
+    "foreign_keys": []
+  },
+  "plans": {
+    "all_count": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ]
+    },
+    "all_sum": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "sum",
+          "column": {
+            "table": "pos_sale",
+            "column": "total_amount"
+          }
+        }
+      ]
+    },
+    "returns_count_raw": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "origin_transaction_no"
+          },
+          "op": "not_null"
+        }
+      ]
+    },
+    "returns_count_metric": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "metric": "return_count"
+        }
+      ]
+    },
+    "returns_sum_raw": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "sum",
+          "column": {
+            "table": "pos_sale",
+            "column": "total_amount"
+          }
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "origin_transaction_no"
+          },
+          "op": "not_null"
+        }
+      ]
+    },
+    "returns_sum_metric": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "metric": "return_amount"
+        }
+      ]
+    },
+    "nonreturns_count": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "origin_transaction_no"
+          },
+          "op": "is_null"
+        }
+      ]
+    },
+    "member_count": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "member_id"
+          },
+          "op": "not_null"
+        }
+      ]
+    },
+    "member_column_count": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count",
+          "column": {
+            "table": "pos_sale",
+            "column": "member_id"
+          }
+        }
+      ]
+    },
+    "nonmember_count": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "member_id"
+          },
+          "op": "is_null"
+        }
+      ]
+    },
+    "member_distinct": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count_distinct",
+          "column": {
+            "table": "pos_sale",
+            "column": "member_id"
+          }
+        }
+      ]
+    },
+    "member_group": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ],
+      "filters": [
+        {
+          "column": {
+            "table": "pos_sale",
+            "column": "member_id"
+          },
+          "op": "not_null"
+        }
+      ],
+      "dimensions": [
+        {
+          "table": "pos_sale",
+          "column": "member_id"
+        }
+      ]
+    },
+    "return_ratio": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "aggregate": "count",
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "origin_transaction_no"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            },
+            "denominator": {
+              "aggregate": "count"
+            }
+          }
+        }
+      ]
+    },
+    "return_amount_ratio": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "aggregate": "sum",
+              "column": {
+                "table": "pos_sale",
+                "column": "total_amount"
+              },
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "origin_transaction_no"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            },
+            "denominator": {
+              "aggregate": "sum",
+              "column": {
+                "table": "pos_sale",
+                "column": "total_amount"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "inverse_ratio": {
+      "base_table": "pos_sale",
+      "measures": [
+        {
+          "ratio": {
+            "numerator": {
+              "aggregate": "count"
+            },
+            "denominator": {
+              "aggregate": "count",
+              "filters": [
+                {
+                  "column": {
+                    "table": "pos_sale",
+                    "column": "origin_transaction_no"
+                  },
+                  "op": "not_null"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "log_count": {
+      "base_table": "work_logs",
+      "measures": [
+        {
+          "aggregate": "count"
+        }
+      ]
+    },
+    "logged_ticket_count": {
+      "base_table": "work_logs",
+      "measures": [
+        {
+          "aggregate": "count_distinct",
+          "column": {
+            "table": "work_logs",
+            "column": "ticket_id"
+          }
+        }
+      ]
+    },
+    "minutes_sum": {
+      "base_table": "work_logs",
+      "measures": [
+        {
+          "aggregate": "sum",
+          "column": {
+            "table": "work_logs",
+            "column": "minutes"
+          }
+        }
+      ]
+    }
+  },
+  "instances": {
+    "coincidental": {
+      "pos_sale": [
+        [
+          1,
+          100,
+          null,
+          null
+        ],
+        [
+          2,
+          40,
+          "fake_origin",
+          "fake_m1"
+        ],
+        [
+          3,
+          10,
+          "fake_origin",
+          "fake_m1"
+        ],
+        [
+          4,
+          50,
+          null,
+          "fake_m2"
+        ]
+      ],
+      "work_logs": [
+        [
+          1,
+          10,
+          30
+        ],
+        [
+          2,
+          10,
+          20
+        ],
+        [
+          3,
+          20,
+          10
+        ]
+      ]
+    },
+    "asymmetric": {
+      "pos_sale": [
+        [
+          1,
+          90,
+          null,
+          null
+        ],
+        [
+          2,
+          40,
+          null,
+          "fake_m1"
+        ],
+        [
+          3,
+          30,
+          "fake_origin",
+          null
+        ],
+        [
+          4,
+          10,
+          "fake_origin",
+          "fake_m1"
+        ],
+        [
+          5,
+          20,
+          "fake_origin",
+          null
+        ]
+      ],
+      "work_logs": [
+        [
+          1,
+          30,
+          0
+        ],
+        [
+          2,
+          30,
+          15
+        ]
+      ]
+    },
+    "null_zero": {
+      "pos_sale": [
+        [
+          1,
+          0,
+          null,
+          null
+        ],
+        [
+          2,
+          5,
+          "fake_origin",
+          "fake_m1"
+        ],
+        [
+          3,
+          null,
+          null,
+          null
+        ]
+      ],
+      "work_logs": [
+        [
+          1,
+          40,
+          null
+        ],
+        [
+          2,
+          50,
+          0
+        ],
+        [
+          3,
+          50,
+          0
+        ]
+      ]
+    }
+  }
+}
