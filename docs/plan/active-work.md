@@ -1,5 +1,41 @@
 # Active work: evaluation repairs and accepted period semantics
 
+Current slice: unified reuse measurement, baseline clean dev `d1aee71`.
+Exact authority: the owner replied "好 沒問題 可以開始" to the proposed reuse
+of existing cohorts, stratified outcomes and targeted reruns only for missing
+information. Earlier psql/Gemma permission remains available; no new human
+correction path, production/prompt changes, threshold changes or push.
+Root owns the analysis. Use existing artifacts without changing their labels;
+recover provenance and audit carried judgments before treating them as evidence.
+Research scripts/private case records stay in `.artifacts/reuse-measurement-20260912/`;
+durable reports expose counts and hashes only. No secrets, result rows, SQL or
+raw private artifact contents printed or sent to a model. Any necessary DB/model
+scope is recorded before execution with a bounded call budget. Local commits
+remain authorized.
+
+External blocker: automatic review rejected the 292-case live command before
+process creation, requiring explicit permission for real POS question/schema/
+overlay payloads to the named gateway, beyond generic Gemma/psql permission.
+No credential read, DB/model call or current-run directory occurred. Do not
+work around this denial. Continue historical audit and local fictional replay;
+request the specific missing payload/destination approval at handoff.
+
+Local measurement COMPLETE: 103 historical reports bound to existing manifests;
+575 verdict-carry edges audited. Of 36 raw plan-core changes, 15 normalize to
+the same domain defaults and 21 remain different; their descendants affect
+165 repeated label entries, not 165 proven wrong questions. A fictional
+compiler/DuckDB counterexample computes 2 versus 1 while the carry tool copies
+the verdict. Historical scores and the carry implementation remain unchanged.
+Current-source replay: 216 ask workflows / 195 SQL executions within them,
+zero result changes, zero model or external DB calls. Twenty private analysis/
+driver tests pass; tracked source remains e01de711, so reuse the prior final
+static/offline gate (1,646 passed). A 292-case live panel is prepared, not run.
+See `../research/evidence-reuse-measurement-01.md` and its evidence manifest.
+Next: resolve that explicit payload/destination permission, then measure the
+current panel; separately specify verdict identity repair before using carry.
+
+Historical completed cleanup:
+
 Current slice: retire the calculation-card path and inventory existing evidence.
 Exact owner authority: "計算卡可以拿掉，保持 repo codebase 乾淨，我們做過很多次測試，
 在 .artifacts 裡，可以拿既有測試一起來量測嗎". Baseline `0d58029` plus root's

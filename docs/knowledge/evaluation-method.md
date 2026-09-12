@@ -201,6 +201,15 @@ counts only and belongs under `evidence/`. The build side never opens the
 question file before the run, never changes prompts between runs of the same
 holdout, and reports which run was the first (blind) one.
 
+Audit warning (2026-09-12): the intended identity requirement below is not
+implemented by `carry_verdicts.py`. It checks only status, SQL (optionally with
+aliases erased) and row count, not plan/bindings or context identity. A local
+compiler/DuckDB counterexample produces different values under the same
+fingerprint. Do not treat tool-carried labels as newly certified judgments.
+The reuse measurement flags unresolved lineage without rewriting historical
+scores; see `../research/evidence-reuse-measurement-01.md`. This documents the
+gap, not a replacement identity contract or an implementation repair.
+
 Repeated runs of the same questions do not need a fresh judgment for every
 case: `evals/carry_verdicts.py --report <new-run.json> --verdicts
 <new-skeleton.yaml> --from <judged-run.json>:<filled.yaml> [--from ...]`

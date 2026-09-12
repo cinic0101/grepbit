@@ -130,8 +130,16 @@ by source, cohort and oracle strength; do not pool research arms, repeat runs,
 old prompts or SQL agreement into one product success rate. No new live run or
 production change in this cleanup. See `active-work.md` for exact authority.
 Cleanup and first reuse inventory are complete: `../research/artifact-reuse-01.md`.
-Static/offline pass, 1,646 tests; the next measurement reuses existing cohorts
-with provenance and oracle strength separated, not the retired card workflow.
+Static/offline pass, 1,646 tests. The approved next measurement's local part is
+complete: `../research/evidence-reuse-measurement-01.md`. Recovered manifest
+bindings for 103 reports; 21 carry edges remain plan-different after defaults,
+affecting 165 repeated labels that need provenance review, not score rewriting.
+Replayed 216 captured fictional ask workflows on current code with no change.
+The fixed 292-case current live panel is prepared but automatic review requires
+explicit real POS payload/destination permission; zero model/DB calls occurred.
+Next obtain that permission and run the fixed panel, then prioritize measured
+wrong-answer/false-refusal families. Do not restore cards or add lexical
+exceptions; separately specify the carry-identity repair before reusing labels.
 
 Current 2026-09-12: the approved 48-call cross-language slice is complete;
 see `../research/cross-language-study-01.md`. Identical repeats agree 12/12;

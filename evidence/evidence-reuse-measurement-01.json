@@ -1,0 +1,354 @@
+{
+  "scope": "Historical outcome stratification, conservative verdict-lineage audit, current-source fictional replay; no production or prompt change",
+  "baseline": "d1aee710d18367ee3d3017c75e17d7b12388a016",
+  "current_tracked_source_digest": "sha256:e01de711a9ebb6e0da5b67fe9b6b2773184f64bc5f6abf307b6ee71c53943361",
+  "inventory": {
+    "path": ".artifacts/card-retirement-20260912/inventory-v2.json",
+    "sha256": "01edfa1f2d99d81c641341d278fc51dfc98750591755e18f467debf90b60e636"
+  },
+  "historical_audit": {
+    "artifact": {
+      "path": ".artifacts/reuse-measurement-20260912/history-v3.json",
+      "sha256": "f8b5dbe27c33f12cf8ac0ee3dc9b3551f4472ef857ed224e15529b56d05d9bce"
+    },
+    "script": {
+      "path": ".artifacts/reuse-measurement-20260912/analyze_history.py",
+      "sha256": "1dd9a9567e6e89d6ce2ffb9d3977a6ef6494bf4d146c0d0ab25ec823cc58ecf7"
+    },
+    "non_dry_reports": 166,
+    "records_including_repeats": 2027,
+    "original_recorded_outcome_buckets": {
+      "answer_reference_match": 446,
+      "answer_reference_mismatch": 22,
+      "refusal_accepted": 73,
+      "refusal_not_accepted": 20,
+      "answer_not_accepted": 5,
+      "answer_unjudged": 1048,
+      "operational_failure": 40,
+      "refusal_unjudged": 371,
+      "answer_status_only_pass": 2
+    },
+    "runner_reports_bound_to_existing_manifests": 103,
+    "manifests": [
+      {
+        "path": "evidence/a5-service-01.json",
+        "sha256": "05053b188c6e37016d856784e3d62ebda54a5783706c85b48dc3b381dc2ec51e"
+      },
+      {
+        "path": "evidence/grain-retirement-01.json",
+        "sha256": "242b6f26669792395e9f481db7d15ece7e29da2603e0f161eec186e0c33e10a2"
+      },
+      {
+        "path": "evidence/a5-ratio-followup-01.json",
+        "sha256": "7e31c385315ffbeb5b8e424fe51309e9a4e3799fa96a1a229a7905bdbfe655bb"
+      },
+      {
+        "path": "evidence/a5-forms-service-01.json",
+        "sha256": "0c003b54022dea412634722bc9be5ae5f20cc349f5179e3bf456674f837f3f5b"
+      }
+    ],
+    "filled_label_nodes": 827,
+    "carry_edge_counts": {
+      "no_carry_marker": 252,
+      "raw_plan_core_changed": 36,
+      "carried_edges": 575,
+      "plan_core_changed_after_defaults": 21,
+      "equal_after_explicit_domain_defaults": 15
+    },
+    "changed_plan_fields_overlapping": {
+      "measures": 12,
+      "having": 1,
+      "filters": 2,
+      "time": 7
+    },
+    "filled_labels_with_unresolved_lineage_including_repeats": 165,
+    "synthetic_compiler_duckdb_counterexample": {
+      "same_tool_fingerprint": true,
+      "changed_plan_core": true,
+      "carried_verdict": "correct",
+      "counts": {
+        "carried": 1,
+        "open": 0
+      },
+      "old_hand_and_sql_value": 2,
+      "new_hand_and_sql_value": 1,
+      "nonclaim": "Synthetic counterexample to sufficient identity; no claim that all historical changed plans are wrong."
+    },
+    "historical_scores_modified": false,
+    "carry_tool_modified": false,
+    "limits": [
+      "Manifest membership does not establish current-runtime equivalence",
+      "No recognized carry marker does not prove independent review",
+      "Unresolved lineage is not proof of a wrong value",
+      "No current source/data identity assurance for old labels; unrecognized lineage and unavailable plans remain gaps"
+    ]
+  },
+  "complete_historical_initial_v15_batch": {
+    "selection": "Every initial v15-*.json report directly under .artifacts/a5-20260912; not selected best reruns",
+    "frozen_runtime_sha256": "2c4da6d3d9481d30aa9fdc66ba7eea27b6505e1ef9be931e9c5b151d36dd0aa9",
+    "reports": 16,
+    "cases": 313,
+    "outcomes": {
+      "answer_reference_match": 196,
+      "refusal_accepted": 52,
+      "answer_not_accepted": 1,
+      "answer_reference_mismatch": 4,
+      "answer_unjudged": 43,
+      "refusal_unjudged": 12,
+      "operational_failure": 2,
+      "answer_status_only_pass": 1,
+      "refusal_not_accepted": 2
+    },
+    "artifacts": [
+      {
+        "path": ".artifacts/a5-20260912/v15-batch1.json",
+        "sha256": "c7f8ebf17ad6695853794c789e01f1d9061005641674df0f39b78911065e0b7a"
+      },
+      {
+        "path": ".artifacts/a5-20260912/v15-coverage_iot.json",
+        "sha256": "dc13d51c3b6647a2133148b6a08831830e1637685753e6044b28e270f7284f2d"
+      },
+      {
+        "path": ".artifacts/a5-20260912/v15-coverage_pos.json",
+        "sha256": "002ccf4b0d321da9e51c007c544e3276b3722b25bcdc990b8c923012c7f5b7e7"
+      },
+      {
+        "path": ".artifacts/a5-20260912/v15-coverage_retail.json",
+        "sha256": "b1c6e19eccfbd8076ff10ecce63a8b5695368d449ea60ffd44f39ea4bf07d8f5"
+      },
+      {
+        "path": ".artifacts/a5-20260912/v15-features.json",
+        "sha256": "88aa4a51ab3bb4e5be626601bf80669a3417ac31b1563e657cbab55f0197584c"
+      },
+      {
+        "path": ".artifacts/a5-20260912/v15-having.json",
+        "sha256": "ec2e14596525ff2d8bd85dc3c51f069a47ac2c70c1369c68cfd0115a1478d5a2"
+      },
+      {
+        "path": ".artifacts/a5-20260912/v15-holdout2.json",
+        "sha256": "1c791b2e5b0bf5b116603dc6d3e6fef2c9f8500ced0630a26a21e0ae16a33043"
+      },
+      {
+        "path": ".artifacts/a5-20260912/v15-holdout3.json",
+        "sha256": "311011e9dd834f9dd04e66bc4e8848376c36a6416e191e9a44451a0cdf7d8c34"
+      },
+      {
+        "path": ".artifacts/a5-20260912/v15-iot.json",
+        "sha256": "4c555c4b107761015b541c750707664b346694abb044dba6aea2b0588ca2a477"
+      },
+      {
+        "path": ".artifacts/a5-20260912/v15-multilingual.json",
+        "sha256": "5b3ad263c9894c8252bfdf1ee46d8edc4a106bb59522915710dc642e6305e546"
+      },
+      {
+        "path": ".artifacts/a5-20260912/v15-nosample.json",
+        "sha256": "2bf18ed1117286390037303e78025354d9f5be440566f6e9e3656429db2542bc"
+      },
+      {
+        "path": ".artifacts/a5-20260912/v15-overlay.json",
+        "sha256": "cd9cacf8d500981081a659d76d979fceb5d82ce3f41c6103466a89c62e9b8153"
+      },
+      {
+        "path": ".artifacts/a5-20260912/v15-pos.json",
+        "sha256": "11bcfc903675fa6e517f1e38887424a688fff755c4788994b2858a5cbbb3b9c9"
+      },
+      {
+        "path": ".artifacts/a5-20260912/v15-ratios.json",
+        "sha256": "fb8935bd0f13bf9885ff86436899852c9afe886ff0715057f0e7564e0cebb0fe"
+      },
+      {
+        "path": ".artifacts/a5-20260912/v15-real_smoke.json",
+        "sha256": "ab41b61ef682c97ca7a0edfff7b062251e4fe5f4920225ea04cfc7893236cd0c"
+      },
+      {
+        "path": ".artifacts/a5-20260912/v15-retail.json",
+        "sha256": "ae4f71052f20021bae7e4a310166645572e7967d878e5fb43f19b421a66ff109"
+      }
+    ],
+    "all_bound_to_manifest": true,
+    "original_recorded_pass_count": 249,
+    "original_recorded_negative_count": 7,
+    "cases_without_original_correctness_label": 57,
+    "nonclaim": "Not current-code results, independent-intent oracle, unique question count or product accuracy"
+  },
+  "local_replay": {
+    "artifact": {
+      "path": ".artifacts/reuse-measurement-20260912/local-replay.json",
+      "sha256": "4e5c12caf845214d74a1071d20eb9f60a25698a3f0f2ec635c77c3f4b6dd157c"
+    },
+    "script": {
+      "path": ".artifacts/reuse-measurement-20260912/replay_local.py",
+      "sha256": "0029c6afab3ee9692830d68c767a7ccce1c95539e327313403b9f34ce1ca1fd1"
+    },
+    "input": {
+      "path": ".artifacts/cross-language-study-20260912/live.json",
+      "sha256": "4ef4217ec9473110fed1380540c4d40e380af48e7b0754ed5fe172f0936ef44a"
+    },
+    "scope": "captured fictional proposals on current actual ask; not fresh LLM planning",
+    "source": "sha256:e01de711a9ebb6e0da5b67fe9b6b2773184f64bc5f6abf307b6ee71c53943361",
+    "original_source": "sha256:10d704296b0f17daeec68a8d9e4a31a7e6fd5a36319567409c1a00bb511111be",
+    "input_sha256": "4ef4217ec9473110fed1380540c4d40e380af48e7b0754ed5fe172f0936ef44a",
+    "driver_sha256": "0029c6afab3ee9692830d68c767a7ccce1c95539e327313403b9f34ce1ca1fd1",
+    "fixture_and_overlay_identity_checked": true,
+    "replays": 216,
+    "sql_executions": 195,
+    "model_calls": 0,
+    "external_database_calls": 0,
+    "differences_from_recorded_replays": [],
+    "one_instance_question_counts": {
+      "current:Z1": {
+        "questions": 12,
+        "statuses": {
+          "answered": 11,
+          "clarify": 1
+        },
+        "answered_matches_gold": 8,
+        "answered_mismatches_gold": 2,
+        "answered_no_gold": 1
+      },
+      "current:Z2": {
+        "questions": 12,
+        "statuses": {
+          "answered": 11,
+          "clarify": 1
+        },
+        "answered_matches_gold": 8,
+        "answered_mismatches_gold": 2,
+        "answered_no_gold": 1
+      },
+      "current:E": {
+        "questions": 12,
+        "statuses": {
+          "clarify": 5,
+          "answered": 7
+        },
+        "answered_matches_gold": 6,
+        "answered_mismatches_gold": 0,
+        "answered_no_gold": 1
+      },
+      "no_lexical_shadow:Z1": {
+        "questions": 12,
+        "statuses": {
+          "answered": 12
+        },
+        "answered_matches_gold": 9,
+        "answered_mismatches_gold": 2,
+        "answered_no_gold": 1
+      },
+      "no_lexical_shadow:Z2": {
+        "questions": 12,
+        "statuses": {
+          "answered": 12
+        },
+        "answered_matches_gold": 9,
+        "answered_mismatches_gold": 2,
+        "answered_no_gold": 1
+      },
+      "no_lexical_shadow:E": {
+        "questions": 12,
+        "statuses": {
+          "answered": 12
+        },
+        "answered_matches_gold": 10,
+        "answered_mismatches_gold": 1,
+        "answered_no_gold": 1
+      }
+    },
+    "grade_counts": {
+      "Z1": {
+        "wrong": 2,
+        "correct": 9,
+        "unresolved": 1
+      },
+      "Z2": {
+        "wrong": 2,
+        "correct": 9,
+        "unresolved": 1
+      },
+      "E": {
+        "correct": 10,
+        "wrong": 1,
+        "unresolved": 1
+      }
+    },
+    "nonclaim": "No detector adoption, fidelity-ledger override, fresh-planning or generalization claim.",
+    "sql_count_scope": "SQL executions within the 216 ask workflows; analyzer also performs local grading/witness queries"
+  },
+  "current_live_panel": {
+    "status": "blocked_by_automatic_review_before_process_creation",
+    "planned_sets": 15,
+    "planned_case_executions": 292,
+    "scheduled_cases_executed": 0,
+    "maximum_transport_attempts_including_repair_retry": 900,
+    "actual_model_calls": 0,
+    "actual_postgresql_calls": 0,
+    "current_run_directory_exists": false,
+    "credentials_read": false,
+    "driver": {
+      "path": ".artifacts/reuse-measurement-20260912/run_panel.py",
+      "sha256": "eac67be339839bb1fc85de736af6153ec15107564fe96e7a40c6333eade639cd"
+    },
+    "scope_plan": "docs/plan/evidence-reuse-measurement.md",
+    "blocker": "Explicit authorization of real POS questions and database-derived schema/overlay payloads to the named private Gemma gateway required beyond generic model/database permission",
+    "retry_or_workaround_attempted": false
+  },
+  "validation": {
+    "private_tests": {
+      "artifacts": [
+        {
+          "path": ".artifacts/reuse-measurement-20260912/test_panel.py",
+          "sha256": "bdd9d99c305ff7777c5ca363575cc304614955cf3ee38703c9977beb3f693409"
+        },
+        {
+          "path": ".artifacts/reuse-measurement-20260912/test_analysis.py",
+          "sha256": "e9a78c12d47c4bf1c80a07b39f5c91431920d99b956f4a30a9bf652dbea62759"
+        },
+        {
+          "path": ".artifacts/reuse-measurement-20260912/private-driver-tests.xml",
+          "sha256": "c378f7d3a62b53b8a65804bd1d11247d864b40a7c2eee6faa4e27f58fa8d72b0"
+        }
+      ],
+      "tests": 20,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "prior_broad_gate_reused_not_rerun": {
+      "reason": "Tracked runtime/test source unchanged; new work is documentation and separately tested ignored research scripts",
+      "static": {
+        "path": ".artifacts/card-retirement-20260912/static/result.json",
+        "status": "pass",
+        "passed": true,
+        "junit_counts": null,
+        "source_available": true,
+        "source_stable": true,
+        "source_digest": "sha256:e01de711a9ebb6e0da5b67fe9b6b2773184f64bc5f6abf307b6ee71c53943361",
+        "sha256": "c6ba6eab493ec03d363b0e20fdf5604c7a8b65426038d525710bd71bf444f67a"
+      },
+      "offline": {
+        "path": ".artifacts/card-retirement-20260912/offline/result.json",
+        "status": "pass",
+        "passed": true,
+        "junit_counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1646
+        },
+        "source_available": true,
+        "source_stable": true,
+        "source_digest": "sha256:e01de711a9ebb6e0da5b67fe9b6b2773184f64bc5f6abf307b6ee71c53943361",
+        "sha256": "c8080bb04aefd73ec05d0395d417cfbcfd263a82edf43a74d69539fa8acc38ba"
+      }
+    }
+  },
+  "nonclaims": [
+    "No pooled product accuracy",
+    "No new holdout/generalization measurement",
+    "No fresh planning result",
+    "No intent certification or detector adoption",
+    "No human correction path",
+    "No new judgment carry or historical rescore",
+    "No external calls or push"
+  ]
+}
