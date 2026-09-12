@@ -1,5 +1,34 @@
 # Active work: evaluation repairs and accepted period semantics
 
+Current follow-up COMPLETE: the frozen 292-case panel on baseline `6ddd8eb`,
+tracked source e01de711. Exact new owner authority: "同意，並在結束後告訴我
+驗證結果，以及你怎麼判斷這些結果？" in response to the explicit request to
+send existing questions (including real POS), schema/overlay and policy-eligible
+candidate values to http://10.12.0.187:4000/v1, Gemma4 31B, at most 900 calls
+including retries. Real POS sampling zero; no SQL, result rows or credentials
+in model messages. This resolves the preceding payload-permission blocker,
+subject to managed review. Existing read-only PostgreSQL and local-commit
+authority applies; no push, production/prompt changes or historical rescore.
+Root owns serial execution and analysis. Fresh output is the frozen plan's
+`current/` directory; preserve all earlier evidence and do not rerun for luck.
+Finish with separate reference-match, accepted-refusal, unjudged and failure
+counts, context/source provenance and interpretation limits.
+
+Completed 2026-09-13 Taipei: 283 model attempts, all succeeded, zero transport
+errors/retries; 283/292 meet the existing expectation = 228 reference matches,
+54 accepted refusals, one status-only accepted answer. Nine failures = four
+reference mismatches, four unaccepted refusals, one unexpected answer on a
+semantic-gap case. 250 exact question/datasource hashes, not independent intents.
+Source/input checks pass. Five new private analysis tests pass; reuse the prior
+unchanged-driver 20 private tests and source-identical static/offline gate
+(1,646 pass). See `../research/evidence-reuse-live-01.md` and its evidence JSON.
+All owned live execution ended. No more calls, prompt/runtime change, old
+verdict carry or score rewrite in this slice. Next prioritize safe structural
+diagnostics for the unsupported-concept answer and four mismatch families;
+do not infer root causes from hashes or promote intent certification.
+
+Previous completed local measurement and its original external blocker:
+
 Current slice: unified reuse measurement, baseline clean dev `d1aee71`.
 Exact authority: the owner replied "好 沒問題 可以開始" to the proposed reuse
 of existing cohorts, stratified outcomes and targeted reruns only for missing

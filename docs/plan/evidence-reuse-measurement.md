@@ -29,10 +29,18 @@ Unjudged holdout2/holdout3/ratio questions are not sent again merely to obtain
 another answer without a trustworthy new correctness label. Their old evidence
 stays in the historical audit. No fresh holdout/generalization claim.
 
-## External scope (bounded proposal; specific payload permission pending)
+## External scope (explicit follow-up approved)
 
-Automatic review rejected the live invocation before process creation. Generic
-owner permission for psql/Gemma did not satisfy its requirement for explicit
+After the local report, the owner replied "同意，並在結束後告訴我驗證結果，
+以及你怎麼判斷這些結果？" to the explicit request naming existing real POS
+questions, schema/overlay, eligible candidate values, the private endpoint
+http://10.12.0.187:4000/v1 and the 900-attempt cap. This supplies the previously
+missing payload/destination permission, subject to managed review. No result
+rows, SQL or credentials go to the model. The frozen panel/settings below are
+unchanged; no additional model experiment is authorized by this record.
+
+Historical blocker: automatic review rejected the prior invocation before
+process creation. Generic owner permission for psql/Gemma did not satisfy its requirement for explicit
 real POS question/schema/overlay transmission to the named gateway. No command
 ran, credentials were not loaded, and no live artifacts were created. This
 scope record cannot grant that permission; do not retry or route around the
@@ -76,9 +84,17 @@ publish a counts/hash-only research report and the exact safety/non-claims.
 The already passing `d1aee71` static/offline gate may be reused if tracked source
 is unchanged; validate the new private drivers and bind their separate hashes.
 
-## Local result
+## Results by phase
 
-Completed historical accounting, carry-lineage audit, current-source fictional
-replay and 20 private driver/analysis tests. No model/PostgreSQL calls occurred.
-The live panel remains prepared, not measured. Results and exact non-claims:
-`../research/evidence-reuse-measurement-01.md`.
+The initial local phase completed historical accounting, carry-lineage audit,
+current-source fictional replay and 20 private driver/analysis tests. No
+model/PostgreSQL calls occurred in that phase.
+That initial local result and exact non-claims are preserved in
+`../research/evidence-reuse-measurement-01.md`. After explicit follow-up approval,
+the live panel completed on 2026-09-13 Taipei: 292 cases, 283 successful model
+attempts, no transport errors. 283 expectations met (228 reference-matched
+answers, 54 accepted refusals, one status-only answer); four reference
+mismatches, four unaccepted refusals and one unexpected answer remain.
+Source/inputs unchanged; five new analysis tests pass. See
+`../research/evidence-reuse-live-01.md` for the counts, artifact bindings and
+why this is a regression baseline rather than an intent/generalization proof.

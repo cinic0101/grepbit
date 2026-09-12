@@ -8,8 +8,14 @@ plans and text; they contain no credentials and no bound values. Artifacts
 taken on the real POS test database are written with `--redact-rows` and
 hold no cell value (`rows_redacted: true` in the summary).
 
+Privacy note: the historical description above is not a complete PII-redaction
+guarantee; row redaction alone can leave values in plans or other fields. The
+current reuse manifests below publish counts and hashes only. See
+`../docs/research/evidence-reuse-live-01.md` for the pre-write field policy.
+
 | File | Experiment | Notes |
 |---|---|---|
+| `evidence-reuse-live-01.json` | Fixed current-source panel, completed 2026-09-13; raw metrics remain in `.artifacts/reuse-measurement-20260912/current/` | 292 cases, 283 successful model attempts; 228 reference matches, 54 accepted refusals, one status-only pass; four mismatches, four unaccepted refusals, one unexpected answer. Counts/hash-only manifest SHA-256: `ef3601c5abedef1af562bfa0f79b1c6651795a56496323562c6421f4a481f406`; no historical rescore or intent-certification claim. |
 | `iot-01.json`, `iot-02.json`, `iot-03.json` | IoT, prompt v1, v2, v2 (final of the first day) | 19/20, 20/20, 20/20 |
 | `retail-01.json` to `retail-03.json` | retail, prompt v1 to v2 | 12/12, 11/12 (reference issue), 12/12 |
 | `iot-04.json`, `retail-04.json` | rerun on prompt v3 | no over-refusal |

@@ -135,11 +135,15 @@ complete: `../research/evidence-reuse-measurement-01.md`. Recovered manifest
 bindings for 103 reports; 21 carry edges remain plan-different after defaults,
 affecting 165 repeated labels that need provenance review, not score rewriting.
 Replayed 216 captured fictional ask workflows on current code with no change.
-The fixed 292-case current live panel is prepared but automatic review requires
-explicit real POS payload/destination permission; zero model/DB calls occurred.
-Next obtain that permission and run the fixed panel, then prioritize measured
-wrong-answer/false-refusal families. Do not restore cards or add lexical
-exceptions; separately specify the carry-identity repair before reusing labels.
+The fixed 292-case current live panel subsequently received the owner's
+explicit real POS payload/destination permission and completed 2026-09-13:
+`../research/evidence-reuse-live-01.md`. All 283 model attempts succeeded;
+283 cases meet expectations (228 reference matches, 54 accepted refusals,
+one status-only answer). Four reference mismatches, four unaccepted refusals
+and one unexpected answer remain. Next prioritize safe diagnostics for the
+missing-definition answer and mismatch families before reducing refusals;
+no current result certifies intent or generalization. Do not restore cards
+or add lexical exceptions; separately specify carry identity before label reuse.
 
 Current 2026-09-12: the approved 48-call cross-language slice is complete;
 see `../research/cross-language-study-01.md`. Identical repeats agree 12/12;

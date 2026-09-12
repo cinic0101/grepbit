@@ -1,0 +1,572 @@
+{
+  "scope": "One frozen existing-case current-source live panel; no rescore or production change",
+  "started_local_date": "2026-09-12",
+  "completed_local_date": "2026-09-13",
+  "timezone": "Asia/Taipei",
+  "baseline_git": "6ddd8eb",
+  "tracked_source_digest": "sha256:e01de711a9ebb6e0da5b67fe9b6b2773184f64bc5f6abf307b6ee71c53943361",
+  "permission_record": "docs/plan/active-work.md",
+  "authorization": "Explicit owner follow-up for existing questions including real POS, schema/overlay and policy-eligible candidate values to named private Gemma gateway; max900 including retries",
+  "execution": {
+    "scheduled_sets": 15,
+    "completed_sets": 15,
+    "scheduled_case_executions": 292,
+    "completed_case_executions": 292,
+    "model_attempts": 283,
+    "completed_model_attempts": 283,
+    "transport_errors": 0,
+    "model_retries": 0,
+    "maximum_authorized_attempts": 900,
+    "source_unchanged": true,
+    "inputs_checked": true,
+    "readonly_role": "grepbit_ro",
+    "existing_databases": 5,
+    "real_pos_sampling_limit": 0,
+    "model": "gemma-4-31b",
+    "prompt_revision": "plan-classify-json-v15",
+    "temperature": 0,
+    "thinking": "off",
+    "output_mode": "json_object",
+    "validation_repair_turn_limit": 1,
+    "call_timeout_seconds": 20,
+    "shell_token_setting": 512,
+    "effective_nonthinking_token_limit": 768,
+    "settings_evidence_limit": "Configuration plus frozen source and report metadata; not immutable provider weight/build attestation",
+    "start_manifest": {
+      "path": ".artifacts/reuse-measurement-20260912/current/manifest-start.json",
+      "sha256": "3fc85d34b50406dbb6e1d44549b7655df4b44399bcba6dfde16b878ab4826f06"
+    },
+    "end_manifest": {
+      "path": ".artifacts/reuse-measurement-20260912/current/manifest-end.json",
+      "sha256": "53397b267ba8595d16318a3240933937383a0984a3bd063ae82665e07cb76113"
+    },
+    "driver": {
+      "path": ".artifacts/reuse-measurement-20260912/run_panel.py",
+      "sha256": "eac67be339839bb1fc85de736af6153ec15107564fe96e7a40c6333eade639cd"
+    },
+    "ledger": {
+      "path": ".artifacts/reuse-measurement-20260912/current/calls.jsonl",
+      "sha256": "47366443fee6acc024fbc7da80b1f1d5101791b5205ec9daf406a5c57bc4bf14"
+    }
+  },
+  "overall": {
+    "case_executions": 292,
+    "recorded_passes": 283,
+    "recorded_failures": 9,
+    "unjudged": 0,
+    "outcomes": {
+      "answer_reference_match": 228,
+      "refusal_accepted": 54,
+      "refusal_not_accepted": 4,
+      "answer_reference_mismatch": 4,
+      "answer_status_only_pass": 1,
+      "answer_not_accepted": 1
+    },
+    "statuses": {
+      "answered": 234,
+      "clarify": 6,
+      "unsupported": 11,
+      "unsafe": 6,
+      "semantic_gap": 35
+    },
+    "expected_statuses": {
+      "answered": 238,
+      "semantic_gap": 40,
+      "unsupported": 6,
+      "unsafe": 7,
+      "clarify": 1
+    },
+    "unaccepted_refusals_on_expected_answers": 4,
+    "unaccepted_refusal_type_on_expected_refusals": 0,
+    "unaccepted_answers_on_expected_refusals": 1,
+    "verification_by_outcome": {
+      "answer_not_accepted": {
+        "unverified_semantics": 1
+      },
+      "answer_reference_match": {
+        "unverified_semantics": 181,
+        "verified": 45,
+        "partially_verified": 2
+      },
+      "answer_reference_mismatch": {
+        "unverified_semantics": 4
+      },
+      "answer_status_only_pass": {
+        "unverified_semantics": 1
+      },
+      "refusal_accepted": {
+        "not_compiled": 54
+      },
+      "refusal_not_accepted": {
+        "not_compiled": 3,
+        "unverified_semantics": 1
+      }
+    },
+    "model_repair_turns": 4,
+    "model_retries": 0,
+    "literal_misses": 1,
+    "hinted_literal_misses": 0,
+    "candidate_hinted_cases": 8,
+    "value_references": 8,
+    "value_reference_errors": 0,
+    "truncated_answers": 0,
+    "exact_question_datasource_hashes": 250,
+    "latency": {
+      "n": 286,
+      "p50_seconds": 3.865,
+      "p95_seconds": 5.135
+    }
+  },
+  "cohort_results": {
+    "authors": {
+      "case_executions": 160,
+      "recorded_passes": 155,
+      "recorded_failures": 5,
+      "outcomes": {
+        "answer_reference_match": 106,
+        "refusal_accepted": 48,
+        "refusal_not_accepted": 2,
+        "answer_reference_mismatch": 2,
+        "answer_status_only_pass": 1,
+        "answer_not_accepted": 1
+      },
+      "latency": {
+        "n": 155,
+        "p50_seconds": 3.674,
+        "p95_seconds": 4.98
+      }
+    },
+    "features": {
+      "case_executions": 39,
+      "recorded_passes": 37,
+      "recorded_failures": 2,
+      "outcomes": {
+        "answer_reference_mismatch": 2,
+        "answer_reference_match": 37
+      },
+      "latency": {
+        "n": 39,
+        "p50_seconds": 4.505,
+        "p95_seconds": 7.493
+      }
+    },
+    "settled_batch1": {
+      "case_executions": 50,
+      "recorded_passes": 50,
+      "recorded_failures": 0,
+      "outcomes": {
+        "answer_reference_match": 47,
+        "refusal_accepted": 3
+      },
+      "latency": {
+        "n": 50,
+        "p50_seconds": 4.11,
+        "p95_seconds": 5.641
+      }
+    },
+    "real_smoke": {
+      "case_executions": 7,
+      "recorded_passes": 7,
+      "recorded_failures": 0,
+      "outcomes": {
+        "answer_reference_match": 6,
+        "refusal_accepted": 1
+      },
+      "latency": {
+        "n": 7,
+        "p50_seconds": 4.604,
+        "p95_seconds": 5.376
+      }
+    },
+    "service": {
+      "case_executions": 24,
+      "recorded_passes": 24,
+      "recorded_failures": 0,
+      "outcomes": {
+        "answer_reference_match": 22,
+        "refusal_accepted": 2
+      },
+      "latency": {
+        "n": 23,
+        "p50_seconds": 2.376,
+        "p95_seconds": 4.008
+      }
+    },
+    "service_adversarial": {
+      "case_executions": 12,
+      "recorded_passes": 10,
+      "recorded_failures": 2,
+      "outcomes": {
+        "answer_reference_match": 10,
+        "refusal_not_accepted": 2
+      },
+      "latency": {
+        "n": 12,
+        "p50_seconds": 2.461,
+        "p95_seconds": 3.004
+      }
+    }
+  },
+  "set_results": [
+    {
+      "set": "pos",
+      "datasource": "pos_test",
+      "cases_file": "evals/cases/tier0/pos.yaml",
+      "cases_sha256": "ba1ebdf9f4d0d6c599eab2fa12c09c1d8c213ea174f20ef39e35872556a5a866",
+      "effective_cases_sha256": "d986653f23452b19fa92510b5bfca6782207b330c5aa534554eeacfc8632dcdb",
+      "as_of": "2026-02-10T12:00:00+08:00",
+      "overlay": null,
+      "overlay_sha256": null,
+      "enum_distinct_limit": 20,
+      "case_executions": 26,
+      "recorded_passes": 25,
+      "shape_variants": 1,
+      "model_attempts": 26,
+      "artifact": {
+        "path": ".artifacts/reuse-measurement-20260912/current/pos.json",
+        "sha256": "79d69ce5ea8021e5e1b0ccd76044abcd6afae8894f2ab8a6b8c1d97a66bc9c90"
+      }
+    },
+    {
+      "set": "multilingual",
+      "datasource": "pos_test",
+      "cases_file": "evals/cases/tier0/pos_multilingual.yaml",
+      "cases_sha256": "cb0880514a98e9a60b02cdb580d3bfd111d93d5956cb6d37095c94ec8a2e6cfd",
+      "effective_cases_sha256": "d857300f02730637cfa03002ad9f8f4ba00a43590b32afbb7540cabd1c064eea",
+      "as_of": "2026-02-10T12:00:00+08:00",
+      "overlay": null,
+      "overlay_sha256": null,
+      "enum_distinct_limit": 20,
+      "case_executions": 32,
+      "recorded_passes": 31,
+      "shape_variants": 0,
+      "model_attempts": 31,
+      "artifact": {
+        "path": ".artifacts/reuse-measurement-20260912/current/multilingual.json",
+        "sha256": "011be42bc5fa4263a20c2bbcb75359ccc3e0ac5664c7c00b06d46e4af32bfd8a"
+      }
+    },
+    {
+      "set": "iot",
+      "datasource": "iot_spike",
+      "cases_file": "evals/cases/tier0/iot.yaml",
+      "cases_sha256": "3d450d29fb404a97c324ba2d51db606cd2fdc360a50903b21be80e96ef295458",
+      "effective_cases_sha256": "f031cd6634aedbfb8babc02c353604265637afdc09a67aec583ac3be9f465817",
+      "as_of": "2026-08-15T12:00:00+08:00",
+      "overlay": null,
+      "overlay_sha256": null,
+      "enum_distinct_limit": 20,
+      "case_executions": 20,
+      "recorded_passes": 19,
+      "shape_variants": 0,
+      "model_attempts": 19,
+      "artifact": {
+        "path": ".artifacts/reuse-measurement-20260912/current/iot.json",
+        "sha256": "8e9d4bf3f958d0cd5bcfd90cd5f88757fb7602ade1eaabcf067d635875c1cce4"
+      }
+    },
+    {
+      "set": "having",
+      "datasource": "pos_test",
+      "cases_file": "evals/cases/tier0/having_pos.yaml",
+      "cases_sha256": "ccd9950c7369a0db50b00940dfc9757f7e2cb0bd872856c2314184c9bd3b5b81",
+      "effective_cases_sha256": "642367d5685dd77e89e5fdc890113e969d1e459d4598d42d0b81498dddd1dc9f",
+      "as_of": "2026-02-10T12:00:00+08:00",
+      "overlay": null,
+      "overlay_sha256": null,
+      "enum_distinct_limit": 20,
+      "case_executions": 6,
+      "recorded_passes": 6,
+      "shape_variants": 0,
+      "model_attempts": 6,
+      "artifact": {
+        "path": ".artifacts/reuse-measurement-20260912/current/having.json",
+        "sha256": "a2b431bb566c833fc52b05528a3b7342157577de06851206383e5e880fd32d4c"
+      }
+    },
+    {
+      "set": "overlay",
+      "datasource": "pos_test",
+      "cases_file": "evals/cases/tier0/pos_overlay.yaml",
+      "cases_sha256": "424f14a05ce263b4ad75d5945f845d20edeb815cdd57ab6448af4a4ce4997005",
+      "effective_cases_sha256": "66e01d2307c4c5d4335fa74e98eb0227d3177d5e3fed71ab7205d816179b68f7",
+      "as_of": "2026-02-10T12:00:00+08:00",
+      "overlay": "evals/fixtures/pos_overlay.json",
+      "overlay_sha256": "6e6881a1084066d514be894c8a61a384079ee3526cb5a6932dd1c1a6d4f16fc3",
+      "enum_distinct_limit": 20,
+      "case_executions": 14,
+      "recorded_passes": 14,
+      "shape_variants": 0,
+      "model_attempts": 10,
+      "artifact": {
+        "path": ".artifacts/reuse-measurement-20260912/current/overlay.json",
+        "sha256": "a7943248c3963e85f45f51c769163f281f3241b8b87e1b4c446bdc3aa83800f6"
+      }
+    },
+    {
+      "set": "nosample",
+      "datasource": "pos_test",
+      "cases_file": "evals/cases/tier0/pos.yaml",
+      "cases_sha256": "ba1ebdf9f4d0d6c599eab2fa12c09c1d8c213ea174f20ef39e35872556a5a866",
+      "effective_cases_sha256": "d986653f23452b19fa92510b5bfca6782207b330c5aa534554eeacfc8632dcdb",
+      "as_of": "2026-02-10T12:00:00+08:00",
+      "overlay": null,
+      "overlay_sha256": null,
+      "enum_distinct_limit": 0,
+      "case_executions": 26,
+      "recorded_passes": 25,
+      "shape_variants": 1,
+      "model_attempts": 25,
+      "artifact": {
+        "path": ".artifacts/reuse-measurement-20260912/current/nosample.json",
+        "sha256": "1afb3fc6da08f6a1587e70c56848576ca6dc6550e09cb2b220034d7d4b3593d8"
+      }
+    },
+    {
+      "set": "retail",
+      "datasource": "retail_spike",
+      "cases_file": "evals/cases/tier0/retail.yaml",
+      "cases_sha256": "1f0ebf8470e09584c0c375eae5b561a9991b4bdbd90ecbbe13d00b261a7c4397",
+      "effective_cases_sha256": "4eb04ad81121eb18ecc13a396a8732e4d0bab98843fea9cc15df1dd04738fdfe",
+      "as_of": "2026-08-15T12:00:00+08:00",
+      "overlay": null,
+      "overlay_sha256": null,
+      "enum_distinct_limit": 20,
+      "case_executions": 12,
+      "recorded_passes": 12,
+      "shape_variants": 0,
+      "model_attempts": 11,
+      "artifact": {
+        "path": ".artifacts/reuse-measurement-20260912/current/retail.json",
+        "sha256": "565da5dde40d65fab042132c42a99a579c74f6466bc56621b863f90d13908f15"
+      }
+    },
+    {
+      "set": "coverage_pos",
+      "datasource": "pos_test",
+      "cases_file": "evals/cases/tier0/coverage_pos.yaml",
+      "cases_sha256": "76104a5078a7c93c36e3d8433515a31097794d26c4e52b7ca17b082caec67985",
+      "effective_cases_sha256": "e9ff80dc247ef295f97469ee426e69226df7d09f1a380ea4b2b79b0e2a4236e5",
+      "as_of": "2026-02-10T12:00:00+08:00",
+      "overlay": null,
+      "overlay_sha256": null,
+      "enum_distinct_limit": 20,
+      "case_executions": 8,
+      "recorded_passes": 8,
+      "shape_variants": 0,
+      "model_attempts": 8,
+      "artifact": {
+        "path": ".artifacts/reuse-measurement-20260912/current/coverage_pos.json",
+        "sha256": "0465cca8412a4fb0fbe1528e3c0756df46c1154976826784945a8353f23e78d1"
+      }
+    },
+    {
+      "set": "coverage_iot",
+      "datasource": "iot_spike",
+      "cases_file": "evals/cases/tier0/coverage_iot.yaml",
+      "cases_sha256": "3b86190fd38b30a884ec9871881f876a182af74afcf23ed42b1014153d3c699e",
+      "effective_cases_sha256": "33632c39a472e925626b1631798e7cd67b998aea5182938b1f4037c66eee0083",
+      "as_of": "2026-08-15T12:00:00+08:00",
+      "overlay": null,
+      "overlay_sha256": null,
+      "enum_distinct_limit": 20,
+      "case_executions": 8,
+      "recorded_passes": 7,
+      "shape_variants": 0,
+      "model_attempts": 8,
+      "artifact": {
+        "path": ".artifacts/reuse-measurement-20260912/current/coverage_iot.json",
+        "sha256": "9621da125999f9d906a04a80eb7addce72bedef27ebf429dbea93502092d1fb5"
+      }
+    },
+    {
+      "set": "coverage_retail",
+      "datasource": "retail_spike",
+      "cases_file": "evals/cases/tier0/coverage_retail.yaml",
+      "cases_sha256": "13977ecad0026cc38882fa43e9ff2c0a22bbc7774d315a07e77c6a90a8dc7b1d",
+      "effective_cases_sha256": "63f9b24a9c5c0fd4693d4b4eca9b0b2ea8e2f44e3a7367301a59eba5c317a839",
+      "as_of": "2026-08-15T12:00:00+08:00",
+      "overlay": null,
+      "overlay_sha256": null,
+      "enum_distinct_limit": 20,
+      "case_executions": 8,
+      "recorded_passes": 8,
+      "shape_variants": 0,
+      "model_attempts": 8,
+      "artifact": {
+        "path": ".artifacts/reuse-measurement-20260912/current/coverage_retail.json",
+        "sha256": "22cdaed6aef1435246f9e84d2469c2d7bb134757e22466dd3feb67554bf1c7dc"
+      }
+    },
+    {
+      "set": "features",
+      "datasource": "pos_test",
+      "cases_file": "evals/cases/tier0/pos_features.yaml",
+      "cases_sha256": "88d6e1fd818c7cee36cf00a714ee26af36a91fb9f6c63ae1fcdfb298b987adcd",
+      "effective_cases_sha256": "596e7f0628615a5c8eb444b0eb2fb751cfd9b1e9674304830188144ea33a3ec9",
+      "as_of": "2026-02-10T12:00:00+08:00",
+      "overlay": null,
+      "overlay_sha256": null,
+      "enum_distinct_limit": 20,
+      "case_executions": 39,
+      "recorded_passes": 37,
+      "shape_variants": 0,
+      "model_attempts": 42,
+      "artifact": {
+        "path": ".artifacts/reuse-measurement-20260912/current/features.json",
+        "sha256": "0eb8d8f6f7b958a25073b2807f466b10b7d7faec9e6ef9c243bb763ff7c9533e"
+      }
+    },
+    {
+      "set": "batch1",
+      "datasource": "pos_real",
+      "cases_file": "evals/cases/tier0/pos_real_batch1.yaml",
+      "cases_sha256": "89d28deab09ac65816722d56f0e1b6ac5b043cca90bb4cdfc49dadacf58fa21e",
+      "effective_cases_sha256": "06f2f6455bbef38fb17ecb4464d7342e355544bcaf4855333bfe59e075a71634",
+      "as_of": "2026-02-04T18:00:00+08:00",
+      "overlay": "overlays/pos_real.json",
+      "overlay_sha256": "2536d8378a41a8e7aa3cdd21f8ae4ca835c384bacea3ad00b57613b2deb3259a",
+      "enum_distinct_limit": 0,
+      "case_executions": 50,
+      "recorded_passes": 50,
+      "shape_variants": 0,
+      "model_attempts": 47,
+      "artifact": {
+        "path": ".artifacts/reuse-measurement-20260912/current/batch1.json",
+        "sha256": "b3cbe8be52a40e8e664f4c6b618b58fa4750d41d5e24090fcebd209fe7fc73bc"
+      }
+    },
+    {
+      "set": "real_smoke",
+      "datasource": "pos_real",
+      "cases_file": "evals/cases/tier0/pos_real_smoke.yaml",
+      "cases_sha256": "ceeac72dd923f9a8e5200ecbc34dc8af6c4abb10c44e9cbc3dd100ca489981ee",
+      "effective_cases_sha256": "1d78965b98c751968d2454fc42d42ad163137180afaeaf21e39bc699cd5847b6",
+      "as_of": "2026-02-04T18:00:00+08:00",
+      "overlay": "overlays/pos_real.json",
+      "overlay_sha256": "2536d8378a41a8e7aa3cdd21f8ae4ca835c384bacea3ad00b57613b2deb3259a",
+      "enum_distinct_limit": 0,
+      "case_executions": 7,
+      "recorded_passes": 7,
+      "shape_variants": 0,
+      "model_attempts": 7,
+      "artifact": {
+        "path": ".artifacts/reuse-measurement-20260912/current/real_smoke.json",
+        "sha256": "a0272a7ca974cc0fcc3c4789292ac66e44efe06905e962c927ce2a05e432f16d"
+      }
+    },
+    {
+      "set": "service",
+      "datasource": "service_test",
+      "cases_file": "evals/cases/tier0/service.yaml",
+      "cases_sha256": "7109ba28768b75aa5c31e7cf56637545052240eb512b258c784d15debbcd4d70",
+      "effective_cases_sha256": "36c47f31a14c9a6fb2df1105ac3b8bd8c91d297f2e348c9e0e8e60942b950978",
+      "as_of": "2026-04-15T12:00:00+08:00",
+      "overlay": "evals/fixtures/service_v1/overlay.json",
+      "overlay_sha256": "6abad340f0ab8265ba7b8c30d539a59311fd98a0cda209604bec143a6152ee55",
+      "enum_distinct_limit": 0,
+      "case_executions": 24,
+      "recorded_passes": 24,
+      "shape_variants": 0,
+      "model_attempts": 23,
+      "artifact": {
+        "path": ".artifacts/reuse-measurement-20260912/current/service.json",
+        "sha256": "207136bbcf8ccab89e50f1da4251e74a6399561280a1b6e7f53d10bb1c22da8e"
+      }
+    },
+    {
+      "set": "service_adversarial",
+      "datasource": "service_test",
+      "cases_file": "evals/cases/tier0/service_adversarial.yaml",
+      "cases_sha256": "03b5100ae054b184d46f6a25f890b0f85e38c65963af2bf2f6f893fcddfd80fe",
+      "effective_cases_sha256": "e3a411d569d1bff23ac9e7a058ac7a6f8111bc37a965c508d68ff52e86393f4f",
+      "as_of": "2026-04-15T12:00:00+08:00",
+      "overlay": "evals/fixtures/service_v1/overlay.json",
+      "overlay_sha256": "6abad340f0ab8265ba7b8c30d539a59311fd98a0cda209604bec143a6152ee55",
+      "enum_distinct_limit": 0,
+      "case_executions": 12,
+      "recorded_passes": 10,
+      "shape_variants": 0,
+      "model_attempts": 12,
+      "artifact": {
+        "path": ".artifacts/reuse-measurement-20260912/current/service_adversarial.json",
+        "sha256": "e9371c9483ee7c8852d419520188b49f9adcfeece6e9a53b0403ad3f5c8bac8c"
+      }
+    }
+  ],
+  "interpretation": {
+    "answers": 234,
+    "reference_matches": 228,
+    "reference_mismatches": 4,
+    "accepted_status_only_answers_without_value_proof": 1,
+    "unexpected_answers_on_expected_refusal_cases": 1,
+    "accepted_refusals": 54,
+    "unaccepted_refusals_on_expected_answers": 4,
+    "unjudged_status_outcomes": 0,
+    "sampled_nosample_pair": {
+      "paired_cases": 26,
+      "both_recorded_passes": 25,
+      "pass_to_refusal": 1,
+      "refusal_to_pass": 1,
+      "nonclaim": "One sequential comparison; equal totals do not imply same failed cases or isolate sampling causality"
+    },
+    "completed_model_attempt_latency": {
+      "n": 283,
+      "p50_seconds": 3.8458364169928245,
+      "p95_seconds": 5.063481542048976
+    },
+    "reference_comparison": "Sorted normalized rows, four-decimal numeric normalization, fixed alternatives and eligible extra dimension projection; not ordering or exact intent proof",
+    "oracle_case_types": {
+      "reference_sql": 241,
+      "status_only": 51
+    },
+    "privacy": "Metrics writer strips raw fields before persistence; no question, SQL, plan, rows, assumptions, values or raw model output published",
+    "evidence_limit": "Raw plan/refusal reason not retained; no exact cause or unexposed-wrong-number absence claim",
+    "next_priority": "Diagnose the missing-definition answer and reference-mismatch families with safe structural evidence before reducing refusals; repair verdict identity before carry"
+  },
+  "validation": {
+    "analyzer": {
+      "path": ".artifacts/reuse-measurement-20260912/analyze_current.py",
+      "sha256": "31dddd55085d91dd0a9329e293d27931d43c64023430e4bc52bd712398c8b8c6"
+    },
+    "analysis": {
+      "path": ".artifacts/reuse-measurement-20260912/current-analysis.json",
+      "sha256": "44f520bb0e3eef755b28351d30939de386a8c56ef8174b42f351b99bb7369dc7"
+    },
+    "new_private_tests": {
+      "source": {
+        "path": ".artifacts/reuse-measurement-20260912/test_current_analysis.py",
+        "sha256": "8ad2218464e38735be162f1b3d7351bb02f2826b4a183b12194571f0ab22c9c6"
+      },
+      "junit": {
+        "path": ".artifacts/reuse-measurement-20260912/current-analysis-tests-final.xml",
+        "sha256": "58ec5a492937643ffa50493c05ea64fa43577af17c0bb828c66b058aecc935fa"
+      },
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "prior_driver_analysis_tests_reused": 20,
+    "prior_source_identical_static_offline_gate_reused": {
+      "manifest": "evidence/evidence-reuse-measurement-01.json",
+      "tests": 1646,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "rerun": false
+    }
+  },
+  "nonclaims": [
+    "No fresh holdout or independent population-rate estimate",
+    "No automatic verdict carry",
+    "Reference comparison sorts rows and rounds numeric values to four decimals; some extra dimensions can be projected away",
+    "Metrics-only reports retain no raw plan or refusal reason; root-cause claims need separate evidence",
+    "Existing DBs are queried read-only but not frozen across external writers; no data-snapshot equivalence claim",
+    "No current-source historical A/B causality",
+    "No promotion of provisional A5",
+    "No historical label carry",
+    "No code/prompt or acceptance threshold change",
+    "No human correction workflow or push"
+  ]
+}
