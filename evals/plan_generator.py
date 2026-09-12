@@ -94,8 +94,11 @@ class SchemaShape:
         return [m.id for m in self.overlay.metrics if m.base_table == base]
 
     def children(self, base: str) -> list[str]:
+        """Activity tables reaching the base, including multi-hop FK paths."""
         return sorted(
-            fk.table for fk in self.schema.foreign_keys if fk.referenced_table == base
+            table.name
+            for table in self.schema.tables
+            if table.name != base and base in self.reachable(table.name)
         )
 
 
@@ -176,6 +179,9 @@ def draw_operand(data, shape: SchemaShape, base: str) -> dict:
         operand: dict = {"metric": data.draw(st.sampled_from(metrics))}
     elif kind == "count":
         operand = {"aggregate": "count"}
+        countable = shape.columns(base, set(ColumnKind) - {ColumnKind.OTHER}, keys=True)
+        if countable and data.draw(st.booleans()):
+            operand["column"] = ref(data.draw(st.sampled_from(countable)))
     elif kind == "distinct":
         operand = {
             "aggregate": "count_distinct",
@@ -321,8 +327,6 @@ def draw_plan(data, shape: SchemaShape) -> dict[str, Any]:
         return plan
     if kind == "without" and shape.children(base):
         child = data.draw(st.sampled_from(shape.children(base)))
-        plan["dimensions"] = [ref(c) for c in dimensions[:1]] if dimensions else []
-        plan["measures"] = [{"aggregate": "count", "alias": "entity_count"}]
         without: dict = {"table": child}
         child_filters = draw_filters(data, shape, child, 1)
         child_filters = [f for f in child_filters if f["column"]["table"] == child]
@@ -336,7 +340,8 @@ def draw_plan(data, shape: SchemaShape) -> dict[str, Any]:
         ):
             without["time"] = window
         plan["without"] = without
-        return plan
+        # Absence selects base rows; exercise the ordinary measures, periods
+        # and output selection below instead of generating only COUNT.
     plan["measures"] = [
         draw_measure(data, shape, base, i) for i in range(data.draw(st.integers(1, 2)))
     ]

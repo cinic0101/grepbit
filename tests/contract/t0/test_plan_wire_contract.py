@@ -221,7 +221,7 @@ def test_accepted_variants_normalise_without_guessing() -> None:
 
 
 def test_rule_packs_enter_the_prompt_only_on_their_trigger_words() -> None:
-    assert PLAN_PROMPT_REVISION == "plan-classify-json-v14"
+    assert PLAN_PROMPT_REVISION == "plan-classify-json-v15"
     plain = rules_for("2026年1月各門市的營業額")
     assert "(8) Entities with no activity" not in plain
     assert "(9) The latest row per entity" not in plain

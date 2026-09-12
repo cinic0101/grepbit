@@ -1,0 +1,99 @@
+datasource_id: service_test
+as_of: "2026-04-15T12:00:00+08:00"
+cases:
+  - case_id: svc_ticket_count
+    question: "總共有幾張工單？"
+    expected: {status: answered}
+    reference_sql: "SELECT count(*) FROM tickets"
+  - case_id: svc_log_count
+    question: "共有幾筆工時紀錄？"
+    expected: {status: answered}
+    reference_sql: "SELECT count(*) FROM work_logs"
+  - case_id: svc_total_minutes
+    question: "累計記錄了多少工作分鐘？"
+    expected: {status: answered}
+    reference_sql: "SELECT sum(minutes) FROM work_logs"
+  - case_id: svc_estimate_minutes
+    question: "所有工單的預估分鐘數加總是多少？"
+    expected: {status: answered}
+    reference_sql: "SELECT sum(estimate_minutes) FROM tickets"
+  - case_id: svc_project_ticket_count
+    question: "按專案名稱分組，各有幾張工單？"
+    expected: {status: answered}
+    reference_sql: "SELECT p.project_name, count(*) FROM tickets t JOIN projects p ON p.project_key=t.project_key GROUP BY 1"
+  - case_id: svc_team_minutes
+    question: "各團隊名稱的累計工作分鐘是多少？"
+    expected: {status: answered}
+    reference_sql: "SELECT tm.team_name, sum(w.minutes) FROM work_logs w JOIN tickets t ON t.id=w.ticket_id JOIN projects p ON p.project_key=t.project_key JOIN teams tm ON tm.team_code=p.team_code GROUP BY 1"
+  - case_id: svc_long_zh_label
+    question: "北區／維運中心（第二期）的累計工作分鐘是多少？"
+    expected: {status: answered}
+    reference_sql: "SELECT sum(w.minutes) FROM work_logs w JOIN tickets t ON t.id=w.ticket_id JOIN projects p ON p.project_key=t.project_key JOIN teams tm ON tm.team_code=p.team_code WHERE tm.team_name='北區／維運中心（第二期）'"
+  - case_id: svc_long_en_label
+    question: "How many tickets belong to project Orion / Long-Term Support (AP-300)?"
+    expected: {status: answered}
+    reference_sql: "SELECT count(*) FROM tickets t JOIN projects p ON p.project_key=t.project_key WHERE p.project_name='Orion / Long-Term Support (AP-300)'"
+  - case_id: svc_prefix_label
+    question: "北區設備巡檢／延伸計畫共有幾張工單？"
+    expected: {status: answered}
+    reference_sql: "SELECT count(*) FROM tickets t JOIN projects p ON p.project_key=t.project_key WHERE p.project_name='北區設備巡檢／延伸計畫'"
+  - case_id: svc_long_ja_label
+    question: "東京・検証専用チームに属するプロジェクトは何件ありますか？"
+    expected: {status: answered}
+    reference_sql: "SELECT count(*) FROM projects p JOIN teams tm ON tm.team_code=p.team_code WHERE tm.team_name='東京・検証専用チーム'"
+  - case_id: svc_month_minutes
+    question: "按照工時紀錄的日期，每個月的工作分鐘總和是多少？"
+    expected: {status: answered}
+    reference_sql: "SELECT date_trunc('month', logged_at AT TIME ZONE 'Asia/Taipei'), sum(minutes) FROM work_logs WHERE logged_at IS NOT NULL GROUP BY 1"
+  - case_id: svc_north_growth_gap
+    question: "北區／維運中心（第二期）每個月的工作分鐘總和，以及月成長率是多少？"
+    expected: {status: answered}
+    reference_sql: "SELECT date_trunc('month', w.logged_at AT TIME ZONE 'Asia/Taipei'), sum(w.minutes), NULL::numeric FROM work_logs w JOIN tickets t ON t.id=w.ticket_id JOIN projects p ON p.project_key=t.project_key JOIN teams tm ON tm.team_code=p.team_code WHERE tm.team_code='T-N' AND w.logged_at IS NOT NULL GROUP BY 1"
+  - case_id: svc_threshold_minutes
+    question: "列出累計工作分鐘超過200的團隊名稱與工作分鐘總和。"
+    expected: {status: answered}
+    reference_sql: "SELECT tm.team_name, sum(w.minutes) FROM work_logs w JOIN tickets t ON t.id=w.ticket_id JOIN projects p ON p.project_key=t.project_key JOIN teams tm ON tm.team_code=p.team_code GROUP BY 1 HAVING sum(w.minutes)>200"
+  - case_id: svc_zero_minutes
+    question: "工作分鐘為零的工時紀錄有幾筆？"
+    expected: {status: answered}
+    reference_sql: "SELECT count(*) FROM work_logs WHERE minutes=0"
+  - case_id: svc_null_minutes
+    question: "工作分鐘欄位沒有值的工時紀錄有幾筆？"
+    expected: {status: answered}
+    reference_sql: "SELECT count(*) FROM work_logs WHERE minutes IS NULL"
+  - case_id: svc_null_work_date
+    question: "工時日期沒有值的紀錄有幾筆？"
+    expected: {status: answered}
+    reference_sql: "SELECT count(*) FROM work_logs WHERE logged_at IS NULL"
+  - case_id: svc_open_tickets
+    question: "結案時間為空的工單有幾張？"
+    expected: {status: answered}
+    reference_sql: "SELECT count(*) FROM tickets WHERE closed_at IS NULL"
+  - case_id: svc_closed_feb
+    question: "2026年2月結案的工單有幾張？以結案時間為準。"
+    expected: {status: answered}
+    reference_sql: "SELECT count(*) FROM tickets WHERE closed_at >= '2026-02-01T00:00:00+08' AND closed_at < '2026-03-01T00:00:00+08'"
+  - case_id: svc_projects_without_tickets
+    question: "哪些專案從未有工單？列出專案名稱。"
+    expected: {status: answered}
+    reference_sql: "SELECT p.project_name, count(*) FROM projects p WHERE NOT EXISTS (SELECT 1 FROM tickets t WHERE t.project_key=p.project_key) GROUP BY 1"
+  - case_id: svc_tickets_without_logs
+    question: "哪些工單從未有工時紀錄？列出工單id。"
+    expected: {status: answered}
+    reference_sql: "SELECT t.id, count(*) FROM tickets t WHERE NOT EXISTS (SELECT 1 FROM work_logs w WHERE w.ticket_id=t.id) GROUP BY 1"
+  - case_id: svc_tickets_without_events
+    question: "哪些工單從未有事件？列出工單id。"
+    expected: {status: answered}
+    reference_sql: "SELECT t.id, count(*) FROM tickets t WHERE NOT EXISTS (SELECT 1 FROM ticket_events e WHERE e.ticket_id=t.id) GROUP BY 1"
+  - case_id: svc_event_counts
+    question: "各事件類型有幾筆事件？"
+    expected: {status: answered}
+    reference_sql: "SELECT event_type, count(*) FROM ticket_events GROUP BY 1"
+  - case_id: svc_child_fanout_refusal
+    question: "按工單id列出每張工單的工時分鐘總和與事件筆數，包含沒有工時或事件的工單。"
+    expected: {status: unsupported}
+    accept_statuses: [unsupported, clarify, semantic_gap]
+  - case_id: svc_mutation_refusal
+    question: "刪除全部工單。"
+    expected: {status: unsafe}
+    accept_statuses: [unsafe, unsupported]

@@ -13,7 +13,13 @@ from grepbit.adapters.litellm.grounding_client import (
     ChatCompletionsGroundingClient,
     GroundingModelSettings,
 )
-from grepbit.adapters.litellm.plan_wire import normalize_variants, shown_schema_text
+from grepbit.adapters.litellm.plan_wire import (
+    normalize_variants,
+    resolve_value_refs,
+    shown_schema,
+    shown_schema_text,
+    value_candidates,
+)
 from grepbit.application.text import phrase_in
 from grepbit.domain.overlay import SemanticOverlay
 from grepbit.domain.plan import Filter, Measure, PlanProposal, PreviousTurn, QueryPlan
@@ -21,7 +27,7 @@ from grepbit.domain.schema_model import SchemaModel
 from grepbit.ports.ask import DATE_LITERAL_REPAIR, RELATIVE_WINDOW_REPAIR
 from grepbit.ports.grounding import GroundingModelError
 
-PLAN_PROMPT_REVISION = "plan-classify-json-v14"
+PLAN_PROMPT_REVISION = "plan-classify-json-v15"
 
 _RULES_ALL = (
     "You translate one analytics question into ONE aggregate query plan over the "
@@ -159,8 +165,10 @@ def rules_for(question: str) -> str:
 
 _VALUES_RULE = (
     " (11) question_values lists stored values that occur verbatim in the question, "
-    "each with its column. When the question refers to one of them, filter that "
-    "column with exactly that value; do not shorten or re-segment it."
+    "each with its column and id. When the question refers to one of them, use "
+    "value_refs: [id] on that column's eq/ne/in filter instead of copying values. "
+    "Never send both values and value_refs. IDs must come from this request's "
+    "list and belong to the same column. Other literals still use values."
 )
 _FOLLOW_UP_RULE = (
     " (10) previous_turn holds the last answered question and its plan. If the new "
@@ -591,6 +599,7 @@ def _share_filters_on_grouped_columns(plan: dict[str, Any], repairs: list[str]) 
         if not (
             isinstance(item, dict)
             and item.get("share_of_total")
+            and "ratio" not in item
             and isinstance(item.get("filters"), list)
         ):
             continue
@@ -776,6 +785,8 @@ class ChatCompletionsPlanClient:
     last_model_repair_turns: int = 0
     # whether the last completed call ran with the model's thinking mode
     last_thinking: bool = False
+    last_value_refs: int = 0
+    last_value_ref_errors: int = 0
 
     def __init__(
         self,
@@ -790,7 +801,7 @@ class ChatCompletionsPlanClient:
     def settings(self) -> GroundingModelSettings:
         return self._settings
 
-    def response_format(self) -> dict[str, Any]:
+    def response_format(self, *, has_candidates: bool = False) -> dict[str, Any]:
         """``json_object`` (valid JSON) or ``json_schema`` (constrained decoding).
 
         In ``json_schema`` mode the gateway (vLLM guided decoding) can only
@@ -804,7 +815,9 @@ class ChatCompletionsPlanClient:
                 "type": "json_schema",
                 "json_schema": {
                     "name": "plan_proposal",
-                    "schema": PlanProposal.model_json_schema(),
+                    "schema": shown_schema(has_candidates=True)
+                    if has_candidates
+                    else PlanProposal.model_json_schema(),
                     "strict": True,
                 },
             }
@@ -820,7 +833,8 @@ class ChatCompletionsPlanClient:
         previous: PreviousTurn | None = None,
         question_values: list[dict[str, str]] | None = None,
     ) -> list[dict[str, str]]:
-        schema = shown_schema_text()
+        candidates = value_candidates(question_values, model, overlay)
+        schema = shown_schema_text(has_candidates=bool(candidates))
         payload: dict[str, Any] = {
             "question": question.strip(),
             "as_of": as_of,
@@ -831,11 +845,11 @@ class ChatCompletionsPlanClient:
             payload["previous_turn"] = previous.model_dump(
                 mode="json", exclude_none=True
             )
-        if question_values:
-            payload["question_values"] = question_values
+        if candidates:
+            payload["question_values"] = candidates
         rules = rules_for(question) + (_OVERLAY_RULE if overlay is not None else "")
         rules += _FOLLOW_UP_RULE if previous is not None else ""
-        rules += _VALUES_RULE if question_values else ""
+        rules += _VALUES_RULE if candidates else ""
         return [
             {"role": "system", "content": rules},
             {
@@ -862,6 +876,9 @@ class ChatCompletionsPlanClient:
         self.last_raw_output = None
         self.last_repair_output = None
         self.last_model_repair_turns = 0
+        self.last_value_refs = 0
+        self.last_value_ref_errors = 0
+        candidates = value_candidates(question_values, model, overlay)
         messages = self.build_messages(
             question,
             model,
@@ -871,10 +888,13 @@ class ChatCompletionsPlanClient:
             question_values=question_values,
         )
         content = self._complete(
-            client, messages, thinking=self._settings.thinking == "on"
+            client,
+            messages,
+            thinking=self._settings.thinking == "on",
+            has_candidates=bool(candidates),
         )
         try:
-            return self._validate(content, model)
+            return self._validate(content, model, candidates=candidates)
         except _InvalidOutput as first:
             self.last_raw_output = content
             if self._settings.repair_turns < 1 or content is None:
@@ -892,15 +912,21 @@ class ChatCompletionsPlanClient:
             client,
             repair_messages,
             thinking=self._settings.thinking in ("on", "repair"),
+            has_candidates=bool(candidates),
         )
         try:
-            return self._validate(repaired, model)
+            return self._validate(repaired, model, candidates=candidates)
         except _InvalidOutput:
             self.last_repair_output = repaired
             raise GroundingModelError("invalid_structured_output", 2) from None
 
     def _complete(
-        self, client: Any, messages: list[dict[str, str]], *, thinking: bool = False
+        self,
+        client: Any,
+        messages: list[dict[str, str]],
+        *,
+        thinking: bool = False,
+        has_candidates: bool = False,
     ) -> str | None:
         extra: dict[str, Any] = {}
         if thinking:
@@ -916,7 +942,7 @@ class ChatCompletionsPlanClient:
                 messages=messages,
                 temperature=self._settings.temperature,
                 max_tokens=max(self._settings.max_tokens, 2048 if thinking else 768),
-                response_format=self.response_format(),
+                response_format=self.response_format(has_candidates=has_candidates),
                 **extra,
             )
         except Exception:
@@ -924,7 +950,13 @@ class ChatCompletionsPlanClient:
         self.last_thinking = thinking
         return _content(response)
 
-    def _validate(self, content: str | None, model: SchemaModel) -> PlanProposal:
+    def _validate(
+        self,
+        content: str | None,
+        model: SchemaModel,
+        *,
+        candidates: list[dict[str, str]] | None = None,
+    ) -> PlanProposal:
         if content is None:
             raise _InvalidOutput("empty response")
         text = content.strip()
@@ -936,10 +968,15 @@ class ChatCompletionsPlanClient:
         except ValueError as error:
             raise _InvalidOutput(f"not valid JSON: {error}") from None
         try:
+            used = resolve_value_refs(payload, candidates or [])
             payload, repairs = repair_column_refs(payload, model)
             self.last_repairs = repairs
-            return PlanProposal.model_validate(payload)
+            proposal = PlanProposal.model_validate(payload)
+            self.last_value_refs = used
+            return proposal
         except ValidationError as error:
             raise _InvalidOutput(_validation_summary(error)) from None
         except (AttributeError, TypeError, ValueError) as error:
+            if str(error).startswith("candidate_reference_"):
+                self.last_value_ref_errors += 1
             raise _InvalidOutput(f"{type(error).__name__}: {error}") from None

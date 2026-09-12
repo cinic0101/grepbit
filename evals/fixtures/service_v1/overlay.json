@@ -1,0 +1,9 @@
+{
+  "datasource_id": "service_test",
+  "revision": "service-fixture-public-labels-v1",
+  "metrics": [],
+  "column_policies": [
+    {"column": {"table": "teams", "column": "team_name"}, "sensitivity": "public"},
+    {"column": {"table": "projects", "column": "project_name"}, "sensitivity": "public"}
+  ]
+}

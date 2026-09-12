@@ -103,6 +103,8 @@ def check_compiled(
 
     tree = sqlglot.parse_one(sql, read="postgres")
     violations: list[str] = []
+    if any(m.ratio is not None and m.filters for m in plan.measures):
+        violations.append("ratio_wrapper_filters_unsupported")
     predicates = list(tree.find_all(exp.Predicate))
 
     # 1. every filter the plan asked for is a predicate of the right kind on

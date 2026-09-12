@@ -15,13 +15,16 @@ the domain models. Deviations from the shown form are still counted
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from typing import Any
 
+from grepbit.domain.overlay import SemanticOverlay
 from grepbit.domain.plan import is_output_name
+from grepbit.domain.schema_model import ColumnKind, SchemaModel
 
-WIRE_REVISION = "wire-v2"
+WIRE_REVISION = "wire-v3"
 
 _IDENT = "[A-Za-z_][A-Za-z0-9_$]*"
 _COLUMN = {"type": "string", "pattern": f"^{_IDENT}\\.{_IDENT}$"}
@@ -195,14 +198,118 @@ _PROPOSAL = {
 }
 
 
-def shown_schema() -> dict[str, Any]:
+def shown_schema(*, has_candidates: bool = False) -> dict[str, Any]:
     """The JSON Schema the planner is asked to conform to (the preferred form)."""
 
-    return json.loads(json.dumps(_PROPOSAL))
+    schema = json.loads(json.dumps(_PROPOSAL))
+    if has_candidates:
+
+        def extend(node):
+            if isinstance(node, dict):
+                properties = node.get("properties", {})
+                if (
+                    "column" in properties
+                    and "op" in properties
+                    and "values" in properties
+                ):
+                    properties["value_refs"] = {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "minItems": 1,
+                    }
+                    node["not"] = {"required": ["values", "value_refs"]}
+                for child in list(node.values()):
+                    extend(child)
+            elif isinstance(node, list):
+                for child in node:
+                    extend(child)
+
+        extend(schema)
+    return schema
 
 
-def shown_schema_text() -> str:
-    return json.dumps(_PROPOSAL, sort_keys=True, separators=(",", ":"))
+def shown_schema_text(*, has_candidates: bool = False) -> str:
+    return json.dumps(
+        shown_schema(has_candidates=has_candidates),
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+
+
+def value_candidates(
+    hints: list[dict[str, str]] | None,
+    model: SchemaModel,
+    overlay: SemanticOverlay | None,
+) -> list[dict[str, str]]:
+    """IDs for the existing opt-in hints only; no lookup, fuzzy match or cache."""
+    allowed = {ref.id for ref in overlay.groundable_columns()} if overlay else set()
+    candidates: dict[str, dict[str, str]] = {}
+    for hint in hints or []:
+        column, value = hint.get("column"), hint.get("value")
+        if column not in allowed or not isinstance(value, str):
+            continue
+        table_name, column_name = column.split(".", 1)
+        table = model.table(table_name)
+        field = table.column(column_name) if table else None
+        if field is None or field.kind is not ColumnKind.TEXT:
+            continue
+        identity = (
+            "v_"
+            + hashlib.sha256(
+                json.dumps([column, value], ensure_ascii=False).encode()
+            ).hexdigest()[:12]
+        )
+        entry = {"column": column, "value": value, "id": identity}
+        if identity in candidates and candidates[identity] != entry:
+            raise ValueError("candidate_reference_identity_collision")
+        candidates[identity] = entry
+    return sorted(candidates.values(), key=lambda entry: entry["id"])
+
+
+def resolve_value_refs(plan: Any, candidates: list[dict[str, str]]) -> int:
+    """Resolve only filter references to exact literals before shape repairs."""
+    catalog = {entry["id"]: entry for entry in candidates}
+    count = 0
+
+    def walk(node):
+        nonlocal count
+        if isinstance(node, dict):
+            filters = node.get("filters")
+            for item in filters if isinstance(filters, list) else []:
+                if not isinstance(item, dict) or "value_refs" not in item:
+                    continue
+                refs = item["value_refs"]
+                if (
+                    "values" in item
+                    or not isinstance(refs, list)
+                    or not refs
+                    or not all(isinstance(ref, str) for ref in refs)
+                ):
+                    raise ValueError("candidate_reference_invalid_shape")
+                if item.get("op") not in {"eq", "ne", "in"}:
+                    raise ValueError("candidate_reference_invalid_operator")
+                column = item.get("column")
+                if isinstance(column, dict) and set(column) == {"table", "column"}:
+                    column = f"{column['table']}.{column['column']}"
+                values = []
+                for ref in refs:
+                    if ref not in catalog:
+                        raise ValueError("candidate_reference_unknown")
+                    candidate = catalog[ref]
+                    if column != candidate["column"]:
+                        raise ValueError("candidate_reference_column_mismatch")
+                    values.append(candidate["value"])
+                item["values"] = values
+                del item["value_refs"]
+                count += len(values)
+            for child in node.values():
+                walk(child)
+        elif isinstance(node, list):
+            for child in node:
+                walk(child)
+
+    walk(plan)
+    return count
 
 
 _REFERENCE_KEYS = {"table", "column"}
@@ -266,6 +373,7 @@ def normalize_variants(plan: dict[str, Any], repairs: list[str]) -> None:
         if (
             "numerator" in item
             and "denominator" in item
+            and not item.get("filters")
             and item.get("aggregate") is not None
             and any(
                 _core(

@@ -200,6 +200,8 @@ def report_detail(result) -> dict[str, Any]:
         detail["unmapped_concepts"] = list(result.unmapped_concepts)
     if result.question_values:
         detail["question_values"] = list(result.question_values)
+    detail["value_references"] = result.value_references
+    detail["value_reference_errors"] = result.value_reference_errors
     if result.sql is not None:
         detail["sql"] = result.sql
         detail["lineage"] = result.lineage
@@ -721,6 +723,13 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "literal_checks": sum(r.get("literal_checks", 0) for r in results),
         "literal_misses": sum(1 for r in results if r.get("missing_literals")),
+        "value_references": sum(r.get("value_references", 0) for r in results),
+        "value_reference_errors": sum(
+            r.get("value_reference_errors", 0) for r in results
+        ),
+        "hinted_literal_misses": sum(
+            1 for r in results if r.get("question_values") and r.get("missing_literals")
+        ),
         "grounding": {
             "columns": index.columns if index is not None else [],
             "values": index.size() if index is not None else 0,

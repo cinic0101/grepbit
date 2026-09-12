@@ -69,6 +69,7 @@ def _is_relevant_source_path(candidate: Path) -> bool:
         or candidate.parts[:2] == ("evals", "fixtures")
         or candidate.parts[:1] == ("semantic",)
         or candidate.parts[:2] == ("tests", "fixtures")
+        or candidate.parts[:3] == ("src", "grepbit", "resources")
     )
 
 

@@ -29,13 +29,9 @@ from grepbit.application.plan_repair import repair_base_table
 from grepbit.application.shapes import (
     constant_dimensions,
     drop_dimensions,
-    drop_grain,
-    drop_growth,
     match_unsupported_shape,
     single_period_misread,
     unmapped_concepts,
-    unrequested_grain,
-    unrequested_growth,
 )
 from grepbit.domain.language_pack import ShapePack
 from grepbit.domain.overlay import SemanticOverlay
@@ -44,8 +40,6 @@ from grepbit.domain.schema_model import SchemaModel
 from grepbit.ports.ask import (
     CONSTANT_DIMENSION_REPAIR,
     DATE_LITERAL_REPAIR,
-    GRAIN_DROP_REPAIR,
-    GROWTH_DROP_REPAIR,
     RELATIVE_WINDOW_REPAIR,
     LiteralCheckPort,
     PlannerPort,
@@ -56,7 +50,7 @@ from grepbit.ports.grounding import GroundingModelError
 from grepbit.ports.plan_compiler import PlanCompilerPort
 from grepbit.ports.query_executor import QueryExecutorPort
 
-ASK_REVISION = "ask-orchestration-v1"
+ASK_REVISION = "ask-orchestration-v3"
 REFUSALS = ("clarify", "semantic_gap", "unsupported", "unsafe")
 
 
@@ -106,16 +100,15 @@ class AskResult:
     rows_truncated: bool = False
     warnings: list[str] = field(default_factory=list)
     question_values: list[dict[str, str]] = field(default_factory=list)
+    value_references: int = 0
+    value_reference_errors: int = 0
     grounding: list[Resolution] = field(default_factory=list)
     missing_literals: list[str] = field(default_factory=list)
     shape_repairs: list[str] = field(default_factory=list)
-    grain_dropped: str | None = None
     # dimensions the plan's own equality filters fixed to one value, not returned
     constant_dimensions_dropped: list[str] = field(default_factory=list)
     # concepts the question named that the plan left no trace of (a clarify)
     unmapped_concepts: list[str] = field(default_factory=list)
-    # growth measures dropped because no word in the question asked for a rate
-    growth_dropped: list[str] = field(default_factory=list)
     base_repair: str | None = None
     excluded_segments: list[str] = field(default_factory=list)
     literal_checks: int = 0
@@ -212,6 +205,10 @@ def ask(
 def _record_planner_trace(result: AskResult, planner: Any) -> None:
     result.raw_output = getattr(planner, "last_raw_output", None)
     result.model_repair_turns = int(getattr(planner, "last_model_repair_turns", 0) or 0)
+    result.value_references = int(getattr(planner, "last_value_refs", 0) or 0)
+    result.value_reference_errors = int(
+        getattr(planner, "last_value_ref_errors", 0) or 0
+    )
 
 
 def _ask(question, services, settings, previous, run_id, result, overlay, index):
@@ -270,22 +267,6 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
             result.status, result.reason = "clarify", "per_period_single_window"
             result.clarification = pack.period_clarification
             return
-        grain = unrequested_grain(question, plan, pack)
-        if grain is not None:
-            plan = drop_grain(plan)
-            result.plan = plan
-            result.shape_repairs.append(
-                f"{GRAIN_DROP_REPAIR} {grain}: no per-period word"
-            )
-            result.grain_dropped = grain
-        unasked = unrequested_growth(question, plan, pack)
-        if unasked:
-            plan = drop_growth(plan)
-            result.plan = plan
-            result.growth_dropped = unasked
-            result.shape_repairs.append(
-                f"{GROWTH_DROP_REPAIR} on {', '.join(unasked)}: no growth word"
-            )
     constants = constant_dimensions(plan)
     if constants:
         plan = drop_dimensions(plan, constants)
@@ -407,16 +388,6 @@ def _describe(result, compiled, question, base_repair, plan) -> None:
         result.assumptions.append(
             f"{column} is not returned as a column: the question fixes it to one "
             "value, so it would repeat on every row; the filter still applies."
-        )
-    if result.growth_dropped:
-        result.assumptions.append(
-            "The values are shown per period without a growth rate; the question "
-            "compares periods but names no rate (say 成長率 or growth for one)."
-        )
-    if result.grain_dropped:
-        result.assumptions.append(
-            f"Values are totals over the whole window, not per {result.grain_dropped}; "
-            "the question named no period, say 每月 (or 每天, 每週) for a breakdown."
         )
     for repair in result.shape_repairs:
         if repair.startswith(DATE_LITERAL_REPAIR):

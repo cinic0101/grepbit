@@ -1,5 +1,5 @@
 {
-  "revision": "unsupported-shapes-v8",
+  "revision": "unsupported-shapes-v9",
   "shapes": [],
   "period_words": [
     "每天",
@@ -134,44 +134,7 @@
       "most recent month",
       "latest month",
       "latest week"
-    ],
-    "growth": [
-      "decrease",
-      "decreased",
-      "difference",
-      "grew",
-      "grow",
-      "growth",
-      "increase",
-      "increased",
-      "percent",
-      "percent change",
-      "percentage",
-      "percentage change",
-      "rate of change",
-      "times more",
-      "伸び率",
-      "倍",
-      "増加率",
-      "增幅",
-      "增長",
-      "增長率",
-      "多少倍",
-      "幾成",
-      "成長",
-      "成長多少",
-      "成長率",
-      "減少率",
-      "減幅",
-      "漲幅",
-      "百分之",
-      "百分比",
-      "衰退",
-      "變動率",
-      "變化率",
-      "跌幅"
-    ],
-    "growth_comparison": []
+    ]
   },
   "concepts": [
     {

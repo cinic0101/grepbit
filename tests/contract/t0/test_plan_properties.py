@@ -184,6 +184,12 @@ def draw_operand(data, base: str) -> dict:
         }
     elif kind == "count" or kind == "metric":
         operand = {"aggregate": "count"}
+        if data.draw(st.booleans()):
+            operand["column"] = ref(
+                data.draw(
+                    st.sampled_from(NUMERIC[base] + TEXT[base] + TIME_COLUMNS[base])
+                )
+            )
     elif kind in ("sum", "avg"):
         operand = {
             "aggregate": kind,

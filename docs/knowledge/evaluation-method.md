@@ -48,6 +48,8 @@ cases:
 | `pos_real_holdout.yaml` | the owner's 50 real questions as received, judged mode (no expectations); the record behind `docs/research/holdout-*.md`, not rerun | 50 |
 | `pos_real_batch1.yaml` | the same 50 settled as a regression set: references are the run-4 SQL the owner judged correct with bound values inlined, refusals accept any typed refusal; q29/q44 replaced by the value-grounded q29b/q44b | 50 |
 | `pos_real_values_01.yaml` | the first value-grounded questions (a store name, a product name), judged mode | 2 |
+| `service.yaml` | fictional non-POS tickets/work logs/events, natural-key joins, clocks and refusal traps | 24 |
+| `service_adversarial.yaml` | authored zh/en/ja controls for multi-hop absence, SUM after absence, counting units and closure time; not a blind holdout | 12 |
 
 The sets above the `pos_real_*` rows were written by the agent that built the
 system, after looking at the data. They are smoke signals and regression
@@ -100,8 +102,9 @@ all-NULL row) and `negative_share_warnings` (a share below zero for some
 group, so the total is a net); the row carries `warnings`.
 
 `--enum-distinct-limit` (default 20) bounds the distinct values sampled per
-non-key text column and shown to the planner; `0` disables sampling so no
-cell value leaves the database (the summary records the limit, the number of
+non-key text column and shown to the planner; `0` disables introspection's
+row-value sampling. It does not disable the separately opted-in value index
+or reviewed value aliases (the summary records the limit, the number of
 row-sampled columns and, separately, the number of enum columns whose labels
 come from the catalog).
 
@@ -140,9 +143,20 @@ for each unstable case the statuses, the number of distinct plans, the keys
 that differed and the correctness of each run. No credentials, no bindings.
 
 `--redact-rows` drops result rows and reference rows from the report (row
-counts, SQL, lineage and assumptions stay), so an artifact taken on a real
-database can be committed under `evidence/`. The summary records
+counts, SQL, lineage and assumptions stay). It is **not** complete PII
+redaction: questions, plans, hints, assumptions and raw model outputs may
+still hold values. Do not commit a real-data artifact merely because this
+flag was used. The summary records
 `rows_redacted`, the case file, the prompt revision and `as_of`.
+
+The A5 rollout driver under `.artifacts/a5-20260912/` additionally keeps only
+allowlisted metrics and plan hashes, suppressing value-bearing console
+details. Reference comparison still runs on rows in memory. These artifacts
+cannot support a fresh human judgment or reproduce SQL; unjudged cases
+remain unjudged. This experimental wrapper does not change the default
+runner report contract. A5 adds reference-use/error counters; its
+`hinted_literal_misses` is a case-level co-occurrence proxy, not measured
+candidate recall or proof of semantic correctness.
 
 ### Contrast cases for undocumented concepts
 
@@ -217,6 +231,29 @@ Other runners: `spike_parent_agent.py` (relay experiment) and
 - Latency numbers taken while other runs were sharing the model endpoint are
   marked as inflated.
 
+## Repeated-run stability (`evals/stability.py`)
+
+`plan-core-v2` fixes the original comparator; old stability artifacts are
+historical and are not silently rescored. It ignores measure aliases while
+following their references in `order`, `having` and `growth`. Source column
+names and literal values are not renamed. It sorts only known commutative
+lists (measures, conjunctive filters/having, growth entries and IN values).
+Ordering priority and dimension order are retained: dimensions can determine
+the implicit sort, especially with LIMIT. This is plan-core agreement, not
+SQL equivalence or value correctness.
+
+At least two nonempty runs are required. Each must contain the same case IDs
+exactly once and match its declared case count, if present. Case file,
+prompt revision, model, datasource and as_of metadata must agree across runs
+(legacy fields absent everywhere remain unknown). Invalid inputs are refused
+with `stability_*` and CLI exit 2, without writing a score. New reports carry
+`stability_revision` so the comparator is identifiable.
+
+A single confirmed wrong answer is defect evidence even if it has not
+recurred. Whether a change caused a regression and why an endpoint varies
+need separate experiments; batch composition is a hypothesis, not something
+this metric identifies. Stable answers can still be wrong.
+
 ## Differential test of the compiler (`evals/differential.py`)
 
 ```sh
@@ -238,7 +275,13 @@ Other runners: `spike_parent_agent.py` (relay experiment) and
   it stays 0: the generator then draws only its own constants and the labels
   of enum types, and plans carry no row values.
 - `--redact` keeps cell values out of the report; when literals were sampled
-  it also scrubs them from every recorded plan (`plans_redacted`).
+  it also scrubs them from every recorded plan (`plans_redacted`). Replay
+  inherits the source report's `plans_carry_data`; older reports use their
+  source sampling limit, and missing/unknown provenance is treated as
+  sensitive. Today's sampling limit of 0 cannot declassify an earlier plan.
+  Provenance persists even through an unredacted intermediate replay.
+  Error records keep their category but omit exception/database details
+  under `--redact`, since those details can contain values too.
 - `--engine duckdb --instances N` runs each plan on N random instances of
   the schema (`evals/synthetic.py`) instead of the database's data.
 - Every `LIMIT` plan is compared with SQL's ordering in mind: rows strictly
@@ -264,4 +307,3 @@ does not cover is skipped and counted; a disagreement or a PostgreSQL error
 is recorded with the plan and the SQL. Reports live under
 `evidence/differential/`; the first runs are in
 `../research/differential-01.md`.
-

@@ -145,6 +145,8 @@ class Measure(Operand):
     @model_validator(mode="after")
     def metric_or_aggregate(self) -> Measure:  # type: ignore[override]
         if self.ratio is not None:
+            if self.filters:
+                raise ValueError("plan_ratio_wrapper_filters_unsupported")
             if self.aggregate is not None or self.column is not None or self.metric:
                 raise ValueError("plan_measure_ratio_excludes_aggregate")
             return self
@@ -414,6 +416,7 @@ _PLAN_ERROR_CODES = frozenset(
         # a ratio whose operands resolve to the same aggregate once a reviewed
         # metric is expanded (count(*) over all_alerts = count(*)): 1 for every row
         "ratio_operands_identical",
+        "ratio_wrapper_filters_unsupported",
         # share_of_total with no groups and no periods: every share would be 1
         # unless the operand carries a filter of its own (the part over the whole)
         "share_requires_groups",

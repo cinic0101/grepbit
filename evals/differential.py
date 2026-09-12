@@ -106,7 +106,9 @@ def generate_plans(
 REDACTED = "<redacted>"
 
 
-def plans_carry_data(enum_distinct_limit: int) -> bool:
+def plans_carry_data(
+    enum_distinct_limit: int, source_report: dict[str, Any] | None = None
+) -> bool:
     """Whether a generated plan can hold a value read from the rows.
 
     The generator's only channel from the database to a plan is the
@@ -117,6 +119,14 @@ def plans_carry_data(enum_distinct_limit: int) -> bool:
     keeps its plans as they are and stays replayable.
     """
 
+    if source_report is not None:
+        # Replay does not generate literals from current introspection. Preserve
+        # provenance through successive replays; legacy/unknown inputs are not
+        # made safe merely by running with today's default sampling limit of 0.
+        if "plans_carry_data" in source_report:
+            return source_report["plans_carry_data"] is not False
+        limit = source_report.get("enum_distinct_limit")
+        return not (type(limit) is int and limit == 0)
     return enum_distinct_limit > 0
 
 
@@ -323,6 +333,7 @@ def main(argv: list[str] | None = None) -> int:
     rng = random.Random(arguments.seed)
 
     replay_note: dict[str, Any] = {}
+    earlier: dict[str, Any] | None = None
     if arguments.replay is not None:
         earlier = json.loads(arguments.replay.read_text(encoding="utf-8"))
         entries, redacted_count = replayable(earlier["plans"])
@@ -342,7 +353,8 @@ def main(argv: list[str] | None = None) -> int:
             (payload, None)
             for payload in generate_plans(shape, arguments.examples, arguments.seed)
         ]
-    redact_plans = arguments.redact and plans_carry_data(arguments.enum_distinct_limit)
+    carries_data = plans_carry_data(arguments.enum_distinct_limit, earlier)
+    redact_plans = arguments.redact and carries_data
     outcomes: Counter = Counter({"generated": len(entries)})
     refusals: Counter = Counter()
     disagreements: list[dict[str, Any]] = []
@@ -377,7 +389,9 @@ def main(argv: list[str] | None = None) -> int:
                 {
                     "kind": "compiler_exception",
                     "plan": scrub(payload) if redact_plans else payload,
-                    "error": repr(error)[:300],
+                    "error": type(error).__name__
+                    if arguments.redact
+                    else repr(error)[:300],
                 }
             )
             continue
@@ -393,7 +407,9 @@ def main(argv: list[str] | None = None) -> int:
                     "instance": label,
                     "plan": scrub(payload) if redact_plans else payload,
                     "sql": compiled.compiled.physical_sql,
-                    "error": error,
+                    "error": "database_error_details_redacted"
+                    if arguments.redact
+                    else error,
                 }
             )
             return
@@ -412,7 +428,9 @@ def main(argv: list[str] | None = None) -> int:
                     "kind": "evaluator_exception",
                     "instance": label,
                     "plan": scrub(payload) if redact_plans else payload,
-                    "error": repr(error)[:300],
+                    "error": type(error).__name__
+                    if arguments.redact
+                    else repr(error)[:300],
                 }
             )
             return
@@ -495,6 +513,7 @@ def main(argv: list[str] | None = None) -> int:
         "seed": arguments.seed,
         "schema_digest": schema.digest(),
         "enum_distinct_limit": arguments.enum_distinct_limit,
+        "plans_carry_data": carries_data,
         "plans_redacted": redact_plans,
         **replay_note,
         "plans": records,

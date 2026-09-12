@@ -1,0 +1,861 @@
+{
+  "baseline_git_sha": "746f1689ad812088ed2cca6cc3bcde3e85a006b8",
+  "source_state": "uncommitted; A5 provisional, not accepted",
+  "artifact_root": ".artifacts/a5-20260912",
+  "prompt_revision": "plan-classify-json-v15",
+  "wire_revision": "wire-v3",
+  "initial_frozen_runtime_sha256": "2c4da6d3d9481d30aa9fdc66ba7eea27b6505e1ef9be931e9c5b151d36dd0aa9",
+  "final_runtime_sha256": "82cb358da4741ab89915756df0d06d804f27ee07516f434b61c1265c8b7e9687",
+  "validation": {
+    "offline": {
+      "artifact": "final-offline/result.json",
+      "sha256": "3e61783d0db10da531133e181af088b1b4bc5e830ac4ef325fd79376129288aa",
+      "passed": true,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 329
+      }
+    },
+    "static": {
+      "artifact": "final-static-02/result.json",
+      "sha256": "826f9c58298dd529f1c5fcf213a60faff7f81fdf3b70dd57f2c4b2b9414caae8",
+      "passed": true,
+      "junit_counts": null
+    },
+    "focused_repairs": {
+      "artifact": "grain-growth-green/result.json",
+      "sha256": "2ed583b416966b0f41673fbab69f888abc5d9077045089281048e8a1db24e1b6",
+      "passed": true,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 26
+      }
+    },
+    "formatted_generator": {
+      "artifact": "natural-keys-formatted/result.json",
+      "sha256": "94232307e724f4eb1ae3ac41708fa40c1acb019c6877cee82a0b137b925c2377",
+      "passed": true,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 2
+      }
+    }
+  },
+  "live": [
+    {
+      "artifact": "target-authors-1-v14-control-coverage_iot.json",
+      "sha256": "dc706bd3e2812f16477260783790e56a538933fe627d1ee5eada91958dc60b5f",
+      "cases": 1,
+      "correct": 0,
+      "judged": 1,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-1-v14-control-features.json",
+      "sha256": "f8554cca39bbf3272e2abf2fb65b34266dbb456b2631092fae624b691cd63dba",
+      "cases": 2,
+      "correct": 1,
+      "judged": 2,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-1-v14-control-iot.json",
+      "sha256": "cea1331e186af57b1ce8ed23e3283fa182e30f1f48c4ffe8a906fbf2726dab40",
+      "cases": 1,
+      "correct": 0,
+      "judged": 1,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-1-v14-control-multilingual.json",
+      "sha256": "410757b6110bfb9c5a9ed324b16751bde394b4e4b00e873c1ec009982fca1f23",
+      "cases": 1,
+      "correct": 0,
+      "judged": 1,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-1-v14-control-nosample.json",
+      "sha256": "513f1d16230648d35c93718c921796ebf4851d558c73417109f9f256ed193e96",
+      "cases": 2,
+      "correct": 1,
+      "judged": 2,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 1
+    },
+    {
+      "artifact": "target-authors-1-v14-control-pos.json",
+      "sha256": "9dbde5e19edf23f06f28d13407c054be412dbcc0c63123085cbaac12eb2bc6cd",
+      "cases": 2,
+      "correct": 1,
+      "judged": 2,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 1
+    },
+    {
+      "artifact": "target-authors-1-v15-coverage_iot.json",
+      "sha256": "0b1c3b62e558013ad254b7f4dc06e33cadd64b421e90d7e85ecfa981f1b9b92f",
+      "cases": 1,
+      "correct": 0,
+      "judged": 1,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-1-v15-features.json",
+      "sha256": "754ca8b5816cf0acd405f7aa807795795675234945da1cff0ec8a55c66875232",
+      "cases": 2,
+      "correct": 0,
+      "judged": 2,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-1-v15-iot.json",
+      "sha256": "25a425bddd47bc3ac25bdc35e8df889b00408153fc6eaaf1aa38a1b3b0d1b889",
+      "cases": 1,
+      "correct": 0,
+      "judged": 1,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-1-v15-multilingual.json",
+      "sha256": "d69d623ba5053fa305e4331c6bbdb22ad01f7b761ef551e0151147f8bb271157",
+      "cases": 1,
+      "correct": 0,
+      "judged": 1,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-1-v15-nosample.json",
+      "sha256": "b3d872793bd21aef1942961a1b770891ae34680914a3f12e46c00a32687d05f2",
+      "cases": 2,
+      "correct": 1,
+      "judged": 2,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 1
+    },
+    {
+      "artifact": "target-authors-1-v15-pos.json",
+      "sha256": "cada97dca6a1e6a2010b6168826ea9ad0436da11ee961051c1b72fcb7becc87d",
+      "cases": 2,
+      "correct": 1,
+      "judged": 2,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 1
+    },
+    {
+      "artifact": "target-authors-2-v14-control-coverage_iot.json",
+      "sha256": "a7f36a6f4a36af963bf40a32e1853fb8a7b098a5015dc81d1daab9357c361110",
+      "cases": 1,
+      "correct": 0,
+      "judged": 1,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-2-v14-control-features.json",
+      "sha256": "596b8c598a4c7de4dff8828a64b060af4f2b6f708c5a9bdee487728df93acdd4",
+      "cases": 2,
+      "correct": 1,
+      "judged": 2,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-2-v14-control-iot.json",
+      "sha256": "ab6c2095bf4e9a5f87310779401fcb1c3e5346919cc77f88cafc9f3e63007888",
+      "cases": 1,
+      "correct": 0,
+      "judged": 1,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-2-v14-control-multilingual.json",
+      "sha256": "b99a67990878eede54b5a9cedff2236d3c4dc7119c8c5db3cdafe62e5cdfb04d",
+      "cases": 1,
+      "correct": 0,
+      "judged": 1,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-2-v14-control-nosample.json",
+      "sha256": "68b34687c9bcc881c613b7837d52e8ff0c665c5a6c58bac7ee5afe01cb65d708",
+      "cases": 2,
+      "correct": 1,
+      "judged": 2,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 1
+    },
+    {
+      "artifact": "target-authors-2-v14-control-pos.json",
+      "sha256": "4a3dfd59f172cac3300bd4333b490d8a50c7c565c6bb53912904ac89f65c0444",
+      "cases": 2,
+      "correct": 1,
+      "judged": 2,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 1
+    },
+    {
+      "artifact": "target-authors-2-v15-coverage_iot.json",
+      "sha256": "18f4e641d5f6ff9a68e9da71c5751d2e54efa7e110d8e4a9306ac2f618b199e8",
+      "cases": 1,
+      "correct": 0,
+      "judged": 1,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-2-v15-features.json",
+      "sha256": "0b68f4d2310ff3e22b1925cb99e0522a18dd6927a37a08b1e8c7594357176227",
+      "cases": 2,
+      "correct": 0,
+      "judged": 2,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-2-v15-iot.json",
+      "sha256": "e3813ff67f7891c718210797aa57d78cbc8dba2900789ad8059a0cf370cea8eb",
+      "cases": 1,
+      "correct": 0,
+      "judged": 1,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-2-v15-multilingual.json",
+      "sha256": "f38b451db7010dec08b9212ba292a128693c90145eedcf6172adc59d2361c1fe",
+      "cases": 1,
+      "correct": 0,
+      "judged": 1,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-authors-2-v15-nosample.json",
+      "sha256": "9e294352b6de638e0736cb684120807384a7cc39f43802f4afc76a3cafa8cf17",
+      "cases": 2,
+      "correct": 1,
+      "judged": 2,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 1
+    },
+    {
+      "artifact": "target-authors-2-v15-pos.json",
+      "sha256": "c876170e21b26ea7965a5eb456093db79670424a495e0993a2f173851b53ca2e",
+      "cases": 2,
+      "correct": 1,
+      "judged": 2,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 1
+    },
+    {
+      "artifact": "target-failures-1-v14-control-holdout2.json",
+      "sha256": "eaac7240fe09e25c85f0fb8df509e11609cb081b4ff52ecb1a79b758df86f5d0",
+      "cases": 1,
+      "correct": 0,
+      "judged": 0,
+      "unjudged": 1,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-failures-1-v14-control-ratios.json",
+      "sha256": "54f94cd9797c822cb8804cdfa9d31b66be5c5934bb222d5560d6949c90deb205",
+      "cases": 1,
+      "correct": 0,
+      "judged": 0,
+      "unjudged": 1,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-failures-1-v15-holdout2.json",
+      "sha256": "3f07c827f51b6b8a15b8ffdca26483a128852b6e8d4bd53695b2d54b681b8a24",
+      "cases": 1,
+      "correct": 0,
+      "judged": 0,
+      "unjudged": 1,
+      "model_failures": 0,
+      "value_references": 1,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-failures-1-v15-ratios.json",
+      "sha256": "94b9b1af0d1dbf39889f672c3a8aee9c34b3b56d68ad5a0853595f65cf026ab3",
+      "cases": 1,
+      "correct": 0,
+      "judged": 0,
+      "unjudged": 1,
+      "model_failures": 0,
+      "value_references": 1,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-failures-2-v14-control-holdout2.json",
+      "sha256": "3033cb20beef68d1711b6702d12a7b0008fc55685ea1940b50a2d98795f36c87",
+      "cases": 1,
+      "correct": 0,
+      "judged": 0,
+      "unjudged": 1,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-failures-2-v14-control-ratios.json",
+      "sha256": "db449adc07d902bcc57d9394c5b62f262d589ad9394148d4e770efb48e24483b",
+      "cases": 1,
+      "correct": 0,
+      "judged": 0,
+      "unjudged": 1,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-failures-2-v15-holdout2.json",
+      "sha256": "96bada360a79ec2d9777b3a9f2d406f8660de03f48f3b45aec21187038d2de61",
+      "cases": 1,
+      "correct": 0,
+      "judged": 0,
+      "unjudged": 1,
+      "model_failures": 1,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "target-failures-2-v15-ratios.json",
+      "sha256": "12160a205319f72cc567e7b96cce200821356a5626c7d897abea78f4d0eec978",
+      "cases": 1,
+      "correct": 0,
+      "judged": 0,
+      "unjudged": 1,
+      "model_failures": 0,
+      "value_references": 1,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "v14-control-batch1.json",
+      "sha256": "586f80d3f769945b78903a924499c43fa44fb6fdd9114d694d63a7c9c2994a85",
+      "cases": 50,
+      "correct": 50,
+      "judged": 50,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "v14-control-holdout2.json",
+      "sha256": "bd96b79dacfc16c93b57b701e9656ddd604449a65573a505feff1b3406ad6952",
+      "cases": 30,
+      "correct": 0,
+      "judged": 0,
+      "unjudged": 30,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "v15-batch1.json",
+      "sha256": "c7f8ebf17ad6695853794c789e01f1d9061005641674df0f39b78911065e0b7a",
+      "cases": 50,
+      "correct": 50,
+      "judged": 50,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 2,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "v15-coverage_iot.json",
+      "sha256": "dc13d51c3b6647a2133148b6a08831830e1637685753e6044b28e270f7284f2d",
+      "cases": 8,
+      "correct": 7,
+      "judged": 8,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "v15-coverage_pos.json",
+      "sha256": "002ccf4b0d321da9e51c007c544e3276b3722b25bcdc990b8c923012c7f5b7e7",
+      "cases": 8,
+      "correct": 8,
+      "judged": 8,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "v15-coverage_retail.json",
+      "sha256": "b1c6e19eccfbd8076ff10ecce63a8b5695368d449ea60ffd44f39ea4bf07d8f5",
+      "cases": 8,
+      "correct": 8,
+      "judged": 8,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "v15-features.json",
+      "sha256": "88aa4a51ab3bb4e5be626601bf80669a3417ac31b1563e657cbab55f0197584c",
+      "cases": 39,
+      "correct": 37,
+      "judged": 39,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "v15-having.json",
+      "sha256": "ec2e14596525ff2d8bd85dc3c51f069a47ac2c70c1369c68cfd0115a1478d5a2",
+      "cases": 6,
+      "correct": 6,
+      "judged": 6,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "v15-holdout2.json",
+      "sha256": "1c791b2e5b0bf5b116603dc6d3e6fef2c9f8500ced0630a26a21e0ae16a33043",
+      "cases": 30,
+      "correct": 0,
+      "judged": 0,
+      "unjudged": 30,
+      "model_failures": 1,
+      "value_references": 28,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 1
+    },
+    {
+      "artifact": "v15-holdout3.json",
+      "sha256": "311011e9dd834f9dd04e66bc4e8848376c36a6416e191e9a44451a0cdf7d8c34",
+      "cases": 15,
+      "correct": 0,
+      "judged": 0,
+      "unjudged": 15,
+      "model_failures": 0,
+      "value_references": 1,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "v15-iot.json",
+      "sha256": "4c555c4b107761015b541c750707664b346694abb044dba6aea2b0588ca2a477",
+      "cases": 20,
+      "correct": 19,
+      "judged": 20,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "v15-multilingual.json",
+      "sha256": "5b3ad263c9894c8252bfdf1ee46d8edc4a106bb59522915710dc642e6305e546",
+      "cases": 32,
+      "correct": 31,
+      "judged": 32,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "v15-nosample.json",
+      "sha256": "2bf18ed1117286390037303e78025354d9f5be440566f6e9e3656429db2542bc",
+      "cases": 26,
+      "correct": 25,
+      "judged": 26,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 1
+    },
+    {
+      "artifact": "v15-overlay.json",
+      "sha256": "cd9cacf8d500981081a659d76d979fceb5d82ce3f41c6103466a89c62e9b8153",
+      "cases": 14,
+      "correct": 14,
+      "judged": 14,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "v15-pos.json",
+      "sha256": "11bcfc903675fa6e517f1e38887424a688fff755c4788994b2858a5cbbb3b9c9",
+      "cases": 26,
+      "correct": 25,
+      "judged": 26,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 1
+    },
+    {
+      "artifact": "v15-ratios.json",
+      "sha256": "fb8935bd0f13bf9885ff86436899852c9afe886ff0715057f0e7564e0cebb0fe",
+      "cases": 12,
+      "correct": 0,
+      "judged": 0,
+      "unjudged": 12,
+      "model_failures": 1,
+      "value_references": 3,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "v15-real_smoke.json",
+      "sha256": "ab41b61ef682c97ca7a0edfff7b062251e4fe5f4920225ea04cfc7893236cd0c",
+      "cases": 7,
+      "correct": 7,
+      "judged": 7,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 1,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "v15-retail.json",
+      "sha256": "ae4f71052f20021bae7e4a310166645572e7967d878e5fb43f19b421a66ff109",
+      "cases": 12,
+      "correct": 12,
+      "judged": 12,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "service-final-raw.json",
+      "sha256": "c59d8eb99defb69be14ada8b43117ace07285e07eaf7795ff32316e9537f32ad",
+      "cases": 24,
+      "correct": 21,
+      "judged": 24,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "service-final-labels.json",
+      "sha256": "c24c6f0015d68b64461c06397f9217088d44a70179cdcd396c419da8595537e7",
+      "cases": 24,
+      "correct": 23,
+      "judged": 24,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 5,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    },
+    {
+      "artifact": "service-labels-v14-control.json",
+      "sha256": "12cfafcab45c989b2b9154a770633def13b21545cc3dd346406d53a97eba0d29",
+      "cases": 24,
+      "correct": 23,
+      "judged": 24,
+      "unjudged": 0,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "hinted_literal_misses": 0,
+      "shape_variants": 0
+    }
+  ],
+  "differential": [
+    {
+      "artifact": "service-differential-pg.json",
+      "sha256": "1ee2dc35fdd79c851b9ddca27ae4bdb63615f9c0abd84a60ab0d43b9ae916782",
+      "outcomes": {
+        "generated": 216,
+        "typed_refusal": 56,
+        "agree": 160
+      },
+      "disagreements": 0,
+      "errors": 0
+    },
+    {
+      "artifact": "service-differential-duck-fixed.json",
+      "sha256": "56caa88aee00671408c7536aaed107c0131f2ac0fd5c26f85c167788a08734fa",
+      "outcomes": {
+        "generated": 216,
+        "typed_refusal": 56,
+        "agree": 480
+      },
+      "disagreements": 0,
+      "errors": 0
+    },
+    {
+      "artifact": "iot-generator-guard.json",
+      "sha256": "712cc6e10923d52c94c0e87aef6a86457891094fd8784e68e03900e86baafd40",
+      "outcomes": {
+        "generated": 229,
+        "typed_refusal": 47,
+        "agree": 546
+      },
+      "disagreements": 0,
+      "errors": 0
+    },
+    {
+      "artifact": "pos-generator-guard.json",
+      "sha256": "9608db4a50799e9b3ebbb7733a3094c8bd47189becec098e741615d11d245459",
+      "outcomes": {
+        "generated": 225,
+        "typed_refusal": 55,
+        "agree": 510
+      },
+      "disagreements": 0,
+      "errors": 0
+    }
+  ],
+  "diagnostic_artifacts": [
+    {
+      "artifact": "probe-result.json",
+      "sha256": "ddef5e12dfba154a5bd6e085bd5ca799510129508d58f47bc205485cf0da1b4b"
+    },
+    {
+      "artifact": "service-differential-duck.json",
+      "sha256": "46c9e510bb54620b01a511596730fb5831b9751c9f019c2cf0a1dbf4ed61e513"
+    },
+    {
+      "artifact": "service-natural-key-probe.json",
+      "sha256": "56caa88aee00671408c7536aaed107c0131f2ac0fd5c26f85c167788a08734fa"
+    },
+    {
+      "artifact": "ruler-red/result.json",
+      "sha256": "84f8e66557b0dc5a5c9c4ec0e7a4eb945a0b616e140b2b310b0041f541d2359d"
+    },
+    {
+      "artifact": "natural-keys-red/result.json",
+      "sha256": "acd29cad526f634996ac746edf5de6926875aab7a59374032b7636d7c1f170a0"
+    },
+    {
+      "artifact": "grain-growth-red/result.json",
+      "sha256": "870882cb35faff676ce172089ce8b7d91f14315347f15ecc5d9b43f777c43e53"
+    },
+    {
+      "artifact": "final-static/result.json",
+      "sha256": "13079f854e92daf2e14dc70d1d79c910c6b41756c7807a62ac6493efe9ced35a"
+    },
+    {
+      "artifact": "metrics-self-test.json",
+      "sha256": "d7d95b76dccaf0db4de46cdb91c8f2b7c53dce9a37929dd40afa9614bc31218d"
+    },
+    {
+      "artifact": "regress.py",
+      "sha256": "37f51adbe8c00e75adfd227cdace36e4466c8ba15378ab7b1c9d5bfa63ba6145"
+    },
+    {
+      "artifact": "targeted.py",
+      "sha256": "4eb7aa880dc2bf02a32eff2cc1eba12c23e6c202d9afd41666cacfaf978d2865"
+    },
+    {
+      "artifact": "service_control.py",
+      "sha256": "ea17d0b6fc620e24c8a1c6e37d3a077001811ad12ad66eded44658f67d3b9552"
+    }
+  ],
+  "limits": [
+    "Existing 313-case v15 run precedes the grain/growth dependency repair; subsequent service and targeted runs include it.",
+    "Offline 329-test gate precedes one AST-identical synthetic.py line wrap, verified by old-source hash and AST equality; focused generator tests and static gate pass afterwards.",
+    "Same-index service v14/v15 both 23/24. A5 accuracy gain is not demonstrated.",
+    "Holdout 2 q25 fails twice in three v15 observations; three v14 observations succeed. Missing ratio denominator, no guessed repair.",
+    "Holdout 2/3 and ratio reports are unjudged; reference usage is not correctness.",
+    "Two service attempts aborted before complete reporting; excluded from completed-case counts.",
+    "No stage, commit or push. No PII whitelist expansion. No A4.",
+    "Differential shares production window helpers and covers only generated plans.",
+    "Remaining lexical grain deletion produces a wrong answer; retirement is pending an owner decision."
+  ],
+  "differential_comparisons": 1696,
+  "completed_case_executions_in_reports": 509,
+  "service_database": {
+    "name": "grepbit_spike_service",
+    "new_tables": 6,
+    "counts": {
+      "teams": 3,
+      "projects": 4,
+      "tickets": 8,
+      "work_logs": 10,
+      "ticket_events": 9,
+      "team_links": 2
+    },
+    "runtime_role": "grepbit_ro",
+    "admin_password_used": false,
+    "existing_databases_modified": false
+  }
+}

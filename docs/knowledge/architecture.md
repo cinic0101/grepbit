@@ -16,9 +16,15 @@ application -> domain
 | application | `overlay` (schema check, absent concepts, segment activation), `shapes` (unsupported-shape and per-period gates), `literals` (which filter literals to check), `grounding` (value index: mentions, candidates, resolution), `policies` (column-policy proposer), `text` (script-aware phrase match), `active_queries` (cancellation registry) | stdlib, domain, ports, application |
 | adapters | `postgres/introspect`, `postgres/value_check`, `postgres/value_index`, `postgres/executor`, `sqlglot/plan_compiler`, `sqlglot/policy`, `litellm/plan_client`, `litellm/coverage_client`, `litellm/grounding_client` (transport and settings), `litellm/embeddings_client`, `overlay_store`, `language_pack_store` | anything |
 
-`resources/unsupported_shapes.json` is the packaged language pack of question
-shapes the algebra cannot express (shares, growth rates) in Chinese, English
-and Japanese; it is data, loaded by `language_pack_store`.
+`resources/unsupported_shapes.json` is the packaged language data for shape
+gates, prompt triggers and concept checks, loaded by `language_pack_store`.
+Shares and growth are supported constructs, not blanket refusals. The owner
+rejected using absent rate words to delete growth; that mechanism and its
+unused trigger lists are removed in pack v9. The owner also approved retiring
+lexical grain deletion on 2026-09-12; orchestration v3 preserves a valid grain
+without testing whether the question contains a recognised period word.
+Business vocabulary belongs in reviewed data,
+but moving a heuristic into JSON does not prove it safe across languages.
 
 `tests/contract/test_module_boundaries.py` enforces the table and adds one
 more rule: sqlglot is imported only inside `adapters/sqlglot/`.
@@ -36,9 +42,8 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
    no row instead of raising.
 2. Deterministic gates before any model call, all zero cost: unsafe words
    (language pack), overlay absent concepts (`match_absent_concept`), and
-   unsupported shapes (`match_unsupported_shape`: a share, ratio or growth
-   word yields `unsupported` with the pack's clarification, measured in
-   `../research/deterministic-gates.md`).
+   unsupported shapes (`match_unsupported_shape`, using the loaded pack;
+   the default pack no longer refuses shares, ratios or growth).
 3. Plan: `ChatCompletionsPlanClient.propose` sends the rules, the JSON Schema
    of `PlanProposal`, the value-free schema payload (plus overlay metrics,
    aliases, value names, default time columns and segments, plus the previous
@@ -46,15 +51,19 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
    with a reason. Before the call, the value index (distinct values of the
    overlay's groundable columns, loaded once per run and capped per column)
    lists stored values that occur verbatim in the question as
-   `question_values`, so a name is not cut at a segmentation boundary. Hidden
+   `question_values`, so a name is not cut at a segmentation boundary. In the
+   provisional A5 implementation (acceptance warning: `../research/a5-service-01.md`),
+   eligible entries receive column-bound IDs; `value_refs` resolves to exact
+   literals before the domain plan is validated, using only this request's
+   catalog. No-candidate calls keep the original filter form. Hidden
    tables and columns and withheld samples follow the overlay's policies.
    String-shaped column references are repaired only when they resolve to
    exactly one table; a base table that is merely the parent of the table
    holding every measure column is moved there (`repair_base_table`, stated
-   as an assumption). Two deterministic checks run on the proposal before
-   compilation: a grain without a window that no per-period or trend word
-   asked for is dropped (`unrequested_grain`, stated as an assumption), and
-   a per-period question (每天, monthly; language pack
+   as an assumption). Valid grains are preserved, with their interpretation
+   and normal compiler assumptions; absence of a period word does not prove
+   that the model added an unwanted grain. Before compilation, a
+   per-period question (每天, monthly; language pack
    `period_words`) answered with a single current-period window is a
    `clarify` (`single_period_misread`), never a rewritten plan.
 4. Compile: `PlanCompiler.compile` validates every identifier and kind, walks
@@ -68,15 +77,17 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
    relative window that reaches the future), takes a share over all groups
    even when the question filters on the grouped column (the filter selects
    rows after the share), widens a growth window by one unit when it covers
-   a single bucket and refuses growth on a to-date window, refuses a
+   a single bucket and refuses growth on a to-date window. Growth is NULL
+   across absent calendar buckets instead of jumping to the last observed
+   period; no synthetic rows are inserted. It refuses a
    `HAVING count = 0` over the base rows as an anti-join it cannot express,
    adds a correlated `NOT EXISTS` for a `without` (entities with no
    activity, the child's filters, window and segments inside), ranks rows
    with `ROW_NUMBER()` for a `latest` (the most recent row per group) and
    resolves a `latest` time scope against the data (the unit of the maximum
-   time value after the filters), places
-   `having` conditions on the
-   aggregate expressions, builds the SQL as a sqlglot AST with bound
+   time value after the filters), places `having` conditions on aggregate
+   expressions for plain aggregates (or on output after share/growth,
+   preserving their comparison population), builds the SQL as a sqlglot AST with bound
    placeholders, and emits lineage, assumptions, interpretation and the
    verification level.
 5. Gate: `PostgresSqlPolicy(tables=..., functions=...)` re-parses the SQL and
@@ -134,6 +145,7 @@ and the served path cannot drift (`../research/runner-on-ask-01.md`).
 
 ## What is not here yet
 
-Served API and CLI, datasource registration, the vocabulary gate, MCP tool,
-derived metrics, schema retrieval for large schemas, PII-safe sampling,
-review tooling. See `../plan/next-phase.md`.
+MCP and datasource registration exist as described above. Open work includes
+live acceptance of candidate references (A5), measured large-schema needs
+(A4), PII-safe sampling and review tooling. See the current
+status in `../plan/root-cause-program.md`; earlier planning prose is history.

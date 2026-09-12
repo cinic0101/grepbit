@@ -1,6 +1,71 @@
 # Tier-0 contract
 
+## Owner-approved period semantics (takeover after 746f168)
+
+The owner explicitly accepted the four defaults below and requested fewer
+hardcoded language triggers for multilingual generalisation. The new value
+rulers are `tests/contract/t0/test_period_semantics_ruler.py`; their answers
+are hand-computed, with compiled SQL (in-memory DuckDB) and the Python
+reference checked separately. The same hand-computed cases can also run as
+read-only PostgreSQL SELECTs over inline synthetic data; see
+`../plan/active-work.md` for executed validation and artifact locations.
+
+- **No lexical growth deletion.** Neither a missing rate word nor a matched
+  comparison word is sufficient evidence to delete a growth entry. Retire
+  the deletion mechanism, not just its default switch. The legacy-pack
+  assertion in `test_ask_contract.py` now passes: the functions, result field,
+  repair label and unused trigger lists have been removed (shape pack v9;
+  `ask-orchestration-v2` no longer emits `growth_dropped`).
+  This does not approve arbitrary extra measures or change historic scores.
+- **Adjacent calendar periods only.** Growth compares the same group's
+  current bucket with the immediately preceding calendar bucket of its
+  grain, in the datasource business timezone. A missing previous bucket,
+  NULL current/previous value, or zero previous value yields NULL, not zero.
+  Do not manufacture missing rows or jump to the last observed period.
+  A one-unit scope may still widen as documented below to fetch the prior
+  bucket. SQL checks the lagged bucket against one calendar unit earlier;
+  the reference uses its own calendar arithmetic. Both pass the gap rulers.
+- **NULL times are not periods.** A grain excludes rows whose effective time
+  column is NULL, with an assumption. Unperiodized totals retain them unless
+  another explicit filter/window excludes them; totals need not reconcile
+  across those two populations. Already implemented, now explicitly approved.
+- **Thresholds select after share/growth.** Compute over the pre-threshold
+  population, then apply `having` as output selection. A below-threshold
+  period still exists for growth; it is different from an absent period.
+  A=80, B=20 with threshold >50 returns A at 80%, not 100%. January=100,
+  February=20, March=120 with threshold >50 leaves March at 500%, not 20%.
+  Already implemented, now explicitly approved. Requests to change the
+  denominator population require a separately expressible plan, not a silent
+  reinterpretation of this default.
+
+The initial checkpoint had 23 intended failures; the owner then explicitly
+authorised implementation. No new algebra, prompt revision, zero-fill policy
+or extra-measure scoring rule is introduced. Historical evidence is unchanged.
+
 ## QueryPlan (domain/plan.py)
+
+Owner-approved boundary, 2026-09-12: a ratio measure cannot carry nonempty
+wrapper-level `filters`. Their scope was undefined and silently ignored by
+the compiler. Domain validation rejects `plan_ratio_wrapper_filters_unsupported`;
+unchecked in-memory plans are refused by the compiler with
+`ratio_wrapper_filters_unsupported`, and SQL self-check flags the same shape.
+Filters remain legal at plan scope (both operands) and independently on either
+operand. Empty wrapper filters remain accepted. Neither share-filter movement
+nor duplicate-aggregate normalization may erase a nonempty ratio-wrapper
+filter to bypass validation. See `../plan/semantic-contrast-program.md` for
+the red ruler and explicit follow-up approval. The compact shown schema remains
+an overapproximation checked by domain validation; its text and v15 prompt are
+unchanged. Previously accepted filtered duplicate-aggregate variants now refuse;
+ordinary duplicate-aggregate forms without wrapper filters remain accepted.
+
+Follow-up owner decision, 2026-09-12: **no lexical grain deletion**. An absent
+or unrecognised period word is not evidence that a valid grain is unwanted.
+Orchestration v3 removes `unrequested_grain`, `drop_grain`, `grain_dropped`,
+the repair label and its misleading assumption. The ordinary compiler
+interpretation/assumptions still describe the grouping. This does not approve
+arbitrary extra grouping as correct or change golden scores. The separate
+single-period clarification gate and its language data remain in force.
+See `../plan/grain-retirement.md`; prompt v15 is unchanged.
 
 ```json
 {
@@ -67,6 +132,8 @@
 - growth: up to 2 `{"measure": <output name>}` entries, each adding
   `<name>_growth` = (current minus previous period) / previous period per group
   with `LAG` over `period_start`; requires a grain. The first period is NULL.
+  The previous bucket must be the adjacent calendar period;
+  missing buckets are NULL growth, not skipped or zero-filled.
 - base_table may be omitted when the operand columns or metrics determine it
   (the table among them that reaches the others through foreign keys);
   otherwise `base_table_undetermined`. It is required for a bare `count`.
@@ -92,7 +159,9 @@
   `period_start`); limit is 1 to 200.
 - having: up to 2 conditions on measures of each group (`field` is a measure
   output name; ops gt, gte, lt, lte, eq, ne; numeric value), compiled onto the
-  aggregate expression as SQL HAVING with the value bound. Added after
+  aggregate expression as SQL HAVING with the value bound for plain aggregates;
+  beside share or growth it selects output rows after those calculations.
+  Added after
   holdout 2, where four "groups whose total exceeds N" questions were
   answered without the threshold. A row condition stays in `filters`; the
   planner rule says which is which.
@@ -155,12 +224,10 @@ one leaves a trace: a `shape_repairs` entry, an assumption, or both.
 | `repair_column_refs` | a bare `aggregate` written beside a `ratio` on the same measure is dropped (the operands carry their own aggregates; the validator would reject the pair); an aggregate with a column or a metric beside a ratio is left to fail | `shape_repairs` (`dropped aggregate ...`) |
 | `repair_column_refs` | a `ratio` written on the plan instead of inside a measure moves into `measures`; a measure that is exactly one of its operands (alias aside) is dropped as the same thing spelled twice. Nothing moves when a measure already carries a ratio | `shape_repairs` (`lifted plan-level ratio ...`, `dropped measure ... spelled inside the ratio`) |
 | `repair_base_table` (application) | the base moves to the child table holding every measure column, or to a metric's base | assumption |
-| `unrequested_growth` (application) | **proposed, inactive by default.** A `growth` entry is dropped only when the question carries a comparison word (`rule_triggers.growth_comparison`) and none of the rate words (`rule_triggers.growth`, pack v8: 成長, 成長率, 變化率, 百分之, 倍, growth, percent, ...). A first version dropped growth whenever no rate word matched and would have changed 本月告警數比上月多百分之幾 (review of 2026-09-11); the default pack leaves the comparison list empty until the owner rules, so `ft_compare_last_two_months` may flap again | `meaning_normalisations` (`dropped growth ...`) and an assumption |
 | `constant_dimensions` (application) | a dimension the plan's own equality filter fixes to one value (`by store_name` beside `store_name = X`) is not returned: it would repeat on every row; the filter still applies. Owner's decision 2026-09-11; latest-row plans and plans with a `share_of_total` measure are left alone (there the after-share selection is the reading) | `shape_repairs` (`dropped constant dimensions ...`) and an assumption |
 | `single_period_misread` (application) | a per-period word (`period_words` of the shape pack) answered with the single current unit is a `clarify`, never a rewrite | `per_period_single_window` |
 | `unmapped_concepts` (application) | a business concept the question names (`concepts` of the shape pack, v6: returns, member, discount, cancellation, cost and margin, with their words in zh, ja and en) must leave a trace in the plan: a referenced column whose name carries one of the concept's keywords, a reviewed metric whose id or names carry it, or a default-excluded segment the question named. Otherwise `clarify` naming the word: 2025年12月退貨金額 answered as the month's total sales twice on 2026-09-11 | `concept_not_mapped`, `unmapped_concepts` |
 | range clamp (compiler) | a `range` whose end lies after as_of's day (2025 asked, 2060-01-01 written) ends at as_of's day instead; a `to_date` window longer than one unit is refused (`relative_window_reaches_future`), the planner having re-anchored it first | assumption (`clamped to the end of as_of's day`) |
-| `unrequested_grain` (application) | a grain without a window when the question has no per-period or trend word is dropped: 同期 with no period word means one whole-window value per group | `shape_repairs` (`dropped grain ...`) and an assumption naming the words that ask for a breakdown |
 | after-share selection (compiler) | with a `share_of_total` measure, a filter on a grouped column selects rows after the share (outer `WHERE` over the grouped subquery), so 特約永和中正 佔全部門市 divides by every store; filters on other columns still shape the population. A plain `having` stays on the inner grouped query (the outer has no `GROUP BY`: 42803, found by the differential); a `having` beside a share or a growth measure is applied after them, as the outer `WHERE`, because SQL would run it before the window functions and shrink the share's total or make growth compare with the previous surviving period (found by the differential on random data) | lineage `[after share] ...`, `[after share and growth] ...` and an assumption |
 | whole share (compiler) | a `share_of_total` with no groups and no grain whose operand carries a filter of its own is the part over the whole: the filter shapes the numerator only and the total is the same aggregate over every row of the window (會員交易佔比 came back as a filtered count with `share_of_total`, which the window form made 1.0). A reviewed metric's defining filters do not make a part (gross_sales excludes returns; over net sales holdout 2 q21 came out 1.232 on 2026-09-11), so a metric share with no groups and no operand filter is refused (`share_requires_groups`) | lineage `... / count(*) [the whole]` and an assumption |
 
@@ -184,23 +251,35 @@ invariants hold) and closed one by one with a value test.
 |---|---|---|---|---|---|---|---|---|
 | raw aggregate | `test_enum_filters_compare_as_text...`, `test_null_checks_and_count_distinct...` | `test_an_operand_may_carry_its_own_filters...` | `test_default_exclusion_adds_the_inverse_filter...` | `test_excluded_segments_are_lifted_when_the_question_names_them` | `test_count_with_month_window_binds_boundaries...` | `test_monthly_grain_buckets_in_business_timezone...` | excluded: `plan_latest_excludes_aggregates` | `test_without_compiles_an_anti_join...` |
 | reviewed metric | `test_extra_question_filters_or_candidate_metrics_are_only_partially_verified` | `test_a_metric_operand_keeps_its_own_filters` | `test_default_segment_becomes_operand_level_when_one_operand_selects_it` | **gap** | `test_time_column_defaults_to_the_overlay_time_default_of_the_base` | **gap** | excluded: `plan_latest_excludes_aggregates` | **gap** (a metric on the entity table) |
-| ratio | **gap** | `test_an_operand_may_carry_its_own_filters...`, `test_a_metric_operand_keeps_its_own_filters` | `test_default_segment_becomes_operand_level...` (return ratio keeps gross sales) | **gap** | **gap** (b1_q34 is an eval case only) | **gap** | excluded | **gap** |
-| share_of_total | `test_share_filtered_on_its_own_dimension_is_the_subset_share_of_the_whole` (after-share selection) | `test_a_share_with_no_groups_is_the_filtered_part_over_the_whole`, `test_grouped_share_and_growth_keep_their_windows`, `test_share_filter_on_a_grouped_column_becomes_the_after_share_selection` | **gap** (batch 1 q17 is an eval case only) | **gap** | `test_share_of_total_divides_by_the_window_total_over_all_groups` | `test_share_within_each_period_when_the_plan_has_a_grain` | excluded | **gap** |
-| growth | **gap** | **gap** | **gap** | **gap** | `test_growth_on_a_single_period_window_widens...`, `test_growth_on_a_to_date_window_is_refused` | `test_growth_compares_each_period_with_the_previous_one_per_group` (required: `plan_growth_requires_grain`) | excluded | **gap** |
-| having | `test_having_compares_the_aggregate_expression_with_a_bound_value` | **gap** | **gap** | **gap** | **gap** | **gap** | excluded | `count = 0` excluded: `anti_join_required`; other thresholds **gap** |
+| ratio | **gap** | `test_an_operand_may_carry_its_own_filters...`, `test_a_metric_operand_keeps_its_own_filters` | `test_default_segment_becomes_operand_level...` (return ratio keeps gross sales) | **gap** | **gap** (b1_q34 is an eval case only) | **gap** | excluded | `test_service_hand_counted_values[without_ratio-*]` |
+| share_of_total | `test_share_filtered_on_its_own_dimension_is_the_subset_share_of_the_whole` (after-share selection) | `test_a_share_with_no_groups_is_the_filtered_part_over_the_whole`, `test_grouped_share_and_growth_keep_their_windows`, `test_share_filter_on_a_grouped_column_becomes_the_after_share_selection` | **gap** (batch 1 q17 is an eval case only) | **gap** | `test_share_of_total_divides_by_the_window_total_over_all_groups` | `test_share_within_each_period_when_the_plan_has_a_grain` | excluded | `test_service_hand_counted_values[without_share-*]` |
+| growth | **gap** | **gap** | **gap** | **gap** | `test_growth_on_a_single_period_window_widens...`, `test_growth_on_a_to_date_window_is_refused` | `test_growth_compares_each_period_with_the_previous_one_per_group`; adjacency value rulers in `test_period_semantics_ruler.py` (required: `plan_growth_requires_grain`) | excluded | `test_service_hand_counted_values[without_growth-*]` |
+| having | `test_having_compares_the_aggregate_expression_with_a_bound_value` | **gap** | **gap** | **gap** | **gap** | `test_growth_threshold_hides_a_period_without_removing_its_comparison_value` (hand-computed SQL and reference values) | excluded | `count = 0` excluded: `anti_join_required`; `test_service_hand_counted_values[without_having-*]` |
 
 The application-level normalisations are rows of their own: the
 constant-dimension drop is skipped for plans with a share measure (holdout 2
 q21, `test_a_share_asked_for_one_group_keeps_its_dimension`) and for
-latest-row plans; the unrequested-grain drop and the base repair have their
-tests in `test_gates_contract.py` and `test_plan_compiler_contract.py`.
+latest-row plans. Lexical grain deletion is retired; its removal and preserved
+grain/ordering/share/growth invariants have gates/ask contract tests. Base
+repair tests remain in `test_plan_compiler_contract.py`.
 
 Having on a ratio or share is excluded (`plan_having_on_derived_measure`,
 `test_having_cannot_target_a_derived_measure`); a ratio of identical operands
 is excluded at validation (`plan_ratio_operands_identical`, found by the
 generated-plan properties on their first run). Twenty-two gap cells on
-2026-09-11; the generated-plan properties cover them for structure the same
-day, the value tests follow.
+2026-09-11; generated-plan properties provide structural coverage, not value
+proof. At the takeover ruler checkpoint, the having/grain value cell above
+is filled. Service hand-counted rulers subsequently fill ratio/share/growth/
+having with `without`; 17 named-test gaps remain. The missing-period rulers pass.
+Generated coverage is limited to what the strategies actually draw; named
+segments are not covered by the current differential generator. Multi-hop
+`without` and its combinations with ordinary measures/output selection are
+now generated; value coverage is still bounded by the recorded plans.
+The service rulers exposed and repaired a count-only shortcut in the
+reference evaluator, not the compiler. `without` restricts the base rows,
+then normal aggregation and output selection apply; reference rows remain
+unlimited for the differential comparator's tie-aware LIMIT check.
+Do not infer every matrix cell's value coverage from a clean run.
 
 ## Time closure (2026-09-11)
 
@@ -222,7 +301,7 @@ as_of 2026-08-15 12:00 Asia/Taipei in the fixture).
 | `latest` | the most recent unit with rows, resolved in SQL |
 | grain without scope | every row bucketed, no window; rows whose time value is NULL are left out (they are in no period), with an assumption |
 | growth over a one-unit window | window widened by one unit backwards, with an assumption |
-| growth with a missing period (no rows in February) | **open decision**: `LAG` compares with the previous bucket that has rows (January), not with an empty February; filling zero or returning NULL for March are the alternatives. The current behaviour is pinned by a test, not approved |
+| growth with a missing period (no rows in February) | March growth is NULL, not a comparison with January. No February row is fabricated. Day/week/month/quarter/year, date/timestamp and per-group value rulers verify the accepted default |
 | growth on `to_date` or `latest` | refused `growth_to_date_unsupported` |
 | growth without grain | rejected at validation `plan_growth_requires_grain` |
 | `without.time` with a grain, or a `latest` scope | rejected at validation |
@@ -264,7 +343,41 @@ does not read NULL as a number.
 
 ## Prompt revisions
 
-`PLAN_PROMPT_REVISION` in `adapters/litellm/plan_client.py` is `plan-classify-json-v14`.
+`PLAN_PROMPT_REVISION` in `adapters/litellm/plan_client.py` is `plan-classify-json-v15`.
+
+**Wire v3 / A5 (2026-09-12, provisional implementation; not accepted).**
+See `../research/a5-service-01.md`: binding works, but a repeated model-output
+regression blocks promotion. Only when the request has eligible value
+candidates, its filter schema additionally accepts `value_refs: [id, ...]`
+instead of `values`. The `question_values` entries carry an opaque,
+deterministic ID derived from the column and exact stored spelling. These
+are references, not authorization tokens or global lookup keys; only the
+catalog supplied in this request may resolve them. No additional database
+lookup, fuzzy retrieval or persistent candidate cache is introduced.
+
+Candidates are restricted to existing text columns explicitly groundable
+and visible under the overlay. No overlay means no advertised candidate
+catalog. The existing personal-column defaults and hidden-column policies
+apply. This is not the deferred PII display/whitelist product feature.
+
+`eq`, `ne` and `in` filters may use references at the plan, measure/ratio
+operand or `without` level. Resolution verifies the exact column and ID,
+then substitutes the exact stored string before normalisation and domain
+validation. Mixed `values`/`value_refs`, empty/malformed references, unsupported
+operators, wrong-column IDs and IDs absent from this request fail validation
+with `candidate_reference_*`; the existing bounded repair turn may correct
+the output, otherwise it is `invalid_structured_output`. Invalid references
+never silently fall back to literal guessing. Ordinary `values` strings are
+never interpreted as IDs. References themselves are not shape repairs.
+
+The compiler, domain QueryPlan and saved follow-up plans still contain typed
+literals, not IDs. No-candidate messages retain the original compact filter
+schema. Reference usage and validation failures are recorded separately as
+`value_references` and `value_reference_errors`; candidate availability is
+not evidence of correct entity selection. `hinted_literal_misses` is only
+the count of cases with both a hint and an unresolved literal; it does not
+prove that the missing literal had a matching candidate on that column.
+Live rollout evidence is recorded in `../plan/a5-and-service-fixture.md`.
 
 **Wire contract v2 (2026-09-11, `adapters/litellm/plan_wire.py`).** The
 schema the planner is shown is no longer the pydantic schema of the domain
@@ -292,7 +405,7 @@ superset and rewrites it to the domain models without guessing meaning:
 | `numerator` and `denominator` on the plan beside the operands spelled out as measures (holdout 2 q23) | one ratio measure, the spelled-out operands dropped | `shape_repairs` |
 | an `aggregate` and `column` beside `numerator`/`denominator` that restate one operand (the repair turn on q23) | the ratio alone | `shape_repairs` |
 | an alias that cannot be quoted at all (a quote or control character inside, more than 63 bytes) | its ASCII part, or `measure_N`; the `order`, `having`, `growth` items that named it follow | `shape_variants` |
-| a share measure whose own filter names a grouped column (holdout 2 q25: 1.0 for that group, 0 elsewhere) | the filter moves to the plan's filters, so the after-share selection applies | `shape_repairs` |
+| a non-ratio share measure whose own filter names a grouped column (holdout 2 q25: 1.0 for that group, 0 elsewhere) | the filter moves to the plan's filters, so the after-share selection applies; ratio-wrapper filters remain for rejection | `shape_repairs` |
 | a month (`YYYY-MM`), day or year written as a filter literal on a date or timestamp column when the plan has no window (the 12B control: `sale_date IN ('2025-12')`, PostgreSQL 22007) | the time window it can only mean; the time column taken from the filter when the plan names none | `shape_repairs` (`date literal ...`) and an assumption |
 
 The repair list is read two ways (`ports/ask.py`, `is_meaning_repair`):
@@ -301,7 +414,7 @@ The repair list is read two ways (`ports/ask.py`, `is_meaning_repair`):
 they stay under 5% of cases on every set), and `meaning_normalisations` are
 the rules that change what the plan means and say so in an assumption
 (relative window re-anchored, unit from grain, date literal as a window,
-share filter to the after-share selection, unrequested grain dropped,
+share filter to the after-share selection,
 constant dimension dropped). `shape_repairs` stays as their union in the
 reports. Rules 8 to 10 (entities with no activity,
 the latest row per entity, the latest period with data) enter the prompt
@@ -355,3 +468,6 @@ v14 (2026-09-11 afternoon) is the wire contract v2 above: the shown schema
 is the flat compact form, column references are `table.column` strings, a
 ratio is `numerator` and `denominator` on the measure, and rules 8 to 10 are
 attached only on their trigger words; no rule changed meaning.
+
+v15 (2026-09-12) adds request-scoped candidate references to rule 11 and the
+conditional wire schema. Schema linking (A4) is deliberately not included.

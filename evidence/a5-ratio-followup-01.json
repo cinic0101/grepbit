@@ -1,0 +1,449 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-12",
+  "scope": "A5 ratio investigation; negative experiments and preservation guards; not an accepted production fix",
+  "baseline_head": "746f1689ad812088ed2cca6cc3bcde3e85a006b8",
+  "production_prompt_revision": "plan-classify-json-v15",
+  "ask_revision": "ask-orchestration-v3",
+  "production_changed_in_this_slice": false,
+  "a5_accepted": false,
+  "source_delta_since_grain_retirement": [
+    {
+      "path": "tests/contract/t0/test_value_reference_contract.py",
+      "sha256": "83550a82729bcf1b0be92682defae026b2cccc20a915edf5da3b2e484770ea4c"
+    }
+  ],
+  "source_snapshot_digest": "sha256:cf3c9da4b66581f5b56c8a65878d15a6c19f67f34855f119485185b77f695244",
+  "gates": [
+    {
+      "path": ".artifacts/a5-ratio-20260912/guards/result.json",
+      "sha256": "4a666ef9b635f982b0c24d6d12fcef4f0dcf2350e21f08af44f6a37d9c4e2475",
+      "profile": "focused",
+      "passed": true,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 38
+      }
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/static/result.json",
+      "sha256": "d4fec6603ee04d98ebd8253523d472e0f283e3382124ba545a75de67eacc51fd",
+      "profile": "static",
+      "passed": true,
+      "junit_counts": null
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/offline/result.json",
+      "sha256": "67d91487494c850881881d7c1d008fe315159e8ea181ae79deb59c9bd88f3311",
+      "profile": "offline",
+      "passed": true,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 355
+      }
+    }
+  ],
+  "case_execution_count": 28,
+  "case_reports": [
+    {
+      "path": ".artifacts/a5-ratio-20260912/diagnose-1-holdout2.json",
+      "sha256": "6334f6e5d2cc1895e57f5edf7284926c6cb7dfed615444987dd0b1689f43c441",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/diagnose-1-pos.json",
+      "sha256": "5c3f0b890079621b8e2d947adb31b88db421f18957ae1b8585e05f69df07c436",
+      "cases": 1,
+      "judged": 1,
+      "unjudged": 0,
+      "correct": 1,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/diagnose-1-ratios.json",
+      "sha256": "e0ff734e26eab447f806d4f3733503882a817db1a65bfcde41073337434b7a91",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "failed": 1
+      },
+      "model_repair_turns": 1
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/diagnose-2-holdout2.json",
+      "sha256": "c8445789e0fb6cba4e838b866bc2a2f184543739351cb3063814d011049c086b",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/diagnose-2-pos.json",
+      "sha256": "f5b60d2e61fd643da369540d2a20bf003eb57a61c3f3430a5f8c8801e5072736",
+      "cases": 1,
+      "judged": 1,
+      "unjudged": 0,
+      "correct": 1,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/diagnose-2-ratios.json",
+      "sha256": "c7d7a5e6f71491393c7dfc41d7dedb92302bc071438f7096e78e9bae5990fdce",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-1-baseline-holdout2.json",
+      "sha256": "48280d0abf9aff8b2d586244c57d395453fd29494179efbe5e745cb8caf553e2",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-1-baseline-pos.json",
+      "sha256": "5b9b9b8a6a71f017e945b3e073156196970e2ed2423405cd7b5a02f6b0636a53",
+      "cases": 1,
+      "judged": 1,
+      "unjudged": 0,
+      "correct": 1,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-1-baseline-ratios.json",
+      "sha256": "c5a0e1bc3805960744ec8f274d913ecfb5899be24bd30109531b1dcd45becb8f",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-1-no_metadata-holdout2.json",
+      "sha256": "8c2edbcb238060ca7528a01c8be6b500ce3c23593d7d12b65021c99e82dbf812",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "failed": 1
+      },
+      "model_repair_turns": 1
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-1-no_metadata-pos.json",
+      "sha256": "d678a9a66b6c723b061e9118eb6244dbf90f38930bcbb1ee5dc490e7cc7bc8c7",
+      "cases": 1,
+      "judged": 1,
+      "unjudged": 0,
+      "correct": 1,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-1-no_metadata-ratios.json",
+      "sha256": "8ca087e44c80aa076a3b580436bad143d96dd2aee02c38c2e5616684b7178fdd",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 1
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-1-paired-holdout2.json",
+      "sha256": "a866b14a6bab8621e2b97a3d0a3bac6afca1d09d0c2fef1187d4383e6a64edd3",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-1-paired-pos.json",
+      "sha256": "d82631cbe0c7622a945a591381907c648b9faa32019ef65dec4e04a82b2ebcf9",
+      "cases": 1,
+      "judged": 1,
+      "unjudged": 0,
+      "correct": 1,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-1-paired-ratios.json",
+      "sha256": "a14b7b3adb8cb1f1af5aebbf48fe6e6991f83662e2b9394c4216577b5728b180",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "failed": 1
+      },
+      "model_repair_turns": 1
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-2-baseline-holdout2.json",
+      "sha256": "740c8312107e0973df6409fa2d77a2dc9e752e068f55fd987dcad7a4eacccfe2",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-2-baseline-pos.json",
+      "sha256": "16582a9c50caaad4f46bf7e8872546cf05f778a6eb536eec5eef400e5403f775",
+      "cases": 1,
+      "judged": 1,
+      "unjudged": 0,
+      "correct": 1,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-2-baseline-ratios.json",
+      "sha256": "557df23d774db682209cd3bf0ddfc88d84f98546008d107d7fbdd0dbbbc799c1",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-2-no_metadata-holdout2.json",
+      "sha256": "821140fa3dc510cd34eda69190dc71530e0194e73809326133c39716254bf43e",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "failed": 1
+      },
+      "model_repair_turns": 1
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-2-no_metadata-pos.json",
+      "sha256": "b4b584bfe4ab0a66b8024a8942309bb8683e6ed46594b0c7fb368191c47c5e19",
+      "cases": 1,
+      "judged": 1,
+      "unjudged": 0,
+      "correct": 1,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-2-no_metadata-ratios.json",
+      "sha256": "293b989be024ad4839132cc301d588826a719e757e1a17851bd1d1065d296f28",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 1
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-2-paired-holdout2.json",
+      "sha256": "6bd2d3e8e70843f9444d6ad45dc38913d676d84d57e826445f79d317410bf7ef",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-2-paired-pos.json",
+      "sha256": "bab71f1f1f89c5915505e39264aa4f674f2a389c2688bd5c180df360960480fc",
+      "cases": 1,
+      "judged": 1,
+      "unjudged": 0,
+      "correct": 1,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot-2-paired-ratios.json",
+      "sha256": "a87f75c94f3105ba50eb68d6a365c277ac67b2aea2dc4e37bf78a774bc40d6b9",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "failed": 1
+      },
+      "model_repair_turns": 1
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/repair-real-1-domain_path.json",
+      "sha256": "fec591381fc22c7c19d6bc2fa1d46f2b2c864148fa1596b5aa147a07a81797c7",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "failed": 1
+      },
+      "model_repair_turns": 1
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/repair-real-1-wire_path.json",
+      "sha256": "2b2acde248573e0f97e9e85c9d33f6cade053999cef521d89627515c04df821e",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "unsupported": 1
+      },
+      "model_repair_turns": 1
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/repair-real-2-domain_path.json",
+      "sha256": "117d7cadf84bfb82305d57777e2d32ecac4e45653aa59e524a6365e5f08a681c",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "failed": 1
+      },
+      "model_repair_turns": 1
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/repair-real-2-wire_path.json",
+      "sha256": "6f6299b2e568ccd91f2e58e609fc18a0cb1e1372292ec27b8e58aa634fd5dd16",
+      "cases": 1,
+      "judged": 0,
+      "unjudged": 1,
+      "correct": 0,
+      "status_counts": {
+        "unsupported": 1
+      },
+      "model_repair_turns": 1
+    }
+  ],
+  "synthetic_repair_only": {
+    "path": ".artifacts/a5-ratio-20260912/repair-probe.json",
+    "sha256": "1913e51a87764d1722ca5a8835b8ccaecb77355896bb5e3ffdd8a05716c9061e",
+    "model_calls": 12,
+    "arms": {
+      "domain_path": {
+        "calls": 6,
+        "correct": 5
+      },
+      "wire_path": {
+        "calls": 6,
+        "correct": 6
+      }
+    }
+  },
+  "diagnostic_scripts": [
+    {
+      "path": ".artifacts/a5-ratio-20260912/diagnose.py",
+      "sha256": "56d29c34ca27fbf387bef9a48904c7f1acbfc4ed4717811bff4207aec3186895"
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/pilot.py",
+      "sha256": "a07e8dad5c17f26c46736d3cb08c6e508657055b5042a7a62d65c8e55d9a545c"
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/repair_probe.py",
+      "sha256": "417d87a118b78d82df7f2bac8ef4804f92922f9da0cbeeb9b085b8e78b990922"
+    },
+    {
+      "path": ".artifacts/a5-ratio-20260912/repair_real.py",
+      "sha256": "b5ad4d5c3d15420c065233a9648e3eaa11ad769f7e8cfc18dac58b8dca4f3bc1"
+    },
+    {
+      "path": ".artifacts/a5-20260912/regress.py",
+      "sha256": "37f51adbe8c00e75adfd227cdace36e4466c8ba15378ab7b1c9d5bfa63ba6145"
+    }
+  ],
+  "findings": [
+    "Reproduced missing denominator was already absent in raw model output; no supplied denominator was lost in those traces.",
+    "Paired field hint and metadata removal were not promoted.",
+    "Wire-path repair feedback improved synthetic repair from 5/6 to 6/6, but recovered zero real q25 answers; both repetitions ended unsupported.",
+    "Twelve new preservation and fail-closed tests pass existing implementation; not red-green repair evidence."
+  ],
+  "limitations": [
+    "Real cases are unjudged and previously seen; answered status is not accuracy or independent holdout evidence.",
+    "Case executions may include repair calls; 28 executions plus 12 repair-only calls must not be reported as 40 total model calls.",
+    "Small trials do not establish endpoint causation or long-term stability.",
+    "Diagnostic setup errors were corrected before corresponding model calls and excluded from model results."
+  ],
+  "safety": {
+    "real_database_role": "grepbit_ro",
+    "real_enum_distinct_limit": 0,
+    "real_redact_rows": true,
+    "metrics_only_writer": true,
+    "persisted_raw_responses": false,
+    "persisted_customer_questions_or_literals": false,
+    "database_writes": false,
+    "git_stage_commit_push": false
+  },
+  "research": "docs/research/a5-ratio-followup-01.md"
+}

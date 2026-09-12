@@ -1,0 +1,150 @@
+{
+  "baseline_git_sha": "746f1689ad812088ed2cca6cc3bcde3e85a006b8",
+  "scope": "Owner-approved retirement of lexical grain deletion; prior uncommitted work preserved",
+  "ask_revision": "ask-orchestration-v3",
+  "prompt_revision": "plan-classify-json-v15",
+  "prompt_changed": false,
+  "artifact_root": ".artifacts/grain-retirement-20260912",
+  "changed_source_hashes": {
+    "src/grepbit/application/ask.py": "7e7b43aaef509fdce3ec29e870521b080731781ae1b8206c5a1a4a9b513c8433",
+    "src/grepbit/application/shapes.py": "6d82b4fedd60fbcbdd31215784f85927864e050b1b4af742a824096c5ffd446d",
+    "src/grepbit/ports/ask.py": "925c9612964cd27cc987d614f5aad406aaa2f1d857436523463006ea2364c1bc",
+    "tests/contract/t0/test_ask_contract.py": "c053136839682befc212e37ae702bd664ec1d1e23a9aee6052cb626fefb5b6e7",
+    "tests/contract/t0/test_gates_contract.py": "d47e578322553e407fc81aa0ecec2983a34e30e1424f8f4937512bce6fd00641"
+  },
+  "validation": [
+    {
+      "artifact": "red/result.json",
+      "sha256": "eaf11d195f9a070416c283b542ac4c4ee979537276f58e8ca5cd46a196bc1df2",
+      "passed": false,
+      "counts": {
+        "errors": 0,
+        "failures": 6,
+        "skipped": 0,
+        "tests": 15
+      }
+    },
+    {
+      "artifact": "green/result.json",
+      "sha256": "4725e5e77ac8062f41487ba31a7a016f62127deef77ca83cdd396a4f81ed27ce",
+      "passed": false,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 0
+      }
+    },
+    {
+      "artifact": "green-02/result.json",
+      "sha256": "fc9fb53a0f0976f75b435ee1d9b4f1f350af3edc9b57592ac23ceca2e53b11eb",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 38
+      }
+    },
+    {
+      "artifact": "offline/result.json",
+      "sha256": "bb4a7ee1e9a4f100c12b2eee68a200f97ee794aff8bd61c3d0b62e597141d5aa",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 343
+      }
+    },
+    {
+      "artifact": "static-02/result.json",
+      "sha256": "b0b269f1001395eddb8ae6a167281aed3dc5dc56dfaa927e76cca62bc198e6d3",
+      "passed": true,
+      "counts": null
+    },
+    {
+      "artifact": "gates-final/result.json",
+      "sha256": "1e79b7bc9a56f0f594224ed8dd061b95c1fdb7afb6d81fceeceeec4e685b88a5",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 6
+      }
+    }
+  ],
+  "live": [
+    {
+      "artifact": "iot.json",
+      "sha256": "f6ba0045c8fbac9c75b15b99e9b6d8999aa2993d3441de0fed5c68e793210bc8",
+      "fixed_planner_no_model_call": false,
+      "cases_file": "evals/cases/tier0/iot.yaml",
+      "as_of": "2026-08-15T12:00:00+08:00",
+      "cases": 20,
+      "correct": 19,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "literal_misses": 0
+    },
+    {
+      "artifact": "service_raw.json",
+      "sha256": "e2649872fe21c8c9186140501d021dca54d14c5df7d32a659e7decbbdddbeeea",
+      "fixed_planner_no_model_call": false,
+      "cases_file": "evals/cases/tier0/service.yaml",
+      "as_of": "2026-04-15T12:00:00+08:00",
+      "cases": 24,
+      "correct": 22,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "literal_misses": 2
+    },
+    {
+      "artifact": "service_labels.json",
+      "sha256": "36c34ba767ecb2b0e253bf5289a0c296fb7ea3c61133118112592b79c93a64c8",
+      "fixed_planner_no_model_call": false,
+      "cases_file": "evals/cases/tier0/service.yaml",
+      "as_of": "2026-04-15T12:00:00+08:00",
+      "cases": 24,
+      "correct": 24,
+      "model_failures": 0,
+      "value_references": 5,
+      "value_reference_errors": 0,
+      "literal_misses": 0
+    },
+    {
+      "artifact": "fixed-month.json",
+      "sha256": "d813b32c341269025a0500c3ba6bc5631422a2304a2df851572a09f88df95e24",
+      "fixed_planner_no_model_call": true,
+      "cases_file": "evals/cases/tier0/service.yaml",
+      "as_of": "2026-04-15T12:00:00+08:00",
+      "cases": 1,
+      "correct": 1,
+      "model_failures": 0,
+      "value_references": 0,
+      "value_reference_errors": 0,
+      "literal_misses": 0
+    }
+  ],
+  "database_writes": 0,
+  "git_stage_commit_push": false,
+  "limits": [
+    "343-test offline gate precedes only an import-format change in a test file; final gates-focused and static checks pass.",
+    "A5 remains provisional: the earlier q25 missing-denominator issue is not fixed by this change.",
+    "Authored service/IoT questions are smoke tests, not an independent holdout.",
+    "Valid model grouping is preserved, not proven semantically correct. Wrong extra grouping remains a model/evaluation concern."
+  ],
+  "drivers": [
+    {
+      "artifact": "live.py",
+      "sha256": "7f9b64d54ae552bce963f294cd373305e8601e4092fdc65e6cef679588364327"
+    },
+    {
+      "artifact": "fixed.py",
+      "sha256": "1bf1d6bf8360ec4952e67bf46ebc9237b406f0c01954b1e8ec7fba2764ce22ce"
+    }
+  ]
+}

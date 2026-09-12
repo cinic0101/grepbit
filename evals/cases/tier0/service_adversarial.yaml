@@ -1,0 +1,52 @@
+datasource_id: service_test
+as_of: "2026-04-15T12:00:00+08:00"
+# Authored multilingual probes, not a blind holdout. All data is fictional.
+cases:
+  - case_id: svc_absent_sum_zh
+    question: "從未有任何事件紀錄的工單，其預估分鐘數總和是多少？"
+    expected: {status: answered}
+    reference_sql: "SELECT sum(t.estimate_minutes) FROM tickets t WHERE NOT EXISTS (SELECT 1 FROM ticket_events e WHERE e.ticket_id=t.id)"
+  - case_id: svc_absent_sum_en
+    question: "What is the total estimated minutes for tickets that have never had any event records?"
+    expected: {status: answered}
+    reference_sql: "SELECT sum(t.estimate_minutes) FROM tickets t WHERE NOT EXISTS (SELECT 1 FROM ticket_events e WHERE e.ticket_id=t.id)"
+  - case_id: svc_absent_sum_ja
+    question: "イベント記録が一度もないチケットの見積もり分数の合計は？"
+    expected: {status: answered}
+    reference_sql: "SELECT sum(t.estimate_minutes) FROM tickets t WHERE NOT EXISTS (SELECT 1 FROM ticket_events e WHERE e.ticket_id=t.id)"
+  - case_id: svc_absent_feb_zh
+    question: "哪些團隊在2026年2月沒有任何工時紀錄？包含從未有工時紀錄的團隊，列出團隊名稱。以工時紀錄日期為準。"
+    expected: {status: answered}
+    reference_sql: "SELECT tm.team_name, count(*) FROM teams tm WHERE NOT EXISTS (SELECT 1 FROM work_logs w JOIN tickets t ON t.id=w.ticket_id JOIN projects p ON p.project_key=t.project_key WHERE p.team_code=tm.team_code AND w.logged_at >= '2026-02-01T00:00:00+08' AND w.logged_at < '2026-03-01T00:00:00+08') GROUP BY 1"
+  - case_id: svc_absent_feb_en
+    question: "Which teams have no work logs dated in February 2026, including teams that have never had work logs? List team names."
+    expected: {status: answered}
+    reference_sql: "SELECT tm.team_name, count(*) FROM teams tm WHERE NOT EXISTS (SELECT 1 FROM work_logs w JOIN tickets t ON t.id=w.ticket_id JOIN projects p ON p.project_key=t.project_key WHERE p.team_code=tm.team_code AND w.logged_at >= '2026-02-01T00:00:00+08' AND w.logged_at < '2026-03-01T00:00:00+08') GROUP BY 1"
+  - case_id: svc_absent_feb_ja
+    question: "2026年2月の日付の作業ログがないチーム名を列挙してください。作業ログが一度もないチームも含めます。"
+    expected: {status: answered}
+    reference_sql: "SELECT tm.team_name, count(*) FROM teams tm WHERE NOT EXISTS (SELECT 1 FROM work_logs w JOIN tickets t ON t.id=w.ticket_id JOIN projects p ON p.project_key=t.project_key WHERE p.team_code=tm.team_code AND w.logged_at >= '2026-02-01T00:00:00+08' AND w.logged_at < '2026-03-01T00:00:00+08') GROUP BY 1"
+  - case_id: svc_units_zh
+    question: "工時紀錄共有幾筆，又涵蓋幾張不重複的工單？請回傳這兩個總數。"
+    expected: {status: answered}
+    reference_sql: "SELECT count(*), count(DISTINCT ticket_id) FROM work_logs"
+  - case_id: svc_units_en
+    question: "How many work log records are there, and how many distinct tickets do they cover? Return both totals."
+    expected: {status: answered}
+    reference_sql: "SELECT count(*), count(DISTINCT ticket_id) FROM work_logs"
+  - case_id: svc_units_ja
+    question: "作業ログは何件あり、何件の重複しないチケットを対象としていますか？両方の合計を返してください。"
+    expected: {status: answered}
+    reference_sql: "SELECT count(*), count(DISTINCT ticket_id) FROM work_logs"
+  - case_id: svc_closed_time_zh
+    question: "不論何時建立，2026年2月結案的工單有幾張？按結案時間判定。"
+    expected: {status: answered}
+    reference_sql: "SELECT count(*) FROM tickets WHERE closed_at >= '2026-02-01T00:00:00+08' AND closed_at < '2026-03-01T00:00:00+08'"
+  - case_id: svc_closed_time_en
+    question: "How many tickets were closed in February 2026 regardless of when they were created? Use the closure timestamp."
+    expected: {status: answered}
+    reference_sql: "SELECT count(*) FROM tickets WHERE closed_at >= '2026-02-01T00:00:00+08' AND closed_at < '2026-03-01T00:00:00+08'"
+  - case_id: svc_closed_time_ja
+    question: "作成日時にかかわらず、2026年2月にクローズされたチケットは何件ですか？クローズ日時で判定してください。"
+    expected: {status: answered}
+    reference_sql: "SELECT count(*) FROM tickets WHERE closed_at >= '2026-02-01T00:00:00+08' AND closed_at < '2026-03-01T00:00:00+08'"

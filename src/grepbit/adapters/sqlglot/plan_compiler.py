@@ -96,6 +96,13 @@ class PlanCompiler:
         exclude_segments: Sequence[Segment] = (),
         named_segments: Sequence[Segment] = (),
     ) -> CompiledPlan:
+        # model_copy/model_construct can bypass domain validation. Never
+        # silently discard a ratio wrapper's undefined filter scope.
+        if any(m.ratio is not None and m.filters for m in plan.measures):
+            raise PlanError(
+                "ratio_wrapper_filters_unsupported",
+                "Place filters explicitly on the plan, numerator or denominator.",
+            )
         schema = self._schema
         assumptions: list[Assumption] = []
         base_name = plan.base_table or self._derive_base_table(plan, assumptions)
@@ -555,6 +562,21 @@ class PlanCompiler:
                 this=exp.paren(exp.Sub(this=current.copy(), expression=previous)),
                 expression=exp.func("NULLIF", previous.copy(), exp.Literal.number(0)),
             )
+            # LAG alone skips empty periods. Compare local calendar buckets,
+            # not elapsed seconds, so DST and variable-length months work too.
+            assert time_spec is not None and time_spec.grain is not None
+            previous_period = previous.copy()
+            previous_period.set("this", exp.func("LAG", time_bucket.copy()))
+            unit = time_spec.grain.value
+            adjacent_period = exp.Sub(
+                this=time_bucket.copy(),
+                expression=exp.Interval(
+                    this=exp.Literal.string(
+                        "3 month" if unit == "quarter" else f"1 {unit}"
+                    )
+                ),
+            )
+            growth = exp.Case().when(previous_period.eq(adjacent_period), growth)
             name = f"{item.measure}_growth"
             selects.append(growth.as_(name))
             output.append(name)
@@ -944,8 +966,9 @@ class PlanCompiler:
                 Assumption(
                     text=(
                         f"{item.measure}_growth compares each period with the previous "
-                        "period of the same group; the first period has no previous "
-                        "value and is NULL."
+                        "calendar period of the same group in the business timezone; "
+                        "a missing period, NULL value or zero previous value yields "
+                        "NULL. Missing periods are not filled with zero."
                     ),
                     source=AssumptionSource.DEFAULT,
                     definition_ref="plan.growth",

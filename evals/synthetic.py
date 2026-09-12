@@ -65,6 +65,9 @@ def random_instance(
     zone = ZoneInfo(schema.business_timezone)
     tables: dict[str, list[dict[str, Any]]] = {}
     fk_of = {(fk.table, fk.column): fk for fk in schema.foreign_keys}
+    referenced_keys = {
+        (fk.referenced_table, fk.referenced_column) for fk in schema.foreign_keys
+    }
     for name in _dependency_order(schema):
         table = schema.table(name)
         is_child = any(fk.table == name for fk in schema.foreign_keys)
@@ -75,11 +78,17 @@ def random_instance(
             row: dict[str, Any] = {}
             for column in table.columns:
                 key = (name, column.name)
-                if column.name in table.primary_key:
+                is_primary_key = column.name in table.primary_key
+                if is_primary_key or key in referenced_keys:
+                    # A declared FK target is unique even when it is not a PK.
+                    # Keep natural keys different from IDs to expose wrong joins.
                     row[column.name] = (
-                        i + 1
+                        (i + 1 if is_primary_key else -(i + 1))
                         if column.kind is ColumnKind.NUMERIC
-                        else f"{name[:3]}{i + 1:03d}"
+                        else (
+                            f"{name[:3]}{'' if is_primary_key else column.name}"
+                            f"{i + 1:03d}"
+                        )
                     )
                     continue
                 if key in fk_of:

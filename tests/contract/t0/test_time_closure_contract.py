@@ -311,9 +311,10 @@ def test_a_period_breakdown_leaves_out_rows_without_a_time_value() -> None:
     assert "IS NULL" not in windowed.compiled.physical_sql
 
 
-def test_growth_skips_an_empty_bucket_pending_a_decision() -> None:
-    # documented as an open decision in the contract: a period with no rows is
-    # skipped by LAG, so March compares with January when February is empty
+def test_growth_remains_a_sparse_query_without_calendar_expansion() -> None:
+    # The owner chose NULL growth across a gap, not zero-filled periods.
+    # This structural assertion does not prove adjacency: the independent
+    # value rulers are in test_period_semantics_ruler.py.
     compiled = compile_time(
         {
             "column": RAISED_AT,

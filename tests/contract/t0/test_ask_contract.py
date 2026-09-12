@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+import pytest
 from t0_helpers import iot_schema
 
 from grepbit.adapters.language_pack_store import load_shape_pack
@@ -138,6 +139,71 @@ def test_gates_refuse_before_any_model_call() -> None:
     gap = ask("保固內的裝置數", services(planner, _Executor([])), settings)
     assert gap.status == "semantic_gap" and gap.clarification == "no warranty data"
     assert planner.calls == []
+
+
+def test_no_window_growth_survives_unlisted_period_wording():
+    proposal = {
+        "decision": "plan",
+        "plan": {
+            "base_table": "alerts",
+            "measures": [{"aggregate": "count", "alias": "n"}],
+            "time": {
+                "column": {"table": "alerts", "column": "raised_at"},
+                "grain": "month",
+            },
+            "growth": [{"measure": "n"}],
+        },
+    }
+    executor = _Executor([])
+    result = ask(
+        "每個月的告警數與月成長率",
+        services(_Planner(proposal), executor),
+        AskSettings(as_of=AS_OF),
+    )
+    assert result.status == "answered"
+    assert not any(r.startswith("dropped grain") for r in result.shape_repairs)
+    assert result.plan.time.grain is not None and result.plan.growth
+    assert executor.executed
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "每個月的告警數",
+        "各月のアラート件数",
+        "Monthly alert counts",
+        "告警數",
+        "unlisted wording",
+    ],
+)
+@pytest.mark.parametrize("kind", ["count", "share", "growth"])
+def test_grain_is_not_deleted_by_absent_language_pack_words(question, kind):
+    plan = {
+        "base_table": "alerts",
+        "measures": [{"aggregate": "count", "alias": "n"}],
+        "time": {
+            "column": {"table": "alerts", "column": "raised_at"},
+            "grain": "month",
+        },
+        "order": [{"field": "period_start", "direction": "asc"}],
+    }
+    if kind == "share":
+        plan["measures"][0]["share_of_total"] = True
+        plan["dimensions"] = [{"table": "devices", "column": "model"}]
+    if kind == "growth":
+        plan["growth"] = [{"measure": "n"}]
+    executor = _Executor([])
+    result = ask(
+        question,
+        services(_Planner({"decision": "plan", "plan": plan}), executor),
+        AskSettings(as_of=AS_OF),
+    )
+    assert result.status == "answered"
+    assert result.plan.time is not None and result.plan.time.grain.value == "month"
+    assert result.plan.order[0].field == "period_start"
+    assert not any(r.startswith("dropped grain") for r in result.shape_repairs)
+    assert not any("question named no period" in a for a in result.assumptions)
+    assert result.interpretation and result.assumptions and executor.executed
 
 
 def test_answer_carries_sql_parameters_lineage_assumptions_and_rows() -> None:
@@ -575,11 +641,12 @@ def test_a_named_concept_the_plan_leaves_no_trace_of_is_a_clarify() -> None:
     assert ask("告警數", svc, AskSettings(as_of=AS_OF)).status == "answered"
 
 
-def test_growth_drop_is_inactive_by_default_and_narrow_when_enabled() -> None:
-    """ft_compare_last_two_months flapped on an extra growth column; a first
-    rule dropped growth whenever no growth word was present and would have
-    changed 本月告警數比上月多百分之幾. The rule now needs a comparison word
-    and no rate word, and the default pack leaves it inactive."""
+def test_growth_is_not_deleted_by_lexical_absence_even_in_a_legacy_pack() -> None:
+    """Owner-approved ruler: a missing rate word is not evidence of intent.
+
+    Supersedes the narrow-rule opt-in test. This remains red until the
+    production deletion mechanism is retired after the ruler checkpoint.
+    """
 
     import dataclasses
 
@@ -613,8 +680,7 @@ def test_growth_drop_is_inactive_by_default_and_narrow_when_enabled() -> None:
         AskSettings(as_of=AS_OF),
     )
     assert kept.plan is not None and len(kept.plan.growth) == 1
-    # a pack that names comparison words: a plain comparison loses the growth,
-    # a question asking for a percentage keeps it even without a listed word
+    # Even a legacy pack naming comparison words must not delete growth.
     pack = ShapePack.model_validate(
         {
             "revision": "t",
@@ -628,8 +694,11 @@ def test_growth_drop_is_inactive_by_default_and_narrow_when_enabled() -> None:
         services(_Planner(plan_with_growth()), _Executor(rows)), shape_pack=pack
     )
     compared = ask("上個月和前一個月的告警數比較", svc, AskSettings(as_of=AS_OF))
-    assert compared.plan is not None and compared.plan.growth == []
-    assert compared.growth_dropped == ["n"] and "LAG(" not in (compared.sql or "")
+    assert compared.plan is not None and len(compared.plan.growth) == 1
+    assert "LAG(" in (compared.sql or "")
+    assert not any(
+        item.startswith("dropped growth") for item in compared.meaning_normalisations
+    )
     svc = dataclasses.replace(
         services(_Planner(plan_with_growth()), _Executor(rows)), shape_pack=pack
     )

@@ -1,0 +1,80 @@
+{
+  "baseline_git_sha": "746f1689ad812088ed2cca6cc3bcde3e85a006b8",
+  "source_state": "uncommitted takeover implementation; tracked source hashes in final offline result",
+  "artifact_root": ".artifacts/takeover-746f168",
+  "scope": "Accepted adjacent-period growth, retirement of lexical growth deletion, existing NULL-time and post-window threshold defaults",
+  "prompt_revision": "plan-classify-json-v14",
+  "prompt_changed": false,
+  "model_calls": 0,
+  "database_writes": 0,
+  "offline": {
+    "artifact": "semantic-final-offline/result.json",
+    "sha256": "80d3ac3772033c8543d4a487aa795d86db192a5be74cc161d379110ccd7d0ed5",
+    "passed": 304,
+    "failed": 0,
+    "skipped": 0
+  },
+  "static": {
+    "artifact": "semantic-final-static/result.json",
+    "sha256": "a643ecf83c687dec058acc4c6b330731157f1e4172d130cc780c016c686b3d6d",
+    "passed": true
+  },
+  "postgres_hand_computed": {
+    "artifact": "period-postgres-01/junit.xml",
+    "sha256": "730dc569c28f2a10080836db63df2bd76c3efdb0a6169937e8fa676a1a11b107",
+    "passed": 34,
+    "data": "inline synthetic VALUES; read-only role; two session timezones"
+  },
+  "properties": {
+    "artifact": "semantic-properties-10000/junit.xml",
+    "sha256": "d18b43d52c33e9eced12f73f726f7ab0d4615532fdb639be094fbc0f85952558",
+    "passed_tests": 1,
+    "examples": 10000
+  },
+  "differential": [
+    {
+      "artifact": "iot-semantic-pg.json",
+      "sha256": "4489998232c4a8739f21791abb96090bb6a4c06232055b434461bd64218631ff",
+      "valid_plans": 229,
+      "typed_refusals": 47,
+      "comparisons": 182
+    },
+    {
+      "artifact": "iot-semantic-duck.json",
+      "sha256": "0aeeaeb606e6a4e3751a4cba6999f2eca8f1c25ec169610e2cb6b0df555d87bf",
+      "valid_plans": 229,
+      "typed_refusals": 47,
+      "comparisons": 546
+    },
+    {
+      "artifact": "pos-semantic-pg.json",
+      "sha256": "e196fcb7a5450d56b16f55ca30b8c82f79c94e83ee49e5178dcc2ea2cfd7c27a",
+      "valid_plans": 225,
+      "typed_refusals": 55,
+      "comparisons": 170
+    },
+    {
+      "artifact": "pos-semantic-duck.json",
+      "sha256": "bbee1aa27418ae09527679e37a5d66e2192664f7e2f00c065dabf9a8214ab674",
+      "valid_plans": 225,
+      "typed_refusals": 55,
+      "comparisons": 510
+    },
+    {
+      "artifact": "pos-real-semantic-pg.json",
+      "sha256": "4873132d2d50f0ecda7886a0ab23cf6422dcbcd85268488af3d83717fdda9802",
+      "valid_plans": 212,
+      "typed_refusals": 60,
+      "comparisons": 152
+    }
+  ],
+  "total_comparisons": 1560,
+  "disagreements": 0,
+  "recorded_errors": 0,
+  "limitations": [
+    "No new natural-language or live-model evaluation",
+    "Differential shares production window-boundary helpers",
+    "Generated strategies do not cover every construct-matrix cell",
+    "No new datasource provisioning or A5/A4 implementation"
+  ]
+}

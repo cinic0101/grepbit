@@ -157,6 +157,8 @@ def test_loader_caps_cardinality_reads_enums_as_text_and_skips_unknown_columns()
 
 
 def test_planner_receives_question_values_and_the_rule_only_when_present() -> None:
+    from grepbit.domain.overlay import SemanticOverlay
+
     client = ChatCompletionsPlanClient(
         GroundingModelSettings(base_url="http://model.local/v1", model="m")
     )
@@ -164,12 +166,19 @@ def test_planner_receives_question_values_and_the_rule_only_when_present() -> No
         "特約永和中正在這禮拜的銷售總額",
         iot_schema(),
         as_of="2026-02-04T18:00:00+08:00",
-        question_values=[{"column": "store.store_name", "value": "特約永和中正"}],
+        question_values=[{"column": "devices.model", "value": "特約永和中正"}],
+        overlay=SemanticOverlay.model_validate(
+            {
+                "datasource_id": "iot_test",
+                "revision": "test",
+                "column_policies": [
+                    {"column": {"table": "devices", "column": "model"}}
+                ],
+            }
+        ),
     )
     assert "question_values" in with_hint[0]["content"]
-    assert (
-        '"question_values": [{"column": "store.store_name"' in with_hint[2]["content"]
-    )
+    assert '"question_values": [{"column": "devices.model"' in with_hint[2]["content"]
     without = client.build_messages(
         "各門市營業額", iot_schema(), as_of="2026-02-04T18:00:00+08:00"
     )

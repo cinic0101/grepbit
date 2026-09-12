@@ -222,7 +222,8 @@ def _period_output(start: datetime, column_kind: str) -> Any:
 def _aggregate(kind: str, values: list[Any]) -> Any:
     present = [v for v in values if v is not None]
     if kind == "count":
-        return len(values)
+        # COUNT(*) supplies one sentinel per row; COUNT(column) supplies values.
+        return len(present)
     if kind == "count_distinct":
         return len(set(present))
     if not present:
@@ -428,7 +429,7 @@ def evaluate(
 
     # ---- the two row shapes
     if plan.without is not None:
-        return _evaluate_without(
+        candidate = _rows_without_activity(
             plan,
             schema,
             overlay,
@@ -561,14 +562,20 @@ def evaluate(
                     )
                 )
                 previous = None
+                previous_period = None
                 for out in series:
                     current = out[item.measure]
+                    period = out["__key__"][0]
                     out[gname] = (
                         None
-                        if previous is None or previous == 0 or current is None
+                        if previous is None
+                        or previous == 0
+                        or current is None
+                        or previous_period != _add_units(period, grain, -1)
                         else (float(current) - float(previous)) / float(previous)
                     )
                     previous = current
+                    previous_period = period
 
     # ---- having
     for item in plan.having:
@@ -595,7 +602,7 @@ def evaluate(
     return table_rows
 
 
-def _evaluate_without(
+def _rows_without_activity(
     plan, schema, overlay, as_of, tables, exclude_segments, base_rows, kinds, zone
 ):
     without = plan.without
@@ -640,20 +647,9 @@ def _evaluate_without(
     base_table = schema.table(plan.base_table)
     pk = f"{plan.base_table}.{base_table.primary_key[0]}"
     active = {r.get(pk) for r in child_rows}
-    kept = [r for r in base_rows if r.get(pk) not in active]
-    dims = [d.id for d in plan.dimensions]
-    groups: dict[tuple, int] = defaultdict(int)
-    for r in kept:
-        groups[tuple(r.get(d) for d in dims)] += 1
-    if not dims:
-        groups[()] = len(kept)
-    out_rows = []
-    for key, n in groups.items():
-        out = {d.split(".")[1]: v for d, v in zip(dims, key)}
-        for measure in plan.measures:
-            out[measure.output_name] = n
-        out_rows.append(out)
-    return out_rows
+    # NOT EXISTS restricts rows; it does not replace the requested aggregate,
+    # grain, share, growth, HAVING or ordering with a separate count-only path.
+    return [r for r in base_rows if r.get(pk) not in active]
 
 
 def _evaluate_latest(plan, schema, candidate, kinds, zone):

@@ -1,0 +1,548 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-12",
+  "scope": "Evaluation repair and non-POS coverage; rejected A5 shown-form trial",
+  "baseline_head": "746f1689ad812088ed2cca6cc3bcde3e85a006b8",
+  "production_prompt_revision": "plan-classify-json-v15",
+  "ask_revision": "ask-orchestration-v3",
+  "production_src_changed_this_batch": false,
+  "a5_accepted": false,
+  "exclusive_form_trial_promoted": false,
+  "source_snapshot_digest": "sha256:02dc147020cd9b42c6a2a1393c3a7db7fee1f6ad0e39ac9c1f4a2f0c9aec2f18",
+  "code_test_case_delta": [
+    {
+      "path": "evals/cases/tier0/service_adversarial.yaml",
+      "sha256": "03b5100ae054b184d46f6a25f890b0f85e38c65963af2bf2f6f893fcddfd80fe"
+    },
+    {
+      "path": "evals/plan_generator.py",
+      "sha256": "25b314e4cba4256af7c96ffb51e21dd0b662f5256b661e11040c2dc60ce23a82"
+    },
+    {
+      "path": "evals/reference_eval.py",
+      "sha256": "0452d856d513213705748369ab278b844504dcf753999aa64ce5afc0c27c5855"
+    },
+    {
+      "path": "tests/contract/t0/test_service_values_contract.py",
+      "sha256": "e93693368c686d8aff98f1c2ac1ba9e0a9881aea47ef8e3c461922a0faafcc86"
+    }
+  ],
+  "gates": [
+    {
+      "path": ".artifacts/a5-forms-service-20260912/service-red/result.json",
+      "sha256": "ad5d360f08b06c9d6c893753669c7d4a9167521c0bf28be14adc1309d9b73622",
+      "passed": false,
+      "profile": "focused",
+      "junit_counts": {
+        "errors": 0,
+        "failures": 1,
+        "skipped": 0,
+        "tests": 26
+      }
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/service-red-02/result.json",
+      "sha256": "26cc2df5e606f10e8bdc042fb84b02a91c96a1b134d5d6c958d749b159f110c7",
+      "passed": false,
+      "profile": "focused",
+      "junit_counts": {
+        "errors": 0,
+        "failures": 7,
+        "skipped": 0,
+        "tests": 38
+      }
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/service-green/result.json",
+      "sha256": "19df70dfa67d0b1cdeca400054bb834f490596c00882eb57ce18f0ca72c7e1af",
+      "passed": false,
+      "profile": "focused",
+      "junit_counts": {
+        "errors": 0,
+        "failures": 1,
+        "skipped": 0,
+        "tests": 38
+      }
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/service-green-02/result.json",
+      "sha256": "4af96f5dec5b451d9e8ce2e86eb35550ea9be775166b6764d5cf0ec305c0ed4c",
+      "passed": true,
+      "profile": "focused",
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 62
+      }
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/service-green-03/result.json",
+      "sha256": "f593b21406f0fda2cd45a84df8a20a2899fe138b5b0af10c4a44b976ae687bb2",
+      "passed": true,
+      "profile": "focused",
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 40
+      }
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/service-green-final/result.json",
+      "sha256": "a902e3dd121f4699e1ddb94db754ec9c801f7d05a6cbbb0e8b93410271425f30",
+      "passed": true,
+      "profile": "focused",
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 41
+      }
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/static/result.json",
+      "sha256": "060bd5536608694a64d36868c3d3271815af347f350f49bdbed65396bf957371",
+      "passed": true,
+      "profile": "static",
+      "junit_counts": null
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/offline/result.json",
+      "sha256": "bb38001a6f017c906ee101ab9230ac420ab9bba244a9e1269bda2c7d6d282da5",
+      "passed": true,
+      "profile": "offline",
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 396
+      }
+    }
+  ],
+  "postgres_hand_values": {
+    "path": ".artifacts/a5-forms-service-20260912/service-pg-values.json",
+    "sha256": "186e34ad5064cf1dee3744d44fa22ce7c99a3d1aa89e7aa3f5f9c2e6b14487ca",
+    "tests": 18,
+    "passed": true
+  },
+  "differential_reports": [
+    {
+      "path": ".artifacts/a5-forms-service-20260912/iot-diff-duck.json",
+      "sha256": "ef40539a218e704b852161a8a0d852d71854b445827d6d439275170b579d480f",
+      "engine": "duckdb",
+      "seed": 52,
+      "instances": 3,
+      "outcomes": {
+        "generated": 365,
+        "typed_refusal": 101,
+        "agree": 792
+      },
+      "typed_refusals": {
+        "share_requires_groups": 57,
+        "aggregate_kind_mismatch": 23,
+        "time_scope_requires_grain": 14,
+        "relative_window_reaches_future": 4,
+        "anti_join_required": 2,
+        "growth_to_date_unsupported": 1
+      },
+      "schema_digest": "sha256:dfd3d885ab6a4e4c2df138e3ebda1ec301563777aee2bc8192e3909ba216b234",
+      "as_of": "2026-08-15T12:00:00+08:00",
+      "recorded_disagreements": 0,
+      "recorded_errors": 0,
+      "without_plans": 10,
+      "noncount_without": 7
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/pos-diff-duck.json",
+      "sha256": "d8f67d2e97a00ac446656669f710c5a5ce87ae99b542e7035b5bb0670a3df5cd",
+      "engine": "duckdb",
+      "seed": 53,
+      "instances": 3,
+      "outcomes": {
+        "generated": 353,
+        "typed_refusal": 98,
+        "agree": 765
+      },
+      "typed_refusals": {
+        "share_requires_groups": 65,
+        "ambiguous_join_path": 22,
+        "growth_to_date_unsupported": 5,
+        "relative_window_reaches_future": 4,
+        "time_scope_requires_grain": 2
+      },
+      "schema_digest": "sha256:9bc0b5b0a51585516739632c03d08d9a40b6bc3fbd22946597b4bdb5562a8100",
+      "as_of": "2026-02-10T12:00:00+08:00",
+      "recorded_disagreements": 0,
+      "recorded_errors": 0,
+      "without_plans": 19,
+      "noncount_without": 16
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/service-diff-duck.json",
+      "sha256": "3ae1d51226c2cd6bdd4677212744810ec1fb33a088db4f6057c7771ce9e0e318",
+      "engine": "duckdb",
+      "seed": 51,
+      "instances": 3,
+      "outcomes": {
+        "generated": 339,
+        "typed_refusal": 106,
+        "agree": 699
+      },
+      "typed_refusals": {
+        "share_requires_groups": 54,
+        "aggregate_kind_mismatch": 22,
+        "time_scope_requires_grain": 15,
+        "relative_window_reaches_future": 9,
+        "growth_to_date_unsupported": 4,
+        "anti_join_required": 2
+      },
+      "schema_digest": "sha256:69ae26d225e5cac9001d810e34323cff72c7df5ef76f6fdc123eb9b29ab8bd6f",
+      "as_of": "2026-04-15T12:00:00+08:00",
+      "recorded_disagreements": 0,
+      "recorded_errors": 0,
+      "without_plans": 23,
+      "noncount_without": 20
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/service-diff-pg.json",
+      "sha256": "de58605e6dd717695a4800352939f4466c46e2d2b10b973be11d95bd57f60bfa",
+      "engine": "postgres",
+      "seed": 51,
+      "instances": 1,
+      "outcomes": {
+        "generated": 339,
+        "typed_refusal": 106,
+        "agree": 233
+      },
+      "typed_refusals": {
+        "share_requires_groups": 54,
+        "aggregate_kind_mismatch": 22,
+        "time_scope_requires_grain": 15,
+        "relative_window_reaches_future": 9,
+        "growth_to_date_unsupported": 4,
+        "anti_join_required": 2
+      },
+      "schema_digest": "sha256:69ae26d225e5cac9001d810e34323cff72c7df5ef76f6fdc123eb9b29ab8bd6f",
+      "as_of": "2026-04-15T12:00:00+08:00",
+      "recorded_disagreements": 0,
+      "recorded_errors": 0,
+      "without_plans": 23,
+      "noncount_without": 20
+    }
+  ],
+  "differential_comparisons": 2489,
+  "differential_disagreements": 0,
+  "differential_errors": 0,
+  "synthetic_forms_probe": {
+    "path": ".artifacts/a5-forms-service-20260912/forms-probe.json",
+    "sha256": "270376391a1ee7ae322c9bfc862a5c7da2f10a5b08b6cae64239deb66853392f",
+    "arms": {
+      "baseline": {
+        "proposals": 18,
+        "exact_result_on_both_instances": 16,
+        "repair_turns": 3
+      },
+      "exclusive": {
+        "proposals": 18,
+        "exact_result_on_both_instances": 16,
+        "repair_turns": 0
+      }
+    },
+    "schema_checks": 18
+  },
+  "runner_case_executions": 86,
+  "runner_reports": [
+    {
+      "path": ".artifacts/a5-forms-service-20260912/diagnose-svc_absent_feb_ja.json",
+      "sha256": "da0448698b31427c082589dd58cc0fc9046b275689d6c2adeda788ff5abafc70",
+      "cases": 1,
+      "correct": 0,
+      "unjudged": 0,
+      "status_counts": {
+        "semantic_gap": 1
+      },
+      "model_repair_turns": 0,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/diagnose-svc_units_en.json",
+      "sha256": "b8745e38a47c7ba7f058f7bd52d660c302ce4e4532172285c4384e191a6016c4",
+      "cases": 1,
+      "correct": 0,
+      "unjudged": 0,
+      "status_counts": {
+        "clarify": 1
+      },
+      "model_repair_turns": 0,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/pilot-1-holdout2-baseline.json",
+      "sha256": "1eb26e3060b0fe19e8ca4955b51582b436c90e473f2e53fa046b7f4814c1d863",
+      "cases": 1,
+      "correct": 0,
+      "unjudged": 1,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/pilot-1-holdout2-exclusive.json",
+      "sha256": "b825d8324c23b866e22f837bfbbdac46a057d89bff74db5025b385a448b46f1a",
+      "cases": 1,
+      "correct": 0,
+      "unjudged": 1,
+      "status_counts": {
+        "unsupported": 1
+      },
+      "model_repair_turns": 1,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/pilot-1-pos-baseline.json",
+      "sha256": "82e1a4b6b9c3cff9ea4bf7a9794d878aa50206c4c3af1a883ce89ed9ca4df059",
+      "cases": 1,
+      "correct": 1,
+      "unjudged": 0,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/pilot-1-pos-exclusive.json",
+      "sha256": "bfaef9b783c67870ef91e2c912342bd7567d3b8cce64863ae9b6aea80005d1ce",
+      "cases": 1,
+      "correct": 1,
+      "unjudged": 0,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/pilot-1-ratios-baseline.json",
+      "sha256": "9dd20936e23366eb893d278d9b2e35a5c978066162f390bc2b5e8fe87686fd5d",
+      "cases": 1,
+      "correct": 0,
+      "unjudged": 1,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/pilot-1-ratios-exclusive.json",
+      "sha256": "1123700a3c01f37dd9141c6c9d65c1927bc974c3f29eee71109374b7691b1ef7",
+      "cases": 1,
+      "correct": 0,
+      "unjudged": 1,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/pilot-2-holdout2-baseline.json",
+      "sha256": "e513f7a28fe4dc2ad0bb84932eedd86c9a5379c669f9b82b0c2795e5cd55d479",
+      "cases": 1,
+      "correct": 0,
+      "unjudged": 1,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/pilot-2-holdout2-exclusive.json",
+      "sha256": "5291fdf1954caae7e3424eb84a25e7e7722e05fdc9a11908be6d308cf8642232",
+      "cases": 1,
+      "correct": 0,
+      "unjudged": 1,
+      "status_counts": {
+        "unsupported": 1
+      },
+      "model_repair_turns": 1,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/pilot-2-pos-baseline.json",
+      "sha256": "d865983475dee476ca1e34d471682d61b6fac1de2cb858089a31c1eb6301b73d",
+      "cases": 1,
+      "correct": 1,
+      "unjudged": 0,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/pilot-2-pos-exclusive.json",
+      "sha256": "09f0f170a244aa87787445be113ccb43509a1ed1b5ec084b432436a131fedbd8",
+      "cases": 1,
+      "correct": 1,
+      "unjudged": 0,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/pilot-2-ratios-baseline.json",
+      "sha256": "877ad2bded4544e5be18083c983985b6cdd61078d8fb3848dc0817fef7ff1d0d",
+      "cases": 1,
+      "correct": 0,
+      "unjudged": 1,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/pilot-2-ratios-exclusive.json",
+      "sha256": "57c057ed70908fd2ff4821ccee2199a288837dbdbc2d7e7969c9aacf9d9ddf06",
+      "cases": 1,
+      "correct": 0,
+      "unjudged": 1,
+      "status_counts": {
+        "answered": 1
+      },
+      "model_repair_turns": 0,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/service-adversarial-baseline.json",
+      "sha256": "f8736f121b84fd392d0f2492f1c09f2f957eccafd3865f5bdfc4f88b2ee802c1",
+      "cases": 12,
+      "correct": 10,
+      "unjudged": 0,
+      "status_counts": {
+        "answered": 10,
+        "clarify": 1,
+        "semantic_gap": 1
+      },
+      "model_repair_turns": 0,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/service-adversarial-exclusive.json",
+      "sha256": "2ac19621ecb91f4d60433417e0d696c1b8748387e683444d7a3ed278a542cc94",
+      "cases": 12,
+      "correct": 10,
+      "unjudged": 0,
+      "status_counts": {
+        "answered": 10,
+        "clarify": 1,
+        "unsupported": 1
+      },
+      "model_repair_turns": 0,
+      "model_failures": 0,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/service-original-baseline.json",
+      "sha256": "16e7724ac11d4e2f037d6683cecbc63a8af888e1e87b453a37af0ab38b888972",
+      "cases": 24,
+      "correct": 23,
+      "unjudged": 0,
+      "status_counts": {
+        "answered": 21,
+        "failed": 1,
+        "unsafe": 1,
+        "unsupported": 1
+      },
+      "model_repair_turns": 1,
+      "model_failures": 1,
+      "model_retries": 0
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/service-original-exclusive.json",
+      "sha256": "63c18fd7b5fff9f4638e5f6ae57ef6c0b112ebc6232b7ef7c47807843126818d",
+      "cases": 24,
+      "correct": 24,
+      "unjudged": 0,
+      "status_counts": {
+        "answered": 22,
+        "unsafe": 1,
+        "unsupported": 1
+      },
+      "model_repair_turns": 0,
+      "model_failures": 0,
+      "model_retries": 0
+    }
+  ],
+  "language_diagnostics": {
+    "path": ".artifacts/a5-forms-service-20260912/language-diagnostics.json",
+    "sha256": "815544550b0f918d0df4efd49fdc0f088b63f8e7932bd9749f3fb47876c035c9"
+  },
+  "scripts": [
+    {
+      "path": ".artifacts/a5-forms-service-20260912/forms_probe.py",
+      "sha256": "8a10e5f028680d557875ad7c88216f5a6625a423e3597fd8484bbbb1446f07d5"
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/pilot.py",
+      "sha256": "9a3438474b3f2857cd35a47f551e2c160922fd8b124823697083805bd16e3b95"
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/service_diagnose.py",
+      "sha256": "74770218656b57d847bc8479d36d48c43eee8e025d00dfc71bfdcbfa24b20524"
+    },
+    {
+      "path": ".artifacts/a5-forms-service-20260912/service_pg_values.py",
+      "sha256": "48b0525bd2a3777a643c1c1d08cdeabb4770fb705b1a5d5df66fc2a2c127f2f2"
+    },
+    {
+      "path": ".artifacts/a5-20260912/regress.py",
+      "sha256": "37f51adbe8c00e75adfd227cdace36e4466c8ba15378ab7b1c9d5bfa63ba6145"
+    }
+  ],
+  "named_matrix_gaps_remaining": 17,
+  "limitations": [
+    "A5 remains provisional; no production prompt or new capability adopted.",
+    "Synthetic exact-match probes do not distinguish acceptable extra columns from wrong values.",
+    "Real q25 and h2_q23 are unjudged and previously seen; answered is not correctness.",
+    "Old count-only absence reports did not cover other absence measures; no historical report was relabelled.",
+    "One expanded ruler failure was a test-author LIMIT-contract error, corrected without changing comparator semantics.",
+    "Missing Japanese rule and imperative return false positive are diagnosed, not repaired.",
+    "Named segments, value-index literals and shared window helpers still limit differential coverage.",
+    "Case executions are not model call counts; repair and zero-call gates differ."
+  ],
+  "safety": {
+    "readonly_database_role": "grepbit_ro",
+    "persistent_db_writes": false,
+    "new_credentials": false,
+    "real_sampling_limit": 0,
+    "real_rows_redacted": true,
+    "real_metrics_only_persistence": true,
+    "synthetic_diagnostics_may_contain_fictional_plan_and_refusal": true,
+    "stage_commit_push": false
+  },
+  "research": "docs/research/a5-forms-service-01.md"
+}
