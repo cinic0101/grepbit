@@ -1,0 +1,52 @@
+{
+  "revision": "cross-language-ruler-v1",
+  "status": "specification_checkpoint_not_live_implementation",
+  "baseline_head": "a2e080b",
+  "source_digest": "sha256:04543492b95d642597ae7de08f11ae5ac9c6e3d40289b0503b7161bb6e77fa6f",
+  "scope": "test-only authored disagreement, translation fidelity and accounting rules",
+  "inputs": {
+    "tests/fixtures/cross_language_rulers.json": "360143805dc9b0ecf24a38475d97923036c60f55b34cf9b83b97b6eb90f56adc",
+    "tests/contract/t0/test_cross_language_rulers.py": "80e62e2ccceee0d7a8741d76f09692a4ad5a53ea54ef9bd5a65f2f0bdb8b3739"
+  },
+  "validation": {
+    "focused": {
+      "report": ".artifacts/cross-language-ruler-20260912/focused-reviewed/result.json",
+      "sha256": "0fbdd6d07a81584bcc22150f0c2562ae24126f638620d77489887e4306704f8e",
+      "passed": 33,
+      "failed": 0,
+      "skipped": 0,
+      "composition": "32 new specification tests plus 1 existing primary-key law test",
+      "source_stable": true
+    },
+    "static": {
+      "report": ".artifacts/cross-language-ruler-20260912/static-reviewed/result.json",
+      "sha256": "5dc6da15a4df73b975b6b7265b5d0463793dd94bc963c3f9d14f3eabbc0b744f",
+      "status": "pass"
+    },
+    "preceding_combined_offline": {
+      "report": ".artifacts/git-closeout-20260912/offline/result.json",
+      "passed": 1501,
+      "new_ruler_included": false,
+      "note": "One trailing blank line in the new identity test was formatted afterward; no behavior change. No second full-suite claim."
+    }
+  },
+  "ruler_observations": {
+    "accounting_vectors": 13,
+    "advancement_vectors": 8,
+    "known_equivalent_structurally_different_pairs": 2,
+    "hand_value_witness_pairs_checked_in_both_local_engines": 4,
+    "identical_wrong_plan_control": true,
+    "label_compliance_separate_from_plan_core": true,
+    "no_witness_is_not_equivalence": true,
+    "static_checkpoint_reason": "The new comparator does not exist; a missing import would not be meaningful red behavior evidence. Existing stability semantics remain unchanged."
+  },
+  "external_actions": {"model_calls": 0, "external_db_calls": 0, "database_writes": 0, "push": false},
+  "proposed_post_checkpoint_max_attempts": 48,
+  "limits": [
+    "Not evidence that cross-language planning improves detection or should be adopted.",
+    "Known authored development cases, not a real-user blind holdout.",
+    "Translation fidelity requires frozen-reference match or owner review; a model assertion is not human confirmation.",
+    "Only supported scalar computations; no general plan or SQL equivalence claim.",
+    "No new live comparator, runtime gate, prompt revision or production verification change."
+  ]
+}

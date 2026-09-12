@@ -72,3 +72,17 @@ metric/current-plan files. No unrelated source change was found against the
 initial baseline. Preserve historical limitations, including the old incomplete
 pack identity. Next research phase is a test-only disagreement/fidelity ruler,
 not a live detector; exact commit IDs are available in local Git history.
+
+Closeout completed: `4cf6162` foundation, `3cf9e5b` concept studies, `a2e080b`
+metric studies/record. The worktree was clean before the next ruler began.
+`cross-language-disagreement.md` now supplies that test-only contract;
+`evidence/cross-language-ruler-01.json` records 33 focused checks and static
+passing, with no new model/DB calls or src/evals changes. This separate ruler
+was added after the 1,501-test broad closeout gate; it is not retroactively part
+of that run. Await explicit ruler follow-up before implementation/live requests.
+
+Read-only adversarial review strengthened the new ruler: incremental credit
+requires a positively equivalent repeat, not simply no repeat witness; a screen
+cannot claim zero false alarms when correct controls have no comparable pairs.
+Eight study-level counterexamples/controls pin these rules. No production or
+historical evaluation contract was altered to obtain these passes.

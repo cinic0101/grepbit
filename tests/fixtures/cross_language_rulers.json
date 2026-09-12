@@ -1,0 +1,44 @@
+{
+  "revision": "cross-language-ruler-v1",
+  "case_split": "development",
+  "language": "zh",
+  "case_count": 12,
+  "slots": ["Z1", "Z2", "T", "E"],
+  "max_attempts": 48,
+  "advancement": [
+    {"id": "bounded_positive", "incremental": 1, "correct_controls": 3, "comparable_correct": 3, "false_alarms": 0, "accounted_slots": 12, "fidelity_unreviewed": 0, "may_advance": true},
+    {"id": "empty_correct_denominator", "incremental": 1, "correct_controls": 0, "comparable_correct": 0, "false_alarms": 0, "accounted_slots": 12, "fidelity_unreviewed": 0, "may_advance": false},
+    {"id": "all_correct_pairs_missing", "incremental": 1, "correct_controls": 3, "comparable_correct": 0, "false_alarms": 0, "accounted_slots": 12, "fidelity_unreviewed": 0, "may_advance": false},
+    {"id": "one_correct_pair_missing", "incremental": 1, "correct_controls": 3, "comparable_correct": 2, "false_alarms": 0, "accounted_slots": 12, "fidelity_unreviewed": 0, "may_advance": false},
+    {"id": "false_alarm_present", "incremental": 1, "correct_controls": 3, "comparable_correct": 3, "false_alarms": 1, "accounted_slots": 12, "fidelity_unreviewed": 0, "may_advance": false},
+    {"id": "no_incremental_catch", "incremental": 0, "correct_controls": 11, "comparable_correct": 11, "false_alarms": 0, "accounted_slots": 12, "fidelity_unreviewed": 0, "may_advance": false},
+    {"id": "unknown_fidelity", "incremental": 1, "correct_controls": 3, "comparable_correct": 3, "false_alarms": 0, "accounted_slots": 12, "fidelity_unreviewed": 1, "may_advance": false},
+    {"id": "missing_slot_accounting", "incremental": 1, "correct_controls": 3, "comparable_correct": 3, "false_alarms": 0, "accounted_slots": 11, "fidelity_unreviewed": 0, "may_advance": false}
+  ],
+  "accounting": [
+    {"id": "new_catch", "original": "wrong", "fidelity": "reference_exact", "pair": "witnessed_difference", "repeat": "equivalent_in_fragment", "credit": true, "incremental": true, "false_alarm": false, "certified": false},
+    {"id": "both_wrong_but_different", "original": "wrong", "fidelity": "human_confirmed", "pair": "witnessed_difference", "repeat": "equivalent_in_fragment", "credit": true, "incremental": true, "false_alarm": false, "certified": false},
+    {"id": "repeat_already_detects", "original": "wrong", "fidelity": "reference_exact", "pair": "witnessed_difference", "repeat": "witnessed_difference", "credit": true, "incremental": false, "false_alarm": false, "certified": false},
+    {"id": "same_wrong", "original": "wrong", "fidelity": "reference_exact", "pair": "equivalent_in_fragment", "repeat": "equivalent_in_fragment", "credit": false, "incremental": false, "false_alarm": false, "certified": false},
+    {"id": "translation_changed", "original": "wrong", "fidelity": "changed", "pair": "witnessed_difference", "repeat": "equivalent_in_fragment", "credit": false, "incremental": false, "false_alarm": false, "certified": false},
+    {"id": "unreviewed_paraphrase", "original": "wrong", "fidelity": "unreviewed", "pair": "witnessed_difference", "repeat": "equivalent_in_fragment", "credit": false, "incremental": false, "false_alarm": false, "certified": false},
+    {"id": "correct_original_flagged", "original": "correct", "fidelity": "reference_exact", "pair": "witnessed_difference", "repeat": "equivalent_in_fragment", "credit": false, "incremental": false, "false_alarm": true, "certified": false},
+    {"id": "translation_noise_false_alarm", "original": "correct", "fidelity": "changed", "pair": "witnessed_difference", "repeat": "equivalent_in_fragment", "credit": false, "incremental": false, "false_alarm": true, "certified": false},
+    {"id": "coincidental_answers", "original": "wrong", "fidelity": "reference_exact", "pair": "not_distinguished", "repeat": "equivalent_in_fragment", "credit": false, "incremental": false, "false_alarm": false, "certified": false},
+    {"id": "unsupported_pair", "original": "wrong", "fidelity": "reference_exact", "pair": "outside_fragment", "repeat": "equivalent_in_fragment", "credit": false, "incremental": false, "false_alarm": false, "certified": false},
+    {"id": "failed_translation", "original": "wrong", "fidelity": "unavailable", "pair": "unavailable", "repeat": "equivalent_in_fragment", "credit": false, "incremental": false, "false_alarm": false, "certified": false},
+    {"id": "unknown_repeat", "original": "wrong", "fidelity": "reference_exact", "pair": "witnessed_difference", "repeat": "unavailable", "credit": true, "incremental": false, "false_alarm": false, "certified": false},
+    {"id": "ambiguous_rate", "original": "unresolved", "fidelity": "reference_exact", "pair": "witnessed_difference", "repeat": "equivalent_in_fragment", "credit": false, "incremental": false, "false_alarm": false, "certified": false}
+  ],
+  "equivalence_laws": [
+    {"left": "returns_count_raw", "right": "returns_count_metric", "law": "expand_reviewed_definition"},
+    {"left": "member_count", "right": "member_column_count", "law": "count_nullable_column_filters_nulls"}
+  ],
+  "witnesses": [
+    {"left": "all_count", "right": "returns_count_metric", "instance": "coincidental", "left_value": 4, "right_value": 2},
+    {"left": "log_count", "right": "logged_ticket_count", "instance": "coincidental", "left_value": 3, "right_value": 2},
+    {"left": "return_ratio", "right": "return_amount_ratio", "instance": "coincidental", "left_value": 0.5, "right_value": 0.25},
+    {"left": "returns_count_raw", "right": "nonreturns_count", "instance": "asymmetric", "left_value": 3, "right_value": 2}
+  ],
+  "coincidence": {"left": "returns_count_raw", "right": "nonreturns_count", "instance": "coincidental", "value": 2}
+}

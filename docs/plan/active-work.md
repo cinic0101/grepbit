@@ -1,5 +1,14 @@
 # Active work: evaluation repairs and accepted period semantics
 
+Current ruler: `cross-language-disagreement.md`. Local closeout completed at
+`a2e080b` (preceded by `4cf6162`, `3cf9e5b`); clean before starting this ruler,
+no push. Scope is test-only fidelity/disagreement accounting and counterexamples
+against the existing structural comparator. No new evals/src implementation,
+live requests or production changes. Proposed post-ruler ceiling: 48 serial
+Gemma attempts across 12 authored development questions; unknown translations
+remain uncredited without reference-exact or owner-confirmed fidelity. Await the
+explicit ruler follow-up before implementation/live; previous budgets are closed.
+
 Current 2026-09-12 closeout: owner authorized "整理完直接開始" and local commits
 without asking each time; no push. See `git-closeout-and-cross-language.md` for
 the original authority, review scope, 121-file baseline, source-identity repair

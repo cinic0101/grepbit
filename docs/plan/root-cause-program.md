@@ -121,6 +121,15 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
+Current 2026-09-12: accumulated work is locally committed through `a2e080b`,
+with 1,501 offline tests and static checks passing. Subsequent metric wire/factor
+studies did not qualify a candidate; see `../research/metric-factor-study-01.md`.
+Next is the test-only `cross-language-disagreement.md` ruler: manufacture another
+view, measure computational disagreement deterministically, and keep translation
+fidelity and user intent separate. New live implementation waits for its explicit
+checkpoint follow-up. Editable-query feasibility remains a separate planned
+human-evidence route. No research gate is promoted; A5 is still provisional.
+
 Latest 2026-09-12: `../research/semantic-contrast-01.md`. Owner-approved
 ratio-wrapper filter rejection is implemented through domain/compiler/self-check
 and normalization bypass protection. Static/offline 760 pass. A separate
