@@ -85,6 +85,15 @@ equivalence are not supported by the bounded first version.
 
 ## Next execution order
 
+Status 2026-09-13: steps 1–4 are complete as bounded research/implementation,
+not promotion or a rescore. Acceptance evidence: `../research/answer-acceptance-01.md`.
+Grounding/payroll live evidence: `../research/grounding-payroll-01.md` (60 jobs,
+60 attempts). Public-name indexing helped repeatably; time-role comments are
+useful but did not establish a robust fix for the newly isolated component-vs-row
+filter error. Expand those contrasts without keyword exceptions; step 5 remains
+the next lexical-gate research step. Production overlay/DB-comment promotion
+and gate changes have not been made.
+
 1. **Existing-contract diagnosis (completed this slice).** Read existing
    paired reports, test literal-index behavior, verify schema comments reach
    the payload, and compare fixed raw/metric payroll plans. No model calls.
@@ -125,9 +134,10 @@ equivalence are not supported by the bounded first version.
    propose one paired revision with explicit controls before more calls. No
    broad prompt rewrite to fix one question; no Japanese study in this budget.
 
-The 60 calls above are a proposed fresh research ceiling (24 + 36 completed
-planning requests), with at most 180 transport attempts including existing
-repair/retry, not authorization to consume old budgets. Destination remains
+The 60 calls above were the fresh research ceiling (24 + 36 scheduled question
+executions), completed after the owner's follow-up "ok" with 60 attempts.
+The maximum was 180 transport attempts including existing repair/retry, not
+authorization to consume old budgets or reuse the unspent attempts. Destination remains
 the owner-authorized private Gemma4 31B gateway; fixture questions and
 policy-eligible metadata/hints only, never SQL/results/credentials. Before
 execution freeze exact cases, payload identities and source, and verify no

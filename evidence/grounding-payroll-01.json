@@ -1,0 +1,62 @@
+{
+  "study": "grounding-payroll-mechanisms-v1",
+  "date": "2026-09-13",
+  "git_sha": "98654f7b4e77312e3b3ec641db9ffbf727a81ef8",
+  "source_digest": "sha256:2c1cf9ad6c54d6b8df4dd7a294532cad2ad9b68276710159c6b36422fdc60929",
+  "prompt_revision": "plan-classify-json-v15",
+  "model": "gemma-4-31b",
+  "temperature": 0,
+  "thinking": "off",
+  "outcome": "complete",
+  "scheduled_jobs": 60,
+  "completed_jobs": 60,
+  "transport_attempts": 60,
+  "max_transport_attempts": 180,
+  "transport_failures": 0,
+  "model_retries": 0,
+  "model_repair_turns": 0,
+  "unique_questions": 12,
+  "repeats_per_case_arm": 2,
+  "end_source_context_oracle_identity_equal": true,
+  "fixed_plan_postgres_oracle_agreements": 47,
+  "driver_tests_passed": 17,
+  "repeat_status_acceptance_pairs_equal": 30,
+  "repeat_final_plan_hash_pairs_equal": 29,
+  "arms": {
+    "no_index": {"jobs": 12, "accepted_answers": 2, "appropriate_refusals": 4, "unassessed": 6, "p50_seconds": 4.65},
+    "index": {"jobs": 12, "accepted_answers": 8, "appropriate_refusals": 4, "unassessed": 0, "p50_seconds": 3.9605},
+    "metadata": {"jobs": 12, "accepted_answers": 10, "appropriate_refusals": 0, "unassessed": 2, "p50_seconds": 3.7645},
+    "comments": {"jobs": 12, "accepted_answers": 12, "appropriate_refusals": 0, "unassessed": 0, "p50_seconds": 3.3495},
+    "metric": {"jobs": 12, "accepted_answers": 12, "appropriate_refusals": 0, "unassessed": 0, "p50_seconds": 3.7515}
+  },
+  "posthoc_component_exclusion_witness": {
+    "case_id": "p_payment_en",
+    "automatic_outcome_retained": "unassessed",
+    "adjudication": "wrong extra bonus=0 row filter, not component exclusion",
+    "observed_original_metadata_jobs": 2,
+    "synthetic_expected": 300,
+    "synthetic_row_filtered": 200,
+    "actual_quarters": 4,
+    "quarters_with_different_salary_totals": 3,
+    "extra_model_calls": 0
+  },
+  "artifacts": [
+    {"path": ".artifacts/grounding-payroll-20260913/cases.json", "sha256": "a8a9ecf876c1f9fb1e10fa4caa64b00b888e008ee91f4c7d6055469674186686"},
+    {"path": ".artifacts/grounding-payroll-20260913/study.py", "sha256": "25f4f75392944f0d0c7c27e8d652d0870d0457089110caafa85a32ef4c988f83"},
+    {"path": ".artifacts/grounding-payroll-20260913/frozen.json", "sha256": "d2a2975f790625ff0a2bc34d6a5db7798de41de7cadcd90d965290253ae9cc9e"},
+    {"path": ".artifacts/grounding-payroll-20260913/live/summary.json", "sha256": "1add8e5ee1fbdc04bc2019293f9f645f564cdbc873077316980e60b95cdcfbf6"},
+    {"path": ".artifacts/grounding-payroll-20260913/bonus-witness.json", "sha256": "8b9d94e2d3b8bf97eee67537930bc7d66aea9c73735a4912bf4b509a67967ca7"},
+    {"path": ".artifacts/grounding-payroll-20260913/driver-tests-frozen.xml", "sha256": "27cc0c7f2116ab77ce8bfb845b3c32bf38755c0bd31eec8840c568aad655f38f"}
+  ],
+  "production_code_changed": false,
+  "db_writes": 0,
+  "historical_panel_rescored": false,
+  "limitations": [
+    "Authored mechanism checks, not held-out generalization rates; repeats are not independent new questions.",
+    "No broad claim of A5 acceptance or metadata preventing planner mistakes.",
+    "Date-comment treatment's component-filter improvement could be incidental context shift.",
+    "One final-plan hash changed without a retained semantic-fact/status change; exact raw difference not retained.",
+    "No shared cross-query DB snapshot; reference and context hashes matched at end.",
+    "Full private artifacts/one-off scripts remain local and ignored; only this compact manifest is committed."
+  ]
+}

@@ -1,5 +1,45 @@
 # Active work: evaluation repairs and accepted period semantics
 
+2026-09-13 closeout: grounding/payroll studies COMPLETE at runtime `98654f7`.
+60 jobs / 60 attempts, no retries/repair/transport errors; frozen source,
+context and value oracles matched at end. 47 fixed-plan PostgreSQL agreements,
+17 focused driver tests. Grounding: 4 answerable unique cases improved from
+1 to 4 answered correctly, and both required refusals held, each repeated twice.
+Payroll: original metadata accepted 10/12, comments and metric 12/12; original
+metadata's two unassessed results are the same English component-exclusion
+error (`bonus=0`), independently falsified in PostgreSQL (3/4 quarters differ).
+Do not relabel those frozen automatic outcomes or treat unknown interpretation
+as automatically wrong. Unspecified payment/attribution readings both accepted;
+their changed default is not a newly correct answer. Runtime/overlay/DB comments
+and historical scores unchanged. Root owns docs/evidence-only closeout, local
+commit authorized, no push. Research `../research/grounding-payroll-01.md`;
+manifest `../../evidence/grounding-payroll-01.json`. Next: broaden public-name
+promotion controls and component-vs-row contrasts, then planned offline lexical
+gate comparison; no production gate replacement or keyword exception approved.
+
+Execution authority for this completed slice (2026-09-13): grounding and payroll
+studies after the owner's latest "ok" to the stated next order. Baseline clean
+`98654f7`. Original authority: owner approved independent overlay/grounding/
+prompt/gate experiments, repeatedly allowed psql/Gemma, local commits without
+asking, and now continued this plan. Root owns the bounded research driver and
+annotations; no production changes or delegated writer. Up to 60 scheduled
+question executions / 180 transport attempts; no budgets borrowed from old runs.
+Destination: existing private Gemma4 31B gateway, serial, temperature zero,
+thinking off; outbound authored fixture questions, sampling-zero schema
+metadata and public store-name hints only. Original .env/key loaded opaquely;
+no SQL, rows, employee/customer values, credentials or DSNs sent to the model.
+DB: localhost POS-test only, grepbit_ro, read-only introspection/SELECT, original
+password file and in-memory DSN; no admin, writes or persistent COMMENT. Reports
+are hash/code/aggregate metadata only, no raw rows, bindings or provider output.
+Stop on source/schema/reference drift, budget exhaustion or two consecutive
+transport failures. Prior process check found no Python regression. Minimal
+public-name overlay stays identical between the two grounding arms; only index
+availability changes. Payroll comments are modified in memory only. Freeze
+cases and independent reference oracles before calls; preserve legacy scores.
+Artifacts: `.artifacts/grounding-payroll-20260913/`. Documentation/evidence local
+commit allowed; no push. Narrow offline driver tests plus live mechanism checks;
+no runtime modification means no duplicate full-suite gate is required.
+
 2026-09-13 closeout: approved answer-acceptance implementation COMPLETE.
 Separate opt-in `disclosed-answer-v1` grading and effective computation in
 existing assumptions; legacy correct, interpretation/model input, SQL and gates
