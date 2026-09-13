@@ -1,0 +1,93 @@
+{
+  "baseline": "bee008d28cd224a6f75c8948c55262d48ee2485e",
+  "production_prompt_revision": "plan-classify-json-v15",
+  "measured_research_revision": "temporal-reference-research-v1",
+  "tracked_source_digest": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+  "artifact_root": ".artifacts/temporal-reference-study-20260913",
+  "state": "complete",
+  "initial_calls": 90,
+  "actual_attempts": 90,
+  "validation_repairs": 0,
+  "transport_errors": 0,
+  "transport_retries": 0,
+  "oracle_catalog": true,
+  "automatic_extraction_measured": false,
+  "historical_full_pos_context_reproduced": false,
+  "reference_eligible_invocations": 16,
+  "references_used": 16,
+  "primary": {
+    "baseline": {
+      "accepted": 21,
+      "total": 24,
+      "answered": 22,
+      "required_refusals": 2,
+      "unassessed": 3,
+      "call_p50_seconds": 3.0915
+    },
+    "information": {
+      "accepted": 23,
+      "total": 24,
+      "answered": 22,
+      "required_refusals": 2,
+      "unassessed": 1,
+      "call_p50_seconds": 2.9881
+    },
+    "reference": {
+      "accepted": 22,
+      "total": 24,
+      "answered": 22,
+      "required_refusals": 2,
+      "unassessed": 2,
+      "call_p50_seconds": 3.1134
+    }
+  },
+  "repeats": {
+    "each_arm": {
+      "accepted": 5,
+      "total": 6,
+      "answered": 5,
+      "required_refusals": 1,
+      "unassessed": 1
+    }
+  },
+  "checks_per_preparation": {
+    "duckdb": 174,
+    "postgres": 174
+  },
+  "end_source_context_oracles_identical": true,
+  "research_tests": 59,
+  "static_passed": true,
+  "repository_offline_reused": 1841,
+  "diagnosis": {
+    "unassessed_invocations": 9,
+    "unique_plan_hashes": 3,
+    "reconstructed": 3,
+    "candidate_plans": 180,
+    "value_checks": 9,
+    "empty_nonempty_tests": 4,
+    "frozen_scores_changed": false
+  },
+  "post_run_hardening": {
+    "revision": "temporal-reference-research-v1.1",
+    "bare_date_expected_failures": 2,
+    "tests_passed": 61,
+    "model_calls": 0,
+    "file_sha256": "3bc454db7f549a62b82de0271bef47a5bcae6611842f7ea4d68271c53c5c4683"
+  },
+  "screen": "inconclusive_no_demonstrated_incremental_benefit",
+  "runtime_modified": false,
+  "promoted": false,
+  "artifacts": {
+    "preparation.json": "7d5d5dfd012ad9e6247f6f6e3f2a7ee142ff181df044123e742b8c32b1481457",
+    "live/summary.json": "e1a2e764d4280d3cfe11791c964baf1f0c8f280bedb234b279ffca9150020bed",
+    "research-tests.xml": "90f33ac6ad974a6064a64e0d6ea1a52962d87fa1d4d6bdfe17a268dd22670908",
+    "end-check.json": "e761bf42ca82da814bc6679b3fe6e841c40360e2bed96091a8f889f703e29a87",
+    "static/result.json": "1eabc68185f447a59fb805aa9c480d8962bae873cdc992b545827ec54debad7d"
+  },
+  "diagnosis_artifact_root": ".artifacts/temporal-reference-diagnosis-20260913",
+  "diagnosis_artifacts": {
+    "result.json": "08d7930b9834e86db01e4005bdf362ce04150ad56a40d7568b9fba86b665acee",
+    "tests-02.xml": "4c3daf00831ed1dfbd31465f323e880e4dfc889761eb02c6404550430441bde8",
+    "hardened-tests.xml": "22a069bffad04861c5c112573db72009579b6084a0d0d29bdea983d77ef211f8"
+  }
+}

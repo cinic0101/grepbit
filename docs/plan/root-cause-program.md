@@ -121,7 +121,17 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-13: temporal-reference phase-0 ruler at `099d851` complete;
+Current 2026-09-13: approved temporal-reference study at `bee008d` complete;
+90 actual Gemma calls, no repairs or transport errors. All 16 eligible reference
+calls bind, but baseline also answers the original question in the small synthetic
+schema: no demonstrated incremental benefit, no promotion. Nine unassessed
+invocations are three alternate representations recovered by exact plan hashes;
+post-hoc value checks do not change frozen scores. A bare-date guard gap was
+reproduced/fixed in private v1.1 after the measured run (61 offline tests, no new
+model calls). Next reproduce the full-context baseline before another comparison.
+Details: `../research/temporal-reference-study-01.md`. Production unchanged.
+
+Previous 2026-09-13: temporal-reference phase-0 ruler at `099d851` complete;
 `temporal-reference-study.md` awaits contract review before implementing the
 research adapter. Existing calendar boundary witnesses pass, including 66 actual
 PostgreSQL cases in a 145-test focused run; offline 1,841/static pass. Zero new

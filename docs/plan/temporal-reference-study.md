@@ -1,7 +1,9 @@
 # Temporal references: bounded research ruler
 
-2026-09-13. Baseline `099d851`. Status: specification checkpoint; no research
-adapter or production change is authorized by this document.
+2026-09-13. Ruler baseline `099d851`, implementation baseline `bee008d`.
+Status: owner explicitly replied "同意" to the quoted checkpoint request,
+authorizing the research-only adapter and 90 initial calls / 180 total attempts.
+Production remains unchanged. Authority is that user reply, not this document.
 
 ## Outcome, ownership and authority
 
@@ -13,7 +15,7 @@ AGENTS' two-phase rule still requires review of a new reference/identity contrac
 before implementing its adapter. Complete independent existing-contract checks
 while that checkpoint is pending. This record does not grant permissions.
 
-Current slice: specification fixtures/tests, existing calendar conversion and
+Initial ruler slice: specification fixtures/tests, existing calendar conversion and
 SQL boundary checks. No src/evals change, schema mutation, parser installation,
 lexical gate, production prompt change or replacement of historical grades.
 
@@ -66,10 +68,10 @@ occurrence, canonical literal and ID before lowering. Validity is not intent.
   remain unchanged. No fixed payroll-month lag. Fiscal years without a definition
   are not silently mapped to calendar years. Preserve ambiguity in annotations.
 
-The ruler uses static shape assertions, exact span vectors and existing-engine
+The initial ruler used static shape assertions, exact span vectors and existing-engine
 controls. A red test calling a nonexistent adapter would be an import/setup
 failure, not behavioral evidence. Production must continue rejecting the proposed
-field at this checkpoint. Reference lookup/lowering has NOT been implemented.
+field at that checkpoint. Reference lookup/lowering was not yet implemented.
 
 ## Experiment after checkpoint approval
 
@@ -137,4 +139,10 @@ contract and prior temporal study. Process preflight found no Python regression;
 the previously acknowledged Claude PID 49876 is still present (user previously
 said to disregard that session). Preserve other work and stop on file drift.
 Evidence directory: `.artifacts/temporal-reference-ruler-20260913/`.
-Checkpoint remains pending; final results belong in the companion research note.
+The owner subsequently approved this checkpoint. Implementation and new artifacts
+are private under `.artifacts/temporal-reference-study-20260913/`; no production
+surface or parser dependency is added. Root owns the coupled adapter/runner work.
+Completed 90 calls, zero repair/transport errors. Incremental-benefit screen is
+inconclusive: the original baseline failure did not recur in the small synthetic
+context. See `../research/temporal-reference-study-01.md`, including frozen grades,
+post-hoc representation diagnosis and the separately tested v1.1 guard correction.

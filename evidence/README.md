@@ -13,6 +13,13 @@ guarantee; row redaction alone can leave values in plans or other fields. The
 current reuse manifests below publish counts and hashes only. See
 `../docs/research/evidence-reuse-live-01.md` for the pre-write field policy.
 
+`temporal-reference-study-01.json`: 90 actual calls, 16/16 eligible references
+used, zero repair/transport errors. Interface feasible; incremental benefit
+unproven because the original baseline failure did not recur in the synthetic
+context. Frozen grades stay unchanged after exact-hash representation diagnosis.
+Private v1.1 fixes a post-run bare-date guard gap (61 offline tests; not the live
+version). See `../docs/research/temporal-reference-study-01.md`.
+
 `temporal-reference-ruler-01.json`: specification checkpoint, not a live
 reference-selection result. 145 focused tests (66 actual read-only PostgreSQL
 cases), offline 1,841/static pass. Existing calendar conversion satisfies bounded
