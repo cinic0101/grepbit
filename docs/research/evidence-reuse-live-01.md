@@ -32,8 +32,10 @@ Do not quietly discard those last two cases from a claimed answer-accuracy rate.
 The 292 executions contain 250 exact question/datasource hashes: this is not
 250 independently sampled intents, since contexts, controls and languages recur.
 
-The four reference mismatches concern average base salary, the first week of
-a month, a two-month comparison, and quarterly payroll. Refusals occur on a
+The four reference mismatches concern average base salary, an explicit date
+range, a two-month comparison, and quarterly payroll. The date case ID says
+first week, but the actual question says between two dates; see the later
+`failure-roots-01.md` diagnosis. Refusals occur on a
 member ratio, a partial-name no-sampling case, a Japanese no-activity question,
 and an English records-versus-distinct-entities question. The unexpected answer
 concerns a fee concept the fixture marks as absent. Failure IDs/statuses/hashes

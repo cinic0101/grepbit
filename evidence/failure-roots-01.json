@@ -1,0 +1,123 @@
+{
+  "study": "failure-roots-01",
+  "date": "2026-09-13",
+  "baseline": "acd4ad3",
+  "source": "sha256:e01de711a9ebb6e0da5b67fe9b6b2773184f64bc5f6abf307b6ee71c53943361",
+  "model": "gemma-4-31b",
+  "prompt_revision": "plan-classify-json-v15",
+  "model_attempts": 18,
+  "model_errors": 0,
+  "target_cases": 9,
+  "fixed_setting_repeats": 2,
+  "exact_original_non_null_plan_identities": 7,
+  "original_plan_unrecovered": 1,
+  "decline_without_plan": 1,
+  "fixed_plan_pg_executions": 11,
+  "unique_fixed_plan_pg_executions": 10,
+  "private_diagnostic_tests_passed": 10,
+  "existing_service_rulers_passed": 5,
+  "historical_scores_changed": false,
+  "production_changes": false,
+  "evidence": [
+    {
+      "path": ".artifacts/failure-roots-20260913/live/manifest.json",
+      "sha256": "b7bfca3223eb7d088965e432867cf4995458cccbe756f58b583b0467a42b7ab8"
+    },
+    {
+      "path": ".artifacts/failure-roots-20260913/live/calls.jsonl",
+      "sha256": "712cbc2e665da0a64a8def569f83917d59a5d48a3343dc3f1ca498c30acfccd7"
+    },
+    {
+      "path": ".artifacts/failure-roots-20260913/counterfactual.json",
+      "sha256": "951be5ae8dfed37985ae1bd223cbaa9590b1e16f45c4ef24d465b5950f32ccb2"
+    },
+    {
+      "path": ".artifacts/failure-roots-20260913/reconstruction-02.json",
+      "sha256": "601f8748e52b5f29ecdcb45099392993421784b35b830a3b81ddd83fa6720c39"
+    },
+    {
+      "path": ".artifacts/failure-roots-20260913/validation.xml",
+      "sha256": "789c0c8a87802f3a5ae9828a84034ada151f08afe346375a89238b02ff640fe6"
+    },
+    {
+      "path": ".artifacts/failure-roots-20260913/service-rulers.xml",
+      "sha256": "0daa0f6e1f9e833d3fadca9b4e5574349341b1e677b0dd690408ee1e1b0b1e97"
+    },
+    {
+      "path": ".artifacts/failure-roots-20260913/diagnose.py",
+      "sha256": "9febd168964b02d45cef48a596433bab8231d88b2b83f167b4f11506cfd84e85"
+    },
+    {
+      "path": ".artifacts/failure-roots-20260913/recover.py",
+      "sha256": "2e5e4b41d01a42f7268f1cabe0cba8dfef7e7f2db77f08af938c52ad1e861fbb"
+    },
+    {
+      "path": ".artifacts/failure-roots-20260913/counterfactual.py",
+      "sha256": "48b64c0ebdc1ff8aff3381d71428c357a9d8ffc28a86ba9f9c64bbba137780b4"
+    },
+    {
+      "path": ".artifacts/failure-roots-20260913/test_diagnose.py",
+      "sha256": "eb9fcb5f6b1ab280d04d93d97308d8d013aa6c7b931e3ea9b6c9e11b1c78f836"
+    },
+    {
+      "path": ".artifacts/failure-roots-20260913/test_evidence.py",
+      "sha256": "16f6c96138faaf7fadbb2a712208f83995a60b474483ed90d103f5f622697f2d"
+    },
+    {
+      "path": "/Users/S019977/Documents/github/grepbit/.artifacts/failure-roots-20260913/live/pos-1.json",
+      "sha256": "c0970104181289fc3de8ecc480594fd8b5e0eb022b814026fd55d1af8be7dc37"
+    },
+    {
+      "path": "/Users/S019977/Documents/github/grepbit/.artifacts/failure-roots-20260913/live/multilingual-1.json",
+      "sha256": "98b89e65ddb3f31a190641d4a0d0ee0bf01076833d395c6d619a6680bfd016ee"
+    },
+    {
+      "path": "/Users/S019977/Documents/github/grepbit/.artifacts/failure-roots-20260913/live/iot-1.json",
+      "sha256": "3fd731087ded32ae8ac34621bd2431367c2c3cede2a80afa91b4ed14fc5c441f"
+    },
+    {
+      "path": "/Users/S019977/Documents/github/grepbit/.artifacts/failure-roots-20260913/live/nosample-1.json",
+      "sha256": "511d220d75b3ff9df4e539b47b25ee9f0c792361e78651c14cb2e54fdec99c79"
+    },
+    {
+      "path": "/Users/S019977/Documents/github/grepbit/.artifacts/failure-roots-20260913/live/coverage_iot-1.json",
+      "sha256": "e72ec3aa583acd968ebc43cbc152172e9f9ebdd27c126f2480d3366fd900478f"
+    },
+    {
+      "path": "/Users/S019977/Documents/github/grepbit/.artifacts/failure-roots-20260913/live/features-1.json",
+      "sha256": "7ef97ac910c8b91dfd1d353cccc905eeeb002e643f2e93912c9227b6bc4c0e34"
+    },
+    {
+      "path": "/Users/S019977/Documents/github/grepbit/.artifacts/failure-roots-20260913/live/service_adversarial-1.json",
+      "sha256": "7f45c21198d81195ad865d83631aa8610547eca2df1d45172fb574b89cd2be3d"
+    },
+    {
+      "path": "/Users/S019977/Documents/github/grepbit/.artifacts/failure-roots-20260913/live/pos-2.json",
+      "sha256": "faa4484b98029c095cae6ee58a591e08c491278ea06db0d7b1b314439052d592"
+    },
+    {
+      "path": "/Users/S019977/Documents/github/grepbit/.artifacts/failure-roots-20260913/live/multilingual-2.json",
+      "sha256": "330739b3111e6fe87991f2ea0fa1f9415e79ec7bec38b0e95320d786f823a67b"
+    },
+    {
+      "path": "/Users/S019977/Documents/github/grepbit/.artifacts/failure-roots-20260913/live/iot-2.json",
+      "sha256": "333f81e1cc066f8d8e4ae80c7cf3fa4fe340cb150f658cbfe0a16461fca11e38"
+    },
+    {
+      "path": "/Users/S019977/Documents/github/grepbit/.artifacts/failure-roots-20260913/live/nosample-2.json",
+      "sha256": "517a4b5bea558dacfb5f93455dbff6189eba7f9c73b44d66b97d58ffba72e148"
+    },
+    {
+      "path": "/Users/S019977/Documents/github/grepbit/.artifacts/failure-roots-20260913/live/coverage_iot-2.json",
+      "sha256": "fcdfbf710f09cb0ad734967beb93d92063a233a4d683e3b3122524ad12d9fc2c"
+    },
+    {
+      "path": "/Users/S019977/Documents/github/grepbit/.artifacts/failure-roots-20260913/live/features-2.json",
+      "sha256": "2962ae99db064182e8a37e2b6470013d999c8d6c9a8f6249eee335eb6fd24815"
+    },
+    {
+      "path": "/Users/S019977/Documents/github/grepbit/.artifacts/failure-roots-20260913/live/service_adversarial-2.json",
+      "sha256": "fe9de39638b1582f393448bfcf7e5967ee5089ef0dbbf5016f32dfdb6cd7eddc"
+    }
+  ]
+}

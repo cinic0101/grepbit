@@ -1,5 +1,40 @@
 # Active work: evaluation repairs and accepted period semantics
 
+Current slice COMPLETE: diagnose the nine failures, baseline clean `acd4ad3`, source
+e01de711. Exact owner request: "針對作者組錯的 5 題，features 2 題，多語系
+挑戰 2 題，找出錯誤 root cause，我們來看看是不是同樣類性的錯誤？有沒有
+機會泛化？". Diagnosis only: no production fix, prompt tuning, gold change
+or historical rescore. Existing owner permission for psql/Gemma and the named
+gateway/payload remains applicable; this is a new bounded diagnostic, not
+reuse of the completed panel's spare budget. Nine existing fixture questions,
+two fixed-setting repeats each, max54 transport attempts including repair/
+retry, serial, stop at two consecutive transport errors or source drift.
+Only existing POS-test/IoT/service DBs, grepbit_ro, no real POS, admin, writes
+or grants. Destination http://10.12.0.187:4000/v1, Gemma4 31B; existing questions,
+schema/overlay and policy-eligible hints only, no SQL/results/credentials.
+Credentials loaded opaquely from original paths. Private diagnostic output
+retains hashes, fixed codes and schema-bound structure, not literal values,
+raw provider text, SQL or result rows. Same-plan counterfactual checks and
+reference comparisons are read-only diagnostics, not product changes.
+Root sole writer; local documentation commit allowed by standing permission,
+no push. Preserve original 292-case scores and distinguish exact captured-plan
+hash matches, new reproductions, and unresolved original-run attribution.
+
+Completed 2026-09-13: 18/18 model attempts succeeded; seven exact original
+non-null plan identities recovered. Eleven fixed-plan read-only PostgreSQL
+executions (ten unique plans) isolate all four original reference mismatches;
+the English service plan calculates correctly but is lexically blocked, and
+the Japanese requested construct is supported while its rule pack is absent.
+Missing Japanese guidance is a hypothesis, not a measured prompt fix. Member
+ratio's original refusal remains unattributed; its two fresh passes do not
+erase it. Ten private audit/diagnostic tests and five existing service rulers
+pass. Source unchanged; reuse previous 1,646-test static/offline gate. See
+`../research/failure-roots-01.md` and `evidence/failure-roots-01.json`.
+No source/prompt/gold change or human-correction path. All live work ended.
+Next choices concern explicit semantic defaults and separately controlled
+capability/guard/grounding experiments; none is implicitly authorized as a
+production repair by this diagnosis request. Local docs commit only, no push.
+
 Current follow-up COMPLETE: the frozen 292-case panel on baseline `6ddd8eb`,
 tracked source e01de711. Exact new owner authority: "同意，並在結束後告訴我
 驗證結果，以及你怎麼判斷這些結果？" in response to the explicit request to
