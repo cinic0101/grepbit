@@ -1,5 +1,42 @@
 # Active work: evaluation repairs and accepted period semantics
 
+Current slice: accepted-answer policy ruler and bounded cause studies, baseline
+`91f6591`. Owner explicitly accepted items 1/2/3/5/6, requested more payroll
+diagnosis and literature on lexical gates, approved writing "合理解讀＋實際口徑
+揭露＋相關額外欄" as evaluation criteria and independent overlay/grounding/
+prompt/gate experiments. Japanese absence is deferred; expensive unresolved
+failures are logged rather than repeatedly pursued. Existing psql/Gemma and
+local-commit authority remains; no push. Root owns this slice.
+
+This turn: literature, existing-artifact audit, test-only rulers and a bounded
+read-only POS-test diagnostic. No production, persistent DB comments, prompt,
+existing scorer/gold, old score or API change. Evaluation/disclosure is a
+critical contract: publish the ruler then stop that implementation for explicit
+follow-up; independent existing-contract diagnosis continues meanwhile.
+DB destination localhost:5432, existing POS-test only, grepbit_ro; schema
+metadata and the existing public store-name column, opaque original credentials,
+sampling zero, read-only SELECTs, no DB writes/admin/PII/model payloads. Up to
+eight fixed-plan comparisons; private output contains identifiers/counts/flags,
+not SQL, rows, bindings or provider text. No new model calls in this slice.
+Future live experiment scope/budget is proposed in the new plan, not borrowed
+from completed research budgets. Original 292-case scores remain unchanged.
+
+This slice complete at the evaluation ruler checkpoint: ten component controls
+pass and one intended old-matcher failure is captured with --runxfail (strict
+xfail in the normal suite). Full offline: 1,656 pass, one expected xfail, zero
+errors/failures. Final static passes after wrapping that test's reason string;
+this formatting-only edit leaves its value/behavior identical to the offline
+run. POS-test diagnostic: five public names indexed, partial name uniquely
+resolved after zero pre-plan hints; three fixed payroll plans distinguish
+raw-column selection from selected-metric time override. No model calls.
+Owner additionally accepted answering unspecified payroll questions using
+either reasonable disclosed time basis. Updated contract and study order:
+`answer-acceptance-and-cause-studies.md`; research:
+`../research/lexical-policy-and-defaults-01.md`. Do not implement a new grader,
+disclosure format or gate before explicit post-ruler follow-up. Japanese
+absence and unresolved member recurrence remain deferred. No runtime/gold,
+DB-comment or historical-score mutation; local closeout only, no push.
+
 Current slice COMPLETE: diagnose the nine failures, baseline clean `acd4ad3`, source
 e01de711. Exact owner request: "針對作者組錯的 5 題，features 2 題，多語系
 挑戰 2 題，找出錯誤 root cause，我們來看看是不是同樣類性的錯誤？有沒有

@@ -1,5 +1,11 @@
 # Evaluation method
 
+Owner-approved policy direction (2026-09-13): reasonable interpretations with
+faithful effective-computation disclosure and independently validated relevant
+extra outputs. The [new ruler](../plan/answer-acceptance-and-cause-studies.md)
+is pending implementation checkpoint. The runner and all historical scores
+below still use the legacy comparator; do not silently apply the new policy.
+
 ## Case files (`evals/cases/tier0/*.yaml`)
 
 ```yaml

@@ -1,0 +1,43 @@
+{
+  "study": "lexical-policy-and-defaults-01",
+  "date": "2026-09-13",
+  "baseline": "91f6591",
+  "phase": "ruler_checkpoint",
+  "model_calls": 0,
+  "fixed_plan_pg_comparisons": 3,
+  "ruler_controls_passed": 10,
+  "intentional_ruler_failures": 1,
+  "offline_passed": 1656,
+  "offline_expected_xfails": 1,
+  "offline_failures": 0,
+  "static_final": "pass",
+  "post_offline_change": "formatting-only wrap of unchanged test reason string",
+  "historical_scores_changed": false,
+  "production_changed": false,
+  "evidence": [
+    {
+      "path": ".artifacts/semantic-policy-20260913/preflight.py",
+      "sha256": "2fa340ac1856100fd2dd3f1fdec90001335424e06817a136c8a0d159d2c47a05"
+    },
+    {
+      "path": ".artifacts/semantic-policy-20260913/preflight.json",
+      "sha256": "b9ded52046c2ebc05946f8c3df6684bb8b3393aa20ee52074e1b8a0b845f73bd"
+    },
+    {
+      "path": ".artifacts/semantic-policy-20260913/rulers.xml",
+      "sha256": "d198321ce4ca97509eaa7092f4d92a47f4be2fb178159f086c98e34ad78847a7"
+    },
+    {
+      "path": ".artifacts/semantic-policy-20260913/ruler-red.xml",
+      "sha256": "2f850500a01455a32ef6af17c61b54bb5323446ad64c482bfae09f8e8ce349ff"
+    },
+    {
+      "path": ".artifacts/semantic-policy-20260913/offline/result.json",
+      "sha256": "b79d13b28947599c8bb610e201a7d4041054bc07aad843d0467f3629683bd1c5"
+    },
+    {
+      "path": ".artifacts/semantic-policy-20260913/static-final/result.json",
+      "sha256": "75497744cada30ff44688c6d8734a77f177d79bdff66ce5a47279ec57e6247aa"
+    }
+  ]
+}
