@@ -13,6 +13,13 @@ guarantee; row redaction alone can leave values in plans or other fields. The
 current reuse manifests below publish counts and hashes only. See
 `../docs/research/evidence-reuse-live-01.md` for the pre-write field policy.
 
+`temporal-reference-ruler-01.json`: specification checkpoint, not a live
+reference-selection result. 145 focused tests (66 actual read-only PostgreSQL
+cases), offline 1,841/static pass. Existing calendar conversion satisfies bounded
+independent witnesses; valid source references do not prove intended selection.
+Zero model calls; adapter and automatic extraction remain unimplemented. See
+`../docs/research/temporal-reference-ruler-01.md`.
+
 `temporal-semantic-controls-01.json`: 132 fixed executions/133 attempts,
 one validation repair, zero transport errors. Year-form guidance loses to
 neutral; raw generation contains 2060. Schema-support metadata rescues one

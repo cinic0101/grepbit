@@ -1,0 +1,31 @@
+{
+  "baseline": "099d851fe921024a1240f8a558e14bd573ce9d3e",
+  "phase": "specification_checkpoint_pending",
+  "production_prompt_revision": "plan-classify-json-v15",
+  "source_digest": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+  "artifact_root": ".artifacts/temporal-reference-ruler-20260913",
+  "new_model_calls": 0,
+  "reference_adapter_implemented": false,
+  "automatic_extraction_measured": false,
+  "runtime_modified": false,
+  "validation": {
+    "offline": {
+      "tests": 1841,
+      "skipped": 0,
+      "result_sha256": "eaf551ca31082614b9d404d8fda4f07f016403d627f3e7504c783699cd934a25"
+    },
+    "postgres": {
+      "tests": 145,
+      "skipped": 0,
+      "actual_postgres_cases": 66,
+      "new_postgres_boundary_cases": 32,
+      "result_sha256": "5ef741ce3cdeb5ddd40f7e2fc68e2b71564363945bcb82e3412578f28b71d19a"
+    },
+    "static": {
+      "passed": true,
+      "result_sha256": "c16faa7ec7cb1778d9cb40dbf5b207fadefa29e60c96d2f6bf1e384d9e9f1354"
+    }
+  },
+  "finding": "Existing calendar lowering passes bounded independent witnesses; valid source references do not prove selection intent.",
+  "next": "Owner checkpoint approval, private adapter and frozen panel, then 90 initial calls with at most 180 attempts including repair."
+}

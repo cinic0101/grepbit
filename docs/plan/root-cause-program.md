@@ -121,7 +121,16 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-13: temporal/semantic controls at `69f6b57` complete; see
+Current 2026-09-13: temporal-reference phase-0 ruler at `099d851` complete;
+`temporal-reference-study.md` awaits contract review before implementing the
+research adapter. Existing calendar boundary witnesses pass, including 66 actual
+PostgreSQL cases in a 145-test focused run; offline 1,841/static pass. Zero new
+model calls, no production change. A valid source year can still be the wrong
+semantic year. Next is an oracle-catalog versus same-information control study,
+not an automatic-extractor success claim. See
+`../research/temporal-reference-ruler-01.md`.
+
+Previous 2026-09-13: temporal/semantic controls at `69f6b57` complete; see
 `../research/temporal-semantic-controls-01.md`. 132 executions/133 attempts,
 one validation repair, zero transport errors/retries. Raw model output contains
 the 2060 error. Year-EQ guidance loses to neutral and introduces dual-time-form
