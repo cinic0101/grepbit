@@ -13,6 +13,15 @@ guarantee; row redaction alone can leave values in plans or other fields. The
 current reuse manifests below publish counts and hashes only. See
 `../docs/research/evidence-reuse-live-01.md` for the pre-write field policy.
 
+`semantic-baseline-closeout-01.json`: nine fixed Gemma executions/attempts,
+six accepted disclosed readings and three unassessed payroll repetitions;
+the repeated scope ends in 2060 and clamping still produces an extra quarter.
+Four actual registry bindings audited; 24 authored challenge cases prepared,
+63 SQL/foil checks and 18 entity-count witnesses, not live challenge results.
+147 focused/static pass; source/hash-matched offline 1,796 reused. Details:
+`../docs/research/semantic-baseline-closeout-01.md`. Counts/hashes only; no
+legacy regrade, production policy change or generalization claim.
+
 | File | Experiment | Notes |
 |---|---|---|
 | `product-baseline-01.json` | Fixed post-repair panel and A5 audit | 292 primary executions: 229 reference answers, 54 accepted refusals, one status-only pass, 284 legacy passes. Five preannotated readings pass, including three legacy mismatches. Six repeats include one unassessed payroll scope. 294 model attempts include five ungraded partial service calls during private-tool recovery. A5 hinted 8/8, broad acceptance open; focused 127 plus three transport controls/static, 216 replays, source-matched prior offline 1,796. Counts/hashes only; no readiness claim. |

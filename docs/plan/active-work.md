@@ -1,5 +1,28 @@
 # Active work
 
+2026-09-13 COMPLETE: owner said "好...開始吧" to the proposed combined
+annotation/payroll/configuration closeout and next challenge preparation.
+Baseline `5639af1`, clean; root owns research helpers/docs/evidence only.
+Protocol `semantic-baseline-closeout.md`, fresh private artifact directory
+`.artifacts/semantic-baseline-closeout-20260913/`. Nine scheduled Gemma questions,
+maximum 27 attempts; existing opaque credentials/read-only DB/local commit
+authority, no push. No runtime/prompt/gate/overlay or acceptance-contract change.
+Previous Python-process preflight found no regression. Old grades stay frozen.
+
+Closeout: nine executions/nine attempts; seven primary have six accepted
+readings and one unassessed payroll scope, two payroll repeats unassessed.
+The exact earlier scope reappears three times, recovered as an end in 2060;
+as_of clamping still produces five quarters instead of four (independent
+PostgreSQL mechanism replay). No retrospective regrade or generation-cause claim.
+Four actual registry bindings audited: real POS has five public indexed columns,
+755 values, no skips; fixture registrations have no index. No policy changes.
+Next authored 24-case panel prepared, 63 value comparisons, 18 entity-count
+witnesses and six binding controls; not a live challenge/holdout result.
+Focused 147/static pass, reused source/hash-matched offline 1,796. Report
+`../research/semantic-baseline-closeout-01.md`; durable manifest
+`../../evidence/semantic-baseline-closeout-01.json`. Next temporal-construction
+research plus bounded semantic metadata controls, not new production gates.
+
 2026-09-13 COMPLETE: owner approved the combined baseline/replay/A5-audit/product
 regression and requested conclusions plus next steps. Baseline `b1bcc74`, clean;
 root owns private measurement helpers and reports. Protocol

@@ -1,0 +1,146 @@
+{
+  "baseline": "5639af1",
+  "source_digest": "sha256:c4187c580113b42340b225fa743f85ea385015b89a49941da670450d5f89b28e",
+  "prompt_revision": "plan-classify-json-v15",
+  "artifact_root": ".artifacts/semantic-baseline-closeout-20260913",
+  "live": {
+    "executions": 9,
+    "attempts": 9,
+    "legacy_passes": 4,
+    "acceptance": {
+      "accepted": 6,
+      "unassessed": 3
+    },
+    "model_failures": 0,
+    "model_retries": 0,
+    "model_repair_turns": 0,
+    "primary": 7,
+    "later_payroll_repeats": 2
+  },
+  "payroll": {
+    "reproductions": 3,
+    "scope_hash_recovered": true,
+    "proposed_end_year": 2060,
+    "observed_rows": 5,
+    "allowed_rows_per_basis": 4,
+    "minimal_replay_full_plan_hash_matches": false,
+    "automatic_grade_unchanged": true
+  },
+  "registry": [
+    {
+      "datasource": "pos_real",
+      "enum_distinct_limit": 0,
+      "overlay": "overlays/pos_real.json",
+      "groundable_columns": [
+        "category.category_name",
+        "pos_payment.payment_method",
+        "product.product_name",
+        "store.store_name",
+        "transfer_status.status"
+      ],
+      "indexed_columns": [
+        "category.category_name",
+        "pos_payment.payment_method",
+        "product.product_name",
+        "store.store_name",
+        "transfer_status.status"
+      ],
+      "index_size": 755,
+      "skipped": [],
+      "schema_sha256": "edce3677287a91959db215a9f01423c715d38585e1d5c6b23ab15655437237ae"
+    },
+    {
+      "datasource": "pos_test",
+      "enum_distinct_limit": 20,
+      "overlay": "evals/fixtures/pos_overlay.json",
+      "groundable_columns": [],
+      "indexed_columns": [],
+      "index_size": 0,
+      "skipped": [],
+      "schema_sha256": "c3535889c44c22e141deaecd7ccccc2091a30f14444739b49382bb3f7d14a019"
+    },
+    {
+      "datasource": "iot_spike",
+      "enum_distinct_limit": 20,
+      "overlay": null,
+      "groundable_columns": [],
+      "indexed_columns": [],
+      "index_size": 0,
+      "skipped": [],
+      "schema_sha256": "ad1a498ae4a7fbbefa53ffc3d52b5089851c2725cd069cceb94f433eccae73b1"
+    },
+    {
+      "datasource": "retail_spike",
+      "enum_distinct_limit": 20,
+      "overlay": null,
+      "groundable_columns": [],
+      "indexed_columns": [],
+      "index_size": 0,
+      "skipped": [],
+      "schema_sha256": "0fe3bd3778c8e7d40a2841ccc193035e9e3dd4a17d786fb3b0e6af82c73770f6"
+    }
+  ],
+  "challenge": {
+    "authored_cases": 24,
+    "answerable": 21,
+    "necessary_refusals": 3,
+    "instances": 3,
+    "independent_sql_comparisons": 63,
+    "foil_witnesses": 63,
+    "additional_row_entity_witnesses": 18,
+    "resolver_controls": 6,
+    "model_calls": 0,
+    "version": "v2"
+  },
+  "validation": {
+    "focused": {
+      "tests": 147,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "static_passed": true,
+    "reused_offline_tests": 1796,
+    "reused_offline_artifact": ".artifacts/examples-restatement-20260913/offline/result.json",
+    "reused_offline_sha256": "f0e3850963426b5184187e9e2a34da2d6237c2168dc859b4a7069ffee6903f51",
+    "pre_post_interpretation_alternatives": 38,
+    "registry_contexts_unchanged": true
+  },
+  "artifacts": {
+    "challenge-panel-v2.json": "4f9cc7988d0260d403afda993e53c36e0198e551525c058d6426c3ea42b8cf4b",
+    "challenge-panel.json": "0a32077501b23d2923e78761e14a6859d6c1c6aa38387d164802dc9b27b015c1",
+    "challenge-validation-v2.json": "e8fde7acc06bf9d994a58038937be47d24278d0e2b245022e1683145e7c2844b",
+    "challenge-validation.json": "e8fde7acc06bf9d994a58038937be47d24278d0e2b245022e1683145e7c2844b",
+    "challenge.py": "455353a4505671496cc83a57a1c996ff6757783d78677e59374860c1cf441ce4",
+    "diagnose_payroll.py": "8f7a62cb80fab3c6fbe14cc68cd3cadbd83f75ac6018677f3f8f59dbb5d9515d",
+    "focused-final.xml": "9025c0db3cf657e46e37f2511ed3b613708eb7057bc87de4b46cf71c64afed18",
+    "focused.xml": "772bda891387fcabf810adaa0d9daeb2f200167fe6238a995d2eeed42ab87523",
+    "live/calls.jsonl": "49729ed825aa01766f7632d28cd4dd3f18e23b6ee3062e4769e0aed00eea75bd",
+    "live/features.json": "fcc57b875ec0ff497fac645eb545502e5c95db5251b89c238050923b36c15329",
+    "live/iot.json": "792cf2f7e83e08bd73a06a0b9ca2bdfef8b3629d2daeeba4289dcb51bea89488",
+    "live/manifest-end.json": "3e1be21bb747c2ba8e3a380536dfa66c23290dcecfc4ed92f17f27cd9462368d",
+    "live/manifest-start.json": "c1a6df807642cb1a09cdb614c22cb96f0dd0b0cc069e075aa2ed4da0513a01d6",
+    "live/multilingual.json": "a184172ca7e0a39e6269302bff145874f9b3ea53cd9e7815b9d9202f54bb32cd",
+    "live/nosample.json": "cd7d13a11b36200fb902b8ad6b2bb56c30dc975a24cd05cb5a7c60ded3f43bf9",
+    "live/payroll_repeat_2.json": "873cda129e3a3a39321d995fb8ad37814f38ef75596ad1a2d2f4a9c8097d7c8c",
+    "live/payroll_repeat_3.json": "446023a317ba9121311368fbb94ff1471ec2af6a6a4707400c3173bad9c48cee",
+    "live/pos.json": "a6c977e4a3cf48a1dd10174f6491b550a5a3abe80441d6692aa9194698aab246",
+    "payroll-value-diagnosis.json": "4bb2be57ff92f2efbb84c6c862f613802e650a62e93e727f563baee3b9025dd1",
+    "registry-audit.json": "f8e09e3994c8b951d8d7eda5f113983fb036764160f7ec3f77790f96db390630",
+    "scope-reconstruction-extended.json": "090b1374499b529d0b39404918e6d251c2901dc70f17c3b94fddd25d5f0f0b76",
+    "scope-reconstruction.json": "7bb18f7c4df024a914cf817a4e40cffc87a199ae3ac673b901f6e86468e0fa13",
+    "static/result.json": "a1d26131d29a88b041e456a135f052cc1efa116e1563a7ecc54f8528e521a3ef",
+    "study.py": "85ce13d9bb2fdbf34e0185d54244c012750444a03e78cfb6488f12d9d13b2450",
+    "test_challenge.py": "b8467988a065d44f14e3ebee0a373a05da43f482feeba8dcd8aec97274a9b5d6",
+    "test_study.py": "faec6c939424e17173b613b065d899a7a4b7a048862d8fd66c4a277de19669f0"
+  },
+  "decisions": {
+    "runtime_changed": false,
+    "prompt_changed": false,
+    "policy_changed": false,
+    "legacy_regraded": false,
+    "stage3_run": false,
+    "generalization_claim": false,
+    "push": false
+  }
+}

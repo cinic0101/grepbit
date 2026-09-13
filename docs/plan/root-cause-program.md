@@ -121,7 +121,21 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-13: post-repair product baseline/A5 audit complete at `b1bcc74`,
+Current 2026-09-13: annotation/configuration closeout at `5639af1` complete,
+runtime/prompt unchanged. See `../research/semantic-baseline-closeout-01.md`.
+Nine executions: six accepted readings, three payroll executions unassessed.
+The payroll scope is now identified as ending in 2060; the current as_of clamp
+still includes an extra quarter. Treat temporal construction separately from
+permitted date-role choices. Actual real-POS binding loads five public columns,
+755 values, no skips; fixture registrations have no grounding policy/index.
+New authored 24-case challenge is oracle-ready, not live-measured: 63 independent
+SQL checks, three instances, three required refusal controls. Focused 147/static
+pass; prior offline 1,796 reused at matching source/artifact hash. Next: temporal
+construction research and a bounded baseline/neutral/metadata comparison with
+implicit and absent-definition regression controls; no promotion from explicit
+authored cases alone. A5 remains conditional; A4 still needs measured demand.
+
+Previous 2026-09-13: post-repair product baseline/A5 audit complete at `b1bcc74`,
 prompt v15 unchanged. See `../research/product-baseline-01.md`: 292 primary
 executions, 284 legacy passes (229 reference answers, 54 accepted refusals, one
 status-only pass). Three legacy mismatches pass predeclared full-value/disclosure
