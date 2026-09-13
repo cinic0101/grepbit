@@ -362,6 +362,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--infer-joins", action="store_true")
     parser.add_argument("--overlay", type=Path)
     parser.add_argument(
+        "--acceptance-rules",
+        type=Path,
+        help="Opt-in predeclared disclosed-answer oracles; preserves legacy correct",
+    )
+    parser.add_argument(
         "--enum-distinct-limit",
         type=int,
         default=20,
@@ -501,13 +506,48 @@ def main(argv: list[str] | None = None) -> int:
         settings = GroundingModelSettings.from_environment()
         client = ChatCompletionsPlanClient(settings)
 
-    def reference_rows(sql: str) -> list[tuple[str, ...]]:
+    def reference_values(sql: str) -> list[tuple]:
         with connect() as connection:
             with connection.cursor() as cursor:
                 cursor.execute("BEGIN READ ONLY")
                 cursor.execute("SET LOCAL statement_timeout = '10s'")
                 cursor.execute(sql)
-                return normalize_rows(cursor.fetchall())
+                return cursor.fetchall()
+
+    def reference_rows(sql: str) -> list[tuple[str, ...]]:
+        return normalize_rows(reference_values(sql))
+
+    acceptance_cases = {}
+    if arguments.acceptance_rules is not None:
+        if str(ROOT) not in sys.path:
+            sys.path.insert(0, str(ROOT))
+        from evals.answer_acceptance import RuleFile, grade, prepare
+
+        try:
+            acceptance_rules = RuleFile.model_validate_json(
+                arguments.acceptance_rules.read_text()
+            )
+            cases_by_id = {case["case_id"]: case for case in document["cases"]}
+            if set(acceptance_rules.cases) - set(cases_by_id):
+                raise ValueError("unknown_acceptance_case")
+            # Freeze every oracle before any proposal; do not select acceptable
+            # interpretations after seeing the model's results.
+            for case_id, rule in acceptance_rules.cases.items():
+                case = cases_by_id[case_id]
+                if case.get("follow_up_of"):
+                    raise ValueError("acceptance_followup_not_supported")
+                acceptance_cases[case_id] = prepare(
+                    rule,
+                    question=case["question"],
+                    schema=schema,
+                    overlay=overlay,
+                    as_of=as_of,
+                    compiler=compiler,
+                    reference=reference_values,
+                )
+        except (ValueError, OSError, psycopg.Error):
+            print("SPIKE_BLOCKED code=acceptance_rules_invalid")
+            return 2
 
     results: list[dict[str, Any]] = []
     answered_plans: dict[str, tuple[str, QueryPlan]] = {}
@@ -566,6 +606,10 @@ def main(argv: list[str] | None = None) -> int:
             )
             status, elapsed = result.status, result.elapsed_seconds
             detail = report_detail(result)
+            if case["case_id"] in acceptance_cases:
+                detail["answer_acceptance"] = grade(
+                    result, acceptance_cases[case["case_id"]]
+                )
             if result.plan is not None:
                 answered_plans[case["case_id"]] = (question, result.plan)
             if status == "answered" and "reference_sql" in case:
@@ -756,6 +800,20 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "segment_exclusions": sum(1 for r in results if r.get("excluded_segments")),
     }
+    if arguments.acceptance_rules is not None:
+        summary["answer_acceptance"] = {
+            "policy_revision": acceptance_rules.revision,
+            "annotated_cases": len(acceptance_cases),
+            "unannotated_cases": len(results) - len(acceptance_cases),
+            "evaluated_cases": sum("answer_acceptance" in r for r in results),
+            "outcomes": {
+                outcome: sum(
+                    r.get("answer_acceptance", {}).get("outcome") == outcome
+                    for r in results
+                )
+                for outcome in ("accepted", "rejected", "unassessed")
+            },
+        }
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     reported = [redact_rows(r) for r in results] if arguments.redact_rows else results
     arguments.output.write_text(

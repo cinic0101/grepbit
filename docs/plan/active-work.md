@@ -1,5 +1,34 @@
 # Active work: evaluation repairs and accepted period semantics
 
+2026-09-13 closeout: approved answer-acceptance implementation COMPLETE.
+Separate opt-in `disclosed-answer-v1` grading and effective computation in
+existing assumptions; legacy correct, interpretation/model input, SQL and gates
+unchanged. 36 focused acceptance tests; final static PASS and offline 1,693
+passed, zero failures/errors/skips. First broad run found an interpretation
+consumer; moved detail to assumptions and reran the gate. Evidence retained at
+`.artifacts/answer-acceptance-20260913-implementation/{static-final,offline-final}`;
+research `../research/answer-acceptance-01.md`, durable counts
+`../../evidence/answer-acceptance-01.json`. Baseline 500-input comparison:
+67 invalid, 313 compiled, 120 typed refusals, zero executable/coverage-payload
+differences. No live DB/model call or historical rescore. Root reviewed the
+complete delta from `89060ae`; local commit authorized, no push. Next work is
+the independent grounding/payroll study with fresh frozen cases; not completed
+or claimed successful here. The earlier checkpoint records below are history,
+superseded by the owner's explicit implementation approval immediately below.
+
+Current implementation: baseline `89060ae`, clean tree. Owner's explicit
+"ok" follows "是否同意通過這份評測契約 checkpoint，讓我接著實作新評分與實際
+口徑揭露？". This passes the answer-acceptance ruler. Root owns the coupled
+compiler disclosure / opt-in evaluator / runner integration and tests; no
+delegated writer. Preserve legacy correct, SQL semantics, verification levels,
+lexical and structural gates. No card or extra served API field. Use existing
+interpretation/assumptions; new grading is research-only and opt-in.
+Follow the approved independent-study order; model/DB permissions remain those
+recorded below, not new authority from this record. Complete implementation,
+focused checks and one broad closeout gate, document measured limitations,
+local commit permitted, no push. Do not consume old call budgets or relabel
+historical results. No regression is running at edit start.
+
 Current slice: accepted-answer policy ruler and bounded cause studies, baseline
 `91f6591`. Owner explicitly accepted items 1/2/3/5/6, requested more payroll
 diagnosis and literature on lexical gates, approved writing "合理解讀＋實際口徑

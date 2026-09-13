@@ -1,0 +1,35 @@
+{
+  "study": "answer-acceptance-01",
+  "date": "2026-09-13",
+  "baseline_git_sha": "89060ae",
+  "policy_revision": "disclosed-answer-v1",
+  "scope": "offline implementation verification; not live model accuracy",
+  "focused_acceptance_tests": {"passed": 36, "failed": 0},
+  "baseline_compiler_comparison": {
+    "seed": 20260913,
+    "generator": "tests/contract/t0/test_plan_properties.py:draw_plan",
+    "schema_and_overlay": "test_plan_properties.SCHEMA and OVERLAY",
+    "method": "Execute baseline compiler source loaded from git show in an isolated module; compare baseline/current compiled queries, bindings, output columns, verification, periods, applied segments and coverage-model plan payload, or typed refusal codes, for each generated input and segment exclusions.",
+    "generated": 500,
+    "invalid_query_plans": 67,
+    "compiled_pairs": 313,
+    "typed_refusal_pairs": 120,
+    "mismatches": 0,
+    "assumptions_excluded_from_equality": true,
+    "coverage_model_payload_equal": true
+  },
+  "gate_artifact_root": ".artifacts/answer-acceptance-20260913-implementation",
+  "final_static": "passed",
+  "final_offline": {"tests": 1693, "failures": 0, "errors": 0, "skipped": 0},
+  "final_gate_directories": ["static-final", "offline-final"],
+  "first_offline": {"tests": 1693, "failures": 1, "reason": "interpretation consumer required preserving coverage-model payload; repaired before final rerun"},
+  "model_calls": 0,
+  "database_calls": 0,
+  "historical_panel_rescored": false,
+  "limits": [
+    "Trusted authored interpretation annotations and independent value oracles, not automatic intent recognition.",
+    "No LIMIT, truncated result, follow-up or universal semantic equivalence support in v1.",
+    "Reference and candidate DB execution do not share a snapshot.",
+    "No claim of improved Gemma accuracy or real-user generalization."
+  ]
+}

@@ -1,6 +1,8 @@
 # Answer acceptance and independent cause studies
 
-2026-09-13. Owner-approved principles; implementation checkpoint pending.
+2026-09-13. Owner approved the ruler and subsequent implementation checkpoint.
+The opt-in grader and existing-field disclosure are implemented; this does not
+rescore the historical panel or establish model/generalization improvement.
 Authority and current execution are in `active-work.md`. The owner approved
 "合理解讀＋實際口徑揭露＋相關額外欄", independent overlay/grounding/prompt/gate
 experiments, and subsequently applying the same principle to ambiguous payroll
@@ -60,23 +62,26 @@ do not add another card, standalone explanation framework or API field here.
 | Leased-device fee | Only if an applicable definition actually binds the lease population to available data. | Summing all device fees because a lease predicate is unavailable; disclosure does not make this answer acceptable. |
 | Partial store name | A policy-eligible uniquely resolved stored entity, with the substitution disclosed. | Guessing among tied names, applying LIKE and summing several stores without evidence, indexing personal columns implicitly. |
 
-## Ruler evidence and required checkpoint
+## Ruler evidence and approved implementation
 
 `tests/contract/t0/test_answer_acceptance_ruler.py` contains a hand-calculated
 100-to-200 monthly comparison with NULL then 100% growth and unchanged core
-rows. The legacy matcher rejects it. The strict xfail is a **capability-gap
-exhibit**, not a specification that the legacy value-only API should accept
-extras without relevance/disclosure evidence. Run with `--runxfail` to see the
-intended failed assertion. Its negative controls preserve wrong-growth,
+rows. The legacy matcher rejects it. The original strict xfail was a
+**capability-gap exhibit**, not a specification that the legacy value-only API
+should accept extras without relevance/disclosure evidence. Its historical red
+artifact is retained; the current test explicitly preserves legacy rejection.
+Its negative controls preserve wrong-growth,
 wrong-core-value and missing-row rejection. Other passing probes distinguish
 literal hints/resolution and raw/metric time-column behavior.
 
-The broader acceptance rules above remain a written specification; these
-component probes do not implement or fully verify disclosure grading. Before
-new grading or runtime disclosure implementation, stop for explicit follow-up
-at this checkpoint. Then add positive/negative rule fixtures for each row,
-including correct values with a false/missing disclosure and coincidental
-value matches; implement only the accepted bounded scoring surface.
+The owner's explicit follow-up approved implementation. The separate tests in
+`test_answer_acceptance.py` cover approved alternatives, explicit time demands,
+false/missing disclosure, unrelated/wrong extras and coincidental value matches.
+`evals/answer_acceptance.py` grades trusted predeclared annotations, not natural
+language intent. See the [usage and limits](../knowledge/evaluation-method.md#opt-in-disclosed-answer-policy).
+Grounding substitutions remain governed by the existing literal resolver;
+this grader does not expand its authority. LIMIT, follow-up and arbitrary SQL
+equivalence are not supported by the bounded first version.
 
 ## Next execution order
 

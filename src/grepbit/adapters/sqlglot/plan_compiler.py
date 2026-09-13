@@ -879,7 +879,7 @@ class PlanCompiler:
                         definition_ref=f"plan.measures.{measure.output_name}",
                     )
                 )
-        if not plan.filters:
+        if not filter_texts and not any(op.filters for _, op, _ in operands):
             assumptions.append(
                 Assumption(
                     text=(
@@ -912,7 +912,10 @@ class PlanCompiler:
         elif time_spec is None:
             assumptions.append(
                 Assumption(
-                    text="No time window was applied; all rows count.",
+                    text=(
+                        "No time window was applied; "
+                        "other scope restrictions still apply."
+                    ),
                     source=AssumptionSource.DEFAULT,
                     definition_ref=f"plan.base_table.{base.name}",
                 )
@@ -923,7 +926,8 @@ class PlanCompiler:
                     Assumption(
                         text=(
                             f"{measure.output_name} divides two aggregates over the "
-                            "same rows; a zero denominator yields NULL."
+                            "same base and time window, with each operand's own "
+                            "scope restrictions; a zero denominator yields NULL."
                         ),
                         source=AssumptionSource.DEFAULT,
                         definition_ref="plan.measures.ratio",
@@ -1026,6 +1030,60 @@ class PlanCompiler:
             having=tuple(having_texts),
             time_window=tuple(time_texts),
             latest=tuple(latest_texts),
+        )
+        # Describe the compiled scope, not just the model's original choices.
+        # Existing lineage already carries effective metric/segment/operand
+        # predicates and resolved windows; no new source of literal values.
+        basis = [
+            f"base population: {base.name}",
+            "measures: " + "; ".join(lineage.measures),
+            "row scope: " + ("; ".join(lineage.filters) or "no common row predicate"),
+            "grouping: " + (", ".join(lineage.dimensions) or "no entity grouping"),
+        ]
+        if time_spec is not None:
+            basis.append(
+                f"time basis: {time_spec.column.id}"
+                + (f" ({time_column.comment})" if time_column.comment else "")
+                + f"; business timezone: {schema.business_timezone}"
+            )
+            if time_spec.grain is not None:
+                basis.append(f"time grain: {time_spec.grain.value}")
+        basis.extend(lineage.time_window)
+        basis.extend(lineage.having)
+        basis.extend(lineage.latest)
+        if plan.order:
+            basis.append(
+                "order: " + ", ".join(f"{o.field} {o.direction}" for o in plan.order)
+            )
+        for _, operand, _ in operands:
+            if operand.aggregate in {Aggregate.COUNT, Aggregate.COUNT_DISTINCT}:
+                target = operand.column.id if operand.column else f"{base.name} rows"
+                basis.append(
+                    f"{operand.aggregate.value}({target}): "
+                    + (
+                        "NULL values excluded"
+                        if operand.column
+                        else "rows counted including NULL-bearing rows"
+                    )
+                    + (
+                        "; duplicate values counted once"
+                        if operand.aggregate is Aggregate.COUNT_DISTINCT
+                        else ""
+                    )
+                )
+        if plan.growth:
+            basis.append("derived outputs: " + ", ".join(growth_names))
+            basis.append(
+                "growth unit: fractional change (current - previous) / previous"
+            )
+        # The optional coverage model consumes interpretation, but not
+        # assumptions. Keep its existing input unchanged in this disclosure slice.
+        assumptions.append(
+            Assumption(
+                text="Effective computation: " + "; ".join(basis),
+                source=AssumptionSource.DEFAULT,
+                definition_ref="plan.effective_computation",
+            )
         )
         semantic_refs = sorted(
             {

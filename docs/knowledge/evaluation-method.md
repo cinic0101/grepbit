@@ -2,9 +2,64 @@
 
 Owner-approved policy direction (2026-09-13): reasonable interpretations with
 faithful effective-computation disclosure and independently validated relevant
-extra outputs. The [new ruler](../plan/answer-acceptance-and-cause-studies.md)
-is pending implementation checkpoint. The runner and all historical scores
-below still use the legacy comparator; do not silently apply the new policy.
+extra outputs. The [approved ruler](../plan/answer-acceptance-and-cause-studies.md)
+now has a separate opt-in grader. The runner's `correct` and all historical
+scores below still use the legacy comparator; do not silently replace them.
+
+## Opt-in disclosed-answer policy
+
+Pass `--acceptance-rules <private-rules.json>` to `evals/spike_tier0.py`.
+Omitting it leaves scoring unchanged. The file has `revision` set to
+`disclosed-answer-v1` and `cases` keyed by existing case IDs. Each case requires:
+
+- `context_sha256`: generate with
+  `evals.answer_acceptance.context_digest(question, schema, overlay, as_of)`
+  using the exact effective introspected schema and overlay. This binds meaning
+  and configuration, **not** a database snapshot.
+- `evidence_id`: the reviewed question/definition decision.
+- `interpretations`: predeclared alternatives, each with a unique `id`, value
+  `evidence_id`, full typed `plan`, independently written `reference_sql`,
+  optional `supplementary` output names and `ordered` (default false).
+  Reference SQL must return **all** columns in compiler output order, including
+  supplementary columns; no arbitrary projection is allowed. An explicit plan
+  order requires an ordered oracle. Duplicate compiled recipes are rejected.
+- Alternatively, `refusal_only: true` with no interpretations for a case whose
+  business meaning is unavailable. A service/transport failure is not a pass.
+- `closed` defaults false: an unlisted interpretation is `unassessed`. Set true
+  only when review establishes that unlisted interpretations contradict the
+  request/definitions; then they are `rejected`.
+
+Freeze annotations before examining candidates. The runner checks contexts and
+executes all independent reference SQL read-only before any planning request.
+Use fixture/static data: separate reference and candidate transactions do not
+share a snapshot. SQL/annotations are trusted research input, never model output.
+Keep real-data rules in `.artifacts/`; they can contain sensitive literal values
+just like existing case files. Existing redaction and opaque-credential rules
+remain mandatory; this option does not make arbitrary report fields PII-safe.
+
+For answers, the grader verifies compiled SQL/bindings and regenerates existing
+interpretation/assumptions/lineage, then matches a preapproved compiled recipe
+(cosmetic measure aliases normalized) and its full independent oracle values.
+The cell precision convention remains the legacy one, with duplicates preserved
+and ordering controlled by the annotation. It does not prove universal plan
+equivalence, actual execution provenance or user intent. Unknown equivalents
+may remain unassessed. LIMIT, truncated results and follow-up annotations are
+unsupported in v1 rather than loosely accepted.
+
+Each annotated result adds `answer_acceptance`, containing outcome/reason,
+policy version, rule/context hashes and evidence IDs; accepted answers also
+record the value-oracle hash and supplementary output positions. No SQL,
+bindings or rows are added by this block. Summary counts are separate from
+legacy `correct`. Accepted refusals must still be distinguished from answers.
+Never compare the new numerator directly with old scores as model improvement.
+
+The existing served `assumptions` now describe effective expanded measures,
+scope, grouping, selected time column/comment, timezone/windows and derived
+outputs, alongside existing NULL/default details. `interpretation` is unchanged
+to preserve the optional coverage-model input. This is deterministic
+computation disclosure, not a natural-language intent certificate or a new card.
+Fractional growth and count conventions are explicit; unknown business units
+are not invented. No prompt, SQL semantics or verification level changes here.
 
 ## Case files (`evals/cases/tier0/*.yaml`)
 

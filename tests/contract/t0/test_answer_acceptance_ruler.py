@@ -1,8 +1,7 @@
-"""Checkpoint rulers and existing-contract probes; no new answer grader.
+"""Approved rulers; the new grader lives beside the unchanged legacy matcher.
 
-The strict xfail exhibits the legacy comparator's expressiveness gap, not a
-request to accept arbitrary extra columns through its existing API. The new
-policy also requires predeclared relevance, value proof and faithful disclosure.
+Original strict-xfail evidence is retained in the checkpoint artifacts. The
+implementation tests require relevance, value proof and faithful disclosure.
 """
 
 from datetime import date
@@ -135,18 +134,11 @@ def test_growth_ruler_has_independently_checkable_values_and_same_core_rows():
     assert WITH_GROWTH[0]["sales_growth"] is None
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Checkpoint: legacy value-only matcher cannot express "
-        "conditional extra-measure acceptance"
-    ),
-)
-def test_legacy_matcher_cannot_yet_credit_the_approved_related_growth_example():
+def test_legacy_matcher_remains_unchanged_under_separate_acceptance_policy():
     matched, _ = match_reference(
         WITH_GROWTH, comparison_plan(), [normalize_rows(REFERENCE)]
     )
-    assert matched == 0, "eligible independently checked growth is rejected"
+    assert matched is None, "the new scorer must not rewrite legacy agreement"
 
 
 @pytest.mark.parametrize("kind", ["wrong_growth", "wrong_core", "missing_row"])

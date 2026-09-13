@@ -509,6 +509,11 @@ def test_without_compiles_an_anti_join_with_window_filters_and_segments() -> Non
     assert any("NOT EXISTS" in a.text for a in compiled.assumptions)
     assert any("do not count as activity" in a.text for a in compiled.assumptions)
     assert compiled.interpretation.endswith("with no alerts rows")
+    assert any(
+        "[no rows in alerts] alerts.raised_at in" in a.text
+        for a in compiled.assumptions
+    )
+    assert not any("every devices row counts" in a.text for a in compiled.assumptions)
     # a default segment on a table the child reaches applies inside the test too:
     # sites with no alerts, where alerts of decommissioned devices are not activity
     parent_segment = SemanticOverlay.model_validate(

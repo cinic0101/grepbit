@@ -69,6 +69,9 @@ def test_count_with_month_window_binds_boundaries_in_business_timezone() -> None
     assert compiled.interpretation == (
         "count(*) over alerts; for 2026-07; where alerts.severity eq critical"
     )
+    disclosure = " ".join(a.text for a in compiled.assumptions)
+    assert "time basis: alerts.raised_at" in disclosure
+    assert "2026-08-01T00:00:00+08:00)" in disclosure
     assert compiled.lineage.as_dict() == {
         "base_table": "alerts",
         "tables": ["alerts"],
