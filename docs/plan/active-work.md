@@ -1,5 +1,28 @@
 # Active work
 
+2026-09-13 COMPLETE: owner's "ok" follows the proposed temporal-first,
+baseline/neutral/semantic-metadata research step. Baseline `69f6b57`, clean.
+Root owns private research/docs/evidence, no delegated writer. Protocol
+`temporal-and-semantic-controls.md`: A 30 executions, B up to 102, total at
+most 396 actual Gemma attempts. Existing opaque model/readonly PostgreSQL and
+local-commit authority applies; no push. No new API/gate/acceptance contract
+or production changes. Fresh `.artifacts/temporal-semantic-controls-20260913/`.
+Original user authority, not this record, permits these external actions.
+
+Closeout: A 30 and B 102 executions, 133 actual attempts (one validation
+repair, no transport errors/retries), frozen contexts/oracles/source match.
+A targeted 6/8 plus 1/2 later versus neutral 8/8 plus 2/2; raw 2060 is model
+generation, and targeted guidance sometimes supplies two conflicting time
+forms. B targeted 25/30 plus 3/4 later versus baseline/neutral 24/30 plus 2/4:
+only known missing-lease definition gains. Both screens fail, no promotion.
+Names: IN over both exact candidates is not a binder regression; two ambiguous
+count-unit oracles remain unassessed. Seven offline mechanism checks preserve
+these evidence boundaries. Focused 143/static pass; offline 1,796 reused at
+matching source/hash. Report `../research/temporal-semantic-controls-01.md`,
+manifest `../../evidence/temporal-semantic-controls-01.json`. Next temporal
+reference ruler proposal and broader support-metadata evidence; no production
+change or implicit new name-union policy. Local commit authorized; no push.
+
 2026-09-13 COMPLETE: owner said "好...開始吧" to the proposed combined
 annotation/payroll/configuration closeout and next challenge preparation.
 Baseline `5639af1`, clean; root owns research helpers/docs/evidence only.

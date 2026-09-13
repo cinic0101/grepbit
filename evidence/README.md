@@ -13,6 +13,14 @@ guarantee; row redaction alone can leave values in plans or other fields. The
 current reuse manifests below publish counts and hashes only. See
 `../docs/research/evidence-reuse-live-01.md` for the pre-write field policy.
 
+`temporal-semantic-controls-01.json`: 132 fixed executions/133 attempts,
+one validation repair, zero transport errors. Year-form guidance loses to
+neutral; raw generation contains 2060. Schema-support metadata rescues one
+known missing-lease question twice, but no second family gains. Both screens
+fail; no promotion. Name-union/count-unit oracle limitations are explicit.
+143 focused/static pass, source/hash-matched offline 1,796 reused, 366 oracle
+instances checked before/after. See `../docs/research/temporal-semantic-controls-01.md`.
+
 `semantic-baseline-closeout-01.json`: nine fixed Gemma executions/attempts,
 six accepted disclosed readings and three unassessed payroll repetitions;
 the repeated scope ends in 2060 and clamping still produces an extra quarter.

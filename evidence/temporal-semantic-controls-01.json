@@ -1,0 +1,341 @@
+{
+  "baseline": "69f6b57",
+  "source_digest": "sha256:c4187c580113b42340b225fa743f85ea385015b89a49941da670450d5f89b28e",
+  "production_prompt_revision": "plan-classify-json-v15",
+  "research_revisions": {
+    "A-neutral": "temporal-neutral-v1",
+    "A-targeted": "temporal-year-eq-v1",
+    "B-neutral": "schema-neutral-v1",
+    "B-targeted": "schema-scope-components-v1"
+  },
+  "artifact_root": ".artifacts/temporal-semantic-controls-20260913",
+  "completed": 132,
+  "transport_attempts": 133,
+  "transport_errors": 0,
+  "transport_retries": 0,
+  "validation_repairs": 1,
+  "arms": {
+    "A": {
+      "baseline": {
+        "primary": {
+          "executions": 8,
+          "accepted": 7,
+          "accepted_answers": 7,
+          "accepted_refusals": 0,
+          "unassessed_answers": 1,
+          "rejected_answers": 0,
+          "nonaccepted_refusals": 0,
+          "statuses": {
+            "answered": 8
+          },
+          "reasons": {},
+          "attempts": 8,
+          "repair_turns": 0,
+          "retries": 0
+        },
+        "later": {
+          "executions": 2,
+          "accepted": 1,
+          "accepted_answers": 1,
+          "accepted_refusals": 0,
+          "unassessed_answers": 1,
+          "rejected_answers": 0,
+          "nonaccepted_refusals": 0,
+          "statuses": {
+            "answered": 2
+          },
+          "reasons": {},
+          "attempts": 2,
+          "repair_turns": 0,
+          "retries": 0
+        }
+      },
+      "neutral": {
+        "primary": {
+          "executions": 8,
+          "accepted": 8,
+          "accepted_answers": 8,
+          "accepted_refusals": 0,
+          "unassessed_answers": 0,
+          "rejected_answers": 0,
+          "nonaccepted_refusals": 0,
+          "statuses": {
+            "answered": 8
+          },
+          "reasons": {},
+          "attempts": 9,
+          "repair_turns": 1,
+          "retries": 0
+        },
+        "later": {
+          "executions": 2,
+          "accepted": 2,
+          "accepted_answers": 2,
+          "accepted_refusals": 0,
+          "unassessed_answers": 0,
+          "rejected_answers": 0,
+          "nonaccepted_refusals": 0,
+          "statuses": {
+            "answered": 2
+          },
+          "reasons": {},
+          "attempts": 2,
+          "repair_turns": 0,
+          "retries": 0
+        }
+      },
+      "targeted": {
+        "primary": {
+          "executions": 8,
+          "accepted": 6,
+          "accepted_answers": 6,
+          "accepted_refusals": 0,
+          "unassessed_answers": 1,
+          "rejected_answers": 0,
+          "nonaccepted_refusals": 1,
+          "statuses": {
+            "answered": 7,
+            "unsupported": 1
+          },
+          "reasons": {
+            "plan_filter_kind_mismatch": 1
+          },
+          "attempts": 8,
+          "repair_turns": 0,
+          "retries": 0
+        },
+        "later": {
+          "executions": 2,
+          "accepted": 1,
+          "accepted_answers": 1,
+          "accepted_refusals": 0,
+          "unassessed_answers": 0,
+          "rejected_answers": 0,
+          "nonaccepted_refusals": 1,
+          "statuses": {
+            "unsupported": 1,
+            "answered": 1
+          },
+          "reasons": {
+            "plan_filter_kind_mismatch": 1
+          },
+          "attempts": 2,
+          "repair_turns": 0,
+          "retries": 0
+        }
+      }
+    },
+    "B": {
+      "baseline": {
+        "primary": {
+          "executions": 30,
+          "accepted": 24,
+          "accepted_answers": 22,
+          "accepted_refusals": 2,
+          "unassessed_answers": 2,
+          "rejected_answers": 2,
+          "nonaccepted_refusals": 2,
+          "statuses": {
+            "answered": 26,
+            "clarify": 4
+          },
+          "reasons": {
+            "concept_not_mapped": 2,
+            "filter_value_ambiguous": 1,
+            "filter_value_not_found": 1
+          },
+          "attempts": 30,
+          "repair_turns": 0,
+          "retries": 0
+        },
+        "later": {
+          "executions": 4,
+          "accepted": 2,
+          "accepted_answers": 2,
+          "accepted_refusals": 0,
+          "unassessed_answers": 0,
+          "rejected_answers": 1,
+          "nonaccepted_refusals": 1,
+          "statuses": {
+            "answered": 3,
+            "clarify": 1
+          },
+          "reasons": {
+            "concept_not_mapped": 1
+          },
+          "attempts": 4,
+          "repair_turns": 0,
+          "retries": 0
+        }
+      },
+      "neutral": {
+        "primary": {
+          "executions": 30,
+          "accepted": 24,
+          "accepted_answers": 22,
+          "accepted_refusals": 2,
+          "unassessed_answers": 2,
+          "rejected_answers": 2,
+          "nonaccepted_refusals": 2,
+          "statuses": {
+            "answered": 26,
+            "clarify": 4
+          },
+          "reasons": {
+            "concept_not_mapped": 2,
+            "filter_value_ambiguous": 1,
+            "filter_value_not_found": 1
+          },
+          "attempts": 30,
+          "repair_turns": 0,
+          "retries": 0
+        },
+        "later": {
+          "executions": 4,
+          "accepted": 2,
+          "accepted_answers": 2,
+          "accepted_refusals": 0,
+          "unassessed_answers": 0,
+          "rejected_answers": 1,
+          "nonaccepted_refusals": 1,
+          "statuses": {
+            "answered": 3,
+            "clarify": 1
+          },
+          "reasons": {
+            "concept_not_mapped": 1
+          },
+          "attempts": 4,
+          "repair_turns": 0,
+          "retries": 0
+        }
+      },
+      "targeted": {
+        "primary": {
+          "executions": 30,
+          "accepted": 25,
+          "accepted_answers": 22,
+          "accepted_refusals": 3,
+          "unassessed_answers": 2,
+          "rejected_answers": 1,
+          "nonaccepted_refusals": 2,
+          "statuses": {
+            "answered": 25,
+            "clarify": 4,
+            "semantic_gap": 1
+          },
+          "reasons": {
+            "concept_not_mapped": 2,
+            "filter_value_ambiguous": 1,
+            "filter_value_not_found": 1,
+            "semantic_gap": 1
+          },
+          "attempts": 30,
+          "repair_turns": 0,
+          "retries": 0
+        },
+        "later": {
+          "executions": 4,
+          "accepted": 3,
+          "accepted_answers": 2,
+          "accepted_refusals": 1,
+          "unassessed_answers": 0,
+          "rejected_answers": 0,
+          "nonaccepted_refusals": 1,
+          "statuses": {
+            "answered": 2,
+            "semantic_gap": 1,
+            "clarify": 1
+          },
+          "reasons": {
+            "semantic_gap": 1,
+            "concept_not_mapped": 1
+          },
+          "attempts": 4,
+          "repair_turns": 0,
+          "retries": 0
+        }
+      }
+    }
+  },
+  "screen": {
+    "A_pass": false,
+    "B_pass": false,
+    "B_incremental_families": [
+      "missing_population"
+    ],
+    "production_promotion": false
+  },
+  "raw_temporal": {
+    "raw_2060": [
+      {
+        "case_id": "year_zh",
+        "arm": "baseline",
+        "repeat": 1,
+        "initial_scope": "61c2518dab9189798075bb67ef679de7e9b36b790b9befa1d553cfdf15a8fb13",
+        "final_scope": "61c2518dab9189798075bb67ef679de7e9b36b790b9befa1d553cfdf15a8fb13"
+      },
+      {
+        "case_id": "year_zh",
+        "arm": "baseline",
+        "repeat": 2,
+        "initial_scope": "61c2518dab9189798075bb67ef679de7e9b36b790b9befa1d553cfdf15a8fb13",
+        "final_scope": "61c2518dab9189798075bb67ef679de7e9b36b790b9befa1d553cfdf15a8fb13"
+      }
+    ],
+    "year_eq_by_arm": {
+      "baseline": 0,
+      "neutral": 0,
+      "targeted": 3
+    }
+  },
+  "validation": {
+    "focused": {
+      "tests": 143,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "static_passed": true,
+    "pre_post_oracle_instances": 366,
+    "postgres_per_preparation": 105,
+    "duckdb_per_preparation": 261,
+    "contexts": 114,
+    "source_and_contexts_match": true,
+    "reused_offline_tests": 1796,
+    "reused_offline_sha256": "f0e3850963426b5184187e9e2a34da2d6237c2168dc859b4a7069ffee6903f51"
+  },
+  "record_count": 132,
+  "record_path_hash_digest": "d6cbe68ce82725ecaf1211d31ea9906cdfd856d40abf9c4e2f42894b8e6d3295",
+  "artifact_sha256": {
+    "cases.py": "60a37e240f2fb72a79a6c05f2466b5301fe34f12b8b4a199a8ae39a76101e70d",
+    "experiment.py": "99c7f168849c95c083662f6e490e7294a768c9e75eeba7450f11304476dbc609",
+    "analyze.py": "02998bc0fab6f92681ce4d920a2a6da72ed7cb0e42957ab5c8f014e87d59a5c8",
+    "diagnose.py": "befa9cd6cad4497cfe9cd645b9d3766aac4b9f85d2c4c88b74abddaa5cafe964",
+    "test_experiment.py": "79789068ef9ea7c84e49e231cec6f8e09e7351e06a9e8014a8530731602cad62",
+    "test_analysis.py": "e27edcae76908365c665b6fc0c4fbbf18461212ec5921fc30cd3ca315f254dcb",
+    "test_mechanisms.py": "21557de0856916f1c16d30637108dd8a02a463fdf8701efb41e5f22836cd88a8",
+    "frozen.json": "8e501f0561bf937268977a1aa4b3568fedd00c859c7eb9e869492d1cc15e9eb3",
+    "analysis.json": "3f20a7961b6c2f9483219f5e33cd9ae8eb9023db7cda6da72c719e4aca2d0056",
+    "temporal-diagnosis.json": "fea5beb9ea0ea9753c8e7a05b968ad854b0b0759926309d53617d2a8e4c408dd",
+    "focused-final.xml": "039f54edcdc5fcc63279c51ee615049459e4b2c63c4e3e47fdeb2279266ec4e1",
+    "static/result.json": "353292ec5ad459bb8e001836765ff02c28c4b335a8c5361fdc4ac355efc0ae27",
+    "live/summary.json": "f6c79a5c3860c2ce693ab5a2f61376361e123ca0bc74480761ea37fbac866e4b",
+    "live/attempts.jsonl": "99ef99c612875cbf2d756590e158f2b9a8e3a157eee8d6029a936f8ce3f204a5"
+  },
+  "decisions": {
+    "production_changed": false,
+    "legacy_regraded": false,
+    "metadata_promoted": false,
+    "temporal_prompt_promoted": false,
+    "push": false
+  },
+  "limitations": [
+    "Authored questions, no independent multilingual review or new-user generalization.",
+    "Unknown recipes are not automatically wrong.",
+    "Within-session repetition is not independent endpoint sampling.",
+    "Two exact-name case oracles have ambiguous count units and coincident counts; remain unassessed.",
+    "Name candidate union fails the authored refusal oracle, not the existing exact-literal binder contract.",
+    "Missing-definition gain is one known leasing case, not multiple independent families."
+  ]
+}

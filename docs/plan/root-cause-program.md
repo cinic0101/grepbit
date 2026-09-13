@@ -121,7 +121,20 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-13: annotation/configuration closeout at `5639af1` complete,
+Current 2026-09-13: temporal/semantic controls at `69f6b57` complete; see
+`../research/temporal-semantic-controls-01.md`. 132 executions/133 attempts,
+one validation repair, zero transport errors/retries. Raw model output contains
+the 2060 error. Year-EQ guidance loses to neutral and introduces dual-time-form
+failures; no promotion. Schema-support comments rescue the known missing-lease
+case twice, but no second semantic family gains; no general promotion. Name
+union versus clarification needs a product decision, not another binder repair;
+two exact-name count-unit questions have narrow ambiguous oracles. Focused
+143/static, source/hash-matched offline 1,796 reused, 366 oracle-instance checks
+before/after. Next propose temporal-reference rulers and broaden support-metadata
+evidence. A5 remains provisional; A4 needs measured demand. No new gate/format,
+production prompt change, card, legacy regrade or push.
+
+Previous 2026-09-13: annotation/configuration closeout at `5639af1` complete,
 runtime/prompt unchanged. See `../research/semantic-baseline-closeout-01.md`.
 Nine executions: six accepted readings, three payroll executions unassessed.
 The payroll scope is now identified as ending in 2060; the current as_of clamp
