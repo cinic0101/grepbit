@@ -121,6 +121,21 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
+Latest 2026-09-13: owner-approved negative name binding is implemented as
+`ask-orchestration-v4`, prompt v15 unchanged. See
+`../research/negative-name-grounding-01.md`. Original 53 rulers unchanged/green;
+focused 163, static pass, offline 1,758 pass. Same 24 authored grounding
+questions twice: 40/40 correct answers and 8/8 required refusals (previously
+36/40 and 8/8), all four partial-negative errors repaired, 48 actual model
+attempts. Fixed plans cover both observed POS abbreviations and PostgreSQL
+VALUES checks confirm five filter scopes. This closes the scoped NE binding
+omission, not intent certification, unseen-name generalization or the lexical/
+metric/component-scope problem. Prior reliability metadata arms tied a neutral
+control, and removing the lexical gate admitted additional wrong plans: neither
+is promoted. Next use unseen name cases/larger candidate collisions if supplied;
+nested positive checks need a separate ruler. No cards or keyword exceptions.
+Current authority, full evidence and remaining boundaries: `active-work.md`.
+
 Latest 2026-09-12: the owner retired calculation cards and human correction.
 Remove unfinished runtime and card-only rulers; retain the reference segment
 repair and independent computation tests. The former ruler checkpoint and its

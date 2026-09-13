@@ -22,8 +22,9 @@ import re
 import unicodedata
 from dataclasses import dataclass, field
 
+from grepbit.application.literals import binding_filters
 from grepbit.domain.models import DomainModel
-from grepbit.domain.plan import Filter, FilterOp, QueryPlan
+from grepbit.domain.plan import QueryPlan
 
 GROUNDING_REVISION = "grounding-bigram-v1"
 _DROP = re.compile(r"[\s\W_]+", re.UNICODE)
@@ -183,8 +184,10 @@ def resolve_plan_literals(
     plan: QueryPlan,
     misses: list[tuple[str, str]],
     index: ValueIndex,
+    *,
+    negative_columns: frozenset[str] = frozenset(),
 ) -> tuple[QueryPlan, list[Resolution]]:
-    """Substitute uniquely resolved literals in the plan's eq/in filters.
+    """Substitute resolved EQ/IN and opted-in NE values in their original scope.
 
     ``misses`` are (column_id, literal) pairs the existence check found
     absent. Only groundable (indexed) columns are resolved; the returned
@@ -198,14 +201,10 @@ def resolve_plan_literals(
     }
     if not replacements:
         return plan, resolutions
-    filters: list[Filter] = []
-    for item in plan.filters:
-        if item.op in {FilterOp.EQ, FilterOp.IN}:
-            values = [
-                replacements.get((item.column.id, v), v) if isinstance(v, str) else v
-                for v in item.values
-            ]
-            filters.append(item.model_copy(update={"values": values}))
-        else:
-            filters.append(item)
-    return plan.model_copy(update={"filters": filters}), resolutions
+    resolved = plan.model_copy(deep=True)
+    for item in binding_filters(resolved, negative_columns=negative_columns):
+        item.values = [
+            replacements.get((item.column.id, v), v) if isinstance(v, str) else v
+            for v in item.values
+        ]
+    return resolved, resolutions

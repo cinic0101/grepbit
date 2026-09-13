@@ -15,6 +15,7 @@ current reuse manifests below publish counts and hashes only. See
 
 | File | Experiment | Notes |
 |---|---|---|
+| `negative-name-grounding-01.json` | Approved negative-binding repair, same 24 authored grounding questions twice; v15 prompt unchanged, ask v4 | 48 attempts: 40/40 correct answers, 8/8 necessary refusals; prior four short-negative wrong answers repaired. 80/80 value-instance checks; original 53 rulers plus 12 edge controls, focused 163/static/offline 1,758 pass. Counts/hashes only; no unseen-user or release claim. |
 | `evidence-reuse-live-01.json` | Fixed current-source panel, completed 2026-09-13; raw metrics remain in `.artifacts/reuse-measurement-20260912/current/` | 292 cases, 283 successful model attempts; 228 reference matches, 54 accepted refusals, one status-only pass; four mismatches, four unaccepted refusals, one unexpected answer. Counts/hash-only manifest SHA-256: `ef3601c5abedef1af562bfa0f79b1c6651795a56496323562c6421f4a481f406`; no historical rescore or intent-certification claim. |
 | `iot-01.json`, `iot-02.json`, `iot-03.json` | IoT, prompt v1, v2, v2 (final of the first day) | 19/20, 20/20, 20/20 |
 | `retail-01.json` to `retail-03.json` | retail, prompt v1 to v2 | 12/12, 11/12 (reference issue), 12/12 |

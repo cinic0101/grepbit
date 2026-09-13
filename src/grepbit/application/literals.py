@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 from grepbit.domain.models import DomainModel
-from grepbit.domain.plan import FilterOp, QueryPlan
+from grepbit.domain.plan import Filter, FilterOp, QueryPlan
 from grepbit.domain.schema_model import ColumnKind, SchemaModel
 
 
@@ -14,8 +16,43 @@ class LiteralCheck(DomainModel):
     is_enum: bool = False
 
 
-def text_literal_checks(plan: QueryPlan, schema: SchemaModel) -> list[LiteralCheck]:
-    """Every ``eq`` or ``in`` text literal the plan filters on, in plan order.
+def binding_filters(
+    plan: QueryPlan, *, negative_columns: frozenset[str] = frozenset()
+) -> Iterator[Filter]:
+    """Existing plan EQ/IN plus opted-in, model-authored NE occurrences.
+
+    Selection and replacement share this walk so a lookup cannot accidentally
+    rewrite a sibling scope or a reviewed definition. Nested positives retain
+    their previous coverage; a matching column/value is not enough to opt in.
+    """
+    for item in plan.filters:
+        if item.op in {FilterOp.EQ, FilterOp.IN} or (
+            item.op is FilterOp.NE and item.column.id in negative_columns
+        ):
+            yield item
+    for measure in plan.measures:
+        operands = (
+            [measure.ratio.numerator, measure.ratio.denominator]
+            if measure.ratio
+            else [measure]
+        )
+        for operand in operands:
+            for item in operand.filters:
+                if item.op is FilterOp.NE and item.column.id in negative_columns:
+                    yield item
+    if plan.without:
+        for item in plan.without.filters:
+            if item.op is FilterOp.NE and item.column.id in negative_columns:
+                yield item
+
+
+def text_literal_checks(
+    plan: QueryPlan,
+    schema: SchemaModel,
+    *,
+    negative_columns: frozenset[str] = frozenset(),
+) -> list[LiteralCheck]:
+    """Plan EQ/IN literals and opted-in negative name bindings.
 
     A text literal that matches no row turns a question into an empty
     aggregate (``SUM`` of nothing is NULL) that reads like an answer. Checking
@@ -27,9 +64,7 @@ def text_literal_checks(plan: QueryPlan, schema: SchemaModel) -> list[LiteralChe
     """
 
     checks: list[LiteralCheck] = []
-    for item in plan.filters:
-        if item.op not in {FilterOp.EQ, FilterOp.IN}:
-            continue
+    for item in binding_filters(plan, negative_columns=negative_columns):
         table = schema.table(item.column.table)
         column = table.column(item.column.column) if table is not None else None
         if column is None or column.kind is not ColumnKind.TEXT:

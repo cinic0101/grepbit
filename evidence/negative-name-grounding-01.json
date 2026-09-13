@@ -1,0 +1,50 @@
+{
+  "baseline": "3fa90b77eef3138b72a3f0ce89de9aefb754ba12",
+  "source_digest": "sha256:b96110774f7730beff985ff1f2daf68e9dde8269566c3c84b5fc74f57fdac343",
+  "prompt_revision": "plan-classify-json-v15",
+  "ask_revision": "ask-orchestration-v4",
+  "jobs": 48,
+  "attempts": 48,
+  "transport_errors": 0,
+  "repair_turns": 0,
+  "counts": {
+    "accepted_answer": 40,
+    "accepted_required_refusal": 8
+  },
+  "value_instance_comparisons": 80,
+  "value_instance_matches": 80,
+  "p50_seconds": 3.092,
+  "same_initial_plan_as_prior": 45,
+  "negative_rescues": 4,
+  "negative_rescues_identical_initial_plan": 3,
+  "frozen_initial_contexts_equal_prior": true,
+  "source_context_and_oracles_unchanged_at_end": true,
+  "validation": {
+    "original_rulers": 53,
+    "edge_controls": 12,
+    "focused_tests": 163,
+    "offline_tests": 1758,
+    "skipped": 0,
+    "static": "pass",
+    "preflight_oracle_checks": 656,
+    "fixed_plan_checks": 18,
+    "postgres_values_checks": 5
+  },
+  "artifact_root": ".artifacts/negative-grounding-implementation-20260913",
+  "artifact_sha256": {
+    "live_followup.py": "5c0d89a97153603163dfcc5a021491b77eef828eb01ee80f41c08cd9cbea6459",
+    "fixed_witness.py": "5d4395438cf556d19681412098a368f7749b6ac74e5ad4792fe3dbe84deb1ba0",
+    "analyze.py": "c40baab8e86cd47d111f301bf7a58882e9fbf5982f8eee430a102fb48b8f16f4",
+    "frozen.json": "35cecc6d4096bc9eee390414f2d11856769748d194cd9699c43343bbf40a63f9",
+    "fixed-witness.json": "59cedf500b04cd912397b336e8cc22127b04a97e760f7ac749d723f74f4ca0f2",
+    "live/summary.json": "2e920a56f8775e6ac72466d2ad579a5f1af8e5d8d7834c8a524d1ae4950e64ac",
+    "live/attempts.jsonl": "c61b57410ed0d8d6731614a6193b21b583689e64c1405ebff5701ba2236df179",
+    "focused-02/result.json": "bf35e7431eb6e4c5fbc9459617a08dbd6ce46eeea8c9cdfd5c31bb613f0eb00d",
+    "static/result.json": "a4366a8888c18fce51c7ddaf44a556a0de3373718608c120132ee58e1c55d352",
+    "offline/result.json": "e1e08ee7aa1510d1cd23b8dd5bfca12fa412d486064559490811b8b1f0b950dd"
+  },
+  "production_changes": true,
+  "prompt_changes": false,
+  "persistent_db_writes": 0,
+  "interpretation": "Approved deterministic negative binding repair supported on the authored panel; not a generalization, deployment or intent-certification claim."
+}

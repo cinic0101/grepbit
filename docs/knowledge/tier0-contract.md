@@ -1,11 +1,18 @@
 # Tier-0 contract
 
-Pending checkpoint (2026-09-13, **not runtime behavior**):
-`../plan/negative-name-grounding.md` proposes binding assurance for model-authored
-text NE on visible, explicitly groundable columns, including nested operands
-and `without`. Its new executable rulers intentionally fail until follow-up
-approval and implementation. The existing EQ/IN behavior below is unchanged;
-the proposed no-candidate refusal is not yet an approved product default.
+Owner-approved negative name binding (2026-09-13, `ask-orchestration-v4`):
+`../plan/negative-name-grounding.md` defines binding assurance for model-authored
+text NE on visible, explicitly groundable overlay columns: plan, measure extra
+filters, either ratio operand and `without.filters`. Missing literals resolve
+in place through the existing index, followed by compilation, policy and
+existence rechecks; ambiguous, absent, unavailable or stale bindings clarify
+before execution. An injected index does not authorize a column. Reviewed
+metric/segment definitions, ordinary non-grounded exclusions, SQL NULL behavior
+and existing EQ/IN coverage are unchanged. An intentional exclusion of an absent
+name on an opted-in column can also clarify; the owner accepted that tradeoff.
+Grounding is disclosed, not promoted to proof of intent. Existing research
+bypasses remain bypasses, not safety claims. The original red checkpoint is
+retained separately; its 53 behavior rulers now pass without changed expectations.
 
 ## Owner-approved period semantics (takeover after 746f168)
 

@@ -1,5 +1,39 @@
 # Active work
 
+2026-09-13 implementation COMPLETE, baseline `3fa90b7`. Owner explicitly
+accepted the clarification/no-candidate tradeoff and said "可以開始了" after
+the negative-binding checkpoint explanation. Root owns the coupled application
+literal selection, scoped replacement, ask orchestration/disclosure and tests.
+The 53 rulers retain their expected behavior. No SQL algebra, prompt, overlay
+schema or privacy-policy expansion. Standing local-commit authority, no push.
+First focused rulers and adversarial controls, then one broad offline gate.
+Live follow-up budget: existing 24 authored grounding questions, index enabled,
+two serial repeats = 48 questions, at most 144 transport attempts. Existing Gemma
+gateway, temperature 0/thinking off/one repair; only schema, fictional/public
+questions and public store candidates leave the process, no rows or SQL.
+Existing read-only POS fixture credentials remain opaque; synthetic DuckDB
+for depots, no persistent DB writes. Freeze context/oracles before calls,
+stop on source/data drift or two consecutive transport failures. Fresh outputs
+under `.artifacts/negative-grounding-implementation-20260913/`. Original authority
+is the owner's repeated psql/Gemma permission plus current implementation
+approval, not this record. No Python regression found in process preflight.
+
+Closeout: original 53 rulers unchanged and green, 12 new edge controls;
+focused 163, static pass, one broad offline gate 1,758 passed/no skips.
+18 fixed-plan checks plus five PostgreSQL VALUES checks pass. The 48 scheduled
+questions completed in 48 transport attempts, no failures/retries/repair.
+Correct answers 36/40 -> 40/40, necessary refusals remain 8/8; four negative
+binding wrong answers eliminated, 80/80 value-instance comparisons pass.
+Initial context/oracle identity equals the previous index arm; 45/48 initial
+plans identical, including three of four rescued negative plans. Both observed
+POS abbreviations also pass fixed-plan replay. Source/context stable at end.
+Report `../research/negative-name-grounding-01.md`, counts/hash manifest
+`../../evidence/negative-name-grounding-01.json`. This is an authored-panel
+runtime repair, not generalization or release evidence. No prompt/PII-policy
+change; metric selection, lexical false positives, nested positive binding and
+component-scope errors remain separate. Local commit authorized; no push.
+
+Historical checkpoint, superseded by the approval and implementation above:
 2026-09-13: negative name grounding RULER READY, implementation NOT STARTED.
 Baseline `b8334e2`, clean tree; owner explicitly approved adding the negative
 binding contract/tests. Root owns specifications and test fixtures only.

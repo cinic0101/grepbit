@@ -1,12 +1,12 @@
-# Negative name grounding ruler (proposed, not implemented)
+# Negative name grounding (owner approved and implemented)
 
-Owner approved adding the contract and tests after `b8334e2`. This is the
-two-phase checkpoint: specifications and executable rulers only, no runtime,
-prompt, overlay schema, DB state or historical score changes. Local commit is
-authorized by the owner's standing instruction; no push. Root owns this slice.
-No model calls, network data or live DB are needed; all values are fictional.
+Owner approved the contract/tests after `b8334e2`, then explicitly accepted the
+absent-name clarification tradeoff and authorized implementation after checkpoint
+`3fa90b7` ("可以開始了"). Root owns the coupled application change. No prompt,
+overlay schema, DB state, SQL algebra or historical score changes. Local commit
+is authorized by the owner's standing instruction; no push.
 
-Status: RULER READY, waiting for explicit checkpoint approval. Final new ruler:
+Historical checkpoint evidence (unchanged): final new ruler:
 53 cases, **36 expected assertion failures, 17 passes**, zero errors/skips.
 Existing grounding/ask/acceptance controls: **91 passes**. The first draft had
 an incorrectly assigned enum in its positive control; it was fixed in the test
@@ -14,11 +14,19 @@ fixture and is not counted as checkpoint evidence. Final artifacts:
 `.artifacts/negative-grounding-ruler-20260913/{ruler-final,existing-controls}`.
 Manifest: `../../evidence/negative-name-grounding-ruler-01.json`.
 
+Runtime status: implemented as `ask-orchestration-v4`; all 53 original rulers
+pass unchanged. Added edge controls preserve unvisited positive siblings and
+different-column bindings, exercise each negative disclosure scope and reject
+unsafe recompilation before execution. Live follow-up uses the same authored
+24-question grounding panel, two serial index-enabled repeats; this is not a
+new-user generalization measurement. Final evidence is recorded in
+`../research/negative-name-grounding-01.md`.
+
 Evidence: `../research/reliability-stage-01.md` demonstrates short-name NE
 filters escaping EQ/IN-only existence checks and post-miss grounding. A server
 can execute that plan correctly while answering the wrong population.
 
-## Proposed boundary
+## Approved boundary
 
 With ordinary literal-check and grounding settings enabled, extend binding
 checks to **model-authored text NE filters on visible, explicitly groundable
@@ -34,7 +42,7 @@ reviewed metric definitions or segment definitions, which remain reviewed data.
 No new ratio-wrapper filters. This does not broaden nested positive EQ/IN checks
 as a side effect; their existing coverage remains a separately recorded gap.
 
-| Evidence for an eligible NE literal | Proposed behavior |
+| Evidence for an eligible NE literal | Behavior |
 |---|---|
 | Exact stored value exists | Keep it and NE unchanged, even if other names share the prefix. |
 | Exact value absent, existing resolver finds one clear candidate | Replace only that eligible occurrence's value; keep column, operator, scope and siblings unchanged. Recompile, recheck SQL policy and recheck the selected value before execution. |
@@ -44,7 +52,7 @@ as a side effect; their existing coverage remains a separately recorded gap.
 | Selected candidate fails the authoritative recheck | Refuse; no query answer using a stale candidate. |
 | Unlisted/non-groundable column, non-text NE, other operator | No new NE lookup/rewrite/refusal. Keep existing SQL behavior and guards. |
 
-The no-candidate row is a **proposed product default requiring follow-up approval**:
+The no-candidate row is an **explicitly owner-approved product default**:
 ground opt-in currently permits matching, whereas this adds binding assurance
 to negative name use. It can refuse an intentional exclusion of an absent name
 on an opted-in column. We prefer exposing that uncertainty to silently accepting
@@ -74,7 +82,7 @@ ablations, not a production safety claim or a user-intent certification path.
 - Existing positive EQ/IN behavior, numeric component filters (e.g. bonus = 0),
   time rules and other gates remain unchanged.
 
-## Acceptance after the ruler checkpoint
+## Acceptance
 
 First make the new rulers pass without modifying their expected populations.
 Then run existing grounding, ask, candidate-wire, policy and acceptance tests;

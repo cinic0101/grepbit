@@ -19,7 +19,11 @@ from datetime import datetime
 from typing import Any
 
 from grepbit.application.grounding import Resolution, ValueIndex, resolve_plan_literals
-from grepbit.application.literals import LiteralCheck, text_literal_checks
+from grepbit.application.literals import (
+    LiteralCheck,
+    binding_filters,
+    text_literal_checks,
+)
 from grepbit.application.overlay import (
     excluded_segments,
     match_absent_concept,
@@ -35,8 +39,14 @@ from grepbit.application.shapes import (
 )
 from grepbit.domain.language_pack import ShapePack
 from grepbit.domain.overlay import SemanticOverlay
-from grepbit.domain.plan import CompiledPlan, PlanError, PreviousTurn, QueryPlan
-from grepbit.domain.schema_model import SchemaModel
+from grepbit.domain.plan import (
+    CompiledPlan,
+    FilterOp,
+    PlanError,
+    PreviousTurn,
+    QueryPlan,
+)
+from grepbit.domain.schema_model import ColumnKind, SchemaModel
 from grepbit.ports.ask import (
     CONSTANT_DIMENSION_REPAIR,
     DATE_LITERAL_REPAIR,
@@ -50,7 +60,7 @@ from grepbit.ports.grounding import GroundingModelError
 from grepbit.ports.plan_compiler import PlanCompilerPort
 from grepbit.ports.query_executor import QueryExecutorPort
 
-ASK_REVISION = "ask-orchestration-v3"
+ASK_REVISION = "ask-orchestration-v4"
 REFUSALS = ("clarify", "semantic_gap", "unsupported", "unsafe")
 
 
@@ -312,14 +322,34 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
         result.status, result.reason = "unsafe", f"policy:{error}"
         return
 
-    checks = (
-        text_literal_checks(plan, services.schema) if settings.literal_check else []
+    negative_columns = frozenset(
+        ref.id
+        for ref in (
+            overlay.groundable_columns() if overlay and settings.grounding else []
+        )
+        if (table := services.schema.table(ref.table)) is not None
+        and (column := table.column(ref.column)) is not None
+        and column.kind is ColumnKind.TEXT
     )
+
+    def literal_checks(current: QueryPlan) -> list[LiteralCheck]:
+        return (
+            text_literal_checks(
+                current, services.schema, negative_columns=negative_columns
+            )
+            if settings.literal_check
+            else []
+        )
+
+    checks = literal_checks(plan)
     result.literal_checks = len(checks)
     misses = list(services.literal_checker(checks)) if checks else []
     if misses and index is not None:
         resolved, resolutions = resolve_plan_literals(
-            plan, [(f"{m.table}.{m.column}", m.value) for m in misses], index
+            plan,
+            [(f"{m.table}.{m.column}", m.value) for m in misses],
+            index,
+            negative_columns=negative_columns,
         )
         result.grounding = resolutions
         if resolved is not plan:
@@ -330,7 +360,7 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
             except (PlanError, ValueError) as error:
                 result.status, result.reason = "unsupported", f"plan_{error}"
                 return
-            checks = text_literal_checks(plan, services.schema)
+            checks = literal_checks(plan)
             misses = list(services.literal_checker(checks)) if checks else []
         ambiguous = [r for r in resolutions if r.kind == "ambiguous"]
         if misses and ambiguous:
@@ -410,9 +440,24 @@ def _describe(result, compiled, question, base_repair, plan) -> None:
         for h in result.question_values
         if h["value"] in used and h["value"] not in question
     ]
+    # Read the effective plan for disclosure only; column authorization happened
+    # before binding. Keep the existing positive normalized-exact behavior.
+    negative_values = {
+        (f.column.id, v)
+        for f in binding_filters(
+            plan, negative_columns=frozenset(r.column for r in result.grounding)
+        )
+        if f.op is FilterOp.NE
+        for v in f.values
+    }
     result.assumptions += [
         f"'{r.literal}' was read as the stored value '{r.value}' of {r.column} "
         f"(similarity {r.candidates[0].score}); give the exact value to override."
         for r in result.grounding
         if r.kind == "unique"
+        or (
+            r.kind == "exact"
+            and r.literal != r.value
+            and (r.column, r.value) in negative_values
+        )
     ]
