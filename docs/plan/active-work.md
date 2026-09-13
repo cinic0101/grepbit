@@ -1,4 +1,38 @@
-# Active work: evaluation repairs and accepted period semantics
+# Active work
+
+2026-09-13 closeout: bounded reliability stage COMPLETE at baseline `3c7b48f`.
+Owner explicitly approved organizing, implementing and validating this stage;
+standing Gemma/read-only psql and local-commit authority applied. Root owned
+the private drivers, fixtures, analysis and documentation; no delegated writer.
+Protocol `reliability-stage-20260913.md`; report
+`../research/reliability-stage-01.md`; manifest
+`../../evidence/reliability-stage-01.json`; artifacts
+`.artifacts/reliability-stage-20260913/`. No push.
+
+288 scheduled questions / 288 transport attempts, no errors/retries/repair;
+source, schema, settings and oracle identity match at end. Grounding answers
+9/40 without index versus 36/40 with index, eight required refusals each arm.
+Index still has four short-negative-binding errors; EQ/IN-only existence and
+post-miss grounding are the localized coverage gap. Twelve no-model checks
+reproduce it. Component baseline/date comments 46/48, component/neutral comments
+48/48; neutral ties the targeted rescue, and the two small non-payroll domains
+already pass baseline. No generic semantic repair established. Lexical shadow
+rescues six correct labeled pairs but admits eight additional wrong pairs;
+production veto unchanged. These are authored panels, not new-user holdouts.
+
+Validation: 22 private tests, 91 existing focused tests, 656 frozen compiler/
+independent-SQL checks, 36 additional PostgreSQL VALUES cross-checks. No runtime,
+overlay, persistent DB state, prompt, public API, legacy score or production
+gate changed. No promoted candidate, full live regression or release claim.
+No new full offline gate needed for this docs/evidence-only delta. Final static
+gate PASS at `.artifacts/reliability-stage-20260913/static-final`; all 288 records
+match their scheduled jobs and summary, manifest hashes and unchanged source
+check pass, and the structured-artifact credential-pattern scan finds no match.
+That scan is not a general PII detector; value-free capture is the primary
+protection. Next priority:
+negative binding contract/rulers, including ambiguous/absent exclusions, before
+an implementation change; do not globally reject all absent NE literals or
+launch another unbounded prompt search. Prior entries below are historical.
 
 2026-09-13 closeout: grounding/payroll studies COMPLETE at runtime `98654f7`.
 60 jobs / 60 attempts, no retries/repair/transport errors; frozen source,

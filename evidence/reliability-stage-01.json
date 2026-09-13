@@ -1,0 +1,239 @@
+{
+  "baseline": "3c7b48fdfaf0d6485b89b6659e22a2ac242881ae",
+  "source_digest": "sha256:2c1cf9ad6c54d6b8df4dd7a294532cad2ad9b68276710159c6b36422fdc60929",
+  "prompt_revision": "plan-classify-json-v15",
+  "ask_revision": "ask-orchestration-v3",
+  "jobs": 288,
+  "attempts": 288,
+  "transport_errors": 0,
+  "repairs": 0,
+  "frozen_oracle_checks": 656,
+  "groups": {
+    "grounding:no_index": {
+      "jobs": 48,
+      "counts": {
+        "answerable_not_answered": 26,
+        "accepted_answer": 9,
+        "accepted_refusal": 8,
+        "confirmed_partial_negative_binding_error": 5
+      },
+      "p50_seconds": 2.93,
+      "answers_with_disclosure": 14,
+      "value_instance_comparisons": 30,
+      "value_instance_matches": 21
+    },
+    "grounding:index": {
+      "jobs": 48,
+      "counts": {
+        "accepted_answer": 36,
+        "accepted_refusal": 8,
+        "confirmed_partial_negative_binding_error": 4
+      },
+      "p50_seconds": 3.2495,
+      "answers_with_disclosure": 40,
+      "value_instance_comparisons": 80,
+      "value_instance_matches": 72
+    },
+    "components:baseline": {
+      "jobs": 48,
+      "counts": {
+        "accepted_answer": 46,
+        "confirmed_component_as_row_filter": 2
+      },
+      "p50_seconds": 3.4379999999999997,
+      "answers_with_disclosure": 48,
+      "value_instance_comparisons": 144,
+      "value_instance_matches": 138
+    },
+    "components:date_roles": {
+      "jobs": 48,
+      "counts": {
+        "accepted_answer": 46,
+        "confirmed_component_as_row_filter": 2
+      },
+      "p50_seconds": 3.4735,
+      "answers_with_disclosure": 48,
+      "value_instance_comparisons": 144,
+      "value_instance_matches": 138
+    },
+    "components:component_roles": {
+      "jobs": 48,
+      "counts": {
+        "accepted_answer": 48
+      },
+      "p50_seconds": 3.5195,
+      "answers_with_disclosure": 48,
+      "value_instance_comparisons": 144,
+      "value_instance_matches": 144
+    },
+    "components:neutral": {
+      "jobs": 48,
+      "counts": {
+        "accepted_answer": 48
+      },
+      "p50_seconds": 3.5294999999999996,
+      "answers_with_disclosure": 48,
+      "value_instance_comparisons": 144,
+      "value_instance_matches": 144
+    }
+  },
+  "component_domains": {
+    "payroll:baseline": {
+      "accepted_answer": 14,
+      "confirmed_component_as_row_filter": 2
+    },
+    "payroll:date_roles": {
+      "accepted_answer": 14,
+      "confirmed_component_as_row_filter": 2
+    },
+    "payroll:component_roles": {
+      "accepted_answer": 16
+    },
+    "payroll:neutral": {
+      "accepted_answer": 16
+    },
+    "goods:baseline": {
+      "accepted_answer": 16
+    },
+    "goods:date_roles": {
+      "accepted_answer": 16
+    },
+    "goods:component_roles": {
+      "accepted_answer": 16
+    },
+    "goods:neutral": {
+      "accepted_answer": 16
+    },
+    "service:baseline": {
+      "accepted_answer": 16
+    },
+    "service:date_roles": {
+      "accepted_answer": 16
+    },
+    "service:component_roles": {
+      "accepted_answer": 16
+    },
+    "service:neutral": {
+      "accepted_answer": 16
+    }
+  },
+  "lexical": {
+    "utterances": 24,
+    "labeled_pairs": 48,
+    "executions": 288,
+    "allowed_unique": {
+      "current:correct": 18,
+      "no_concept_veto:correct": 24,
+      "current:wrong": 16,
+      "no_concept_veto:wrong": 24
+    },
+    "correct_rescued": [
+      [
+        "label_only",
+        "en"
+      ],
+      [
+        "label_only",
+        "zh"
+      ],
+      [
+        "output_amount_all",
+        "en"
+      ],
+      [
+        "output_count_all",
+        "en"
+      ],
+      [
+        "service_entities",
+        "en"
+      ],
+      [
+        "service_rows",
+        "en"
+      ]
+    ],
+    "wrong_newly_allowed": [
+      [
+        "label_and_filter",
+        "en"
+      ],
+      [
+        "label_and_filter",
+        "zh"
+      ],
+      [
+        "output_amount_returns",
+        "en"
+      ],
+      [
+        "output_amount_returns",
+        "zh"
+      ],
+      [
+        "output_count_returns",
+        "en"
+      ],
+      [
+        "output_count_returns",
+        "zh"
+      ],
+      [
+        "service_entities",
+        "en"
+      ],
+      [
+        "service_rows",
+        "en"
+      ]
+    ]
+  },
+  "exact_plan_repeat": {
+    "equal": 133,
+    "pairs_with_two_plans": 142,
+    "all_pairs": 144
+  },
+  "artifact_root": ".artifacts/reliability-stage-20260913",
+  "artifact_sha256": {
+    "stage.py": "4420739b2784d1ec7e8a61642df4833f5813bd2b0e8699aec109aa9461057b76",
+    "fixtures.py": "95c0febe9febda9683b2810c35f48cf66e48704b17b2d089acad7f3b0f673b4e",
+    "analyze.py": "7e951c12bbd9b8380b39f98e01ed0ee6d2c9474edd0f7df81fe2abf3f2ec37b0",
+    "test_stage.py": "2e1aaba14f475cd8b333271e24b8bb6e8cd44b03e83eded99e7736ef31efde31",
+    "test_lexical.py": "0e06052424aecb4ce83bbb6bd8a0686f336782959f53cf4b82368b8414eb47dc",
+    "test_analysis.py": "0730077fd2ed98d90ff4f5ee037e2d08faa59e01615a34a4e869eeb1c7154763",
+    "lexical.py": "107fa3aad96270562f771c18171b03fc6affcac2d9c2592d739ab4bfb9710b79",
+    "grounding_witness.py": "0af15c2151b1cc4af02872bd8e6738545ca17c35b0086d717f1edf16084865c9",
+    "postgres_witness.py": "75449997eb07652013fc78a1c42cac9cc3e9caafb8fb81ad90c4f006d5a9802d",
+    "frozen.json": "19c0747ee80f2df985e2e13554f412b2ffbfc14980db6a8cc0cd451081741be4",
+    "live/summary.json": "d5e0a00d9bf30b6ce1a299a2e340047511bffb47850d2b0a2f61060cdb77b07d",
+    "live/attempts.jsonl": "8a988af28ee04fd75603938e34026045d67702365b00c4476b27745a1dcc43d8",
+    "lexical-frozen.json": "2b324930de20ea358e8f94c992c08944ef28f25dc7e98d13466b0855c0537c37",
+    "lexical-results.json": "d4c54754eea9eca6e46dd30f9ad4567c695897a24b9e517325f121a7f32aef3b",
+    "grounding-witness.json": "f5e82544c8aab3c132e175ba4fb37f1197c2b89d3153c6db27ba1a61e10f93cb",
+    "postgres-witness.json": "ea2178d29fa252fb79cca57525cc42c25e04dbb26b48e6a220ed3d4fb962260b",
+    "driver-and-shadow-tests.xml": "82022d98d54376bf7f34848ae1a42d888f24a359c51c898942bb34937a3f9c77",
+    "analysis-tests-final.xml": "0e6767be1630ecfdd3201136f86437361d80c39c2cd200fd9b29810bbb784bd1",
+    "private-tests-final.xml": "8fab18f819be79d69679200b669b80dc4656f55b604979497c97c0222aef6703",
+    "focused/result.json": "74bb789e033cf248f9464272d3b6afcf9faefb768a10898984c24fce075355ac",
+    "static-final/result.json": "4c32102393316f57ef224008267f5cb399470c00d19c2dc098a03824ef919c75",
+    "closeout-audit.json": "6f0e386f343679e0ae65ed10bcfc00b440e36e1efcac57e67c83860af6f3b95f"
+  },
+  "production_changes": false,
+  "analysis_sha256": "583a39d16f46620897f39b38e2d8e19ccb1bbb86f7cdb77d9d9c242fab7f4969",
+  "validation": {
+    "private_tests": 22,
+    "existing_focused_tests": 91,
+    "postgres_values_checks": 36,
+    "negative_binding_fixed_plan_checks": 12,
+    "start_and_end_identity_equal": true,
+    "full_offline_gate_repeated": false,
+    "static_status": "pass",
+    "closeout_audit": ".artifacts/reliability-stage-20260913/closeout-audit.json"
+  },
+  "decisions": {
+    "grounding": "beneficial_but_negative_bindings_fail_promotion_gate",
+    "component_metadata": "no_specific_or_cross_domain_advantage_over_neutral_control",
+    "concept_veto": "no_production_removal",
+    "release": "not_assessed_authored_panel_only"
+  }
+}
