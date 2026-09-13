@@ -1,5 +1,27 @@
 # Active work
 
+2026-09-13: negative name grounding RULER READY, implementation NOT STARTED.
+Baseline `b8334e2`, clean tree; owner explicitly approved adding the negative
+binding contract/tests. Root owns specifications and test fixtures only.
+Contract `negative-name-grounding.md`, pending note in `tier0-contract.md` and
+`tests/contract/t0/test_negative_name_grounding_ruler.py`; no src/evals changes.
+Model-authored NE on opted-in visible text columns would bind exact/unique names
+in place and refuse ambiguous/missing/unavailable bindings. Ordinary non-grounded
+negative literals retain SQL semantics. **The missing-candidate refusal for
+opted-in columns needs explicit checkpoint approval.** Do not implement merely
+because the user approved writing these rulers.
+
+Final evidence under `.artifacts/negative-grounding-ruler-20260913/`: 53 new
+cases, 36 intended assertion failures and 17 passes, no errors/skips; 91 existing
+grounding/ask/acceptance controls pass. Complete names, NULL behavior, numeric
+filters, existing ablations, hidden/personal policies and reviewed definitions
+are protected. Three question languages over a fixed planner are deterministic
+pipeline controls, not live multilingual quality evidence. No LLM, live DB,
+credentials or persistent state used. Process preflight found no Python
+regression after a read-only process-list capability check. Local commit remains
+authorized by the owner's standing instruction; no push. The new red ruler
+intentionally makes an unrestricted full suite red; do not xfail or weaken it.
+
 2026-09-13 closeout: bounded reliability stage COMPLETE at baseline `3c7b48f`.
 Owner explicitly approved organizing, implementing and validating this stage;
 standing Gemma/read-only psql and local-commit authority applied. Root owned

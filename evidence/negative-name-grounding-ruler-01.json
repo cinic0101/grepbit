@@ -1,0 +1,36 @@
+{
+  "baseline": "b8334e21d573a03f785223a9352d2568979f7c94",
+  "status": "ruler_ready_awaiting_approval",
+  "new_ruler": {
+    "tests": 53,
+    "expected_failures": 36,
+    "passed": 17,
+    "errors": 0,
+    "skipped": 0,
+    "failure_families": {
+      "test_unique_negative_binding_preserves_scope_and_values": 15,
+      "test_unresolved_eligible_negative_name_refuses_before_execution": 10,
+      "test_missing_index_is_not_evidence_of_an_empty_candidate_universe": 5,
+      "test_stale_unique_candidate_must_be_rechecked": 1,
+      "test_same_literal_in_opposite_operand_is_not_a_global_restriction": 1,
+      "test_multiple_negative_occurrences_keep_both_predicates": 1,
+      "test_normalized_exact_replacement_is_also_disclosed": 1,
+      "test_question_filter_on_reviewed_metric_is_still_an_unreviewed_binding": 1,
+      "test_skipped_index_column_does_not_authorize_a_missing_negative_name": 1
+    }
+  },
+  "existing_controls_passed": 91,
+  "static": "pass",
+  "production_changed": false,
+  "model_calls": 0,
+  "live_db_calls": 0,
+  "open_decision": "For visible ground-enabled text NE, missing/ambiguous/unavailable binding clarifies; ordinary ground-off negative literals remain unchanged.",
+  "artifact_sha256": {
+    ".artifacts/negative-grounding-ruler-20260913/ruler-final/result.json": "43cf62ab9cab469a50b395677b4f54df82dca09f0640726ff709724b1a93aa50",
+    ".artifacts/negative-grounding-ruler-20260913/ruler-final/junit.xml": "6708a481dac105cbe70ab184b63a1e9673a1678fbef5d6fdeb9eab0944734d2d",
+    ".artifacts/negative-grounding-ruler-20260913/existing-controls/result.json": "6afe940f68a368bc0297b002edf45154e1854f61d2667df8609f4df5b7f77dae",
+    ".artifacts/negative-grounding-ruler-20260913/existing-controls/junit.xml": "cda1b2eb795876948ae593aac1980a89a54effb9eee6a3ce68466f47e7f56ddc",
+    ".artifacts/negative-grounding-ruler-20260913/static/result.json": "076357c0d3c8bec9edbfb148bed8102c76dd0a728e45b0cb49b8f4b6bf5aa4bb",
+    "tests/contract/t0/test_negative_name_grounding_ruler.py": "03698fb7b237a2912e733c9b0120f87782507b006f0f2c86009251d5c93e8fc1"
+  }
+}

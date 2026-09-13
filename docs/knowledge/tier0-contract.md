@@ -1,5 +1,12 @@
 # Tier-0 contract
 
+Pending checkpoint (2026-09-13, **not runtime behavior**):
+`../plan/negative-name-grounding.md` proposes binding assurance for model-authored
+text NE on visible, explicitly groundable columns, including nested operands
+and `without`. Its new executable rulers intentionally fail until follow-up
+approval and implementation. The existing EQ/IN behavior below is unchanged;
+the proposed no-candidate refusal is not yet an approved product default.
+
 ## Owner-approved period semantics (takeover after 746f168)
 
 The owner explicitly accepted the four defaults below and requested fewer
