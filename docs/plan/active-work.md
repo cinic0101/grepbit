@@ -1,5 +1,32 @@
 # Active work
 
+2026-09-13 COMPLETE: owner approved the combined baseline/replay/A5-audit/product
+regression and requested conclusions plus next steps. Baseline `b1bcc74`, clean;
+root owns private measurement helpers and reports. Protocol
+`product-baseline-20260913.md`: unchanged 292-case panel plus six fixed later
+repeats, maximum 900 actual Gemma attempts, serial, existing read-only databases.
+Original permission: current owner approval plus standing psql/Gemma/local-commit
+authorization; no push. No runtime, prompt, overlay or acceptance-contract change.
+Fresh `.artifacts/product-baseline-20260913/`; no automatic verdict carry.
+Read-only process preflight found no Python regression. Reuse prior 1,796-test
+runtime baseline only if exact source matches; separately test private helpers.
+
+Closeout: 292 primary executions, 284 legacy expectations met (229 reference
+answers, 54 accepted refusals, one status-only pass), plus six fixed repeats.
+Five primary disclosed-answer annotations pass, three being legacy mismatches.
+Later: three accepted, one unassessed payroll scope; no oracle expansion.
+Eight hinted cases use eight references without misses/errors; A5 remains open.
+216 unchanged replays; focused 127 plus three transport controls/static pass;
+prior offline 1,796 artifact/source matches. Seven schema contexts and 34 oracle
+alternatives match at end. Report `../research/product-baseline-01.md`, durable
+manifest `../../evidence/product-baseline-01.json`.
+
+Private-tool recovery: retained clients, OSError after 253 attempts (local FD
+limit 256; original errno not captured). Thirteen complete sets preserved, five
+partial service calls ungraded. Lifetime controls pass; original-context resume
+runs remaining 42 jobs in 41 attempts, total 294 within 900. Not an uninterrupted
+first-attempt estimate. No runtime/prompt/gate/card/DB change; local commit only.
+
 2026-09-13 COMPLETE: owner approved the full next Steps 0–5 and said
 "可以一起做的就一起做". Baseline `658f1f6`, clean. Root owns name-boundary
 rulers and private example/restatement experiments; no delegated writer.

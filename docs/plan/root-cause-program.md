@@ -121,7 +121,21 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-13 slice: the owner approved nested positive names and normalized
+Current 2026-09-13: post-repair product baseline/A5 audit complete at `b1bcc74`,
+prompt v15 unchanged. See `../research/product-baseline-01.md`: 292 primary
+executions, 284 legacy passes (229 reference answers, 54 accepted refusals, one
+status-only pass). Three legacy mismatches pass predeclared full-value/disclosure
+checks; this is not better planning. Six repeats include one unassessed payroll
+scope. Eight hinted cases use references without misses/errors; broad A5
+acceptance remains open. 216 replays unchanged, focused 127 plus three transport
+controls/static, reused source-matched offline 1,796; end contexts/oracles match.
+294 attempts include five ungraded partial service calls during private-tool
+recovery; completed sets not rerun. Next: complete approved annotations and
+review product grounding setup, obtain independent new-question evidence,
+prioritize missing scopes/false refusals, then A4 only on measured full-schema
+need. No prompt/gate/card promotion, production change or push.
+
+Previous 2026-09-13 slice: the owner approved nested positive names and normalized
 collisions after the ruler. Implemented as ask v5/grounding v2, prompt v15
 unchanged. See `../research/name-boundaries-01.md`: focused 115, offline 1,796,
 static and 15 PostgreSQL VALUES checks pass. Independent 144-job example and

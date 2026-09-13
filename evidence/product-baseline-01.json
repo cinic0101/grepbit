@@ -1,0 +1,317 @@
+{
+  "baseline": "b1bcc745786e2d4f72740fc368fb9ade51a7d2fc",
+  "source_digest": "sha256:c4187c580113b42340b225fa743f85ea385015b89a49941da670450d5f89b28e",
+  "prompt_revision": "plan-classify-json-v15",
+  "primary": {
+    "case_executions": 292,
+    "recorded_passes": 284,
+    "recorded_failures": 8,
+    "unjudged": 0,
+    "outcomes": {
+      "answer_reference_match": 229,
+      "refusal_accepted": 54,
+      "answer_reference_mismatch": 4,
+      "answer_status_only_pass": 1,
+      "refusal_not_accepted": 3,
+      "answer_not_accepted": 1
+    },
+    "statuses": {
+      "answered": 235,
+      "clarify": 5,
+      "unsupported": 10,
+      "unsafe": 6,
+      "semantic_gap": 36
+    },
+    "expected_statuses": {
+      "answered": 238,
+      "semantic_gap": 40,
+      "unsupported": 6,
+      "unsafe": 7,
+      "clarify": 1
+    },
+    "unaccepted_refusals_on_expected_answers": 3,
+    "unaccepted_refusal_type_on_expected_refusals": 0,
+    "unaccepted_answers_on_expected_refusals": 1,
+    "verification_by_outcome": {
+      "answer_not_accepted": {
+        "unverified_semantics": 1
+      },
+      "answer_reference_match": {
+        "unverified_semantics": 182,
+        "verified": 45,
+        "partially_verified": 2
+      },
+      "answer_reference_mismatch": {
+        "unverified_semantics": 4
+      },
+      "answer_status_only_pass": {
+        "unverified_semantics": 1
+      },
+      "refusal_accepted": {
+        "not_compiled": 54
+      },
+      "refusal_not_accepted": {
+        "unverified_semantics": 1,
+        "not_compiled": 2
+      }
+    },
+    "model_repair_turns": 4,
+    "model_retries": 0,
+    "literal_misses": 1,
+    "hinted_literal_misses": 0,
+    "candidate_hinted_cases": 8,
+    "value_references": 8,
+    "value_reference_errors": 0,
+    "truncated_answers": 0,
+    "exact_question_datasource_hashes": 250,
+    "latency": {
+      "n": 286,
+      "p50_seconds": 3.905,
+      "p95_seconds": 5.179
+    }
+  },
+  "cohorts": {
+    "authors": {
+      "cases": 160,
+      "legacy_passes": 156,
+      "outcomes": {
+        "answer_reference_match": 107,
+        "refusal_accepted": 48,
+        "answer_reference_mismatch": 2,
+        "answer_status_only_pass": 1,
+        "refusal_not_accepted": 1,
+        "answer_not_accepted": 1
+      }
+    },
+    "features": {
+      "cases": 39,
+      "legacy_passes": 37,
+      "outcomes": {
+        "answer_reference_mismatch": 2,
+        "answer_reference_match": 37
+      }
+    },
+    "settled_batch1": {
+      "cases": 50,
+      "legacy_passes": 50,
+      "outcomes": {
+        "answer_reference_match": 47,
+        "refusal_accepted": 3
+      }
+    },
+    "real_smoke": {
+      "cases": 7,
+      "legacy_passes": 7,
+      "outcomes": {
+        "answer_reference_match": 6,
+        "refusal_accepted": 1
+      }
+    },
+    "service": {
+      "cases": 24,
+      "legacy_passes": 24,
+      "outcomes": {
+        "answer_reference_match": 22,
+        "refusal_accepted": 2
+      }
+    },
+    "service_adversarial": {
+      "cases": 12,
+      "legacy_passes": 10,
+      "outcomes": {
+        "answer_reference_match": 10,
+        "refusal_not_accepted": 2
+      }
+    }
+  },
+  "acceptance": {
+    "primary_annotated": 5,
+    "primary_outcomes": {
+      "accepted": 5
+    },
+    "primary_unannotated": 287,
+    "later_annotated": 4,
+    "later_outcomes": {
+      "accepted": 3,
+      "unassessed": 1
+    }
+  },
+  "later_repeats": [
+    {
+      "set": "pos_later",
+      "case_id": "member_ratio_gap",
+      "same_final_plan_hash": true,
+      "same_status": true,
+      "same_legacy_result": true,
+      "before_status": "answered",
+      "after_status": "answered",
+      "before_correct": true,
+      "after_correct": true
+    },
+    {
+      "set": "pos_later",
+      "case_id": "engineers_avg_base_salary",
+      "same_final_plan_hash": true,
+      "same_status": true,
+      "same_legacy_result": true,
+      "before_status": "answered",
+      "after_status": "answered",
+      "before_correct": true,
+      "after_correct": true
+    },
+    {
+      "set": "iot_later",
+      "case_id": "alerts_trend_daily_july_first_week",
+      "same_final_plan_hash": true,
+      "same_status": true,
+      "same_legacy_result": true,
+      "before_status": "answered",
+      "after_status": "answered",
+      "before_correct": false,
+      "after_correct": false
+    },
+    {
+      "set": "nosample_later",
+      "case_id": "store_partial_name_jan",
+      "same_final_plan_hash": true,
+      "same_status": true,
+      "same_legacy_result": true,
+      "before_status": "clarify",
+      "after_status": "clarify",
+      "before_correct": false,
+      "after_correct": false
+    },
+    {
+      "set": "features_later",
+      "case_id": "ft_compare_last_two_months",
+      "same_final_plan_hash": false,
+      "same_status": true,
+      "same_legacy_result": false,
+      "before_status": "answered",
+      "after_status": "answered",
+      "before_correct": false,
+      "after_correct": true
+    },
+    {
+      "set": "features_later",
+      "case_id": "ft_quarterly_payroll",
+      "same_final_plan_hash": false,
+      "same_status": true,
+      "same_legacy_result": true,
+      "before_status": "answered",
+      "after_status": "answered",
+      "before_correct": false,
+      "after_correct": false
+    }
+  ],
+  "transport": {
+    "attempts": 294,
+    "errors": 0,
+    "by_set": {
+      "pos": 25,
+      "multilingual": 31,
+      "iot": 19,
+      "having": 6,
+      "overlay": 10,
+      "nosample": 25,
+      "retail": 11,
+      "coverage_pos": 8,
+      "coverage_iot": 8,
+      "coverage_retail": 9,
+      "features": 42,
+      "batch1": 47,
+      "real_smoke": 7,
+      "service": 28,
+      "service_adversarial": 12,
+      "pos_later": 2,
+      "iot_later": 1,
+      "nosample_later": 1,
+      "features_later": 2
+    }
+  },
+  "interruption": {
+    "initial_stop_type": "OSError",
+    "original_errno_not_recorded": true,
+    "partial_service_calls_without_persisted_outcomes": 5,
+    "completed_sets_repeated": 0,
+    "remaining_scheduled_jobs": 42,
+    "nonclaim": "Not an uninterrupted first-attempt success estimate; all five discarded model attempts count toward the total."
+  },
+  "a5": {
+    "hinted_cases": 8,
+    "hinted_references": 8,
+    "hinted_legacy_matches": 8,
+    "reference_errors": 0,
+    "hinted_misses": 0,
+    "offline_authored_cases": 24,
+    "offline_answerable_cases": 20,
+    "offline_offered_targets": 12,
+    "offline_expected_targets": 24,
+    "offline_reference_roundtrips": 12
+  },
+  "validation": {
+    "focused_tests": 127,
+    "additional_transport_controls": 3,
+    "local_replays": 216,
+    "local_replay_differences": 0,
+    "pre_and_post_oracle_alternatives": 34,
+    "unchanged_schema_contexts": 7,
+    "fresh_static_pass": true,
+    "reused_offline_tests": 1796,
+    "reused_offline_source_matches": true
+  },
+  "artifact_root": ".artifacts/product-baseline-20260913",
+  "artifact_sha256": {
+    "a5-offline.json": "a5d0dc0afbfca9db85e5ce69a3a80fc9d8b61c10f7a339ee5a56155dda21be24",
+    "analysis-resume-tests.xml": "54acde0f3d6a1d4792d2fd56132d4d3e74133e2655bb00e0cddb802942ece37d",
+    "analysis.json": "778d544456249187597736647f5ad9170e8d70e9f0811aa2df323bd44a39b2a6",
+    "analyze.py": "eeb4338096dffe5fe55f49fdfe253a55c00b0aff7b0f238ea1ec6ebba00f294b",
+    "focused.xml": "96a33972ce5783d4a4051ec3d7022a204d2b52b2a679d63f2b7bc06f686f7dfa",
+    "live/batch1.json": "fefacddee06a012cf33998b5e404729ef8e68ab37c4fa9bf06452c3450ba2342",
+    "live/calls.jsonl": "ec0ed6f59d491d4261c7612a2805e5db69f685c258b501d337d306817817cbc7",
+    "live/coverage_iot.json": "431f81d0473a47ea2f9f1f149052b9310932c4bc39e4b3580b7b889db3874323",
+    "live/coverage_pos.json": "2c0f15fcc5d4c1fcf095e74ebcae1c80f7077e7c4574521f065d1eef64435431",
+    "live/coverage_retail.json": "16afbce8de664ce45a7e65575c5a719680cc8646333099c55be838a2ca8d3bc0",
+    "live/features.json": "7badd05f9787887e53239a8f81b7f11243d14b6be57f3f615d5f218b8f73234b",
+    "live/having.json": "a21c4cf069aa8ecd6c0b1d83248f2bded2445c10138bdd21f542ce07cc0e741a",
+    "live/iot.json": "6f83fcd33cd8400a73defdeda523b89a7cd3cd3d6d9293f42ceb2004eb5a011c",
+    "live/manifest-end.json": "cc6c95e842f4a244b123a41ede07f79ae88fabf581c45f13fd30b196e2fea3c5",
+    "live/manifest-start.json": "380f3582407ed30c584abc21c2ec3d875109c455a2acb864c367b0bb85687479",
+    "live/multilingual.json": "831f37a0a1084ec0ce7620a83956b3be2fc0384ac167e45bf5e1c4ad1da2d1ea",
+    "live/nosample.json": "04a4254d3d08f713c6827f61b79f1a4b0c74b9c7278c94739a0f3974b7340d8e",
+    "live/overlay.json": "a7b624a0a5df835282cfc017599ed9d94026feb7a5a14abfb213e41205f506bd",
+    "live/pos.json": "367eb7c2335460bd0b787c7b16d71fb348043f0d5a63b1a96b2137000a3e9d32",
+    "live/real_smoke.json": "2ecb54cc5b5b3e6a2a0c971272729350374c4f6ce55b95fcd3b6eda40ccad6c4",
+    "live/retail.json": "3f1d255675d292415979ead4abfaf698c17edb07778e90823b8715118236614a",
+    "local-replay.json": "fd213f9e68de3e448ffe28ba20c8326ce51a504b38e29604e1987f0983c6dbdb",
+    "offline.py": "819b50dd9d1f567d68126d32dc17ebfc2d1c1b26be9726a115a9959110490e5f",
+    "payroll-scope-v2.json": "2428a26e8cead6d0a522ac59a8718747bea64fd7808532e61ebfe075e99776e1",
+    "payroll-scope.json": "787f7fbc9eeeb7cd0f7c57389bebad7cd8ab9c88f011d375870d4f3e51c6deb9",
+    "payroll_scope.py": "2b0abf61e2008ec7b88419f718fbb2a249a2c434d009a1fd43e462d0d114604f",
+    "payroll_scope_v2.py": "2ddfbb97ccb9319660e00c66110c7e3c864e1ad306a7e18a1dc7945e7d15f98c",
+    "postflight.json": "3fc156d71aa576391fb350ea7669304d51dfcbe1e9c2e5ac9b64f56e9e94daa3",
+    "postflight.py": "285c24401f9c7d4771ae6021b2616caec161cc7f85c586644a14760107c89414",
+    "resume/calls.jsonl": "33ea54c6629a6bac926c60ee704ee4d9aaec0595dd97bab82a0304dd93061887",
+    "resume/features_later.json": "f4857e3c0c3817ab8e47b1b07fe7ae9716faa3c5913d2020cbea43d1aa730a8f",
+    "resume/iot_later.json": "8d1f00694379883c796d8b0979bb2d9eddf770a6d6b2d4f1cf26730d7d874f88",
+    "resume/manifest-end.json": "849144c0411e598cde657b4d9230048cf1dba111f46a379f973efca18b035571",
+    "resume/manifest-start.json": "fcf3f8ed7bc7af153e92b2faab604c948afe029abf843b47d339f3e7b6354f37",
+    "resume/nosample_later.json": "4edb2b60c6930b8c3635a4d0b9f19ef34f7c38288a78ed3a005fe34ea8628b32",
+    "resume/pos_later.json": "ebb25b55bfc20e366bd7688b080e5eb7883d56c9b1dfcbc71181712280d1fd6e",
+    "resume/service.json": "7d8a30cffb7e43f7ff785ed86fa748fa86dab878cb3139fbc0d8a9ade3ae5894",
+    "resume/service_adversarial.json": "568b9c67ea6f862096cfd4d7a2de0f1c2a8bab296275c2a25edcd1788f88f5dd",
+    "resume-tests.xml": "9bef9ae10969cfebaaee2200cbafb7a2340e55480e746f5a356e47897631177d",
+    "resume.py": "e07a3d7c629fdb80d74a60cd0000189628404b9a04cfb2f04b648bfc4d5ecc20",
+    "rules.py": "8ed4abec9acb14eb420aa84714f22cdfa8d720c165cf93e24ddf6eba8538ff11",
+    "run.py": "346c4f1b272ca3e1c3e4702969a79ac82a2883078d2a8e91b79fa2396f9ae0ef",
+    "static/result.json": "171e680b8d55f27a38b2c7fa5d27bba309bb7ae86752bbcafdbfb2e8745a819a",
+    "test_driver.py": "578c438db146553ce67b317e3ba28eba3e38112f637230157f544b7f08b41309",
+    "test_resume.py": "3088378cf4094499ee5916666ec4037ac5a1fa17d24f3eeb8296fd6c47bf0b9e"
+  },
+  "nonclaims": [
+    "Not an uninterrupted first-attempt estimate: five partial service calls have no saved outcome",
+    "No independent holdout or generalized A5 acceptance",
+    "No production change or model-intent certification",
+    "Legacy results retained; unannotated and unlisted interpretations not promoted"
+  ]
+}
