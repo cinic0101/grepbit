@@ -121,7 +121,16 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-13: approved temporal-reference study at `bee008d` complete;
+Current 2026-09-13: full-context temporal reproduction at `771284a` complete.
+Original 13-table / 58-column POS/HR context, historical messages/rules/oracles
+match exactly. Three cases x two passes: 6/6 accepted, correct raw/native year
+ranges, no repair or refusal rescue. Stop at the predefined baseline ceiling;
+no information/reference comparison or automatic extractor integration. Historical
+2060 failure remains unresolved; backend batch causation is unproven. Keep the
+case in future planned regressions; prioritize reproducible product errors.
+See `../research/temporal-full-context-01.md`. Production unchanged.
+
+Previous 2026-09-13: approved temporal-reference study at `bee008d` complete;
 90 actual Gemma calls, no repairs or transport errors. All 16 eligible reference
 calls bind, but baseline also answers the original question in the small synthetic
 schema: no demonstrated incremental benefit, no promotion. Nine unassessed

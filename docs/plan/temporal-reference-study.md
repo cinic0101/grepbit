@@ -146,3 +146,11 @@ Completed 90 calls, zero repair/transport errors. Incremental-benefit screen is
 inconclusive: the original baseline failure did not recur in the small synthetic
 context. See `../research/temporal-reference-study-01.md`, including frozen grades,
 post-hoc representation diagnosis and the separately tested v1.1 guard correction.
+
+Follow-up approved by the owner's "ok 可以開始下一步": original full-context
+baseline reproduction, with comparisons conditional on an observed time error.
+At `771284a`, all three historical payload/context/rule/oracle records restored
+exactly. Six actual calls, 6/6 accepted, no temporal failures or repairs. Stopped
+at the predefined ceiling; no further arm calls. See
+`../research/temporal-full-context-01.md`. Original failure remains unresolved;
+no production change or automatic extraction is justified by this result.

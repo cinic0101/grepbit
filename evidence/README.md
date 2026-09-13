@@ -13,6 +13,13 @@ guarantee; row redaction alone can leave values in plans or other fields. The
 current reuse manifests below publish counts and hashes only. See
 `../docs/research/evidence-reuse-live-01.md` for the pre-write field policy.
 
+`temporal-full-context-01.json`: original full POS/HR fixture context restored;
+three historical message/rule/oracle records match exactly. Six baseline calls,
+6/6 accepted with correct raw ranges; no repairs/refusals. Stopped at ceiling,
+conditional information/reference comparison not run. Ten focused tests; source
+unchanged, prior offline 1,841 reused. Historical 2060 cause remains unresolved.
+See `../docs/research/temporal-full-context-01.md`.
+
 `temporal-reference-study-01.json`: 90 actual calls, 16/16 eligible references
 used, zero repair/transport errors. Interface feasible; incremental benefit
 unproven because the original baseline failure did not recur in the synthetic
