@@ -121,7 +121,23 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Latest 2026-09-13: owner-approved negative name binding is implemented as
+Current 2026-09-13 slice: the owner approved nested positive names and normalized
+collisions after the ruler. Implemented as ask v5/grounding v2, prompt v15
+unchanged. See `../research/name-boundaries-01.md`: focused 115, offline 1,796,
+static and 15 PostgreSQL VALUES checks pass. Independent 144-job example and
+48-job restatement studies completed in 193 attempts including one deliberate
+interruption; see `../research/examples-restatement-01.md`. Baseline/neutral/
+contrastive 35/36, ordinary examples 36/36: one rescue, no cross-domain evidence.
+Restatement flags 5/12 wrong pairs versus structured 6/12; zero incremental
+catches and one new correct-pair false flag. Neither candidate advances under
+the frozen screen. No cards, lexical exceptions or new retrieval framework.
+Keep the binding repair; retain the ordinary-example observation for a future
+independently labeled multi-domain error panel. No more same-case prompt search
+or intent gate; existing effective-computation disclosure remains transparency,
+not certification. Resume product coverage/evidence work, without treating the
+authored screen or prior revisions as current product-wide success rates.
+
+Previous 2026-09-13 slice: owner-approved negative name binding is implemented as
 `ask-orchestration-v4`, prompt v15 unchanged. See
 `../research/negative-name-grounding-01.md`. Original 53 rulers unchanged/green;
 focused 163, static pass, offline 1,758 pass. Same 24 authored grounding

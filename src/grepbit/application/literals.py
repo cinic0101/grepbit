@@ -17,17 +17,17 @@ class LiteralCheck(DomainModel):
 
 
 def binding_filters(
-    plan: QueryPlan, *, negative_columns: frozenset[str] = frozenset()
+    plan: QueryPlan, *, grounded_columns: frozenset[str] = frozenset()
 ) -> Iterator[Filter]:
-    """Existing plan EQ/IN plus opted-in, model-authored NE occurrences.
+    """Plan EQ/IN plus opted-in EQ/IN/NE in model-authored scopes.
 
     Selection and replacement share this walk so a lookup cannot accidentally
-    rewrite a sibling scope or a reviewed definition. Nested positives retain
-    their previous coverage; a matching column/value is not enough to opt in.
+    rewrite a sibling scope or a reviewed definition. Nested occurrences and
+    negative predicates require an explicitly groundable column.
     """
     for item in plan.filters:
         if item.op in {FilterOp.EQ, FilterOp.IN} or (
-            item.op is FilterOp.NE and item.column.id in negative_columns
+            item.op is FilterOp.NE and item.column.id in grounded_columns
         ):
             yield item
     for measure in plan.measures:
@@ -38,11 +38,17 @@ def binding_filters(
         )
         for operand in operands:
             for item in operand.filters:
-                if item.op is FilterOp.NE and item.column.id in negative_columns:
+                if (
+                    item.op in {FilterOp.EQ, FilterOp.IN, FilterOp.NE}
+                    and item.column.id in grounded_columns
+                ):
                     yield item
     if plan.without:
         for item in plan.without.filters:
-            if item.op is FilterOp.NE and item.column.id in negative_columns:
+            if (
+                item.op in {FilterOp.EQ, FilterOp.IN, FilterOp.NE}
+                and item.column.id in grounded_columns
+            ):
                 yield item
 
 
@@ -50,9 +56,9 @@ def text_literal_checks(
     plan: QueryPlan,
     schema: SchemaModel,
     *,
-    negative_columns: frozenset[str] = frozenset(),
+    grounded_columns: frozenset[str] = frozenset(),
 ) -> list[LiteralCheck]:
-    """Plan EQ/IN literals and opted-in negative name bindings.
+    """Plan EQ/IN literals and opted-in scoped name bindings.
 
     A text literal that matches no row turns a question into an empty
     aggregate (``SUM`` of nothing is NULL) that reads like an answer. Checking
@@ -64,7 +70,7 @@ def text_literal_checks(
     """
 
     checks: list[LiteralCheck] = []
-    for item in binding_filters(plan, negative_columns=negative_columns):
+    for item in binding_filters(plan, grounded_columns=grounded_columns):
         table = schema.table(item.column.table)
         column = table.column(item.column.column) if table is not None else None
         if column is None or column.kind is not ColumnKind.TEXT:

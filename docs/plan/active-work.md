@@ -1,5 +1,43 @@
 # Active work
 
+2026-09-13 COMPLETE: owner approved the full next Steps 0–5 and said
+"可以一起做的就一起做". Baseline `658f1f6`, clean. Root owns name-boundary
+rulers and private example/restatement experiments; no delegated writer.
+Protocol `examples-and-restatement-study.md`: A 144 jobs, B 48 jobs, maximum
+480 actual attempts total, serial Gemma4 31B, fictional/public payloads only.
+Existing owner PostgreSQL/Gemma and local-commit authority applies; no push.
+Source remains frozen during runs; new refusal semantics stop at ruler approval.
+Unchanged answer-acceptance and coverage report contracts, no production prompt
+or gate changes. Fresh `.artifacts/examples-restatement-20260913/`.
+Read-only process preflight found no active Python regression. Original authority
+is the owner's current approval and prior explicit external/Git permissions;
+this work record does not grant new authority.
+
+Follow-up authority: owner explicitly replied "同意，依此補齊測試並實作"
+to both name-boundary decisions. Implemented scoped EQ/IN on opted-in columns
+and normalized-collision preservation, ask v5/grounding v2; production prompt
+v15 unchanged. Expanded ruler: 29 intended failures/9 passes before repair;
+38/38 after. Combined focused 115, broad offline 1,796/no skips, static pass,
+15 PostgreSQL VALUES hand-oracle/DuckDB agreements. Prior unchecked-positive
+sibling test superseded explicitly; no other legacy expectations weakened.
+The independent study froze after this repair: 216 oracle checks, 36 paired
+value witnesses, 192 scheduled model jobs. No source edits or commits during
+the frozen live run. New research helpers remain private; no new framework.
+
+Research closeout: 192 jobs completed in 193 actual attempts, including one
+deliberately interrupted A call; no transport failure, one invalid B report.
+Before any B calls, corrected the missing grain in the structured input and
+resumed only unfinished jobs. All A payload/oracle hashes and runtime/schema
+identity unchanged; original partial artifacts retained. Reports
+`../research/examples-restatement-01.md` and `../research/name-boundaries-01.md`;
+durable manifest `../../evidence/examples-restatement-01.json`.
+Baseline/neutral/contrastive 35/36, ordinary 36/36, one-domain/one-question
+rescue only. Restatement 5/12 catches versus structured 6/12; no incremental
+catch, one lost catch and one new false flag. Both research screens fail;
+no extra calls, prompt promotion or model gate. Keep approved name repairs.
+Additional cap controls 2 pass; source digest matches offline/static and both
+live freezes. Local commit authorized, no push; no persistent DB mutations.
+
 2026-09-13 implementation COMPLETE, baseline `3fa90b7`. Owner explicitly
 accepted the clarification/no-candidate tradeoff and said "可以開始了" after
 the negative-binding checkpoint explanation. Root owns the coupled application

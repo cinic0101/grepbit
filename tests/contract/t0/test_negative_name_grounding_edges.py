@@ -15,7 +15,7 @@ from grepbit.application.literals import text_literal_checks
 from grepbit.domain.plan import Filter, FilterOp
 
 
-def test_same_missing_literal_does_not_rewrite_nested_positive_sibling():
+def test_same_missing_literal_binds_both_approved_operand_scopes():
     plan = proposal("numerator")
     plan.measures[0].ratio.denominator.filters = [
         Filter.model_validate(predicate("Harbor East", op="eq"))
@@ -24,9 +24,11 @@ def test_same_missing_literal_does_not_rewrite_nested_positive_sibling():
     result = h.run()
     assert result.status == "answered"
     assert occurrence(result.plan, "numerator").values == [FULL]
-    assert occurrence(result.plan, "denominator").values == ["Harbor East"]
+    assert occurrence(result.plan, "denominator").values == [FULL]
     assert occurrence(result.plan, "denominator").op is FilterOp.EQ
-    assert all(c[2] != "Harbor East" for c in h.checked[1:])
+    assert occurrence(result.plan, "numerator").op is FilterOp.NE
+    assert result.plan.filters == []
+    assert float(next(iter(result.rows[0].values()))) == 2
 
 
 @pytest.mark.parametrize("path", PATHS)
@@ -57,7 +59,7 @@ def test_repeated_bindings_keep_separate_occurrences_and_input_unchanged():
         plan,
         [("facts.label", "Harbor East")],
         ValueIndex({"facts.label": [FULL]}),
-        negative_columns=frozenset({"facts.label"}),
+        grounded_columns=frozenset({"facts.label"}),
     )
     assert plan.model_dump(mode="json") == before
     assert resolved.filters[0].values == [FULL]
@@ -72,7 +74,7 @@ def test_same_literal_in_another_column_is_not_cross_bound():
         plan,
         [("events.label", "Harbor East")],
         ValueIndex({"events.label": [FULL], "facts.label": ["Harbor East Annex"]}),
-        negative_columns=frozenset({"events.label", "facts.label"}),
+        grounded_columns=frozenset({"events.label", "facts.label"}),
     )
     assert resolved.without.filters[0].values == [FULL]
     assert resolved.filters[0].values == ["Harbor East"]
@@ -94,7 +96,7 @@ def test_numeric_column_remains_excluded_even_if_groundable():
     plan = proposal(value="100")
     plan.filters[0].column.column = "amount"
     assert (
-        text_literal_checks(plan, SCHEMA, negative_columns=frozenset({"facts.amount"}))
+        text_literal_checks(plan, SCHEMA, grounded_columns=frozenset({"facts.amount"}))
         == []
     )
 

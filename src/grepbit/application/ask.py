@@ -60,7 +60,7 @@ from grepbit.ports.grounding import GroundingModelError
 from grepbit.ports.plan_compiler import PlanCompilerPort
 from grepbit.ports.query_executor import QueryExecutorPort
 
-ASK_REVISION = "ask-orchestration-v4"
+ASK_REVISION = "ask-orchestration-v5"
 REFUSALS = ("clarify", "semantic_gap", "unsupported", "unsafe")
 
 
@@ -322,7 +322,7 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
         result.status, result.reason = "unsafe", f"policy:{error}"
         return
 
-    negative_columns = frozenset(
+    grounded_columns = frozenset(
         ref.id
         for ref in (
             overlay.groundable_columns() if overlay and settings.grounding else []
@@ -335,7 +335,7 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
     def literal_checks(current: QueryPlan) -> list[LiteralCheck]:
         return (
             text_literal_checks(
-                current, services.schema, negative_columns=negative_columns
+                current, services.schema, grounded_columns=grounded_columns
             )
             if settings.literal_check
             else []
@@ -349,7 +349,7 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
             plan,
             [(f"{m.table}.{m.column}", m.value) for m in misses],
             index,
-            negative_columns=negative_columns,
+            grounded_columns=grounded_columns,
         )
         result.grounding = resolutions
         if resolved is not plan:
@@ -445,7 +445,7 @@ def _describe(result, compiled, question, base_repair, plan) -> None:
     negative_values = {
         (f.column.id, v)
         for f in binding_filters(
-            plan, negative_columns=frozenset(r.column for r in result.grounding)
+            plan, grounded_columns=frozenset(r.column for r in result.grounding)
         )
         if f.op is FilterOp.NE
         for v in f.values

@@ -130,12 +130,14 @@ ports (`ports/ask.py`): gates, planner with one transport retry, shape and
 base repairs, compile and policy, literal check with grounding, segment
 exclusion, execution, and an `AskResult` carrying the served contract.
 Literal selection and replacement share an occurrence traversal: existing
-top-level EQ/IN plus overlay-opted-in text NE at plan, measure, ratio-operand
-and `without` scope. The overlay, not an injected index, authorizes negative
+top-level EQ/IN plus overlay-opted-in text EQ/IN/NE at measure, ratio-operand
+and `without` scope, and opted-in NE at plan scope. The overlay, not an injected index, authorizes scoped
 binding. Replacements retain scope/operator and undergo compile, policy and
-literal rechecks. Reviewed definitions are never rewritten; unresolved negative
+literal rechecks. Reviewed definitions are never rewritten; unresolved scoped
 names clarify only within that opted-in boundary. See
-`../plan/negative-name-grounding.md` for the approved no-candidate tradeoff.
+`../plan/negative-name-grounding.md` and `../plan/name-boundaries-ruler.md` for
+the approved no-candidate tradeoff. Normalization never merges distinct stored
+names; normalized collisions remain ambiguous and all hint alternatives survive.
 `adapters/mcp_server.py` composes the adapters for each datasource listed in
 `datasources.json` (the DSN comes only from the environment variable the
 registry names) and exposes two MCP tools over stdio: `capabilities`

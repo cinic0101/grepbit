@@ -1,6 +1,12 @@
 # Tier-0 contract
 
-Owner-approved negative name binding (2026-09-13, `ask-orchestration-v4`):
+Owner-approved scoped name binding (2026-09-13, `ask-orchestration-v5`):
+`../plan/name-boundaries-ruler.md` extends opted-in visible TEXT EQ/IN binding
+to measure, ratio-operand and `without` filters. Exact stored strings win;
+normalized-only collisions remain ambiguous, preserving distinct candidates
+in hints and resolution. Candidate hints are not intent certification.
+
+Earlier negative name binding (2026-09-13, `ask-orchestration-v4`):
 `../plan/negative-name-grounding.md` defines binding assurance for model-authored
 text NE on visible, explicitly groundable overlay columns: plan, measure extra
 filters, either ratio operand and `without.filters`. Missing literals resolve

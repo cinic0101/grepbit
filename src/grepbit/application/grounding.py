@@ -26,7 +26,7 @@ from grepbit.application.literals import binding_filters
 from grepbit.domain.models import DomainModel
 from grepbit.domain.plan import QueryPlan
 
-GROUNDING_REVISION = "grounding-bigram-v1"
+GROUNDING_REVISION = "grounding-bigram-v2"
 _DROP = re.compile(r"[\s\W_]+", re.UNICODE)
 MIN_MENTION_CHARS = 2
 UNIQUE_SCORE = 0.6
@@ -101,9 +101,9 @@ class ValueIndex:
             entries = []
             for value in items:
                 normalized = normalize_value(value)
-                if not normalized or normalized in seen:
+                if not normalized or value in seen:
                     continue
-                seen.add(normalized)
+                seen.add(value)
                 entries.append((value, normalized, _bigrams(normalized)))
             self._normalized[column] = entries
 
@@ -129,10 +129,12 @@ class ValueIndex:
                 for value, normalized, _ in entries
                 if len(normalized) >= MIN_MENTION_CHARS and normalized in haystack
             ]
-            hits.sort(key=lambda item: len(item[1]), reverse=True)
+            hits.sort(key=lambda item: (-len(item[1]), item[0]))
             kept: list[tuple[str, str]] = []
             for value, normalized in hits:
-                if any(normalized in longer for _, longer in kept):
+                if any(
+                    normalized != longer and normalized in longer for _, longer in kept
+                ):
                     continue
                 kept.append((value, normalized))
             found.extend(Mention(column=column, value=value) for value, _ in kept)
@@ -158,14 +160,26 @@ class ValueIndex:
 
     def resolve(self, column: str, literal: str) -> Resolution:
         target = normalize_value(literal)
+        matches = []
         for value, normalized, _ in self._normalized.get(column, []):
-            if normalized == target:
+            if value == literal:
                 return Resolution(
                     column=column,
                     literal=literal,
                     kind="exact",
                     candidates=[Candidate(value=value, score=1.0)],
                 )
+            if normalized == target:
+                matches.append(Candidate(value=value, score=1.0))
+        if matches:
+            return Resolution(
+                column=column,
+                literal=literal,
+                kind="exact" if len(matches) == 1 else "ambiguous",
+                candidates=sorted(matches, key=lambda candidate: candidate.value)[
+                    :MAX_CANDIDATES
+                ],
+            )
         found = self.candidates(column, literal)
         if not found:
             return Resolution(column=column, literal=literal, kind="none")
@@ -185,7 +199,7 @@ def resolve_plan_literals(
     misses: list[tuple[str, str]],
     index: ValueIndex,
     *,
-    negative_columns: frozenset[str] = frozenset(),
+    grounded_columns: frozenset[str] = frozenset(),
 ) -> tuple[QueryPlan, list[Resolution]]:
     """Substitute resolved EQ/IN and opted-in NE values in their original scope.
 
@@ -202,7 +216,7 @@ def resolve_plan_literals(
     if not replacements:
         return plan, resolutions
     resolved = plan.model_copy(deep=True)
-    for item in binding_filters(resolved, negative_columns=negative_columns):
+    for item in binding_filters(resolved, grounded_columns=grounded_columns):
         item.values = [
             replacements.get((item.column.id, v), v) if isinstance(v, str) else v
             for v in item.values
