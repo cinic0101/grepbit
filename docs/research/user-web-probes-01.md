@@ -1,4 +1,4 @@
-# User web probes: independent child counts (2026-09-14)
+# User web probes: query capability boundaries (2026-09-14)
 
 Owner requested recording useful interactive questions and adding regression
 coverage where warranted. Exact user wording stays in
@@ -46,3 +46,30 @@ Two ordinary child-based queries alone do not preserve the complete population.
 Validation: 32 compiler tests (including 5 new cases) and the static profile
 passed; artifacts are `.artifacts/user-web-probes-20260914/{focused,static}`.
 No new live model calls, DB mutations or public-contract changes in this slice.
+
+## General device details (second user report)
+
+The user next reported `unsupported` for listing all device details. Exact
+wording and the supplied request ID are recorded in the private case file.
+The local web launcher intentionally keeps no query/result logs, so an ID
+alone cannot retrieve the original response. No live replay is claimed.
+
+Current `QueryPlan.names_are_unique` requires measures or `latest`; there is
+no general row-projection construct. `latest` is a restricted per-group row
+selection with at most four take columns, not an all-details API. Special
+unique-key grouping tricks can mimic a limited projection but do not establish
+general support or justify silently narrowing "all details".
+
+The reported refusal is consistent with this boundary. Unlike a missing
+business definition, this is a harness/algebra capability gap; it does not
+demonstrate a model-understanding or lexical-gate defect. Existing
+`test_latest_row_per_group_ranks_rows_and_returns_the_taken_columns` covers
+the no-measures domain boundary;
+retain this as a separate seen natural-language regression candidate, without
+adding a redundant test or changing expected statuses across old panels.
+
+If row listing is prioritized, first specify visible output columns, stable
+ordering, row limits/truncation (and whether paging is needed), permissions
+and PII exposure. "All devices" must not silently mean only the first page,
+and "details" must not override column visibility. No new construct or
+automatic query logging is authorized or implemented by recording this case.
