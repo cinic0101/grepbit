@@ -22,3 +22,7 @@ Current query-extension integration result:
 [`base-row-pilot-01.md`](../research/base-row-pilot-01.md): shared row compiler
 available only by opt-in; automatic planner selection is not ready for Web
 promotion. Conversion and independent aggregates remain research-only.
+
+Follow-up: [`query-kind-study-01.md`](../research/query-kind-study-01.md) compares
+one-call planning policy with an independent router. The one-call candidate
+matches the router's outcomes at lower cost; wider regression is still needed.

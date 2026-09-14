@@ -1,0 +1,46 @@
+selections:
+  - {file: evals/cases/tier0/rows_iot.yaml, route: rows, ordered: true}
+  - {file: evals/cases/tier0/rows_service.yaml, route: rows, ordered: true}
+  - {file: evals/cases/tier0/coverage_iot.yaml, route: decline}
+  - file: evals/cases/tier0/service.yaml
+    route: legacy
+    ids: [svc_ticket_count, svc_total_minutes, svc_null_minutes, svc_tickets_without_logs, svc_team_minutes, svc_child_fanout_refusal]
+new_cases:
+  - case_id: kind_minutes_records
+    datasource_id: service_test
+    as_of: "2026-04-15T12:00:00+08:00"
+    question: "Return only the minutes column of every work_logs record, preserving repeated values and NULL, in id order."
+    expected_route: rows
+    ordered: true
+    reference_sql: "SELECT minutes FROM work_logs ORDER BY id"
+  - case_id: kind_minutes_nonnull_count
+    datasource_id: service_test
+    as_of: "2026-04-15T12:00:00+08:00"
+    question: "Return the count of work_logs records whose minutes field is not NULL."
+    expected_route: legacy
+    reference_sql: "SELECT count(*) FROM work_logs WHERE minutes IS NOT NULL"
+  - case_id: kind_critical_rows
+    datasource_id: iot_spike
+    as_of: "2026-08-15T12:00:00+08:00"
+    question: "只要 severity 等於 critical 的每筆告警 alert_id，按 alert_id 排序，不用統計筆數。"
+    expected_route: rows
+    ordered: true
+    reference_sql: "SELECT alert_id FROM alerts WHERE severity='critical' ORDER BY alert_id"
+  - case_id: kind_critical_count
+    datasource_id: iot_spike
+    as_of: "2026-08-15T12:00:00+08:00"
+    question: "只要 severity 等於 critical 的告警總筆數，不用列出個別告警。"
+    expected_route: legacy
+    reference_sql: "SELECT count(*) FROM alerts WHERE severity='critical'"
+  - case_id: kind_rented_rows
+    datasource_id: iot_spike
+    as_of: "2026-08-15T12:00:00+08:00"
+    question: "列出租賃裝置的 device_id 和 monthly_fee。"
+    expected_route: decline
+    note: "Subscription amount does not establish rental identity; no reviewed binding."
+  - case_id: kind_vip_rows
+    datasource_id: iot_spike
+    as_of: "2026-08-15T12:00:00+08:00"
+    question: "List site_id and site_name of all VIP sites."
+    expected_route: decline
+    note: "No VIP identity or reviewed derivation is supplied."
