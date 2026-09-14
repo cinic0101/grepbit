@@ -1,0 +1,904 @@
+{
+  "scope": "Synthetic, authored/seen development panels; research only, no production promotion",
+  "baseline_git_sha": "2a9210f",
+  "model": "gemma-4-31b",
+  "temperature": 0,
+  "thinking": false,
+  "baseline": {
+    "cases": 21,
+    "model_calls": 21,
+    "exact_reference_answers": 4,
+    "manually_accepted_extra_output": 1,
+    "confirmed_wrong_answers": 1,
+    "refusal_on_answerable": 11,
+    "necessary_refusals": 2,
+    "failed": 2,
+    "manual_review": "iot_filtered_rows includes an extra COUNT=1 per device primary key. All requested values equal the oracle. Do not silently merge this with exact-reference scores.",
+    "artifact": ".artifacts/query-extensions-20260914/baseline.json",
+    "sha256": "0456383fb3a6edf441d984a479e9e837147ce9cd885ee0a2d1a69dc1ba5e4f9d"
+  },
+  "runs": [
+    {
+      "revision": "query-extension-planner-study-v1",
+      "evaluator_revision": null,
+      "actual_calls": 21,
+      "summary": {
+        "reference_match": 14,
+        "reference_mismatch": 2,
+        "not_scored_failure": 3,
+        "necessary_refusal": 2
+      },
+      "source_hashes": {
+        "evals/query_extension_study.py": "decec823e41c8fd103f12d82dbaa8727e5953885a65edb4e134987c1743b83a1",
+        "src/grepbit/domain/query_extension_study.py": "f28e333f3f88b791ca6c8124175777117baaf98284303a20d7befc7e53ab6219",
+        "src/grepbit/adapters/sqlglot/query_extension_study.py": "a499698a852cb270be7ad246ff1754a244b1fb857e9d8b30eebeca9ee5afd32c"
+      },
+      "panel_sha256": "e2a847e0e8ac6a3d0cf0729014f7d6d24f08da8e2178a108a8173eccb3add2c4",
+      "unit_bindings_sha256": "4bce179c074f3756a436e91efdc218c64b9ea1bcbeb48b3bca1039030f566ef4",
+      "artifact": ".artifacts/query-extensions-20260914/study-v1.json",
+      "sha256": "3e7e450bd767312d76c41d3e3a6082dac1b57bebe9c06b75031c2a766ac2a010",
+      "cases": [
+        {
+          "id": "iot_rows",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "5d42e77fd8075a7cefa4a108021e115109697a9248ecd777bc4121effab2812f"
+        },
+        {
+          "id": "iot_all_details",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "baa3448cfd02a3edebbb580c7bbb7aa9b07cab98115728f3250888d631390b24"
+        },
+        {
+          "id": "iot_filtered_rows",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "e9c9700dcfbb18afa13b3a5b001974577f771f0e4a5420cff5c3f22fa9a4331a"
+        },
+        {
+          "id": "iot_top_rows",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "b84a0b25c6875017d383f9b2fdd6cd8c046292feaa79133dc2b9832a73c8c82f"
+        },
+        {
+          "id": "iot_fahrenheit",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "a9a75ecc69542dacabe5ade4f98088efb136d5b5e518d593756b5ab3e35230b0"
+        },
+        {
+          "id": "iot_min_fahrenheit",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "f19d72fb5089f8cf2af6f6af819e5eb4aaea006a57162664f2007ff789abdd6d"
+        },
+        {
+          "id": "iot_combine",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "dd9857d94e01a26c5d0fdd1addecc637cc49a9405463eae1ea831c2514e7008b"
+        },
+        {
+          "id": "iot_top_alert_temperature",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "29a192ee3f96fe3194300aa32c41c9d2110cc5a00df085707238de0dac91937a"
+        },
+        {
+          "id": "iot_reverse_rank",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "e5aa9b25c415f43dd986b5acf52435a834d5f244234200ac193ea7a567391cda"
+        },
+        {
+          "id": "iot_avg_control",
+          "family": "control",
+          "status": "failed",
+          "outcome": "not_scored_failure",
+          "error_type": "ValidationError",
+          "error_code": null,
+          "messages_sha256": "e8441248fb8177aff6a6a989c0618669e03a4657507ce8b7e2448e26909dcedc"
+        },
+        {
+          "id": "iot_count_control",
+          "family": "control",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "2e0bb1d1975dde6c3de3f7797f4da1953725860f3f6a778deed99dc315ff0fee"
+        },
+        {
+          "id": "iot_incompatible_unit",
+          "family": "refusal",
+          "status": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "ae19384914dd980860792352aab326d386a3ceeddb08441f455b14b6b3381a73"
+        },
+        {
+          "id": "service_rows",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "0f91d687a948cf91df9d60c93132ced004968b53cfacac2cea4737897dddb353"
+        },
+        {
+          "id": "service_null_rows",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "5f54663b974b0ef291c971be2e55461f1bedf852ef0032e717d46d35d51ab266"
+        },
+        {
+          "id": "service_hours",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "d368545ad82c563ae29be4875231a19baf7a6074ad0d002d68598439a9a26a3a"
+        },
+        {
+          "id": "service_avg_hours",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "4daa8b09a0ef8cba9cedbe4b838eff516e9c10a811f4b59a7fea14f90da5f0ee"
+        },
+        {
+          "id": "service_combine",
+          "family": "combine",
+          "status": "failed",
+          "outcome": "not_scored_failure",
+          "error_type": "ValidationError",
+          "error_code": null,
+          "messages_sha256": "e6b3f435d414a32a035aadcf7e65c7ea6a0e3cdc39b9cc9223ba7d627632a01f"
+        },
+        {
+          "id": "service_most_events_work",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "ef40d62c235ccd0eda96dacfa68b49dd2b029ea6de96a6d8c0bde0204208a160"
+        },
+        {
+          "id": "service_total_control",
+          "family": "control",
+          "status": "failed",
+          "outcome": "not_scored_failure",
+          "error_type": "ValidationError",
+          "error_code": null,
+          "messages_sha256": "3d5c75f24b9607147a4a6857b3f73c273fd1c8e066cb1e78460e9c90f2cb365b"
+        },
+        {
+          "id": "service_count_control",
+          "family": "control",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "77b634a1d06754d9ae53883c1e7e736a42e2ee616642f1ab3f0760b6044ff2aa"
+        },
+        {
+          "id": "service_sla_gap",
+          "family": "refusal",
+          "status": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "5e7c46c0778c23ad58c373de5574d268c56a00cf79fbc48fb0b90aefc193b8ac"
+        }
+      ]
+    },
+    {
+      "revision": "query-extension-planner-study-v2",
+      "evaluator_revision": null,
+      "actual_calls": 21,
+      "summary": {
+        "reference_match": 18,
+        "necessary_refusal": 2,
+        "reference_mismatch": 1
+      },
+      "source_hashes": {
+        "evals/query_extension_study.py": "7e1ea27769033f610004b5305bd876456fc837ae1a89b543583d02307cc7e415",
+        "src/grepbit/domain/query_extension_study.py": "f28e333f3f88b791ca6c8124175777117baaf98284303a20d7befc7e53ab6219",
+        "src/grepbit/adapters/sqlglot/query_extension_study.py": "a499698a852cb270be7ad246ff1754a244b1fb857e9d8b30eebeca9ee5afd32c"
+      },
+      "panel_sha256": "e2a847e0e8ac6a3d0cf0729014f7d6d24f08da8e2178a108a8173eccb3add2c4",
+      "unit_bindings_sha256": "4bce179c074f3756a436e91efdc218c64b9ea1bcbeb48b3bca1039030f566ef4",
+      "artifact": ".artifacts/query-extensions-20260914/study-v2.json",
+      "sha256": "b7cdd065c2f0783b74e7d1133835d4eca9c8fcc919500037df769314790b2a79",
+      "cases": [
+        {
+          "id": "iot_rows",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "9f487920a8e449aafabc5c882c8cc08448462bb671a5b163463981d989bedc18"
+        },
+        {
+          "id": "iot_all_details",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "a99c37246d1051b1ebbd8b84e0384e42f1f382e461c843c497ba32fd3181e34e"
+        },
+        {
+          "id": "iot_filtered_rows",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "4981dd7971bb5b672b7e9a202beccf96abb8096714d38b731b66e1372537bd9e"
+        },
+        {
+          "id": "iot_top_rows",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "3f45e456081cad9d79bbe355f19d55298a68e8c237b0bab32fae7035c58176bd"
+        },
+        {
+          "id": "iot_fahrenheit",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "79765a3496f284543dcf63bffa399ef2b95f5fe0d609fa57d5988dc2026d2232"
+        },
+        {
+          "id": "iot_min_fahrenheit",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "38661026e80564f2c31a631cd5b073422b33b4e9797c213aec31357e7cd9730e"
+        },
+        {
+          "id": "iot_combine",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "2725cee5d5231117e5c0e1cdb4de6059643f5de14e2eef38bb4c7b15746043dd"
+        },
+        {
+          "id": "iot_top_alert_temperature",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "4ba21c488d3a1ec0669ee8a00b39f305d0cfab20ba94e1c8f5b267dcd986c0a9"
+        },
+        {
+          "id": "iot_reverse_rank",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "f5d5d3256b9a8c6797d51367e01a2fc42097ac3e9ffe5ac074f1c7ba2f64b664"
+        },
+        {
+          "id": "iot_avg_control",
+          "family": "control",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "1a015517fa84c8a30f2842f9a94b64928f40687f9896fcf8a32403bd5b00987e"
+        },
+        {
+          "id": "iot_count_control",
+          "family": "control",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "2a9b56fb50f746231e882e9ee53678d330b907f267ab0b7c9e3126f2cf57a21d"
+        },
+        {
+          "id": "iot_incompatible_unit",
+          "family": "refusal",
+          "status": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "19ae011dacde0b7ef43916c8aa039f1c819c226a3f444215c737a311d6f1b8f7"
+        },
+        {
+          "id": "service_rows",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "874938dc62573374256bd7536c24ece324b41943f8403f2bab62c04a3f1a58be"
+        },
+        {
+          "id": "service_null_rows",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "5eab5885a8ebf17fc71dbd339ca4bdcf354e555d28df167197fec7703016d0d4"
+        },
+        {
+          "id": "service_hours",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "497e7965644e13022c0d8e69d70a72bc2b95467e90478d5631cb130036635c09"
+        },
+        {
+          "id": "service_avg_hours",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "e4f51c1549cfd18d3bac3a8e3cb8d589062dbc5c3154d55a60d1b1a464fe64a5"
+        },
+        {
+          "id": "service_combine",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "4f0f574126da77cf63624782752ed874ae8c455571961ff8f98d3548635ee64e"
+        },
+        {
+          "id": "service_most_events_work",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "51f259c0b073b6fe9cf31dd2c98a01c36cd7014bb8af34431c672e95d6699ae8"
+        },
+        {
+          "id": "service_total_control",
+          "family": "control",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "a7c03297cca66e7245126e549df5db034afbe1595841d495427b23dbc6e86912"
+        },
+        {
+          "id": "service_count_control",
+          "family": "control",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "b033651fdc6f06d9ec2bda168371d72b0d73628d76ca0893a7e2eeb2578706c8"
+        },
+        {
+          "id": "service_sla_gap",
+          "family": "refusal",
+          "status": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "afbb207e6b4124e0d3fe305f637660aba091c531944670578d0038daaa47749b"
+        }
+      ]
+    },
+    {
+      "revision": "query-extension-planner-study-v2",
+      "evaluator_revision": "query-extension-values-v2",
+      "actual_calls": 12,
+      "summary": {
+        "reference_mismatch": 6,
+        "reference_match": 4,
+        "not_scored_failure": 1,
+        "unexpected_answer": 1
+      },
+      "source_hashes": {
+        "evals/query_extension_study.py": "3478a2aa3cada8b5ed5abcae93ecf90cc69c2371900da2c38b053d6a85fc0fba",
+        "src/grepbit/domain/query_extension_study.py": "f28e333f3f88b791ca6c8124175777117baaf98284303a20d7befc7e53ab6219",
+        "src/grepbit/adapters/sqlglot/query_extension_study.py": "a499698a852cb270be7ad246ff1754a244b1fb857e9d8b30eebeca9ee5afd32c"
+      },
+      "panel_sha256": "35d823242933c6abafa496fad513d8288780377c1bc75f4db8d8a49ba5f4309c",
+      "unit_bindings_sha256": "4bce179c074f3756a436e91efdc218c64b9ea1bcbeb48b3bca1039030f566ef4",
+      "artifact": ".artifacts/query-extensions-20260914/followup-v2.json",
+      "sha256": "79a766f24502181d868febbe97da4bc1d7f3615ea9b6376890a975d52c8da6f6",
+      "cases": [
+        {
+          "id": "original_1",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "edda07d313d3d0ccb14f51b7e78fa177f2fe6eb27823e56d86715339230e3c0f"
+        },
+        {
+          "id": "original_2",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "684cb2220c8443da49659147daf9e1ce937196968340356bc26a406287e0e648"
+        },
+        {
+          "id": "original_3",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "1e70cfc20f5c9238c6bad0c6423d88a4d5e1636f58d539d9eebf8225d7608bc0"
+        },
+        {
+          "id": "original_4",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "df1007952678836ef89a49ac8a6809c3165f0583c4ecf4ef783253aff4831db5"
+        },
+        {
+          "id": "natural_rows_ja",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "160d2db551464ac4c83873c8db640ad3665d854cb7a8a5a66883ba729bdcc7cb"
+        },
+        {
+          "id": "natural_units_ja",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "135465dc7fed908ecb12f4a20a20e0b19ec9fdd8c782e41f8ba1977e4731ed05"
+        },
+        {
+          "id": "new_combine_scopes",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "e8d445d7a2f71996e97c60f30c845d9801df19242a396e5e613d5b7c747f86c6"
+        },
+        {
+          "id": "new_combine_natural_keys",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "fc1f9e9ed5477059c960ae91a47a45d6a76f1a817c0f0598d59b91d4cb1bea6e"
+        },
+        {
+          "id": "new_unit_hours_zh",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "aeb0163f18475d0ee0b60ddab32ddf25665c1c7e7f211c45e78289850c745b57"
+        },
+        {
+          "id": "new_rows_service",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "d879cce7cabc1bbab0e0cd078cd0dbdaeeb9a61c9eabb23d48ca11099b43e889"
+        },
+        {
+          "id": "new_joined_details_gap",
+          "family": "rows",
+          "status": "failed",
+          "outcome": "not_scored_failure",
+          "error_type": "ValidationError",
+          "error_code": null,
+          "messages_sha256": "7c1bd2bf6309b5e315c1678ceb482006ff5a2e479ed47c5a510140f5765d77b0"
+        },
+        {
+          "id": "new_missing_meaning",
+          "family": "refusal",
+          "status": "answered",
+          "outcome": "unexpected_answer",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "e41d20bdec477442fe63dd37c9bda25e77ce9a8947fb34b09984bca633095dde"
+        }
+      ]
+    },
+    {
+      "revision": "query-extension-planner-study-v2-question-last",
+      "evaluator_revision": "query-extension-values-v2",
+      "actual_calls": 12,
+      "summary": {
+        "reference_mismatch": 5,
+        "reference_match": 5,
+        "refusal_on_answerable": 1,
+        "unexpected_answer": 1
+      },
+      "source_hashes": {
+        "evals/query_extension_study.py": "0b44730c1814f0e546b48d416d19c077f097ba460143b83a288360fab0083dd9",
+        "src/grepbit/domain/query_extension_study.py": "f28e333f3f88b791ca6c8124175777117baaf98284303a20d7befc7e53ab6219",
+        "src/grepbit/adapters/sqlglot/query_extension_study.py": "a499698a852cb270be7ad246ff1754a244b1fb857e9d8b30eebeca9ee5afd32c"
+      },
+      "panel_sha256": "35d823242933c6abafa496fad513d8288780377c1bc75f4db8d8a49ba5f4309c",
+      "unit_bindings_sha256": "4bce179c074f3756a436e91efdc218c64b9ea1bcbeb48b3bca1039030f566ef4",
+      "artifact": ".artifacts/query-extensions-20260914/followup-v2-question-last.json",
+      "sha256": "f8117ea5dbd3d138d6c5cffe6848874372d01d513ddafd3b8e09e6658b2d2eff",
+      "cases": [
+        {
+          "id": "original_1",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "b4d1fc1223d283acbd1ee9075f3c86658cc28d7cbac60284df878daeead35e61"
+        },
+        {
+          "id": "original_2",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "5bef759b57de3ea62bf1f2d888d8cfe89b4be06e358c641c8b8dddadac7d55fa"
+        },
+        {
+          "id": "original_3",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "a77f588a463e58975bac5731a456e22dee41b84c7063b905154b89634d648ebf"
+        },
+        {
+          "id": "original_4",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "71f7a54a8e1ab7b0785447ffeb5b23eba2122a032351a0c5d62d8c1aedb9f0aa"
+        },
+        {
+          "id": "natural_rows_ja",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "9100f8284c28854eee3f32fea48f82e4a21f74718da974df3de06ff282564121"
+        },
+        {
+          "id": "natural_units_ja",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "44d3b43d5eb9928670b14305d87deba2c6bf1acae971b27ce288835633b1cda3"
+        },
+        {
+          "id": "new_combine_scopes",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "b4a75b3a566193d5cca4bc2e9b1feb034d30f74d906380877363a464b8a2dd2a"
+        },
+        {
+          "id": "new_combine_natural_keys",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "022eff30eda3940e791618c684396fb1765e392c7d5006777aee807c3dd291ad"
+        },
+        {
+          "id": "new_unit_hours_zh",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "25e5473ee630e051b216c41c9d8bf43bffe6a4886a08f029f277a87317780d9c"
+        },
+        {
+          "id": "new_rows_service",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "50512fd48cb22f29f734ec285ada8da18286c1044d8b4c8bed54aee1750aaa9d"
+        },
+        {
+          "id": "new_joined_details_gap",
+          "family": "rows",
+          "status": "unsupported",
+          "outcome": "refusal_on_answerable",
+          "error_type": "StudyRefusal",
+          "error_code": "projection_requires_visible_base_columns",
+          "messages_sha256": "ca751c5a4b311acb23df9e645b7e5789a069e9fdb4c9e4071da35fdc2cd6d867"
+        },
+        {
+          "id": "new_missing_meaning",
+          "family": "refusal",
+          "status": "answered",
+          "outcome": "unexpected_answer",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "88ae3da6d50600b24c75f555d0fac0f4d6fcb8d936c0c772d822441cf224b872"
+        }
+      ]
+    },
+    {
+      "revision": "query-extension-planner-study-v2",
+      "evaluator_revision": "query-extension-values-v2",
+      "actual_calls": 0,
+      "summary": {
+        "reference_match": 4
+      },
+      "source_hashes": {
+        "evals/query_extension_study.py": "0b44730c1814f0e546b48d416d19c077f097ba460143b83a288360fab0083dd9",
+        "src/grepbit/domain/query_extension_study.py": "f28e333f3f88b791ca6c8124175777117baaf98284303a20d7befc7e53ab6219",
+        "src/grepbit/adapters/sqlglot/query_extension_study.py": "a499698a852cb270be7ad246ff1754a244b1fb857e9d8b30eebeca9ee5afd32c"
+      },
+      "panel_sha256": "3ed92201c05403777b644039eb12b3488c5ce3b1f2aea3479a23b96eba2269ef",
+      "unit_bindings_sha256": "4bce179c074f3756a436e91efdc218c64b9ea1bcbeb48b3bca1039030f566ef4",
+      "artifact": ".artifacts/query-extensions-20260914/injection-result.json",
+      "sha256": "8dd08b7c29c61d15b775bccc3c14ec8ed9fd537f030b6b878bdfda3f50a5802c",
+      "cases": [
+        {
+          "id": "original_1",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "edda07d313d3d0ccb14f51b7e78fa177f2fe6eb27823e56d86715339230e3c0f"
+        },
+        {
+          "id": "original_2",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "684cb2220c8443da49659147daf9e1ce937196968340356bc26a406287e0e648"
+        },
+        {
+          "id": "original_3",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "1e70cfc20f5c9238c6bad0c6423d88a4d5e1636f58d539d9eebf8225d7608bc0"
+        },
+        {
+          "id": "original_4",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "df1007952678836ef89a49ac8a6809c3165f0583c4ecf4ef783253aff4831db5"
+        }
+      ],
+      "diagnostic_only": "Correct plans selected from explicit-question run and injected for original four; NOT natural-language accuracy."
+    },
+    {
+      "revision": "query-extension-operator-scoped-diagnostic-rows-v2",
+      "evaluator_revision": "query-extension-values-v2",
+      "actual_calls": 1,
+      "summary": {
+        "reference_match": 1
+      },
+      "source_hashes": {
+        "evals/query_extension_study.py": "0b44730c1814f0e546b48d416d19c077f097ba460143b83a288360fab0083dd9",
+        "src/grepbit/domain/query_extension_study.py": "f28e333f3f88b791ca6c8124175777117baaf98284303a20d7befc7e53ab6219",
+        "src/grepbit/adapters/sqlglot/query_extension_study.py": "a499698a852cb270be7ad246ff1754a244b1fb857e9d8b30eebeca9ee5afd32c"
+      },
+      "panel_sha256": "d0c74df9b12bc278634c07a0a2619ad84b8e9aa058d6e5bde29a8385e5709f5f",
+      "unit_bindings_sha256": "4bce179c074f3756a436e91efdc218c64b9ea1bcbeb48b3bca1039030f566ef4",
+      "artifact": ".artifacts/query-extensions-20260914/operator-rows.json",
+      "sha256": "ed4a20349f92bb2633eb2cc2c29554757f54dab4129e92afff1855493265b6be",
+      "cases": [
+        {
+          "id": "original_2",
+          "family": "rows",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "a472ba88bfd21b3100e969fb4d4b91f033b21fa49966d82c7c8a9a8e0771b708"
+        }
+      ],
+      "diagnostic_only": "Researcher supplied the correct operator kind; not autonomous routing or model accuracy.",
+      "diagnostic_script_sha256": "90e389a5adc5499557fccaa12cac3bbdae262837fdf7a61a7fde0841a9964066"
+    },
+    {
+      "revision": "query-extension-operator-scoped-diagnostic-aggregate-v2",
+      "evaluator_revision": "query-extension-values-v2",
+      "actual_calls": 3,
+      "summary": {
+        "reference_mismatch": 3
+      },
+      "source_hashes": {
+        "evals/query_extension_study.py": "0b44730c1814f0e546b48d416d19c077f097ba460143b83a288360fab0083dd9",
+        "src/grepbit/domain/query_extension_study.py": "f28e333f3f88b791ca6c8124175777117baaf98284303a20d7befc7e53ab6219",
+        "src/grepbit/adapters/sqlglot/query_extension_study.py": "a499698a852cb270be7ad246ff1754a244b1fb857e9d8b30eebeca9ee5afd32c"
+      },
+      "panel_sha256": "0884397fa5ac035a18db7d13e3d475636fbdf4ff507c90b14d879d210af97cc5",
+      "unit_bindings_sha256": "4bce179c074f3756a436e91efdc218c64b9ea1bcbeb48b3bca1039030f566ef4",
+      "artifact": ".artifacts/query-extensions-20260914/operator-aggregate.json",
+      "sha256": "e87f0bb3765cb9acb2eb06a70ab2b200d00ea6ee40db8feb779563612463c4a5",
+      "cases": [
+        {
+          "id": "original_3",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "abe7a79377e43ac334d25700c8809c9aad2c18a396eebf2bcd7245ffca51e939"
+        },
+        {
+          "id": "natural_units_ja",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "127d79b6e998091892d4444ece2ca5ef58d1dc4094b90fe371e674d3007e5964"
+        },
+        {
+          "id": "new_unit_hours_zh",
+          "family": "units",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "594a8ba697e68e3287351c4986fd6d38bf77dba14a66e6a6b70b2d6f9ab8834d"
+        }
+      ],
+      "diagnostic_only": "Researcher supplied the correct operator kind; not autonomous routing or model accuracy.",
+      "diagnostic_script_sha256": "90e389a5adc5499557fccaa12cac3bbdae262837fdf7a61a7fde0841a9964066"
+    },
+    {
+      "revision": "query-extension-operator-scoped-diagnostic-combine-v2",
+      "evaluator_revision": "query-extension-values-v2",
+      "actual_calls": 4,
+      "summary": {
+        "reference_mismatch": 2,
+        "not_scored_failure": 1,
+        "reference_match": 1
+      },
+      "source_hashes": {
+        "evals/query_extension_study.py": "0b44730c1814f0e546b48d416d19c077f097ba460143b83a288360fab0083dd9",
+        "src/grepbit/domain/query_extension_study.py": "f28e333f3f88b791ca6c8124175777117baaf98284303a20d7befc7e53ab6219",
+        "src/grepbit/adapters/sqlglot/query_extension_study.py": "a499698a852cb270be7ad246ff1754a244b1fb857e9d8b30eebeca9ee5afd32c"
+      },
+      "panel_sha256": "c0a5381c2bb7b06ea6f52320c95a80f78307cc005a50652b3506310fd1943c7f",
+      "unit_bindings_sha256": "4bce179c074f3756a436e91efdc218c64b9ea1bcbeb48b3bca1039030f566ef4",
+      "artifact": ".artifacts/query-extensions-20260914/operator-combine.json",
+      "sha256": "4c6959ac12d625542a9b2ea40f140cc251604f2c9106f9f568893ab1aaa3616d",
+      "cases": [
+        {
+          "id": "original_1",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "8ac191413af933af454e17d4b365c5d0667114c583a0361ba360daf94d8b3bf9"
+        },
+        {
+          "id": "original_4",
+          "family": "combine",
+          "status": "failed",
+          "outcome": "not_scored_failure",
+          "error_type": "ValidationError",
+          "error_code": null,
+          "messages_sha256": "e59f03b4cb8a4d76fa8740628aa7a019ba4b97d8eb2178f40501bc73218ca723"
+        },
+        {
+          "id": "service_combine",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_mismatch",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "dd17143f5272a1e394b3fceac80b090c9f190e030235e47de6124ef47c3ec922"
+        },
+        {
+          "id": "new_combine_natural_keys",
+          "family": "combine",
+          "status": "answered",
+          "outcome": "reference_match",
+          "error_type": null,
+          "error_code": null,
+          "messages_sha256": "006a9ae2241e58fe91325d928f4c4c2f9a038c1406998532e251c9d25ce1b480"
+        }
+      ],
+      "diagnostic_only": "Researcher supplied the correct operator kind; not autonomous routing or model accuracy.",
+      "diagnostic_script_sha256": "90e389a5adc5499557fccaa12cac3bbdae262837fdf7a61a7fde0841a9964066"
+    }
+  ],
+  "actual_model_calls": 95,
+  "offline_tests": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 1948
+  },
+  "static_passed": true
+}

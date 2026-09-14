@@ -146,3 +146,8 @@ selection controls rather than implementing another case-specific mechanism.
 
 No production change or live call; private YAML was checked for four unique
 case IDs and the documentation diff passed whitespace validation.
+
+Follow-up implementation/measurement is now recorded in
+[query-extension-study-01](query-extension-study-01.md): research-only SQL
+mechanisms work with correct plans, but automatic natural planning is not ready
+for promotion. The original intake observations above remain historical.

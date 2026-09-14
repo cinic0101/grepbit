@@ -1,0 +1,9 @@
+{
+  "iot_spike": [
+    {"column": {"table": "readings", "column": "temperature_c"}, "unit": "celsius", "evidence": "Synthetic IoT fixture temperature_c definition and user conversion probe; research-only binding"}
+  ],
+  "service_test": [
+    {"column": {"table": "work_logs", "column": "minutes"}, "unit": "minutes", "evidence": "Synthetic Service fixture work_logs minutes definition; research-only binding"},
+    {"column": {"table": "tickets", "column": "estimate_minutes"}, "unit": "minutes", "evidence": "Synthetic Service fixture ticket estimate_minutes definition; research-only binding"}
+  ]
+}

@@ -1,0 +1,109 @@
+# Authored, frozen before the live experiment. Not an unseen-user holdout.
+# SQL is an independent researcher oracle, never offered to the model.
+revision: query-extension-panel-v1
+cases:
+  - id: iot_rows
+    source: iot_spike
+    family: rows
+    question: "列出所有裝置的 device_id、model、status，按 device_id 排序。"
+    sql: "SELECT device_id, model, status FROM devices ORDER BY device_id"
+  - id: iot_all_details
+    source: iot_spike
+    family: rows
+    question: "列出所有裝置的詳細資料，包含 devices 表的全部可見欄位，按 device_id 排序。"
+    sql: "SELECT device_id, site_id, model, firmware, status, installed_on, monthly_fee FROM devices ORDER BY device_id"
+  - id: iot_filtered_rows
+    source: iot_spike
+    family: rows
+    question: "List device_id and model of offline devices, ordered by device_id."
+    sql: "SELECT device_id, model FROM devices WHERE status = 'offline' ORDER BY device_id"
+  - id: iot_top_rows
+    source: iot_spike
+    family: rows
+    question: "List device_id and monthly_fee for the two devices with the highest monthly_fee; break ties by device_id ascending."
+    sql: "SELECT device_id, monthly_fee FROM devices ORDER BY monthly_fee DESC NULLS LAST, device_id LIMIT 2"
+  - id: iot_fahrenheit
+    source: iot_spike
+    family: units
+    question: "各站平均溫度，單位換成華氏。按 site_id 分組，只列 site_id 與平均值，使用所有遙測紀錄。"
+    sql: "SELECT d.site_id, AVG(r.temperature_c * 9.0 / 5.0 + 32) FROM readings r JOIN devices d USING(device_id) GROUP BY d.site_id"
+  - id: iot_min_fahrenheit
+    source: iot_spike
+    family: units
+    question: "For each device_id, what is the minimum recorded temperature in Fahrenheit across all readings?"
+    sql: "SELECT device_id, MIN(temperature_c * 9.0 / 5.0 + 32) FROM readings GROUP BY device_id"
+  - id: iot_combine
+    source: iot_spike
+    family: combine
+    question: "所有裝置各有幾筆遙測數據、告警？列 device_id、遙測筆數、告警筆數，沒有紀錄的計數也要顯示 0。"
+    sql: "SELECT d.device_id, (SELECT COUNT(*) FROM readings r WHERE r.device_id=d.device_id), (SELECT COUNT(*) FROM alerts a WHERE a.device_id=d.device_id) FROM devices d"
+  - id: iot_top_alert_temperature
+    source: iot_spike
+    family: combine
+    question: "告警最多的站點平均溫度是多少？使用全部資料，列 site_id、告警筆數及按遙測紀錄平均的攝氏溫度；告警數並列的站點全部列出。"
+    sql: "WITH counts AS (SELECT s.site_id, (SELECT COUNT(*) FROM alerts a JOIN devices d USING(device_id) WHERE d.site_id=s.site_id) AS n FROM sites s) SELECT c.site_id, c.n, (SELECT AVG(r.temperature_c) FROM readings r JOIN devices d USING(device_id) WHERE d.site_id=c.site_id) FROM counts c WHERE c.n=(SELECT MAX(n) FROM counts)"
+  - id: iot_reverse_rank
+    source: iot_spike
+    family: combine
+    question: "For all sites with the highest average recorded Celsius temperature, show site_id, average temperature across readings, and total alert count. Include all ties. Use all data."
+    sql: "WITH avgs AS (SELECT s.site_id, (SELECT AVG(r.temperature_c) FROM readings r JOIN devices d USING(device_id) WHERE d.site_id=s.site_id) AS t FROM sites s) SELECT c.site_id, c.t, (SELECT COUNT(*) FROM alerts a JOIN devices d USING(device_id) WHERE d.site_id=c.site_id) FROM avgs c WHERE c.t=(SELECT MAX(t) FROM avgs)"
+  - id: iot_avg_control
+    source: iot_spike
+    family: control
+    question: "Show site_id and average Celsius temperature across all readings for each site with readings."
+    sql: "SELECT d.site_id, AVG(r.temperature_c) FROM readings r JOIN devices d USING(device_id) GROUP BY d.site_id"
+  - id: iot_count_control
+    source: iot_spike
+    family: control
+    question: "How many devices are there?"
+    sql: "SELECT COUNT(*) FROM devices"
+  - id: iot_incompatible_unit
+    source: iot_spike
+    family: refusal
+    question: "Convert the average throughput in Mbps to Fahrenheit."
+    refusal: true
+  - id: service_rows
+    source: service_test
+    family: rows
+    question: "列出所有 tickets 的 id、status、estimate_minutes，按 id 排序。"
+    sql: "SELECT id, status, estimate_minutes FROM tickets ORDER BY id"
+  - id: service_null_rows
+    source: service_test
+    family: rows
+    question: "List id and minutes of work_logs whose minutes are NULL, ordered by id."
+    sql: "SELECT id, minutes FROM work_logs WHERE minutes IS NULL ORDER BY id"
+  - id: service_hours
+    source: service_test
+    family: units
+    question: "每張有工時紀錄的工單總工時是多少小時？按 ticket_id 分組，列 ticket_id 與總小時數。資料中的 minutes 是分鐘。"
+    sql: "SELECT ticket_id, SUM(minutes / 60.0) FROM work_logs GROUP BY ticket_id"
+  - id: service_avg_hours
+    source: service_test
+    family: units
+    question: "What is the average work-log duration in hours across all entries? Stored minutes are minutes; exclude NULL durations, not zero durations."
+    sql: "SELECT AVG(minutes / 60.0) FROM work_logs"
+  - id: service_combine
+    source: service_test
+    family: combine
+    question: "每张工单各有几笔工时记录、几笔事件？列 tickets.id、工时记录数、事件数，没有记录也列出 0。"
+    sql: "SELECT t.id, (SELECT COUNT(*) FROM work_logs w WHERE w.ticket_id=t.id), (SELECT COUNT(*) FROM ticket_events e WHERE e.ticket_id=t.id) FROM tickets t"
+  - id: service_most_events_work
+    source: service_test
+    family: combine
+    question: "Which tickets have the most events? Include all ties and show tickets.id, event count, and total logged minutes. Do not replace NULL total work with zero."
+    sql: "WITH counts AS (SELECT t.id, (SELECT COUNT(*) FROM ticket_events e WHERE e.ticket_id=t.id) AS n FROM tickets t) SELECT c.id, c.n, (SELECT SUM(w.minutes) FROM work_logs w WHERE w.ticket_id=c.id) FROM counts c WHERE n=(SELECT MAX(n) FROM counts)"
+  - id: service_total_control
+    source: service_test
+    family: control
+    question: "What is the total logged time in minutes across all work logs?"
+    sql: "SELECT SUM(minutes) FROM work_logs"
+  - id: service_count_control
+    source: service_test
+    family: control
+    question: "How many work-log records are there? Count records, not distinct tickets."
+    sql: "SELECT COUNT(*) FROM work_logs"
+  - id: service_sla_gap
+    source: service_test
+    family: refusal
+    question: "What percentage of tickets met the contractual SLA?"
+    refusal: true
