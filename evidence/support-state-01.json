@@ -1,0 +1,159 @@
+{
+  "state": "complete",
+  "baseline": "7b0c4b9",
+  "artifact_root": ".artifacts/support-state-20260914",
+  "analysis_root": ".artifacts/support-state-analysis-20260914",
+  "tracked_source_digest": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+  "production_prompt": "plan-classify-json-v15",
+  "research_revision": "support-state-comments-v1",
+  "cases": 18,
+  "arms": [
+    "A",
+    "B",
+    "C"
+  ],
+  "initial_jobs": 54,
+  "actual_calls": 54,
+  "repairs": 0,
+  "transport_errors": 0,
+  "conditional_second_pass": false,
+  "results": {
+    "A": {
+      "categories": {
+        "correct_answer": 12,
+        "necessary_refusal": 4,
+        "wrong_answer": 2
+      },
+      "answered": 14,
+      "effective_answers": 12,
+      "known_wrong": 2,
+      "unknown_mapping_statuses": {
+        "semantic_gap": 2,
+        "answered": 1
+      },
+      "typed_state_matches": 14,
+      "call_p50": 1.4732773955038283
+    },
+    "B": {
+      "categories": {
+        "correct_answer": 12,
+        "necessary_refusal": 4,
+        "wrong_answer": 2
+      },
+      "answered": 14,
+      "effective_answers": 12,
+      "known_wrong": 2,
+      "unknown_mapping_statuses": {
+        "semantic_gap": 2,
+        "answered": 1
+      },
+      "typed_state_matches": 14,
+      "call_p50": 1.48797483346425
+    },
+    "C": {
+      "categories": {
+        "correct_answer": 12,
+        "necessary_refusal": 5,
+        "wrong_answer": 1
+      },
+      "answered": 13,
+      "effective_answers": 12,
+      "known_wrong": 1,
+      "unknown_mapping_statuses": {
+        "semantic_gap": 3
+      },
+      "typed_state_matches": 14,
+      "call_p50": 1.5659088125103153
+    }
+  },
+  "screen": {
+    "passed": false,
+    "rescues": [
+      "lease_unknown_scoped"
+    ],
+    "regressions": [],
+    "domains": [
+      "lease"
+    ],
+    "all_candidate_categories_and_states_correct": false
+  },
+  "diagnosis": {
+    "exact_frozen_payload_checked": true,
+    "full_support_comment_delivered": true,
+    "recovered_plan_count": 1,
+    "alias_candidates": 11,
+    "wrong_total_replays": [
+      {
+        "instance": 0,
+        "unrestricted_total_matches": true,
+        "output_sha256": "aa028ca2315a0bbb993ee6b340faa2694356e8db2a3be9eebb10302bb99664ff"
+      },
+      {
+        "instance": 1,
+        "unrestricted_total_matches": true,
+        "output_sha256": "fbaa9060a80e3774a8541cb6117a9b54bab030f88636365d9de27fba5b6ec4db"
+      },
+      {
+        "instance": 2,
+        "unrestricted_total_matches": true,
+        "output_sha256": "1220e80a7a8fb1bcece94f15115f1d7a81ee034c624c43a2168434f6b4265cef"
+      },
+      {
+        "instance": 3,
+        "unrestricted_total_matches": true,
+        "output_sha256": "0b99263f4bec935e7fb92342d0093bd0cd780cb3f12d3f6ce42c1d448e810e0e"
+      }
+    ]
+  },
+  "oracles": {
+    "instances": 4,
+    "pairs_per_engine_per_preparation": 180,
+    "preparations_with_postgres": 2,
+    "foil_witnesses": 3,
+    "ask_injections": 54,
+    "model_never_sees_sql_or_rows": true
+  },
+  "validation": {
+    "primary_tests": 16,
+    "analysis_tests": 4,
+    "static": "pass",
+    "offline_reused_tests": 1841,
+    "offline_rerun": false
+  },
+  "source_identity": {
+    "runtime": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+    "helpers": {
+      "/Users/S019977/Documents/github/grepbit/.artifacts/support-state-20260914/panel_support.py": "8f7b7321754e2a6c4a891ca0e28f21292c710cada0d5c6cc9ec0eb8de4ff1ee5",
+      "/Users/S019977/Documents/github/grepbit/.artifacts/support-state-20260914/run_support.py": "99d3e2f50b74a65f9e5568131d2e9dfd0ee9f2622b1b4b08fbaf2712513a5c03",
+      "/Users/S019977/Documents/github/grepbit/.artifacts/support-state-20260914/test_support.py": "f2698c4e894bafc7d96eefe9e7ea3f802159ff7c05ae013cd22ed1e8c20e4f9c"
+    },
+    "reused_helpers": {
+      "/Users/S019977/Documents/github/grepbit/.artifacts/semantic-bottleneck-20260914/study.py": "237e3b06f1b92fbe2948b7716c5e2ece01a0c134b83a0a3281f8956b2839955a",
+      "/Users/S019977/Documents/github/grepbit/.artifacts/semantic-bottleneck-20260914/panel.py": "9fd7138883ea6f032b5d308245078f39ae172bfd697e8bce247659e3c60dbbe1"
+    }
+  },
+  "artifacts_sha256": {
+    ".artifacts/support-state-20260914/panel_support.py": "ba936e6317a6a6ac34329b41b4533f1a0e3783db22debe8a58b7665ed0a65b9d",
+    ".artifacts/support-state-20260914/run_support.py": "bf1df82d5f550c841507d1829922b0f28be7d614f649507aa12e9bcf6573bcc0",
+    ".artifacts/support-state-20260914/test_support.py": "e73252f11c18d8d4a0c0b236da45c2377c07618019b9ecf1ea68c3b54bbcb026",
+    ".artifacts/support-state-20260914/preflight.xml": "ea1370db4a8a7eedd6d424d7be4213f5b87c706311b3ccb4a10d77a90802a765",
+    ".artifacts/support-state-20260914/preparation.json": "92851cc0a70380fc6280c5397cdafaed01535c8d017713891d91991d65cd26d8",
+    ".artifacts/support-state-20260914/offline.json": "3e2925cc7bc5a61816808249bebe2e8c1f03be3e4b6c52fd9f9c4aeb9304c3cd",
+    ".artifacts/support-state-20260914/end-check.json": "7c69d03b59728d316c20c13da5213133ae64f8f85699b04b47d1737eb9552174",
+    ".artifacts/support-state-20260914/live/summary.json": "b964c36de7e249b69020a9ce518d9d8fe5ba529b799b92255600fc253cd39803",
+    ".artifacts/support-state-20260914/live/screen-0.json": "f57de8aa4fc99165ef4b50a78c27f8e5268405e44344b005470c62a74ff78d4c",
+    ".artifacts/support-state-20260914/static/result.json": "3b989b5bed8655b9e1304e691ea28086100d43a8562f3a0f0128425f5672279a",
+    ".artifacts/support-state-analysis-20260914/analysis.json": "7c5aecef97d56d063ce66f68c1a8eebe7de021dfdcf7ed53e4bf167bd398d39a",
+    ".artifacts/support-state-analysis-20260914/analyze.py": "fc66fb981a562e13a3673a2a8faeb0e23915ffc536d7260f8d706c58159dd3df",
+    ".artifacts/support-state-analysis-20260914/test_analysis.py": "490b04b50f7b8bc3a4e82f4ec2b1747c99c891454c99d3f5deec0776ca75f0cc",
+    ".artifacts/support-state-analysis-20260914/tests.xml": "3e9cdfd0fad13d0b5449046a75cbb56a64885daf865a9d89c0e5d6b444f822ab",
+    ".artifacts/temporal-reference-ruler-20260913/offline/result.json": "eaf551ca31082614b9d404d8fda4f07f016403d627f3e7504c783699cd934a25"
+  },
+  "limits": [
+    "Authored English one-table diagnostics, not real-user generalization",
+    "Only one domain rescued; confirmed-absent lease still wrong",
+    "Status mismatch does not prove a false claim of business absence",
+    "No production, gate, public contract or historical score changes"
+  ],
+  "decision": "Stop candidate; no conditional replication or metadata promotion"
+}

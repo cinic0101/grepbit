@@ -121,7 +121,21 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: independent ratio oracle replay from `8d54710` complete.
+Current 2026-09-14: support-state confirmation from `7b0c4b9` complete.
+18 authored cases × three metadata arms, 54 actual Gemma calls, no repairs/errors.
+A/B each 12 correct answers, 4 necessary refusals, 2 wrong answers; C 12/5/1.
+All 12 answerable controls survive; only lease-unknown is rescued. Lease-absent
+still answers the unrestricted total despite fully delivered support metadata.
+Cross-domain screen fails: no conditional second pass or metadata promotion.
+Unknown -> semantic_gap is not proof of false absence belief: existing rule 7
+does not promise the study's stricter state distinction. Twenty tests/static pass,
+source-matched offline 1,841 reused. Stop broad description expansion; a future
+bounded identical-text placement diagnostic may explain prior column-level gains,
+but location/batching causation is untested. Reviewed support provenance, wrong
+metric selection and role-sensitive gate errors remain distinct open work.
+See `../research/support-state-01.md`; production v15/ask v5 unchanged.
+
+Previous 2026-09-14: independent ratio oracle replay from `8d54710` complete.
 Owner-reviewed h2 q21/q23/q25 targets and interpretations bound to captured
 v11/v14 plans, compiled by unchanged current source. Five synthetic instances,
 90 SELECTs per engine (15 oracle, 30 captured, 45 wrong-alternative); all nine
