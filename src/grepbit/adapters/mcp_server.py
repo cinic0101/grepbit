@@ -147,8 +147,10 @@ def bind_datasource(
 
     services = AskServices(
         schema=schema,
-        planner=ChatCompletionsPlanClient(settings),
-        compiler=PlanCompiler(schema, overlay=overlay),
+        planner=ChatCompletionsPlanClient(settings, allow_rows=registration.allow_rows),
+        compiler=PlanCompiler(
+            schema, overlay=overlay, allow_rows=registration.allow_rows
+        ),
         policy=PostgresSqlPolicy(
             tables=frozenset(t.name for t in schema.tables),
             functions=REVIEWED_FUNCTIONS | PLAN_AGGREGATE_FUNCTIONS,
@@ -171,7 +173,9 @@ def bind_datasource(
 
         return replace(
             services,
-            planner=ChatCompletionsPlanClient(settings, control=request),
+            planner=ChatCompletionsPlanClient(
+                settings, control=request, allow_rows=registration.allow_rows
+            ),
             executor=PsycopgQueryExecutor(
                 connection_factory=request_connect,
                 active_queries=ActiveQueryRegistry(),
@@ -208,6 +212,7 @@ def capabilities_payload(bound: dict[str, BoundDatasource]) -> dict[str, Any]:
                 "id": ds.registration.id,
                 "description": ds.registration.description,
                 "business_timezone": ds.business_timezone,
+                "row_queries": ds.registration.allow_rows,
                 "tables": [
                     {
                         "name": t.name,
@@ -292,6 +297,7 @@ PUBLIC_RESULT_FIELDS = (
     "literal_checks",
     "model_retries",
     "model_repair_turns",
+    "model_row_fallbacks",
     "elapsed_seconds",
 )
 

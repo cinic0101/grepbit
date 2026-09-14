@@ -22,6 +22,7 @@ class DatasourceRegistration(DomainModel):
     business_timezone: str = "Asia/Taipei"
     enum_distinct_limit: int = Field(default=0, ge=0)
     description: str | None = None
+    allow_rows: bool = False
 
 
 class DatasourceRegistry(DomainModel):

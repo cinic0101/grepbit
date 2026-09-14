@@ -131,6 +131,7 @@ class AskResult:
     raw_output_repair: str | None = None
     # 1 when the planner needed its repair turn
     model_repair_turns: int = 0
+    model_row_fallbacks: int = 0
     elapsed_seconds: float = 0.0
 
     @property
@@ -231,6 +232,7 @@ def ask(
 def _record_planner_trace(result: AskResult, planner: Any) -> None:
     result.raw_output = getattr(planner, "last_raw_output", None)
     result.model_repair_turns = int(getattr(planner, "last_model_repair_turns", 0) or 0)
+    result.model_row_fallbacks = int(getattr(planner, "last_row_fallbacks", 0) or 0)
     result.value_references = int(getattr(planner, "last_value_refs", 0) or 0)
     result.value_reference_errors = int(
         getattr(planner, "last_value_ref_errors", 0) or 0
@@ -424,7 +426,14 @@ def _ask(
     result.rows = [dict(r) for r in execution.rows]
     result.row_count, result.rows_truncated = execution.row_count, execution.truncated
     for warning in (
-        empty_result_warning(result.rows),
+        (
+            "Every projected value in this record is NULL; "
+            "this is not an empty aggregate."
+            if plan.rows is not None
+            and len(result.rows) == 1
+            and all(v is None for v in result.rows[0].values())
+            else empty_result_warning(result.rows)
+        ),
         negative_share_warning(plan, result.rows),
     ):
         if warning:

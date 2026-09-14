@@ -23,7 +23,7 @@ class RowsQuery(DomainModel):
     columns: list[ColumnRef] = Field(default_factory=list, max_length=32)
     all_columns: bool = False
     filters: list[Filter] = Field(default_factory=list, max_length=6)
-    order: list[OrderSpec] = Field(default_factory=list, max_length=3)
+    order: list[OrderSpec] = Field(default_factory=list, max_length=2)
     limit: int | None = Field(default=None, ge=1, le=200)
 
     @model_validator(mode="after")
@@ -44,6 +44,12 @@ class AggregateQuery(DomainModel):
     kind: Literal["aggregate"]
     plan: QueryPlan
     conversion: Conversion | None = None
+
+    @model_validator(mode="after")
+    def no_nested_rows(self):
+        if self.plan.rows is not None:
+            raise ValueError("aggregate_query_cannot_contain_rows")
+        return self
 
 
 class Extremum(DomainModel):
@@ -71,6 +77,7 @@ class CombinedQuery(DomainModel):
                 or plan.limit is not None
                 or plan.growth
                 or plan.latest
+                or plan.rows
                 or plan.without
                 or (plan.time and plan.time.grain)
                 or any(m.ratio or m.share_of_total for m in plan.measures)

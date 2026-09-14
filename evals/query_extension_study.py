@@ -69,6 +69,9 @@ proposal, not a certificate that its interpretation matches user intent."""
 
 def study_schema(wire="v1"):
     schema = StudyProposal.model_json_schema()
+    # Production rows use the shared compiler but not a second nested study wire.
+    schema["$defs"]["QueryPlan"]["properties"].pop("rows", None)
+    schema["$defs"].pop("RowProjection", None)
     if wire == "v2":
         # Narrow the shown component contract to what the validator already
         # accepts. No compiler semantics or question-specific example changed.

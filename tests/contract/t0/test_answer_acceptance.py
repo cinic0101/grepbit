@@ -550,7 +550,9 @@ def test_runner_keeps_legacy_score_and_freezes_rules_before_planning(
     monkeypatch.setattr(psycopg, "connect", lambda _: Connection())
     monkeypatch.setattr(runner, "introspect_schema", lambda *a, **kw: s)
     monkeypatch.setattr(runner.GroundingModelSettings, "from_environment", lambda: None)
-    monkeypatch.setattr(runner, "ChatCompletionsPlanClient", lambda _: planner)
+    monkeypatch.setattr(
+        runner, "ChatCompletionsPlanClient", lambda _, **kwargs: planner
+    )
     monkeypatch.setattr(
         runner,
         "PsycopgQueryExecutor",

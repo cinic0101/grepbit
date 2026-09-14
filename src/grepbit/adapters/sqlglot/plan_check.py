@@ -103,6 +103,32 @@ def check_compiled(
 
     tree = sqlglot.parse_one(sql, read="postgres")
     violations: list[str] = []
+    if plan.rows is not None:
+        if not isinstance(tree, exp.Select):
+            violations.append("row_select_required")
+        else:
+            expected = [(c.table, c.column) for c in plan.rows.columns]
+            actual = [
+                (c.table, c.name) for c in tree.expressions if isinstance(c, exp.Column)
+            ]
+            if len(actual) != len(tree.expressions) or (
+                not plan.rows.all_columns and actual != expected
+            ):
+                violations.append("row_projection_mismatch")
+            if (
+                tree.args.get("distinct")
+                or tree.find(exp.Group)
+                or tree.find(exp.AggFunc)
+                or tree.find(exp.Window)
+            ):
+                violations.append("row_cardinality_changed")
+            if tree.args.get("order") is None:
+                violations.append("row_order_missing")
+            limit = tree.args.get("limit")
+            if (plan.limit is None) != (limit is None):
+                violations.append("row_limit_mismatch")
+            if verification != "unverified_semantics":
+                violations.append("row_verification_overclaim")
     if any(m.ratio is not None and m.filters for m in plan.measures):
         violations.append("ratio_wrapper_filters_unsupported")
     predicates = list(tree.find_all(exp.Predicate))

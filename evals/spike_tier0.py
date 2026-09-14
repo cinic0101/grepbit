@@ -41,6 +41,8 @@ from grepbit.adapters.language_pack_store import load_shape_pack
 from grepbit.adapters.litellm.grounding_client import GroundingModelSettings
 from grepbit.adapters.litellm.plan_client import (
     PLAN_PROMPT_REVISION,
+    ROW_PLAN_PROMPT_REVISION,
+    ROW_PLANNER_STRATEGY_REVISION,
     ChatCompletionsPlanClient,
 )
 from grepbit.adapters.overlay_store import load_semantic_overlay
@@ -222,6 +224,8 @@ def report_detail(result) -> dict[str, Any]:
         detail["raw_output_repair"] = result.raw_output_repair
     if result.model_repair_turns:
         detail["model_repair_turns"] = result.model_repair_turns
+    if result.model_row_fallbacks:
+        detail["model_row_fallbacks"] = result.model_row_fallbacks
     if result.status == "answered":
         detail["row_count"] = result.row_count
         detail["rows_truncated"] = result.rows_truncated
@@ -359,6 +363,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cases", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--live", action="store_true")
+    parser.add_argument(
+        "--allow-rows", action="store_true", help="Opt-in base-row listing pilot"
+    )
     parser.add_argument("--infer-joins", action="store_true")
     parser.add_argument("--overlay", type=Path)
     parser.add_argument(
@@ -493,7 +500,7 @@ def main(argv: list[str] | None = None) -> int:
                     else ""
                 )
             )
-    compiler = PlanCompiler(schema, overlay=overlay)
+    compiler = PlanCompiler(schema, overlay=overlay, allow_rows=arguments.allow_rows)
     policy = PostgresSqlPolicy(
         tables=frozenset(t.name for t in schema.tables),
         functions=REVIEWED_FUNCTIONS | PLAN_AGGREGATE_FUNCTIONS,
@@ -504,7 +511,7 @@ def main(argv: list[str] | None = None) -> int:
     client = None
     if arguments.live:
         settings = GroundingModelSettings.from_environment()
-        client = ChatCompletionsPlanClient(settings)
+        client = ChatCompletionsPlanClient(settings, allow_rows=arguments.allow_rows)
 
     def reference_values(sql: str) -> list[tuple]:
         with connect() as connection:
@@ -662,6 +669,14 @@ def main(argv: list[str] | None = None) -> int:
         "datasource_id": arguments.datasource_id,
         "cases_file": str(arguments.cases),
         "prompt_revision": PLAN_PROMPT_REVISION if arguments.live else None,
+        "row_prompt_revision": ROW_PLAN_PROMPT_REVISION
+        if arguments.live and arguments.allow_rows
+        else None,
+        "planner_strategy": ROW_PLANNER_STRATEGY_REVISION
+        if arguments.allow_rows
+        else "single-planner",
+        "model_row_fallbacks": sum(r.get("model_row_fallbacks", 0) for r in results),
+        "allow_rows": arguments.allow_rows,
         "model": client.settings.model if client else None,
         "output_mode": client.settings.structured_output_mode if client else None,
         "repair_turns_allowed": client.settings.repair_turns if client else None,

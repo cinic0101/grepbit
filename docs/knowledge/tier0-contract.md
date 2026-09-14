@@ -1,5 +1,57 @@
 # Tier-0 contract
 
+## Opt-in base-row listing pilot (2026-09-14)
+
+Scope/rulers: `../plan/base-row-pilot.md`. `DatasourceRegistration.allow_rows`
+defaults false; disabled planners retain prompt v15 and compilers refuse
+`row_queries_disabled`. Enabled profiles use `plan-v15-rows-fallback-v1`: run
+unchanged v15 first, retain its plan/semantic_gap/ambiguous result, and only on
+explicit unsupported try `plan-classify-json-v16-rows-pilot` once. Only a rows
+plan can be promoted; an aggregate fallback retains the original refusal.
+`model_row_fallbacks` reports that extra stage; repairs are reported separately.
+This preserves old proposals, not their correctness: a mistaken aggregate plan
+for a listing bypasses the fallback. The pilot is not enabled in Web defaults.
+No separate query tool or execution bypass is introduced. The public plan gains
+optional `rows` and row lineage adds `projection`; capabilities disclose
+`row_queries` per source. Runtime column policies are unchanged, not a PII
+whitelist. Do not enable an unreviewed real datasource merely because rows work.
+
+`rows: {columns: [ColumnRef, ...]}` or `rows: {all_columns: true}` lists individual
+base-table records. It requires base_table, excludes measures/dimensions/time/
+latest/without/having/growth, and allows existing plan filters/order/limit only.
+Projection and question filters must belong to the base table. Resolve all
+columns against current visibility; maximum 32, no SQL wildcard, duplicate
+projection or silent hidden-column inclusion. A visible whole primary key is
+required for deterministic ordering/tie breaking. Explicit order names projected
+columns (the existing unambiguous qualified-output normalization also covers rows).
+Unknown/hidden columns refuse; unsupported projection/unchecked combinations
+give `row_projection_unsupported`. Parent-label row projection is not in this
+pilot; reviewed segment predicates retain existing parent-join semantics.
+
+Rows preserve multiplicity and NULL, never GROUP BY or DISTINCT. They always
+carry `unverified_semantics`, explicit projection lineage and actual row-scope/
+ordering assumptions, even with reviewed segments. Literal checks, opted-in
+name binding/recompile, SQL policy and per-request lifecycle are the same ask()
+path as aggregates. Projection does not certify an intended business scope.
+
+Without a requested limit, no SQL LIMIT is added: executor/public caps detect
+and expose `rows_truncated`. `row_count` is returned row count, not a second
+query for total matches. Requested LIMIT is bound and separately described as
+a subset; it does not promise all matching records. A NULL-only projected
+record is not described as an aggregate over an empty population. No paging,
+total-count query, input/output unit conversion or independent aggregate join
+is added by this feature.
+
+Named row tests cover filters/default segments/named-exclusion lifting,
+visibility, qualified ordering, NULL/duplicates, LIMIT, shared grounding,
+truncation and stop-before-execute. Ten generated row instances are compared
+against independent Python ordering/projection oracles. The general differential
+generator/reference evaluator does not yet generate this new row kind; do not
+claim full algebra differential closure. All older construct scores are retained.
+The research rows wrapper now follows the shared limit of two explicit sort
+keys (formerly three in that research-only format); old study evidence is not
+regraded or claimed compatible with that narrowed experimental wire.
+
 ## MCP serving boundary v2 (2026-09-14)
 
 The owner authorized public/debug separation and request-lifecycle work. MCP

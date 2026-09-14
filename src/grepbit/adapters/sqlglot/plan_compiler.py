@@ -13,8 +13,11 @@ from __future__ import annotations
 
 import json
 from collections.abc import Sequence
+from dataclasses import replace
 from datetime import datetime
 
+import sqlglot
+from pydantic import ValidationError
 from sqlglot import exp
 
 from grepbit.adapters.sqlglot.plan_check import check_compiled
@@ -44,6 +47,7 @@ from grepbit.domain.plan import (
     Operand,
     PlanError,
     QueryPlan,
+    RowProjection,
 )
 from grepbit.domain.schema_model import (
     ColumnKind,
@@ -83,10 +87,15 @@ _ORDERED_KINDS = {
 
 class PlanCompiler:
     def __init__(
-        self, schema: SchemaModel, *, overlay: SemanticOverlay | None = None
+        self,
+        schema: SchemaModel,
+        *,
+        overlay: SemanticOverlay | None = None,
+        allow_rows: bool = False,
     ) -> None:
         self._schema = schema
         self._overlay = overlay
+        self._allow_rows = allow_rows
 
     def compile(
         self,
@@ -96,6 +105,21 @@ class PlanCompiler:
         exclude_segments: Sequence[Segment] = (),
         named_segments: Sequence[Segment] = (),
     ) -> CompiledPlan:
+        if plan.rows is not None:
+            if not self._allow_rows:
+                raise PlanError(
+                    "row_queries_disabled",
+                    "Row listing is not enabled for this datasource.",
+                )
+            # Revalidate unchecked copies so incompatible clauses never disappear.
+            try:
+                plan = QueryPlan.model_validate(plan.model_dump())
+            except ValidationError:
+                raise PlanError(
+                    "row_projection_unsupported",
+                    "Invalid row projection or combination.",
+                ) from None
+            return self._compile_rows(plan, as_of, exclude_segments, named_segments)
         # model_copy/model_construct can bypass domain validation. Never
         # silently discard a ratio wrapper's undefined filter scope.
         if any(m.ratio is not None and m.filters for m in plan.measures):
@@ -1124,6 +1148,146 @@ class PlanCompiler:
                     + [segment.id for segment, _ in segment_filters]
                 )
             ),
+        )
+
+    def _compile_rows(self, plan, as_of, exclude_segments, named_segments):
+        from grepbit.adapters.sqlglot.policy import _sqlglot_parameter_syntax
+
+        base = self._schema.table(plan.base_table)
+        if base is None or not self._visible(base.name):
+            raise PlanError("unknown_table", plan.base_table)
+        if not base.primary_key or any(
+            not self._visible(base.name, k) for k in base.primary_key
+        ):
+            raise PlanError(
+                "row_projection_unsupported",
+                "A visible primary key is required for stable row ordering.",
+            )
+        refs = (
+            [
+                ColumnRef(table=base.name, column=c.name)
+                for c in base.columns
+                if self._visible(base.name, c.name)
+            ]
+            if plan.rows.all_columns
+            else plan.rows.columns
+        )
+        if not refs or len(refs) > 32:
+            raise PlanError(
+                "row_projection_unsupported", "Select between 1 and 32 visible columns."
+            )
+        for ref in refs:
+            if (
+                ref.table != base.name
+                or not base.column(ref.column)
+                or not self._visible(base.name, ref.column)
+            ):
+                raise PlanError("unknown_column", ref.id)
+        outputs = [c.column for c in refs]
+        if any(item.field not in outputs for item in plan.order):
+            raise PlanError(
+                "row_projection_unsupported",
+                "Row ordering must name a projected column.",
+            )
+        # Reuse the established population compiler (typed filters and segments),
+        # then replace only its projection; no parallel grounding/execution path.
+        population = self.compile(
+            QueryPlan(
+                base_table=base.name,
+                measures=[Measure(aggregate=Aggregate.COUNT)],
+                filters=plan.filters,
+            ),
+            as_of=as_of,
+            exclude_segments=exclude_segments,
+            named_segments=named_segments,
+        )
+        tree = sqlglot.parse_one(
+            _sqlglot_parameter_syntax(population.compiled.physical_sql), read="postgres"
+        )
+        tree.set(
+            "expressions",
+            [exp.column(c.column, table=c.table, quoted=True) for c in refs],
+        )
+        for item in plan.order:
+            tree = tree.order_by(
+                exp.Ordered(
+                    this=exp.column(item.field, quoted=True),
+                    desc=item.direction == "desc",
+                    nulls_first=False,
+                )
+            )
+        ordered = {item.field for item in plan.order}
+        for key in base.primary_key:
+            if key not in ordered:
+                tree = tree.order_by(
+                    exp.column(key, table=base.name, quoted=True).asc()
+                )
+        parameters = list(population.compiled.execution_parameters)
+        if plan.limit is not None:
+            name = "row_limit"
+            while name in {p.name for p in parameters}:
+                name = "row_" + name
+            parameters.append(
+                QueryParameter(name=name, type_name="integer", value=plan.limit)
+            )
+            tree = tree.limit(exp.Placeholder(this=name))
+        compiled = population.compiled.model_copy(
+            update={
+                "physical_sql": tree.sql(dialect="postgres"),
+                "execution_parameters": parameters,
+                "compiler_revision": "plan-compiler-rows-v1",
+                "semantic_refs": sorted(
+                    set(population.compiled.semantic_refs)
+                    | {c.id for c in refs}
+                    | {f"{base.name}.{k}" for k in base.primary_key}
+                ),
+            }
+        )
+        checked = plan.model_copy(update={"rows": RowProjection(columns=refs)})
+        violations = check_compiled(
+            checked, compiled.physical_sql, parameters, "unverified_semantics"
+        )
+        if violations:
+            raise PlanError("self_check_failed", "; ".join(violations))
+        # Remove COUNT-specific prose from the population carrier; preserve its
+        # actual filter/segment assumptions and replace computation disclosure.
+        assumptions = tuple(
+            a
+            for a in population.assumptions
+            if a.definition_ref != "plan.effective_computation"
+        )
+        scope_text = "; ".join(population.lineage.filters) or "no common row predicate"
+        order_text = ", ".join(o.field + " " + o.direction for o in plan.order)
+        description = (
+            f"Visible row projection: {', '.join(c.id for c in refs)}; "
+            "no aggregation or deduplication; NULL values preserved. "
+            f"Row scope: {scope_text}. "
+            f"Order: {order_text or 'primary key'}; "
+            f"stable primary-key tie breaker: {', '.join(base.primary_key)}. "
+            + (
+                f"Explicit query LIMIT {plan.limit}; this is not all matching rows."
+                if plan.limit is not None
+                else "No SQL LIMIT; serving may truncate rows and must disclose it."
+            )
+        )
+        assumptions += (
+            Assumption(
+                text=description,
+                source=AssumptionSource.DEFAULT,
+                definition_ref="plan.row_projection",
+            ),
+        )
+        return replace(
+            population,
+            plan=plan,
+            compiled=compiled,
+            output_columns=tuple(outputs),
+            lineage=replace(
+                population.lineage, measures=(), projection=tuple(c.id for c in refs)
+            ),
+            assumptions=assumptions,
+            interpretation=description,
+            verification="unverified_semantics",
         )
 
     @staticmethod

@@ -133,6 +133,8 @@ def unmapped_concepts(
         columns |= {f.column.column.lower() for f in plan.without.filters}
     if plan.latest is not None:
         columns |= {ref.column.lower() for ref in plan.latest.take}
+    if plan.rows is not None:
+        columns |= {ref.column.lower() for ref in plan.rows.columns}
     metric_words: set[str] = set()
     segment_words: set[str] = set()
     if overlay is not None:

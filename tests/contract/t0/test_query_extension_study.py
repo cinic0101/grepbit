@@ -271,7 +271,7 @@ def test_hidden_columns_cannot_be_named_or_included_by_all():
         column_policies=[{"column": ref("devices", "model"), "visible": False}],
     )
     query = rows(all_columns=False, columns=[ref("devices", "model")])
-    with pytest.raises(StudyRefusal, match="visible_base_columns"):
+    with pytest.raises(ValueError, match="unknown_column"):
         compile_query(query, overlay=overlay)
     compiled = compile_query(rows(), overlay=overlay)
     assert "model" not in compiled.columns

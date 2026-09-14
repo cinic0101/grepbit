@@ -291,6 +291,21 @@ class LatestSpec(DomainModel):
     take: list[ColumnRef] = Field(min_length=1, max_length=4)
 
 
+class RowProjection(DomainModel):
+    """Explicit base-row columns or all currently visible base columns."""
+
+    columns: list[ColumnRef] = Field(default_factory=list, max_length=32)
+    all_columns: bool = False
+
+    @model_validator(mode="after")
+    def one_projection(self):
+        if bool(self.columns) == self.all_columns:
+            raise ValueError("choose_explicit_columns_or_all_columns")
+        if len({c.id for c in self.columns}) != len(self.columns):
+            raise ValueError("duplicate_projection")
+        return self
+
+
 class QueryPlan(DomainModel):
     """One governed query: an aggregate, or the latest row per group.
     ``base_table`` may be omitted when the measure columns or metrics
@@ -309,10 +324,30 @@ class QueryPlan(DomainModel):
     without: Absence | None = None
     # the latest row per group instead of aggregates
     latest: LatestSpec | None = None
+    rows: RowProjection | None = None
 
     @model_validator(mode="after")
     def names_are_unique(self) -> QueryPlan:
-        if not self.measures and self.latest is None:
+        if self.rows is not None:
+            if any(
+                (
+                    self.measures,
+                    self.dimensions,
+                    self.time,
+                    self.latest,
+                    self.without,
+                    self.having,
+                    self.growth,
+                )
+            ):
+                raise ValueError("plan_rows_excludes_other_constructs")
+            if self.base_table is None:
+                raise ValueError("plan_rows_requires_base_table")
+            if any(c.table != self.base_table for c in self.rows.columns):
+                raise ValueError("plan_rows_projection_requires_base_columns")
+            if any(f.column.table != self.base_table for f in self.filters):
+                raise ValueError("plan_rows_filters_require_base_columns")
+        if not self.measures and self.latest is None and self.rows is None:
             raise ValueError("plan_measures_required")
         if self.latest is not None:
             if self.measures or self.having or self.growth:
@@ -325,12 +360,14 @@ class QueryPlan(DomainModel):
         outputs += [dimension.column for dimension in self.dimensions]
         if self.latest is not None:
             outputs += [ref.column for ref in self.latest.take]
+        if self.rows is not None:
+            outputs += [ref.column for ref in self.rows.columns]
         if self.time is not None and self.time.grain is not None:
             outputs.append("period_start")
         if len(outputs) != len(set(outputs)):
             raise ValueError("plan_output_name_duplicate")
         for item in self.order:
-            if item.field not in outputs:
+            if item.field not in outputs and not (self.rows and self.rows.all_columns):
                 raise ValueError("plan_order_field_unknown")
         measure_names = {measure.output_name for measure in self.measures}
         for item in self.having:
@@ -386,6 +423,8 @@ class PlanProposal(DomainModel):
 _PLAN_ERROR_CODES = frozenset(
     {
         "unknown_table",
+        "row_queries_disabled",
+        "row_projection_unsupported",
         "unknown_column",
         "grain_conflict",
         "aggregate_kind_mismatch",
@@ -448,6 +487,7 @@ class Lineage:
     time_window: tuple[str, ...]
     having: tuple[str, ...] = ()
     latest: tuple[str, ...] = ()
+    projection: tuple[str, ...] = ()
 
     def as_dict(self) -> dict[str, object]:
         return {
@@ -460,6 +500,7 @@ class Lineage:
             "time_window": list(self.time_window),
             "having": list(self.having),
             **({"latest": list(self.latest)} if self.latest else {}),
+            **({"projection": list(self.projection)} if self.projection else {}),
         }
 
 

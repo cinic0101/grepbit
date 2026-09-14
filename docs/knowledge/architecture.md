@@ -125,6 +125,15 @@ more rule: sqlglot is imported only inside `adapters/sqlglot/`.
 
 ## The callable surface
 
+Base-row listing is now a datasource-opt-in extension of QueryPlan, not another
+serving route (`allow_rows`, default false; `../plan/base-row-pilot.md`). It uses
+the same ask gates, literal grounding, policy, executor and request ownership.
+The compiler reuses typed population/segment compilation, replaces its aggregate
+projection with visible base columns and performs row-specific selfchecks.
+The research rows wrapper delegates to this compiler; unit conversion and
+independent aggregates remain isolated research constructs. Projected NULLs and
+duplicates survive, PK ordering is stable, and row truncation is still disclosed.
+
 `application/ask.py` is the per-question pipeline as one function over
 ports (`ports/ask.py`): gates, planner with one transport retry, shape and
 base repairs, compile and policy, literal check with grounding, segment

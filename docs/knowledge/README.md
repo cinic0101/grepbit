@@ -17,3 +17,8 @@ Read in this order before changing code.
 
 Companion reading: `../research/tier0-generalization.md` (every experiment,
 with numbers) and `../history/lessons-from-v1.md`.
+
+Current query-extension integration result:
+[`base-row-pilot-01.md`](../research/base-row-pilot-01.md): shared row compiler
+available only by opt-in; automatic planner selection is not ready for Web
+promotion. Conversion and independent aggregates remain research-only.

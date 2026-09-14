@@ -1,0 +1,19 @@
+datasource_id: service_test
+as_of: "2026-04-15T12:00:00+08:00"
+cases:
+  - case_id: rows_ticket_columns
+    question: "列出所有 tickets 的 id、status、estimate_minutes，按 id 排序。"
+    expected: {status: answered}
+    reference_sql: "SELECT id,status,estimate_minutes FROM tickets ORDER BY id"
+  - case_id: rows_null_minutes
+    question: "List id and minutes of work_logs whose minutes are NULL, ordered by id."
+    expected: {status: answered}
+    reference_sql: "SELECT id,minutes FROM work_logs WHERE minutes IS NULL ORDER BY id"
+  - case_id: rows_every_worklog
+    question: "List every work log's id, logged_at and minutes, ordered by id."
+    expected: {status: answered}
+    reference_sql: "SELECT id,logged_at,minutes FROM work_logs ORDER BY id"
+  - case_id: rows_zero_minutes
+    question: "List id and minutes for work logs with zero minutes, ordered by id."
+    expected: {status: answered}
+    reference_sql: "SELECT id,minutes FROM work_logs WHERE minutes=0 ORDER BY id"

@@ -1,0 +1,36 @@
+# Seen/authored base-row pilot; strict ordered values checked separately.
+datasource_id: iot_spike
+as_of: "2026-08-15T12:00:00+08:00"
+cases:
+  - case_id: rows_original_device_details
+    question: "列出所有裝置的詳細資料"
+    expected: {status: answered}
+    reference_sql: "SELECT device_id, site_id, model, firmware, status, installed_on, monthly_fee FROM devices ORDER BY device_id"
+  - case_id: rows_device_columns
+    question: "列出所有裝置的 device_id、model、status，按 device_id 排序。"
+    expected: {status: answered}
+    reference_sql: "SELECT device_id, model, status FROM devices ORDER BY device_id"
+  - case_id: rows_offline_devices
+    question: "List device_id and model of offline devices, ordered by device_id."
+    expected: {status: answered}
+    reference_sql: "SELECT device_id, model FROM devices WHERE status='offline' ORDER BY device_id"
+  - case_id: rows_top_fees
+    question: "List device_id and monthly_fee for the two devices with the highest monthly_fee; break ties by device_id ascending."
+    expected: {status: answered}
+    reference_sql: "SELECT device_id, monthly_fee FROM devices ORDER BY monthly_fee DESC NULLS LAST, device_id LIMIT 2"
+  - case_id: rows_firmware_ja
+    question: "すべての装置の device_id と firmware を一覧にしてください。"
+    expected: {status: answered}
+    reference_sql: "SELECT device_id, firmware FROM devices ORDER BY device_id"
+  - case_id: rows_all_sites
+    question: "List every site's site_id and site_name, ordered by site_id."
+    expected: {status: answered}
+    reference_sql: "SELECT site_id, site_name FROM sites ORDER BY site_id"
+  - case_id: rows_alert_columns
+    question: "列出所有告警的 alert_id 與 severity，按 alert_id 排序。"
+    expected: {status: answered}
+    reference_sql: "SELECT alert_id, severity FROM alerts ORDER BY alert_id"
+  - case_id: rows_joined_details_gap
+    question: "列出所有裝置的 device_id 和所在站點的 site_name，按 device_id 排序。"
+    expected: {status: unsupported}
+    reference_sql: "SELECT d.device_id,s.site_name FROM devices d LEFT JOIN sites s USING(site_id) ORDER BY d.device_id"

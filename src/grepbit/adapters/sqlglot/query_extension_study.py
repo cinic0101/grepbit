@@ -62,7 +62,7 @@ class StudyCompiler:
                 raise StudyRefusal("duplicate_source_unit_binding")
             self.units[binding.column.id] = binding
         self.excluded, self.named = excluded, named
-        self.base = PlanCompiler(schema, overlay=overlay)
+        self.base = PlanCompiler(schema, overlay=overlay, allow_rows=True)
 
     def visible(self, table, name=None):
         source = self.schema.table(table)
@@ -129,79 +129,16 @@ class StudyCompiler:
         return tree, list(compiled.output_columns)
 
     def rows(self, query):
-        table = self.schema.table(query.base_table)
-        if table is None or not self.visible(query.base_table):
-            raise StudyRefusal("unknown_table")
-        if not table.primary_key or any(
-            not self.visible(table.name, k) for k in table.primary_key
-        ):
-            raise StudyRefusal("visible_primary_key_required_for_stable_rows")
-        refs = (
-            [
-                ColumnRef(table=table.name, column=c.name)
-                for c in table.columns
-                if self.visible(table.name, c.name)
-            ]
-            if query.all_columns
-            else query.columns
-        )
-        if (
-            not refs
-            or len(refs) > 32
-            or any(
-                c.table != table.name or not self.visible(c.table, c.column)
-                for c in refs
-            )
-        ):
-            raise StudyRefusal("projection_requires_visible_base_columns")
-        if any(f.column.table != table.name for f in query.filters):
-            raise StudyRefusal("row_filters_require_base_columns")
-        self.projected_refs.update(c.id for c in refs)
-        # Compile only the row population using existing typed predicates and
-        # default segments. Replace the COUNT projection, not its predicates.
-        tree, _ = self.part(
+        # Retire the study's duplicate SQL builder; retain its outer wire only.
+        return self.part(
             QueryPlan(
-                base_table=table.name,
-                measures=[{"aggregate": "count"}],
+                base_table=query.base_table,
+                rows={"columns": query.columns, "all_columns": query.all_columns},
                 filters=query.filters,
+                order=query.order,
+                limit=query.limit,
             )
         )
-        tree.set("expressions", [column(c.column, c.table) for c in refs])
-        output = [c.column for c in refs]
-        for item in query.order:
-            if item.field not in output:
-                raise StudyRefusal("row_order_requires_projected_column")
-            tree = tree.order_by(
-                exp.Ordered(
-                    this=column(item.field),
-                    desc=item.direction == "desc",
-                    nulls_first=False,
-                )
-            )
-        ordered = {o.field for o in query.order}
-        for key in table.primary_key:
-            if key not in ordered:
-                tree = tree.order_by(column(key, table.name).asc())
-        if query.limit is not None:
-            name = "row_limit"
-            self.params.append(
-                QueryParameter(name=name, type_name="integer", value=query.limit)
-            )
-            tree = tree.limit(exp.Placeholder(this=name))
-        # COUNT skeleton disclosure is not the calculation being returned.
-        self.assumptions = [
-            a for a in self.assumptions if "COUNT" not in a and "count(*)" not in a
-        ]
-        self.assumptions.append(
-            f"Visible row projection: {', '.join(c.id for c in refs)}; "
-            "stable primary-key ordering. No aggregation in this relation."
-        )
-        self.assumptions.append(
-            f"Explicit query LIMIT {query.limit}; this is not all matching rows."
-            if query.limit
-            else "No SQL LIMIT; serving may still truncate rows and must disclose it."
-        )
-        return tree, output
 
     def aggregate(self, query):
         plan = query.plan

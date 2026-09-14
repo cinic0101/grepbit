@@ -30,6 +30,8 @@ from grepbit.ports.ask import DATE_LITERAL_REPAIR, RELATIVE_WINDOW_REPAIR
 from grepbit.ports.grounding import GroundingModelError
 
 PLAN_PROMPT_REVISION = "plan-classify-json-v15"
+ROW_PLAN_PROMPT_REVISION = "plan-classify-json-v16-rows-pilot"
+ROW_PLANNER_STRATEGY_REVISION = "plan-v15-rows-fallback-v1"
 
 _RULES_ALL = (
     "You translate one analytics question into ONE aggregate query plan over the "
@@ -464,7 +466,7 @@ def _repair_refs(node: Any, model: SchemaModel, base_table, repairs, coerce, key
 
     if isinstance(node, list):
         for index, item in enumerate(node):
-            if isinstance(item, str) and key in ("dimensions", "take"):
+            if isinstance(item, str) and key in ("dimensions", "take", "columns"):
                 node[index] = coerce(item)
             elif (
                 key in ("dimensions", "take")
@@ -645,13 +647,20 @@ def _output_names(plan: dict[str, Any]) -> set[str]:
         for ref in latest.get("take") or []:
             if isinstance(ref, dict) and isinstance(ref.get("column"), str):
                 names.add(ref["column"])
+    rows = plan.get("rows")
+    if isinstance(rows, dict):
+        for ref in rows.get("columns") or []:
+            if isinstance(ref, dict) and isinstance(ref.get("column"), str):
+                names.add(ref["column"])
     time = plan.get("time")
     if isinstance(time, dict) and time.get("grain"):
         names.add("period_start")
     return names
 
 
-def _strip_qualified_fields(plan: dict[str, Any], repairs: list[str]) -> None:
+def _strip_qualified_fields(
+    plan: dict[str, Any], repairs: list[str], model: SchemaModel
+) -> None:
     """order.field "store.store_name" -> "store_name" when that is an output name.
 
     Order, having and growth refer to outputs by name; the model sometimes
@@ -660,6 +669,10 @@ def _strip_qualified_fields(plan: dict[str, Any], repairs: list[str]) -> None:
     """
 
     names = _output_names(plan)
+    if (plan.get("rows") or {}).get("all_columns"):
+        table = model.table(plan.get("base_table"))
+        if table:
+            names.update(c.name for c in table.columns)
     for section, key in (
         ("order", "field"),
         ("having", "field"),
@@ -739,7 +752,7 @@ def repair_column_refs(payload: Any, model: SchemaModel) -> tuple[Any, list[str]
     _repair_refs(plan, model, base_table, repairs, coerce)
     _share_filters_on_grouped_columns(plan, repairs)
     _date_literals_to_scope(plan, model, repairs)
-    _strip_qualified_fields(plan, repairs)
+    _strip_qualified_fields(plan, repairs, model)
     return payload, repairs
 
 
@@ -789,6 +802,7 @@ class ChatCompletionsPlanClient:
     last_thinking: bool = False
     last_value_refs: int = 0
     last_value_ref_errors: int = 0
+    last_row_fallbacks: int = 0
 
     def __init__(
         self,
@@ -796,9 +810,11 @@ class ChatCompletionsPlanClient:
         *,
         client: Any | None = None,
         control: RequestControl | None = None,
+        allow_rows: bool = False,
     ) -> None:
         self._settings = settings
         self._control = control
+        self._allow_rows = allow_rows
         self._transport = ChatCompletionsGroundingClient(settings, client=client)
 
     @property
@@ -815,13 +831,18 @@ class ChatCompletionsPlanClient:
         """
 
         if self._settings.structured_output_mode == "json_schema":
+            legacy_schema = PlanProposal.model_json_schema()
+            legacy_schema["$defs"]["QueryPlan"]["properties"].pop("rows", None)
+            legacy_schema["$defs"].pop("RowProjection", None)
             return {
                 "type": "json_schema",
                 "json_schema": {
                     "name": "plan_proposal",
-                    "schema": shown_schema(has_candidates=True)
-                    if has_candidates
-                    else PlanProposal.model_json_schema(),
+                    "schema": shown_schema(
+                        has_candidates=has_candidates, allow_rows=self._allow_rows
+                    )
+                    if has_candidates or self._allow_rows
+                    else legacy_schema,
                     "strict": True,
                 },
             }
@@ -838,11 +859,15 @@ class ChatCompletionsPlanClient:
         question_values: list[dict[str, str]] | None = None,
     ) -> list[dict[str, str]]:
         candidates = value_candidates(question_values, model, overlay)
-        schema = shown_schema_text(has_candidates=bool(candidates))
+        schema = shown_schema_text(
+            has_candidates=bool(candidates), allow_rows=self._allow_rows
+        )
         payload: dict[str, Any] = {
             "question": question.strip(),
             "as_of": as_of,
-            "prompt_revision": PLAN_PROMPT_REVISION,
+            "prompt_revision": ROW_PLAN_PROMPT_REVISION
+            if self._allow_rows
+            else PLAN_PROMPT_REVISION,
             "schema": schema_payload(model, overlay),
         }
         if previous is not None:
@@ -854,6 +879,25 @@ class ChatCompletionsPlanClient:
         rules = rules_for(question) + (_OVERLAY_RULE if overlay is not None else "")
         rules += _FOLLOW_UP_RULE if previous is not None else ""
         rules += _VALUES_RULE if candidates else ""
+        if self._allow_rows:
+            rules = rules.replace(
+                "ONE aggregate query plan",
+                "ONE governed query plan (aggregate or base-row listing)",
+                1,
+            )
+            rules += (
+                " For a listing of individual records, use plan.rows with either "
+                "columns (table.column strings) or all_columns:true for all visible "
+                "details. Require base_table and omit measures, dimensions, time, "
+                "having, growth, latest and without. Row projection and filters "
+                "may only use that base table; joined details are unsupported. "
+                "Order names projected columns. Do not add LIMIT for all records; "
+                "the server bounds output and discloses truncation. Rows preserve "
+                "NULL and duplicates; the server supplies primary-key ordering. "
+                "Use ordinary measures for aggregate questions, never rows to "
+                "avoid computing a requested count/sum. No unit conversion or "
+                "independent child-table combination is added by rows."
+            )
         return [
             {"role": "system", "content": rules},
             {
@@ -885,15 +929,56 @@ class ChatCompletionsPlanClient:
             else closing(client)
         )
         with manager:
-            return self._propose(
-                client,
-                question,
-                model,
-                as_of=as_of,
-                overlay=overlay,
-                previous=previous,
-                question_values=question_values,
-            )
+            self.last_row_fallbacks = 0
+            prior = None
+            if self._allow_rows:
+                # Preserve the legacy proposal before considering a new kind.
+                # Both clients use this invocation's transport and deadline.
+                baseline = ChatCompletionsPlanClient(
+                    self._settings, client=client, control=self._control
+                )
+                try:
+                    prior = baseline._propose(
+                        client,
+                        question,
+                        model,
+                        as_of=as_of,
+                        overlay=overlay,
+                        previous=previous,
+                        question_values=question_values,
+                    )
+                finally:
+                    for name in (
+                        "last_repairs",
+                        "last_raw_output",
+                        "last_repair_output",
+                        "last_model_repair_turns",
+                        "last_thinking",
+                        "last_value_refs",
+                        "last_value_ref_errors",
+                    ):
+                        setattr(self, name, getattr(baseline, name))
+                if prior.decision != "none" or prior.reason != "unsupported":
+                    return prior
+                self.last_row_fallbacks = 1
+                if self._control:
+                    self._control.check()
+            baseline_repairs = self.last_model_repair_turns if prior else 0
+            try:
+                proposal = self._propose(
+                    client,
+                    question,
+                    model,
+                    as_of=as_of,
+                    overlay=overlay,
+                    previous=previous,
+                    question_values=question_values,
+                )
+            finally:
+                self.last_model_repair_turns += baseline_repairs
+            if prior and proposal.plan is not None and proposal.plan.rows is None:
+                return prior
+            return proposal
 
     def _propose(
         self, client, question, model, *, as_of, overlay, previous, question_values
@@ -1008,6 +1093,12 @@ class ChatCompletionsPlanClient:
             payload, repairs = repair_column_refs(payload, model)
             self.last_repairs = repairs
             proposal = PlanProposal.model_validate(payload)
+            if (
+                proposal.plan is not None
+                and proposal.plan.rows is not None
+                and not self._allow_rows
+            ):
+                raise ValueError("row_queries_disabled")
             self.last_value_refs = used
             return proposal
         except ValidationError as error:
