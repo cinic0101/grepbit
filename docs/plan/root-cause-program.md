@@ -121,7 +121,21 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: owner requested database-aware authored questions at `b09ab95`.
+Current 2026-09-14: the 24-question authored DB-aware baseline at `689baca` is
+complete: 25 Gemma calls (one repair), no transport failures. Frozen acceptance
+has 15 correct answers, four unlisted recipes, four safe refusal statuses and
+one unnecessary clarification. Post-hoc SQL-identity review confirms the four
+unlisted answers are equivalent: 19 correct answers, four necessary refusal
+actions, one false refusal. s14 uses semantic_gap instead of preferred unsupported;
+legacy pass is 22/24, not the effective-answer yield (19/24). i01's correct IoT
+count plan is blocked because output verb return triggers the returns concept;
+same-plan replay with only concepts disabled passes the frozen oracle. No
+production/prompt/gate changes, no owner-holdout claim. Eighteen research tests,
+static pass; matching offline 1,841 reused. See `../research/db-aware-baseline-01.md`.
+Next: retain i01 alongside true-omission/leakage negatives for a separately frozen
+gate intervention; do not add a word exception or broadly disable the gate.
+
+Previous 2026-09-14: owner requested database-aware authored questions at `b09ab95`.
 24 questions prepared from existing fictional service/IoT data (14/10), including
 20 answerable and four refusal controls. All 20 typed gold plans match independent
 PostgreSQL SQL; all 20 wrong alternatives differ. No Gemma calls, new database,

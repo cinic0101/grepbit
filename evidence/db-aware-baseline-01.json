@@ -1,0 +1,108 @@
+{
+  "baseline_commit": "689baca",
+  "origin": "agent_authored_database_aware",
+  "owner_holdout": false,
+  "source_digest": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+  "prompt_revision": "plan-classify-json-v15",
+  "questions": 24,
+  "model_calls": 25,
+  "transport_errors": 0,
+  "repair_case_ids": [
+    "i06"
+  ],
+  "max_tokens": 768,
+  "p50_seconds": 2.5845000000000002,
+  "p95_nearest_rank_seconds": 4.816,
+  "frozen_categories": {
+    "unassessed_answer": 4,
+    "correct_answer": 15,
+    "necessary_refusal_status": 4,
+    "unnecessary_refusal": 1
+  },
+  "posthoc_correct_equivalent_cases": [
+    "s01",
+    "s08",
+    "s11",
+    "i05"
+  ],
+  "reviewed_outcome": {
+    "correct_answers": 19,
+    "known_wrong_answers": 0,
+    "necessary_refusal_actions": 4,
+    "unnecessary_refusals": 1,
+    "operational_failures": 0
+  },
+  "refusal_status_mismatch_cases": [
+    "s14"
+  ],
+  "false_refusal_cases": [
+    "i01"
+  ],
+  "legacy_passes": 22,
+  "answer_coverage": {
+    "numerator": 19,
+    "denominator": 24
+  },
+  "answerable_completion": {
+    "numerator": 19,
+    "denominator": 20
+  },
+  "same_plan_gate_replays": 2,
+  "posthoc_sql_identity_checks": 12,
+  "focused_tests": 18,
+  "static_passed": true,
+  "offline_reused": {
+    "tests": 1841,
+    "path": ".artifacts/temporal-reference-ruler-20260913/offline/result.json",
+    "sha256": "eaf551ca31082614b9d404d8fda4f07f016403d627f3e7504c783699cd934a25"
+  },
+  "scope": {
+    "production_changed": false,
+    "prompt_changed": false,
+    "gate_changed": false,
+    "public_contract_changed": false,
+    "database_writes": false,
+    "raw_rows_persisted": false,
+    "raw_completions_persisted": false
+  },
+  "artifacts": {
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/closeout.py": "92ca330308dcdf65dd3d07e755d33a7bc2b78075a0f465c8334bb36f454ba47e",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/end-check.json": "789d1cc8a66b71bf6298c1935e431ba713b4a64269820d1c524a8672f5924b1f",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/i01.json": "5d6990545bb6d03fd474e8bb9b0dea4b456fec24ff586b2fc4107a0806ef63b8",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/i02.json": "61f93d67f2d3fee075b2bce7a3a2532c22a1f4681444eff08031938b146e9f38",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/i03.json": "1072862a02e2be7f3ae6619bf74a7e50dbba1910deed4c123363fff03aff82e7",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/i04.json": "9fccbc01bf4db846d8a3c60a16b35fc7178bbf9b7a8a0dba6b50747be23cbeb4",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/i05.json": "92589f25002a2714ee5dea57b8d3d42a4bdd8b05ef71c08edb0ffa5b9a79166d",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/i06.json": "1685540827d4683fa7150bc0b3ec79b5e369d81d5e8adcb3ccd6cb89e99d9257",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/i07.json": "c2a83271e7f3b9e85eebd7264e9de5d8cfc2198e97a15d347013692ded03f5bc",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/i08.json": "e5977ad063eeff114cb996f40baeab83cad670c6b4c8a4c63960224cc4e0d61f",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/i09.json": "1694b2d0da308d3aa7b063ebffc312633a0e5dfda897b1039dc9c2b6ae3ad5c8",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/i10.json": "edea976f7aeb19192f23fa38d4a350ad01fcce40c1ba4b4a7250d3a68d3052d4",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/iot.json": "88ca120aa22a2319cac45ac62e6b6c529f747b21a60f5e63db33d584834ab697",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/s01.json": "ff0a0c85018ee4d3e37960fc2c424ed08945b0d1f81e963955e783d3f10a0b1f",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/s02.json": "b9fb2a09c0e6d810bf5e66aa68d8feb286ab9d300ca83e31321f38112a894399",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/s03.json": "490a6b8311777e25840f9791ee487221e095a27d1b8506da2752f8841c7a4086",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/s04.json": "663698d2bbe1036c1b2b37982b7df0641ae1cb0d7f603d95e1ec9714e56a0742",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/s05.json": "fd796b8e2afb4818a4b44ef9596e0539539ba04f3aa416b3b9aa25509348910c",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/s06.json": "dd4ed57f6a415bb437ab7850c0dfbe459f4aaeb796ff457f9a88c38e6890c1e1",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/s07.json": "31562e2bae3068c8ed38eadcef52457fccfd937539113e172856d9305fe48b59",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/s08.json": "7b9df60882becd47b37fd05caf8690b0385f6507ae4b2bf40916d022a68c6862",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/s09.json": "10b0ad8a4f1ba639dd9f53e5c4bb4b4aa0f896d55294bf67d492de529c6fe7da",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/s10.json": "a0de93a47bdb76ad65197ce7eecc3c2a33cd7bd67146c248a50970abc26676b2",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/s11.json": "6f9230c304d34bf8e21f706cf82de90ef1065af3050e9defc508b292db7ca74c",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/s12.json": "77b2e6158c1111610bfa61f999c95180d76e00b1fb62e3b37ea3e00bbd0233d2",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/s13.json": "fc1d37917018e64d7cfa1f0fc3cb15fc63ddd0031a63076aefd149f0f16964ef",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/s14.json": "47fbffcef8afedaf57c704c9695d8dc97b9de9a544baa753f703be709292811b",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/service.json": "ff0ffc05b54d46d90c42361fb3106f574b681510a91cb7fbb155cc35a3845016",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/live/summary.json": "466be0c20a123473d712589874ad1b87be4bd5de05580ac1ba132dd34f70e5c2",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/posthoc-review.json": "2f1da44e4ea80d66336aadb91bbd68f51d9ef87eed516f8d2c6b151370220ff9",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/preparation.json": "e56f2b29ec0ee5af262fa13dd58f8acf3bc31d383dcbf891c64c5da3da9f4da8",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/review-tests.xml": "72bbcd185d4afe29b37cd732f03255e84fbb3df781f31b1fc817f6dd9b01ffaa",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/review.py": "e36a61440909e6cd510e297f530fa6c28132a084cdd262e83beb2d2d6c8d27a1",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/run.py": "a64b23b53af51698cc8241b91c595fa1efe19accb225cb43b8849a7f6b0e5ee9",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/static/result.json": "0505d0d2961df7bbbe8d50edfb556b72921b0c7c49769f49dd6c48c9b9f920f0",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/test_review.py": "f7ae6b63b097fa2e5f555deb1a9e4ad45103471d6d0560661cedfb17c917bef4",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/test_run.py": "3d11bf00309174591e79a01b2a1508db1ab1139723445cc969141e95b8eed6c0",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-baseline-20260914/tests.xml": "b728f5b622f169a8993b0228c03943a43cacc6fb4f9e7ff06d66adafa8ce7a16"
+  }
+}
