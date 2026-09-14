@@ -1,6 +1,10 @@
 # Query families: compiler feasibility is not planner readiness
 
 2026-09-14. **Research implementation complete; no production promotion.**
+Follow-up: [question-encoding diagnostic](query-extension-encoding-01.md)
+isolates a harness input-format contribution and recovers all four original
+questions twice. The observations below remain historical results, not the
+latest estimate of natural-question planner readiness.
 Scope/ruler: [query-extension-study](../plan/query-extension-study.md).
 Durable per-case outcomes, report hashes and validation counts:
 [`summary.json`](../../evidence/query-extension-study/summary.json).

@@ -114,6 +114,22 @@ def digest(value):
     ).hexdigest()
 
 
+def encode_payload(payload, question_encoding="escaped"):
+    """Change only question text rendering, never metadata or decoded content."""
+    if question_encoding == "escaped":
+        return json.dumps(payload)
+    if question_encoding != "unicode":
+        raise ValueError("unknown_question_encoding")
+    return (
+        "{"
+        + ", ".join(
+            json.dumps(key) + ": " + json.dumps(value, ensure_ascii=key != "question")
+            for key, value in payload.items()
+        )
+        + "}"
+    )
+
+
 def normalized(rows):
     def cell(value):
         if value is None:
@@ -153,6 +169,9 @@ def main():
     parser.add_argument("--replay", type=Path)
     parser.add_argument("--wire", choices=["v1", "v2"], default="v1")
     parser.add_argument("--question-last", action="store_true")
+    parser.add_argument(
+        "--question-encoding", choices=["escaped", "unicode"], default="escaped"
+    )
     args = parser.parse_args()
     if not args.confirm_synthetic_fixtures or args.output.exists():
         parser.error("require synthetic scope and a fresh output path")
@@ -200,7 +219,9 @@ def main():
     )
     report = {
         "revision": f"{PROMPT_REVISION}-{args.wire}"
-        + ("-question-last" if args.question_last else ""),
+        + ("-question-last" if args.question_last else "")
+        + ("-unicode-question-v1" if args.question_encoding == "unicode" else ""),
+        "question_encoding": args.question_encoding,
         "git_sha": subprocess.check_output(
             ["git", "rev-parse", "HEAD"], text=True
         ).strip(),
@@ -262,7 +283,10 @@ def main():
                 "role": "system",
                 "content": json.dumps(study_schema(args.wire)),
             },
-            {"role": "user", "content": json.dumps(payload)},
+            {
+                "role": "user",
+                "content": encode_payload(payload, args.question_encoding),
+            },
         ]
         item.update(
             messages_sha256=digest(messages),
@@ -282,6 +306,7 @@ def main():
                     extra_body={"chat_template_kwargs": {"enable_thinking": False}},
                 )
                 raw = reply.choices[0].message.content
+                item["usage"] = reply.usage.model_dump() if reply.usage else None
             else:
                 raw = prior[item["id"]]["raw_output"]
             item["raw_output"] = raw

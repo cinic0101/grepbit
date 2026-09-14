@@ -335,6 +335,40 @@ def test_values_grader_preserves_duplicates_nulls_and_requested_order():
     assert not matches([(1, 99)], [(1,)])
 
 
+@pytest.mark.parametrize(
+    "question",
+    ["列出所有裝置的詳細資料", "華氏で示す", '"quote"\\path\n🌡', "Count devices"],
+)
+def test_question_encoding_changes_only_question_rendering(question):
+    import json
+
+    from evals.query_extension_study import encode_payload
+
+    payload = {"question": question, "schema": {"description": "裝置"}, "n": 1}
+    legacy = encode_payload(payload)
+    literal = encode_payload(payload, "unicode")
+    assert legacy == json.dumps(payload)
+    assert json.loads(legacy) == json.loads(literal) == payload
+    assert literal == legacy.replace(
+        '"question": ' + json.dumps(question),
+        '"question": ' + json.dumps(question, ensure_ascii=False),
+        1,
+    )
+    if question.isascii():
+        assert legacy == literal
+
+
+def test_question_encoding_preserves_order_and_rejects_unknown_mode():
+    import json
+
+    from evals.query_extension_study import encode_payload
+
+    payload = {"schema": {"name": "裝置"}, "question": "全部？"}
+    assert list(json.loads(encode_payload(payload, "unicode"))) == list(payload)
+    with pytest.raises(ValueError, match="unknown_question_encoding"):
+        encode_payload(payload, "guess")
+
+
 def test_default_segment_applies_to_its_component_only():
     overlay = SemanticOverlay(
         datasource_id="iot_test",

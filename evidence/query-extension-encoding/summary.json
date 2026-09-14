@@ -1,0 +1,511 @@
+{
+  "study": "query-extension-question-encoding-v1",
+  "scope": "Seen/authored synthetic questions, research path only",
+  "baseline_git_sha": "448a453",
+  "actual_calls": 69,
+  "shape_replay_diagnostic": {
+    "path": ".artifacts/query-extension-encoding-20260914/shape-replay.json",
+    "sha256": "2503a866041db3a0430937e19e20e0f823811faa133fd31bdf22bf46442378e4",
+    "script_sha256": "157998a702da24f525a8afd83e05527db27287c7885e21c3caa7bb7bbba39aeb",
+    "normalizer_sha256": "a08e65df93ce182622da4822fb94a45bb94f4c4c04c41aa3612f9734d109e32a",
+    "actual_calls": 0,
+    "case": "service_hours",
+    "outcome": "reference_match",
+    "repair": "dimensions: unwrapped column reference",
+    "not_pooled_into_live_accuracy": true
+  },
+  "runs": {
+    "escaped-1": {
+      "path": ".artifacts/query-extension-encoding-20260914/escaped-1.json",
+      "sha256": "47d793ae08fdfca580d3b3b5de7e232a31615dfb0a0c590cd7ba9ba7898a6f04",
+      "revision": "query-extension-planner-study-v2",
+      "source_hashes": {
+        "evals/query_extension_study.py": "23fa6571b45640c72510fc56d6a49638ed0a3a6ff65cdde9cadfce5bca38412f",
+        "src/grepbit/domain/query_extension_study.py": "f28e333f3f88b791ca6c8124175777117baaf98284303a20d7befc7e53ab6219",
+        "src/grepbit/adapters/sqlglot/query_extension_study.py": "a499698a852cb270be7ad246ff1754a244b1fb857e9d8b30eebeca9ee5afd32c"
+      },
+      "panel_sha256": "35d823242933c6abafa496fad513d8288780377c1bc75f4db8d8a49ba5f4309c",
+      "unit_bindings_sha256": "4bce179c074f3756a436e91efdc218c64b9ea1bcbeb48b3bca1039030f566ef4",
+      "actual_calls": 12,
+      "summary": {
+        "reference_mismatch": 6,
+        "reference_match": 4,
+        "not_scored_failure": 1,
+        "unexpected_answer": 1
+      },
+      "original_four": {
+        "reference_mismatch": 3,
+        "reference_match": 1
+      },
+      "outcomes": {
+        "original_1": "reference_mismatch",
+        "original_2": "reference_mismatch",
+        "original_3": "reference_mismatch",
+        "original_4": "reference_match",
+        "natural_rows_ja": "reference_match",
+        "natural_units_ja": "reference_mismatch",
+        "new_combine_scopes": "reference_match",
+        "new_combine_natural_keys": "reference_mismatch",
+        "new_unit_hours_zh": "reference_mismatch",
+        "new_rows_service": "reference_match",
+        "new_joined_details_gap": "not_scored_failure",
+        "new_missing_meaning": "unexpected_answer"
+      },
+      "prompt_tokens": {
+        "original_1": 6570,
+        "original_2": 6545,
+        "original_3": 6552,
+        "original_4": 6561,
+        "natural_rows_ja": 6600,
+        "natural_units_ja": 6712,
+        "new_combine_scopes": 6730,
+        "new_combine_natural_keys": 6748,
+        "new_unit_hours_zh": 6646,
+        "new_rows_service": 6595,
+        "new_joined_details_gap": 6592,
+        "new_missing_meaning": 6577
+      }
+    },
+    "unicode-1": {
+      "path": ".artifacts/query-extension-encoding-20260914/unicode-1.json",
+      "sha256": "1f13eec7382396ca9d3234391dd2863db02887055bd3976173d371626570e198",
+      "revision": "query-extension-planner-study-v2-unicode-question-v1",
+      "source_hashes": {
+        "evals/query_extension_study.py": "23fa6571b45640c72510fc56d6a49638ed0a3a6ff65cdde9cadfce5bca38412f",
+        "src/grepbit/domain/query_extension_study.py": "f28e333f3f88b791ca6c8124175777117baaf98284303a20d7befc7e53ab6219",
+        "src/grepbit/adapters/sqlglot/query_extension_study.py": "a499698a852cb270be7ad246ff1754a244b1fb857e9d8b30eebeca9ee5afd32c"
+      },
+      "panel_sha256": "35d823242933c6abafa496fad513d8288780377c1bc75f4db8d8a49ba5f4309c",
+      "unit_bindings_sha256": "4bce179c074f3756a436e91efdc218c64b9ea1bcbeb48b3bca1039030f566ef4",
+      "actual_calls": 12,
+      "summary": {
+        "reference_match": 10,
+        "refusal_on_answerable": 1,
+        "unexpected_answer": 1
+      },
+      "original_four": {
+        "reference_match": 4
+      },
+      "outcomes": {
+        "original_1": "reference_match",
+        "original_2": "reference_match",
+        "original_3": "reference_match",
+        "original_4": "reference_match",
+        "natural_rows_ja": "reference_match",
+        "natural_units_ja": "reference_match",
+        "new_combine_scopes": "reference_match",
+        "new_combine_natural_keys": "reference_match",
+        "new_unit_hours_zh": "reference_match",
+        "new_rows_service": "reference_match",
+        "new_joined_details_gap": "refusal_on_answerable",
+        "new_missing_meaning": "unexpected_answer"
+      },
+      "prompt_tokens": {
+        "original_1": 6494,
+        "original_2": 6490,
+        "original_3": 6493,
+        "original_4": 6491,
+        "natural_rows_ja": 6495,
+        "natural_units_ja": 6507,
+        "new_combine_scopes": 6530,
+        "new_combine_natural_keys": 6604,
+        "new_unit_hours_zh": 6586,
+        "new_rows_service": 6595,
+        "new_joined_details_gap": 6506,
+        "new_missing_meaning": 6494
+      }
+    },
+    "escaped-2": {
+      "path": ".artifacts/query-extension-encoding-20260914/escaped-2.json",
+      "sha256": "750a3d24da649e1f506f949f6b96a6295e5b466ccd1cb3dc55bda486ff2bfa5c",
+      "revision": "query-extension-planner-study-v2",
+      "source_hashes": {
+        "evals/query_extension_study.py": "23fa6571b45640c72510fc56d6a49638ed0a3a6ff65cdde9cadfce5bca38412f",
+        "src/grepbit/domain/query_extension_study.py": "f28e333f3f88b791ca6c8124175777117baaf98284303a20d7befc7e53ab6219",
+        "src/grepbit/adapters/sqlglot/query_extension_study.py": "a499698a852cb270be7ad246ff1754a244b1fb857e9d8b30eebeca9ee5afd32c"
+      },
+      "panel_sha256": "35d823242933c6abafa496fad513d8288780377c1bc75f4db8d8a49ba5f4309c",
+      "unit_bindings_sha256": "4bce179c074f3756a436e91efdc218c64b9ea1bcbeb48b3bca1039030f566ef4",
+      "actual_calls": 12,
+      "summary": {
+        "reference_mismatch": 6,
+        "reference_match": 4,
+        "not_scored_failure": 1,
+        "unexpected_answer": 1
+      },
+      "original_four": {
+        "reference_mismatch": 3,
+        "reference_match": 1
+      },
+      "outcomes": {
+        "original_1": "reference_mismatch",
+        "original_2": "reference_mismatch",
+        "original_3": "reference_mismatch",
+        "original_4": "reference_match",
+        "natural_rows_ja": "reference_match",
+        "natural_units_ja": "reference_mismatch",
+        "new_combine_scopes": "reference_match",
+        "new_combine_natural_keys": "reference_mismatch",
+        "new_unit_hours_zh": "reference_mismatch",
+        "new_rows_service": "reference_match",
+        "new_joined_details_gap": "not_scored_failure",
+        "new_missing_meaning": "unexpected_answer"
+      },
+      "prompt_tokens": {
+        "original_1": 6570,
+        "original_2": 6545,
+        "original_3": 6552,
+        "original_4": 6561,
+        "natural_rows_ja": 6600,
+        "natural_units_ja": 6712,
+        "new_combine_scopes": 6730,
+        "new_combine_natural_keys": 6748,
+        "new_unit_hours_zh": 6646,
+        "new_rows_service": 6595,
+        "new_joined_details_gap": 6592,
+        "new_missing_meaning": 6577
+      }
+    },
+    "unicode-2": {
+      "path": ".artifacts/query-extension-encoding-20260914/unicode-2.json",
+      "sha256": "04e22c053cf2103b8b972c7a23e6d60943c65293b84a02d626ba326bd2520cfb",
+      "revision": "query-extension-planner-study-v2-unicode-question-v1",
+      "source_hashes": {
+        "evals/query_extension_study.py": "23fa6571b45640c72510fc56d6a49638ed0a3a6ff65cdde9cadfce5bca38412f",
+        "src/grepbit/domain/query_extension_study.py": "f28e333f3f88b791ca6c8124175777117baaf98284303a20d7befc7e53ab6219",
+        "src/grepbit/adapters/sqlglot/query_extension_study.py": "a499698a852cb270be7ad246ff1754a244b1fb857e9d8b30eebeca9ee5afd32c"
+      },
+      "panel_sha256": "35d823242933c6abafa496fad513d8288780377c1bc75f4db8d8a49ba5f4309c",
+      "unit_bindings_sha256": "4bce179c074f3756a436e91efdc218c64b9ea1bcbeb48b3bca1039030f566ef4",
+      "actual_calls": 12,
+      "summary": {
+        "reference_match": 10,
+        "refusal_on_answerable": 1,
+        "unexpected_answer": 1
+      },
+      "original_four": {
+        "reference_match": 4
+      },
+      "outcomes": {
+        "original_1": "reference_match",
+        "original_2": "reference_match",
+        "original_3": "reference_match",
+        "original_4": "reference_match",
+        "natural_rows_ja": "reference_match",
+        "natural_units_ja": "reference_match",
+        "new_combine_scopes": "reference_match",
+        "new_combine_natural_keys": "reference_match",
+        "new_unit_hours_zh": "reference_match",
+        "new_rows_service": "reference_match",
+        "new_joined_details_gap": "refusal_on_answerable",
+        "new_missing_meaning": "unexpected_answer"
+      },
+      "prompt_tokens": {
+        "original_1": 6494,
+        "original_2": 6490,
+        "original_3": 6493,
+        "original_4": 6491,
+        "natural_rows_ja": 6495,
+        "natural_units_ja": 6507,
+        "new_combine_scopes": 6530,
+        "new_combine_natural_keys": 6604,
+        "new_unit_hours_zh": 6586,
+        "new_rows_service": 6595,
+        "new_joined_details_gap": 6506,
+        "new_missing_meaning": 6494
+      }
+    },
+    "unicode-explicit": {
+      "path": ".artifacts/query-extension-encoding-20260914/unicode-explicit.json",
+      "sha256": "ebd4a088b7137930ef2144e2ee5c4984de28ed8eef746206a22d898ff227bc47",
+      "revision": "query-extension-planner-study-v2-unicode-question-v1",
+      "source_hashes": {
+        "evals/query_extension_study.py": "23fa6571b45640c72510fc56d6a49638ed0a3a6ff65cdde9cadfce5bca38412f",
+        "src/grepbit/domain/query_extension_study.py": "f28e333f3f88b791ca6c8124175777117baaf98284303a20d7befc7e53ab6219",
+        "src/grepbit/adapters/sqlglot/query_extension_study.py": "a499698a852cb270be7ad246ff1754a244b1fb857e9d8b30eebeca9ee5afd32c"
+      },
+      "panel_sha256": "e2a847e0e8ac6a3d0cf0729014f7d6d24f08da8e2178a108a8173eccb3add2c4",
+      "unit_bindings_sha256": "4bce179c074f3756a436e91efdc218c64b9ea1bcbeb48b3bca1039030f566ef4",
+      "actual_calls": 21,
+      "summary": {
+        "reference_match": 18,
+        "necessary_refusal": 2,
+        "not_scored_failure": 1
+      },
+      "original_four": {},
+      "outcomes": {
+        "iot_rows": "reference_match",
+        "iot_all_details": "reference_match",
+        "iot_filtered_rows": "reference_match",
+        "iot_top_rows": "reference_match",
+        "iot_fahrenheit": "reference_match",
+        "iot_min_fahrenheit": "reference_match",
+        "iot_combine": "reference_match",
+        "iot_top_alert_temperature": "reference_match",
+        "iot_reverse_rank": "reference_match",
+        "iot_avg_control": "reference_match",
+        "iot_count_control": "reference_match",
+        "iot_incompatible_unit": "necessary_refusal",
+        "service_rows": "reference_match",
+        "service_null_rows": "reference_match",
+        "service_hours": "not_scored_failure",
+        "service_avg_hours": "reference_match",
+        "service_combine": "reference_match",
+        "service_most_events_work": "reference_match",
+        "service_total_control": "reference_match",
+        "service_count_control": "reference_match",
+        "service_sla_gap": "necessary_refusal"
+      },
+      "prompt_tokens": {
+        "iot_rows": 6502,
+        "iot_all_details": 6507,
+        "iot_filtered_rows": 6498,
+        "iot_top_rows": 6509,
+        "iot_fahrenheit": 6515,
+        "iot_min_fahrenheit": 6500,
+        "iot_combine": 6519,
+        "iot_top_alert_temperature": 6527,
+        "iot_reverse_rank": 6516,
+        "iot_avg_control": 6499,
+        "iot_count_control": 6488,
+        "iot_incompatible_unit": 6491,
+        "service_rows": 6595,
+        "service_null_rows": 6594,
+        "service_hours": 6614,
+        "service_avg_hours": 6605,
+        "service_combine": 6613,
+        "service_most_events_work": 6610,
+        "service_total_control": 6590,
+        "service_count_control": 6593,
+        "service_sla_gap": 6586
+      }
+    }
+  },
+  "pairs": [
+    {
+      "round": 1,
+      "id": "original_1",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "reference_mismatch",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 1,
+      "id": "original_2",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "reference_mismatch",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 1,
+      "id": "original_3",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "reference_mismatch",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 1,
+      "id": "original_4",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": true,
+      "escaped": "reference_match",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 1,
+      "id": "natural_rows_ja",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": true,
+      "escaped": "reference_match",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 1,
+      "id": "natural_units_ja",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "reference_mismatch",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 1,
+      "id": "new_combine_scopes",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "reference_match",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 1,
+      "id": "new_combine_natural_keys",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "reference_mismatch",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 1,
+      "id": "new_unit_hours_zh",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "reference_mismatch",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 1,
+      "id": "new_rows_service",
+      "ascii_question": true,
+      "same_message": true,
+      "same_proposal": true,
+      "escaped": "reference_match",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 1,
+      "id": "new_joined_details_gap",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "not_scored_failure",
+      "unicode": "refusal_on_answerable"
+    },
+    {
+      "round": 1,
+      "id": "new_missing_meaning",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "unexpected_answer",
+      "unicode": "unexpected_answer"
+    },
+    {
+      "round": 2,
+      "id": "original_1",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "reference_mismatch",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 2,
+      "id": "original_2",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "reference_mismatch",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 2,
+      "id": "original_3",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "reference_mismatch",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 2,
+      "id": "original_4",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": true,
+      "escaped": "reference_match",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 2,
+      "id": "natural_rows_ja",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": true,
+      "escaped": "reference_match",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 2,
+      "id": "natural_units_ja",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "reference_mismatch",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 2,
+      "id": "new_combine_scopes",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "reference_match",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 2,
+      "id": "new_combine_natural_keys",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "reference_mismatch",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 2,
+      "id": "new_unit_hours_zh",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "reference_mismatch",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 2,
+      "id": "new_rows_service",
+      "ascii_question": true,
+      "same_message": true,
+      "same_proposal": true,
+      "escaped": "reference_match",
+      "unicode": "reference_match"
+    },
+    {
+      "round": 2,
+      "id": "new_joined_details_gap",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "not_scored_failure",
+      "unicode": "refusal_on_answerable"
+    },
+    {
+      "round": 2,
+      "id": "new_missing_meaning",
+      "ascii_question": false,
+      "same_message": false,
+      "same_proposal": false,
+      "escaped": "unexpected_answer",
+      "unicode": "unexpected_answer"
+    }
+  ],
+  "repeat_changes": {
+    "escaped": [],
+    "unicode": []
+  },
+  "validation": {
+    ".artifacts/query-extension-encoding-20260914/focused/result.json": "067e627d9f760a2d14105852b13c98aa258aabb02cf23509313470f958bdbcfa",
+    ".artifacts/query-extension-encoding-20260914/static/result.json": "f9786a9d84f7e77714bea4cccc206bff9361c6a0ca81a361f3faad93023a4c9e",
+    ".artifacts/query-extension-encoding-20260914/offline/result.json": "8f504708dfbfe4d63ed9e9315ff9f53f165c600d6b3d64607b9ba33747d72f53"
+  }
+}
