@@ -1,0 +1,251 @@
+{
+  "state": "question_bank_prepared",
+  "baseline": "b09ab95",
+  "origin": "agent_authored_database_aware",
+  "owner_holdout": false,
+  "cases": 24,
+  "answerable": 20,
+  "refusal_controls": 4,
+  "groups": {
+    "service": 14,
+    "iot": 10
+  },
+  "model_calls": 0,
+  "database_mode": "existing_fictional_fixtures_read_only",
+  "final_result_selects": 60,
+  "compiled_reference_matches": 20,
+  "distinguishable_foils": 20,
+  "metadata": {
+    "service": {
+      "schema_sha256": "34019f46c552aa0cfca2a2de7a3db15d2aad295c123af64524a584a090598767",
+      "columns": 24,
+      "tables": 6
+    },
+    "iot": {
+      "schema_sha256": "85dc1db82576668359cddcd21869089a6db5b3ed303d309dbb330b08c0000dc4",
+      "columns": 24,
+      "tables": 4
+    }
+  },
+  "questions_sha256": "048d947ae207c2cd03446fae15d7079ead001f005107215a9546eeac0404b408",
+  "records": [
+    {
+      "group": "service",
+      "case_id": "s01",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "654a98d3242fde1cdab13a234be4f204fce776f9b3fe8007a943e36e2e7cafe9",
+      "foil_sha256": "7aae477fb8a8fb153a79648264d87c6acb9c8d1b50892e1b1ef1860ddf667b02"
+    },
+    {
+      "group": "service",
+      "case_id": "s02",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "9e0edf6af4d1e362ce1cf70e48f6060b923fa75e778e72b6051a3e65c1fc89d9",
+      "foil_sha256": "6415f06bd33c99619f6db4456b05aa1dd52931605de1a9180c7a2a747733af43"
+    },
+    {
+      "group": "service",
+      "case_id": "s03",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "4546b68cc5adf184b800a2d16c51d6689dbae0b0e00575095a25b46b11be912c",
+      "foil_sha256": "4d4330f6916f5477cad1b91cd8b74478e2254db750b7f30a353dee980e49e561"
+    },
+    {
+      "group": "service",
+      "case_id": "s04",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "e31bb945597604caf793ffced2c33efef9302021aac26072d409de9cd736b204",
+      "foil_sha256": "446a68fd2bf7e98a782d028afe653137bcffbe1e4d39318c6b4cd9507ea692c6"
+    },
+    {
+      "group": "service",
+      "case_id": "s05",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "4546b68cc5adf184b800a2d16c51d6689dbae0b0e00575095a25b46b11be912c",
+      "foil_sha256": "c4ae80fc8d3ef8cb9f9a4746b8adb63f89ff291b565e0f2d574079da40a7952e"
+    },
+    {
+      "group": "service",
+      "case_id": "s06",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "4e38d975cfc53f21da80ea8a851ca6314b5b640019e67efdb4e4927c435b454f",
+      "foil_sha256": "c4ae80fc8d3ef8cb9f9a4746b8adb63f89ff291b565e0f2d574079da40a7952e"
+    },
+    {
+      "group": "service",
+      "case_id": "s07",
+      "gold_rows": 3,
+      "foil_rows": 2,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "ccadc10fa593d3571664e19b1da1a54cc2361501ee21bf4b5904b5c365b2dca1",
+      "foil_sha256": "83af9f0378e0b1f7a248a22201e4183857d7d4aca32fb1f5c5f5c3834b5d7fd7"
+    },
+    {
+      "group": "service",
+      "case_id": "s08",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "f1b03bb5dda9ab399c3e5839e0edf7c2c21590b1e23e9df1d9f0330b26a5e40e",
+      "foil_sha256": "71b9ec5d28ea4fa7accf2eb254785c1aa1d3a3e45307130709a4a731c01f62fc"
+    },
+    {
+      "group": "service",
+      "case_id": "s09",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "13abdcec529ea3bf1045f5eb4256d41b4953e4311b0de627474054d8810ff934",
+      "foil_sha256": "e28610836ab702cd35495751839961e9fae54fec4ee18dc4b314862c18c3d104"
+    },
+    {
+      "group": "service",
+      "case_id": "s10",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "72cb573c0f06ed22eef9d55a3a5e5b118322555ae843675245337139e103506a",
+      "foil_sha256": "e28610836ab702cd35495751839961e9fae54fec4ee18dc4b314862c18c3d104"
+    },
+    {
+      "group": "service",
+      "case_id": "s11",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "18cf6b1ac7b96a7d0f92dbc590d9bac602df529c529f9de401cb64868b836da8",
+      "foil_sha256": "48dedffbab95a23da4414bfe717501d97add2078057d84b3778ea31326feac0b"
+    },
+    {
+      "group": "service",
+      "case_id": "s12",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "d7302603ea8707e79c559facbe0984d3ce067da5d7c117a9699b648ccdfc5c9f",
+      "foil_sha256": "11b8ddf3b91cad522272fe59345c2c57fdccde391828bfcd29e8f4222a785b13"
+    },
+    {
+      "group": "iot",
+      "case_id": "i01",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "699f345d56c8771569cb5dbb3535c11d8aeb598c96c74494801a43c143babff6",
+      "foil_sha256": "7aae477fb8a8fb153a79648264d87c6acb9c8d1b50892e1b1ef1860ddf667b02"
+    },
+    {
+      "group": "iot",
+      "case_id": "i02",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "014afbc8098059d0f243b9b825be43093cbc76679daf7fe4d26f765933b55f46",
+      "foil_sha256": "2b74f9c09ee673ccb60a8439e5eaf749ab71127e45b489f16e87f2cb1d5f18bc"
+    },
+    {
+      "group": "iot",
+      "case_id": "i03",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "e28610836ab702cd35495751839961e9fae54fec4ee18dc4b314862c18c3d104",
+      "foil_sha256": "aa6885079e7ed8ca6ff962f5c1f6d44f5dd0ba9e476e9158ae65d99a02203c3b"
+    },
+    {
+      "group": "iot",
+      "case_id": "i04",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "de83139452d9bc86468066a13c2aa54c00909526aecf05a18a564d4452d88295",
+      "foil_sha256": "79ecdf0614cd8e1254f8e379a4278dc5daec312b2567f0354903b6efb7f444e0"
+    },
+    {
+      "group": "iot",
+      "case_id": "i05",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "2ee264e6a84c2c10136f4bc2b974c92f3d86cf326f7203491c4f44c5e8475c71",
+      "foil_sha256": "a1eb0199768e5a5103594560bd18ea0e13297d48145ff537ae04e4f22325a28c"
+    },
+    {
+      "group": "iot",
+      "case_id": "i06",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "459c6eac3e4a5274dbb3b1a0de1408c0376e6d9fe4193f74853cea2715822961",
+      "foil_sha256": "e28610836ab702cd35495751839961e9fae54fec4ee18dc4b314862c18c3d104"
+    },
+    {
+      "group": "iot",
+      "case_id": "i07",
+      "gold_rows": 3,
+      "foil_rows": 3,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "881b509aa7c40e3917f6af3def2db9c9b7e16c9601359e0d19f4813b92d33680",
+      "foil_sha256": "003f9707fd8da9d17ccdefa2a64fbec7bd6d34047c9e2d8d8ef0a023d7585648"
+    },
+    {
+      "group": "iot",
+      "case_id": "i08",
+      "gold_rows": 1,
+      "foil_rows": 1,
+      "distinguished": true,
+      "compiler_match": true,
+      "gold_sha256": "2b74f9c09ee673ccb60a8439e5eaf749ab71127e45b489f16e87f2cb1d5f18bc",
+      "foil_sha256": "acc7ad66e60862e702d4a9ca7ada7eaafb9eca67e8ef075fae23b4f2ae0c55e0"
+    }
+  ],
+  "validation": {
+    "tests": 13,
+    "static": "pass",
+    "runtime_source": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad"
+  },
+  "artifacts_sha256": {
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-challenge-20260914/test_bank.py": "5b1db0f84e9ac69b0be0a1acac8aa7d8b95d9e6a267f6fe5de74e7b7faef5284",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-challenge-20260914/bank.py": "17cdfc20a8a987831b059ea88c4e31e0b85e93bace4fc9ece301b8d5bbc741b1",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-challenge-20260914/validate_bank.py": "5e720ddf0d3b495885bfc058883cfb60e4ac5905e718416119cf7f1f2eed1cd6",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-challenge-20260914/golds.py": "6a504fb090734a335631dc3087e66eabc485096aaffd90b6e7361400c8d27c13",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-challenge-20260914/validation-final-v2.json": "1c148f54385537b9de51c91950c1d9e697caff7b69d5798b2122755b32fdd776",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-challenge-20260914/tests-final.xml": "9d13bcd2f071eb6bc4511c68b45266fc14c470362aa79ae9c7887244831a785a",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-challenge-20260914/static/result.json": "23cdcd3bea4d0bea5311e6faf448e83012d578896418967521774e1a8014cdf4",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-challenge-20260914/service-cases.yaml": "7f74fea25dc85366082c1d81ec60e8c2f0a445b1a10ed29c5ec8b4b8d8f0cce4",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-challenge-20260914/service-questions.txt": "f791a14b7cce3d136435eb3e16ceeb05e7d24645d1f0433ef0d85bf12654d8ff",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-challenge-20260914/iot-cases.yaml": "1f73069c80e79a40b940566d9c063cc26dcc87c44247128f9cb921bd57c546d6",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/db-aware-challenge-20260914/iot-questions.txt": "349167bf4601356963f7852fbe25b169a1c143fa8231609524e980769c0f5f59"
+  }
+}

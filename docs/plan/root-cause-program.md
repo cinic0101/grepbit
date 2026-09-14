@@ -121,7 +121,17 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: next owner holdout intake prepared from `a759a54`.
+Current 2026-09-14: owner requested database-aware authored questions at `b09ab95`.
+24 questions prepared from existing fictional service/IoT data (14/10), including
+20 answerable and four refusal controls. All 20 typed gold plans match independent
+PostgreSQL SQL; all 20 wrong alternatives differ. No Gemma calls, new database,
+production or gate change. This is an authored challenge, not the missing user
+holdout. Question-only lists and runner cases are available privately, with the
+readable list in `../research/db-aware-challenge-questions.md`; method and limits
+in `../research/db-aware-challenge-01.md`. Next possible step is a separately frozen
+baseline without gold/foil leakage, not a claim of generalization.
+
+Previous 2026-09-14: next owner holdout intake prepared from `a759a54`.
 Inspected case/question entry points expose only already-used POS/holdout/ratio
 sets; service cases are authored, not a new owner holdout. Existing converter
 and judged-run workflow suffice; no new framework or runtime change. Synthetic
