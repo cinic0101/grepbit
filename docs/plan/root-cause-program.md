@@ -121,7 +121,19 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: serving steps 1–4 at baseline `6f95a32` complete. MCP v2
+Current 2026-09-14: bounded upstream relay study at `987671b` complete.
+Twenty-four serial Gemma calls on twelve wholly synthetic public payloads,
+zero transport failures. Full-obligation relay pass is 8/12 with current rules
+and 10/12 with a research checklist; numeric values retained 8/8 and dispositions
+12/12 in both arms. Two case rescues, but within-case omissions persist (unit,
+timeout reason); no production promotion or safety/generalization claim.
+Eighteen private study tests/static pass; unchanged-source offline 1,864 reused.
+No production/prompt/gate/DB change. See `../research/upstream-relay-study-01.md`.
+Next: actual upstream consumer integration and preservation of existing structured
+evidence, plus provenance-confirmed natural-question intake. No new intake this
+turn; do not fabricate a holdout or keep tuning the same twelve relay cases.
+
+Previous 2026-09-14: serving steps 1–4 at baseline `6f95a32` complete. MCP v2
 uses an explicit public response allowlist, per-invocation ID/planner/runtime
 ownership, 30-second configurable total ask budget and protocol cancellation.
 Five initial behavior rulers failed as intended; 23 new contract tests plus
