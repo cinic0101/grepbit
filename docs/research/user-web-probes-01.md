@@ -112,3 +112,37 @@ is a future design decision, not an implementation made by this record.
 This case is queued as a seen natural-language regression candidate. No new
 production tests pretending the unsupported feature exists, prompt edits or
 live model calls are included; only documentation and private case intake.
+
+## Temperature at the site with most alerts (fourth user report)
+
+The owner reported `unsupported` for selecting the highest-alert-count site
+and returning its mean temperature. The exact question and request ID are
+in the private case file. This remains user-reported, not a captured/replayed
+model result. Inspection of QueryPlan and compiler ordering confirms a single
+base plus output ORDER/LIMIT, not independent fact aggregation composition.
+
+This shares the first probe's independent-fact gap, with a cross-metric
+selection requirement. The alert-count-by-site and mean-temperature-by-site
+components are individually expressible. A future composed query could
+aggregate both independently at site grain, select the winner(s) by alert
+count, and attach the temperature by site identity. One SQL statement can
+express this; a new general-purpose multi-step agent framework is not implied.
+Do not rank only sites with temperature readings, since that can replace the
+true winner. A naive readings/alerts join can inflate counts and reweight
+temperature toward devices with more alerts.
+
+Before promoting an answer oracle, specify tied maxima (return all tied sites
+or an explicit approved tie policy), each metric's time scope, and temperature
+population. Pooled reading-level AVG is not necessarily an equal-weight average
+of device averages. A winning site with no non-NULL temperature should remain
+the winner with NULL temperature, not be silently substituted. These are
+candidate acceptance concerns, not newly approved defaults.
+
+Future witnesses should include a unique winner, tied sites, a winner with no
+readings, unequal per-device reading/alert counts, and explicit time windows.
+Reject ranking by temperature, counting joined rows, or silently changing site
+identity. Reuse the first probe's independent-aggregation experiment, adding
+selection controls rather than implementing another case-specific mechanism.
+
+No production change or live call; private YAML was checked for four unique
+case IDs and the documentation diff passed whitespace validation.
