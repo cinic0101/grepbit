@@ -121,7 +121,21 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: fixed acceptance assets and actual MCP path at `9e86ca8`
+Current 2026-09-14: serving steps 1–4 at baseline `6f95a32` complete. MCP v2
+uses an explicit public response allowlist, per-invocation ID/planner/runtime
+ownership, 30-second configurable total ask budget and protocol cancellation.
+Five initial behavior rulers failed as intended; 23 new contract tests plus
+existing suite pass (1,864 offline, zero skipped), with fresh static validation.
+Real stdio cancellation stopped only the observed PostgreSQL request while its
+peer answered; deadline prevented DB execution after a late controlled planner.
+Six actual Gemma calls retain the previous six-case judgments (three answers,
+two necessary refusals, one known gate false refusal), exact payload identities
+and unique request IDs. No prompt/gate/algebra change or history rewrite.
+See `../research/serving-lifecycle-01.md`. Next: natural owner questions and a
+bounded upstream relay test on synthetic payloads, not another rejected gate
+variant. Remote GPU termination, PII policy and high-load readiness remain open.
+
+Previous 2026-09-14: fixed acceptance assets and actual MCP path at `9e86ca8`
 complete. Four previously reviewed COUNT/AVG recipes are prospective alternatives
 only; original rules/history unchanged. All 24 interpretation recipes independently
 checked in PostgreSQL; six selected authored requests through stdio MCP use six

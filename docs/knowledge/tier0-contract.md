@@ -1,5 +1,31 @@
 # Tier-0 contract
 
+## MCP serving boundary v2 (2026-09-14)
+
+The owner authorized public/debug separation and request-lifecycle work. MCP
+v2 removes `raw_output`, `raw_output_repair`, `question_values` from its public
+response; existing required answer/disclosure fields remain. A new opaque
+`request_id` identifies each invocation but grants no cancellation authority.
+Future internal AskResult fields are not automatically public. The internal
+AskResult and runner's diagnostic access remain unchanged. Public SQL parameters,
+grounding and rows can still contain authorized data: this is NOT a universal
+PII-redaction guarantee. A second row cap also sets `rows_truncated` truthfully.
+
+Operational failures are `failed`, never necessary semantic refusals. Whole
+request expiry yields `request_timeout`; unexpected backend exceptions become
+`request_failed` without raw exception details. Native DB errors retain their
+typed codes when they occur before the whole deadline. Protocol cancellation
+does not fabricate a result. Relay rules distinguish failed from refused.
+
+The 30-second default total deadline is server-configurable and includes the
+worker queue, cold binding, model retries/repair, checks, DB and result preparation.
+Native per-call caps use remaining time; late results and later stages are
+suppressed after stop. Cancellation cleanup may use two additional seconds.
+Remote inference termination, transport write latency, arbitrary hostile worker
+termination and high-load capacity guarantees are not claimed. Request ownership
+and exact tests are in `../plan/serving-lifecycle.md`; query algebra, prompt v15,
+gate policy, verification meanings and historical acceptance scores are unchanged.
+
 Owner-approved scoped name binding (2026-09-13, `ask-orchestration-v5`):
 `../plan/name-boundaries-ruler.md` extends opted-in visible TEXT EQ/IN binding
 to measure, ratio-operand and `without` filters. Exact stored strings win;

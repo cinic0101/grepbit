@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from contextlib import closing, nullcontext
 from typing import Any
 
 from pydantic import ValidationError
@@ -20,6 +21,7 @@ from grepbit.adapters.litellm.plan_wire import (
     shown_schema_text,
     value_candidates,
 )
+from grepbit.application.request_lifecycle import RequestControl
 from grepbit.application.text import phrase_in
 from grepbit.domain.overlay import SemanticOverlay
 from grepbit.domain.plan import Filter, Measure, PlanProposal, PreviousTurn, QueryPlan
@@ -793,8 +795,10 @@ class ChatCompletionsPlanClient:
         settings: GroundingModelSettings,
         *,
         client: Any | None = None,
+        control: RequestControl | None = None,
     ) -> None:
         self._settings = settings
+        self._control = control
         self._transport = ChatCompletionsGroundingClient(settings, client=client)
 
     @property
@@ -872,7 +876,29 @@ class ChatCompletionsPlanClient:
         previous: PreviousTurn | None = None,
         question_values: list[dict[str, str]] | None = None,
     ) -> PlanProposal:
+        if self._control:
+            self._control.check()
         client = self._transport._client or self._transport._create_client()
+        manager = (
+            nullcontext(client)
+            if self._transport._client is not None
+            else closing(client)
+        )
+        with manager:
+            return self._propose(
+                client,
+                question,
+                model,
+                as_of=as_of,
+                overlay=overlay,
+                previous=previous,
+                question_values=question_values,
+            )
+
+    def _propose(
+        self, client, question, model, *, as_of, overlay, previous, question_values
+    ):
+        self.last_repairs = []
         self.last_raw_output = None
         self.last_repair_output = None
         self.last_model_repair_turns = 0
@@ -936,6 +962,12 @@ class ChatCompletionsPlanClient:
                 "extra_body": {"chat_template_kwargs": {"enable_thinking": True}},
                 "timeout": self._settings.thinking_timeout_seconds,
             }
+        if self._control:
+            extra["timeout"] = self._control.remaining(
+                self._settings.thinking_timeout_seconds
+                if thinking
+                else self._settings.timeout_seconds
+            )
         try:
             response = client.chat.completions.create(
                 model=self._settings.model,
@@ -946,7 +978,11 @@ class ChatCompletionsPlanClient:
                 **extra,
             )
         except Exception:
+            if self._control:
+                self._control.check()
             raise GroundingModelError("model_call_failed", 1) from None
+        if self._control:
+            self._control.check()
         self.last_thinking = thinking
         return _content(response)
 

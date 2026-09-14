@@ -27,6 +27,8 @@ class ActiveQueryRegistry:
     def register(self, handle: ActiveQueryHandle) -> None:
         cancel_safe: Callable[[], None] | None = None
         with self._lock:
+            if handle.run_id in self._active:
+                raise ValueError("duplicate_active_run_id")
             self._active[handle.run_id] = handle
             self._completed.discard(handle.run_id)
             if handle.run_id in self._cancelled:

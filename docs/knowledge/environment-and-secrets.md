@@ -11,6 +11,7 @@ the spike). Settings (`adapters/litellm/grounding_client.py`):
 | `GREPBIT_MODEL_NAME` | `gemma-4-31b` was the reference model for every result in `docs/research/` |
 | `GREPBIT_MODEL_TIMEOUT_SECONDS`, `GREPBIT_MODEL_TEMPERATURE` (0), `GREPBIT_MODEL_MAX_TOKENS` (plan calls raise this to at least 768) | |
 | `GREPBIT_MODEL_CREDENTIAL_ENV` | name of the variable holding the API key, default `LITELLM_API_KEY` |
+| `GREPBIT_REQUEST_TIMEOUT_SECONDS` | MCP v2 total ask budget, default 30 seconds, finite and positive; per-call caps consume this remaining budget. Cancellation cleanup may await up to two additional seconds. |
 
 Calls use `response_format: json_object`, temperature 0, one call per
 question (two with the coverage audit, which is an experiment flag).

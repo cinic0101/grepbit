@@ -30,6 +30,7 @@ from grepbit.application.overlay import (
     named_segments,
 )
 from grepbit.application.plan_repair import repair_base_table
+from grepbit.application.request_lifecycle import RequestControl, RequestStopped
 from grepbit.application.shapes import (
     constant_dimensions,
     drop_dimensions,
@@ -198,6 +199,7 @@ def ask(
     *,
     previous: PreviousTurn | None = None,
     run_id: str = "ask",
+    control: RequestControl | None = None,
 ) -> AskResult:
     started = time.monotonic()
     result = AskResult(question=question, status="not_run")
@@ -206,7 +208,21 @@ def ask(
         services.value_index if settings.grounding else None,
     )
     try:
-        _ask(question, services, settings, previous, run_id, result, overlay, index)
+        _ask(
+            question,
+            services,
+            settings,
+            previous,
+            run_id,
+            result,
+            overlay,
+            index,
+            control,
+        )
+        if control:
+            control.check()
+    except RequestStopped as error:
+        result = AskResult(question=question, status="failed", reason=error.reason)
     finally:
         result.elapsed_seconds = round(time.monotonic() - started, 3)
     return result
@@ -221,7 +237,14 @@ def _record_planner_trace(result: AskResult, planner: Any) -> None:
     )
 
 
-def _ask(question, services, settings, previous, run_id, result, overlay, index):
+def _ask(
+    question, services, settings, previous, run_id, result, overlay, index, control
+):
+    def check():
+        if control:
+            control.check()
+
+    check()
     if services.unsafe(question):
         result.status, result.reason = "unsafe", "unsafe_language"
         return
@@ -241,6 +264,7 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
     result.question_values = [{"column": m.column, "value": m.value} for m in hints]
     proposal = None
     for attempt in range(2):
+        check()
         try:
             proposal = services.planner.propose(
                 question,
@@ -262,6 +286,7 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
                 return
             result.model_retries = attempt + 1
     assert proposal is not None
+    check()
     _record_planner_trace(result, services.planner)
     result.shape_repairs = list(getattr(services.planner, "last_repairs", []) or [])
     if proposal.decision == "none":
@@ -303,6 +328,7 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
             return
 
     def compile_plan(current: QueryPlan) -> CompiledPlan:
+        check()
         compiled = services.compiler.compile(
             current,
             as_of=settings.as_of,
@@ -310,6 +336,7 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
             named_segments=named,
         )
         services.policy.assert_safe_select_statement(compiled.compiled.physical_sql)
+        check()
         return compiled
 
     try:
@@ -343,7 +370,9 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
 
     checks = literal_checks(plan)
     result.literal_checks = len(checks)
+    check()
     misses = list(services.literal_checker(checks)) if checks else []
+    check()
     if misses and index is not None:
         resolved, resolutions = resolve_plan_literals(
             plan,
@@ -361,7 +390,9 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
                 result.status, result.reason = "unsupported", f"plan_{error}"
                 return
             checks = literal_checks(plan)
+            check()
             misses = list(services.literal_checker(checks)) if checks else []
+            check()
         ambiguous = [r for r in resolutions if r.kind == "ambiguous"]
         if misses and ambiguous:
             result.status, result.reason = "clarify", "filter_value_ambiguous"
@@ -377,6 +408,7 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
         _clarify_missing(result, misses)
         return
 
+    check()
     execution = services.executor.execute(
         compiled.compiled,
         max_rows=settings.max_rows,
@@ -384,6 +416,7 @@ def _ask(question, services, settings, previous, run_id, result, overlay, index)
         statement_timeout_seconds=settings.statement_timeout_seconds,
         run_id=run_id,
     )
+    check()
     if execution.error_code is not None:
         result.status, result.reason = "failed", execution.error_code
         return

@@ -52,10 +52,15 @@ to fill this missing input.
 
 ## Current product boundary
 
-Serial research integration is demonstrated. General production integration is
-not: same-datasource requests reuse a run ID, end-to-end cancellation/deadlines
-are not established, and failed responses can include raw model debug text.
-Before concurrent/untrusted consumers, specify and test per-request lifecycle
-identity, safe public response projection and bounded completion. Reuse existing
-registry/executor mechanisms; a new multi-agent or human-correction framework is
-not required. A parent agent's faithful rendering remains a separate test boundary.
+The historical v1 findings above motivated MCP v2. The follow-up implemented
+request-owned planner/lifecycle identity, a total ask deadline, protocol cancellation
+and an explicit public/debug projection. Controlled real PostgreSQL cancellation
+and timeout checks, plus the same six Gemma requests, pass; see
+[`serving-lifecycle-01.md`](../research/serving-lifecycle-01.md). The old six-request
+artifact remains v1 evidence and has not been overwritten.
+
+This is still not unrestricted production readiness: remote GPU termination,
+high-load capacity, full PII policy, multi-tenant authorization and an upstream
+agent's faithful rendering are not established by these checks. Natural-question
+generalization also remains separate. No agent framework or human-correction
+card was added.

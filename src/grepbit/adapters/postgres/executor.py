@@ -8,6 +8,7 @@ from typing import Any
 
 import psycopg
 
+from grepbit.application.request_lifecycle import RequestControl
 from grepbit.domain.models import CompiledQuery, ParameterMode
 from grepbit.ports.active_query_lifecycle import (
     ActiveQueryHandle,
@@ -28,9 +29,11 @@ class PsycopgQueryExecutor:
         *,
         connection_factory: Callable[[], AbstractContextManager[Any]],
         active_queries: ActiveQueryLifecyclePort,
+        control: RequestControl | None = None,
     ) -> None:
         self._connection_factory = connection_factory
         self._active_queries = active_queries
+        self._control = control
 
     def execute(
         self,
@@ -58,11 +61,15 @@ class PsycopgQueryExecutor:
             parameter.name: parameter.value
             for parameter in compiled_query.execution_parameters
         }
+        registered = False
+        if self._control:
+            self._control.check()
         try:
             with self._connection_factory() as connection:
                 self._active_queries.register(
                     ActiveQueryHandle(run_id=run_id, cancel_safe=connection.cancel_safe)
                 )
+                registered = True
                 with connection.cursor() as setup_cursor:
                     if (
                         connection.info.transaction_status
@@ -74,9 +81,20 @@ class PsycopgQueryExecutor:
                         raise PermissionError(
                             "physical execution requires read-only transaction"
                         )
+                    timeout_ms = max(
+                        1,
+                        int(
+                            (
+                                self._control.remaining(statement_timeout_seconds)
+                                if self._control
+                                else statement_timeout_seconds
+                            )
+                            * 1000
+                        ),
+                    )
                     setup_cursor.execute(
                         "SELECT set_config('statement_timeout', %s, true)",
-                        (f"{statement_timeout_seconds}s",),
+                        (f"{timeout_ms}ms",),
                     )
                     setup_cursor.execute(
                         "SELECT set_config("
@@ -106,7 +124,8 @@ class PsycopgQueryExecutor:
                 error_code=error.sqlstate or type(error).__name__,
             )
         finally:
-            self._active_queries.revoke(run_id, completion_recorded=False)
+            if registered:
+                self._active_queries.revoke(run_id, completion_recorded=False)
 
         return ExecutionResult(
             rows=tuple(public_rows),

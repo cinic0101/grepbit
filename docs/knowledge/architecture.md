@@ -152,6 +152,31 @@ script after `uv sync`. The runner `evals/spike_tier0.py` calls the same
 `ask()` per case and maps the `AskResult` onto its report, so measurements
 and the served path cannot drift (`../research/runner-on-ask-01.md`).
 
+### MCP v2 invocation ownership (2026-09-14)
+
+MCP `ask` is async at the transport boundary, running the synchronous governed
+pipeline in a worker with an explicitly passed `RequestControl`. Each invocation
+has an opaque unique ID, fresh planner/trace, executor and cancellation state.
+Schema/overlay/compiler data are shared; cold datasource binding is locked and
+published only on success. The runner still calls the same `ask()` without a
+server deadline unless a caller explicitly supplies a control.
+
+`GREPBIT_REQUEST_TIMEOUT_SECONDS` defaults to 30 seconds from ask-handler entry,
+including worker queueing, cold binding, retries/repair, checks, DB execution and
+result preparation. Native model/statement caps are upper bounds, not renewed
+total budgets. Protocol cancellation signals only the invocation's active DB
+connection; timeout/late results never become answers. Cleanup is awaited for at
+most two additional seconds. Sync threads and remote GPU inference are not
+forcibly terminated. Socket delivery and upstream-agent processing are outside
+this deadline. See `../plan/serving-lifecycle.md` for the exact limitations.
+
+The public response uses an explicit field allowlist, not wholesale AskResult
+serialization. It removes raw model outputs and unused candidate hints, adds
+`request_id`, and retains answer/disclosure/SQL/parameters/grounding fields.
+Internal runner diagnostics are unchanged. This is not full PII redaction or a
+new authorization surface. See `../research/serving-lifecycle-01.md` for live
+MCP cancellation, PostgreSQL physical-stop and six-query Gemma evidence.
+
 ## What is not here yet
 
 MCP and datasource registration exist as described above. Open work includes

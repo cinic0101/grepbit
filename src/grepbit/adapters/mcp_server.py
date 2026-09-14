@@ -13,14 +13,17 @@ connection strings come only from the environment variables it names.
 
 from __future__ import annotations
 
+import math
 import os
 import re
 import sys
+import time
 from collections.abc import Callable, Sequence
-from contextlib import contextmanager
-from dataclasses import asdict, dataclass, field
+from copy import deepcopy
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from pathlib import Path
+from threading import Lock
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -34,6 +37,7 @@ from grepbit.adapters.litellm.plan_client import (
 from grepbit.adapters.overlay_store import load_semantic_overlay
 from grepbit.adapters.postgres.executor import PsycopgQueryExecutor
 from grepbit.adapters.postgres.introspect import introspect_schema
+from grepbit.adapters.postgres.request_connection import request_connection
 from grepbit.adapters.postgres.value_check import missing_literals
 from grepbit.adapters.postgres.value_index import load_column_values
 from grepbit.adapters.sqlglot.plan_compiler import PlanCompiler
@@ -52,10 +56,11 @@ from grepbit.application.ask import (
 )
 from grepbit.application.grounding import ValueIndex
 from grepbit.application.overlay import overlay_problems
+from grepbit.application.request_lifecycle import RequestControl, RequestStopped
 from grepbit.domain.datasource import DatasourceRegistration
 from grepbit.domain.grounding import normalize_question
 
-SERVER_REVISION = "mcp-server-v1"
+SERVER_REVISION = "mcp-server-v2"
 UNSAFE_PATTERNS = (
     "delete",
     "drop",
@@ -71,8 +76,9 @@ UNSAFE_PATTERNS = (
 )
 RELAY_RULES = (
     "Relay rules for the calling agent: quote only numbers that appear in rows; "
-    "restate every assumption that affects the reading; when status is not "
-    "'answered', say that the question was refused and repeat the reason and "
+    "restate every assumption that affects the reading; when status is 'failed', "
+    "report an operational failure, not a semantic refusal; for other statuses "
+    "besides 'answered', say that the question was refused and repeat the reason and "
     "clarification instead of inventing an answer; verification tells how much of "
     "the meaning was reviewed by a human (verified, partially_verified, "
     "unverified_semantics)."
@@ -95,23 +101,24 @@ class BoundDatasource:
     services: AskServices
     business_timezone: str
     value_index_skipped: list[str] = field(default_factory=list)
+    request_factory: Callable[[RequestControl], AskServices] | None = None
 
 
 def bind_datasource(
-    registration: DatasourceRegistration, registry_path: Path, environ=os.environ
+    registration: DatasourceRegistration,
+    registry_path: Path,
+    environ=os.environ,
+    *,
+    control: RequestControl | None = None,
 ) -> BoundDatasource:
     """Introspect once, load the overlay and the value index, build the services."""
-
-    import psycopg
 
     dsn = environ.get(registration.dsn_env)
     if not dsn:
         raise RuntimeError(f"dsn_env_missing:{registration.dsn_env}")
 
-    @contextmanager
     def connect():
-        with psycopg.connect(dsn) as connection:
-            yield connection
+        return request_connection(dsn, control)
 
     schema = introspect_schema(
         connect,
@@ -134,6 +141,10 @@ def bind_datasource(
         )
         index = ValueIndex(values)
     settings = GroundingModelSettings.from_environment(environ)
+
+    def unscoped_connect():
+        return request_connection(dsn)
+
     services = AskServices(
         schema=schema,
         planner=ChatCompletionsPlanClient(settings),
@@ -143,18 +154,45 @@ def bind_datasource(
             functions=REVIEWED_FUNCTIONS | PLAN_AGGREGATE_FUNCTIONS,
         ),
         executor=PsycopgQueryExecutor(
-            connection_factory=connect, active_queries=ActiveQueryRegistry()
+            connection_factory=unscoped_connect, active_queries=ActiveQueryRegistry()
         ),
         literal_checker=lambda checks: missing_literals(
-            connect, schema.schema_name, checks
+            unscoped_connect, schema.schema_name, checks
         ),
         unsafe=unsafe,
         overlay=overlay,
         shape_pack=load_shape_pack(),
         value_index=index,
     )
+
+    def request_services(request: RequestControl) -> AskServices:
+        def request_connect():
+            return request_connection(dsn, request)
+
+        return replace(
+            services,
+            planner=ChatCompletionsPlanClient(settings, control=request),
+            executor=PsycopgQueryExecutor(
+                connection_factory=request_connect,
+                active_queries=ActiveQueryRegistry(),
+                control=request,
+            ),
+            literal_checker=lambda checks: missing_literals(
+                request_connect,
+                schema.schema_name,
+                checks,
+                statement_timeout_seconds=min(
+                    5, max(1, math.ceil(request.remaining(5)))
+                ),
+            ),
+        )
+
     return BoundDatasource(
-        registration, services, registration.business_timezone, skipped
+        registration,
+        services,
+        registration.business_timezone,
+        skipped,
+        request_services,
     )
 
 
@@ -229,8 +267,38 @@ def capabilities_payload(bound: dict[str, BoundDatasource]) -> dict[str, Any]:
     }
 
 
+PUBLIC_RESULT_FIELDS = (
+    "question",
+    "status",
+    "reason",
+    "clarification",
+    "sql",
+    "parameters",
+    "lineage",
+    "assumptions",
+    "interpretation",
+    "verification",
+    "row_count",
+    "rows_truncated",
+    "warnings",
+    "value_references",
+    "value_reference_errors",
+    "missing_literals",
+    "shape_repairs",
+    "constant_dimensions_dropped",
+    "unmapped_concepts",
+    "base_repair",
+    "excluded_segments",
+    "literal_checks",
+    "model_retries",
+    "model_repair_turns",
+    "elapsed_seconds",
+)
+
+
 def result_payload(result: AskResult, *, max_rows: int) -> dict[str, Any]:
-    payload = asdict(result)
+    payload = {name: deepcopy(getattr(result, name)) for name in PUBLIC_RESULT_FIELDS}
+    payload["rows_truncated"] = result.rows_truncated or len(result.rows) > max_rows
     payload["rows"] = [
         {
             k: (v if isinstance(v, (int, float, str, bool)) or v is None else str(v))
@@ -280,9 +348,8 @@ def collect_capabilities(
         try:
             get(registration.id)
         except Exception as error:
-            bound.pop(registration.id, None)
             unavailable[registration.id] = bind_error_text(error)
-    payload = capabilities_payload(bound)
+    payload = capabilities_payload(dict(bound))
     if unavailable:
         payload["unavailable"] = unavailable
     return payload
@@ -293,13 +360,34 @@ def build_server(registry_path: Path, environ=os.environ, *, lazy: bool = True):
 
     registry = load_registry(registry_path)
     bound: dict[str, BoundDatasource] = {}
+    timeout = float(environ.get("GREPBIT_REQUEST_TIMEOUT_SECONDS", "30"))
+    if not math.isfinite(timeout) or timeout <= 0:
+        raise ValueError("request_timeout_must_be_finite_positive")
+    locks = {r.id: Lock() for r in registry.datasources}
 
-    def get(datasource_id: str) -> BoundDatasource:
+    def get(
+        datasource_id: str, control: RequestControl | None = None
+    ) -> BoundDatasource:
         if datasource_id not in bound:
             registration = registry.get(datasource_id)
             if registration is None:
                 raise ValueError(f"unknown datasource: {datasource_id}")
-            bound[datasource_id] = bind_datasource(registration, registry_path, environ)
+            lock = locks[datasource_id]
+            while not lock.acquire(
+                timeout=min(0.05, control.remaining()) if control else 0.05
+            ):
+                if control:
+                    control.check()
+            try:
+                if datasource_id not in bound:
+                    ds = bind_datasource(
+                        registration, registry_path, environ, control=control
+                    )
+                    if control:
+                        control.check()
+                    bound[datasource_id] = ds
+            finally:
+                lock.release()
         return bound[datasource_id]
 
     if not lazy:
@@ -334,23 +422,92 @@ def build_server(registry_path: Path, environ=os.environ, *, lazy: bool = True):
             "level, up to 200 rows, and warnings. " + RELAY_RULES
         ),
     )
-    def ask_tool(
+    async def ask_tool(
         datasource_id: str, question: str, as_of: str | None = None
     ) -> dict[str, Any]:
-        ds = get(datasource_id)
-        zone = ZoneInfo(ds.business_timezone)
-        moment = datetime.fromisoformat(as_of) if as_of else datetime.now(zone)
-        if moment.tzinfo is None:
-            moment = moment.replace(tzinfo=zone)
-        result = ask(
-            question,
-            ds.services,
-            AskSettings(as_of=moment),
-            run_id=f"mcp-{datasource_id}",
-        )
-        return result_payload(result, max_rows=200)
+        # Invalid tool input stays an input error, not an operational failure.
+        if registry.get(datasource_id) is None:
+            raise ValueError("unknown_datasource")
+        try:
+            parsed = datetime.fromisoformat(as_of) if as_of else None
+        except ValueError:
+            raise ValueError("invalid_as_of") from None
+
+        def work(control):
+            ds = get(datasource_id, control)
+            zone = ZoneInfo(ds.business_timezone)
+            moment = parsed or datetime.now(zone)
+            if moment.tzinfo is None:
+                moment = moment.replace(tzinfo=zone)
+            services = (
+                ds.request_factory(control) if ds.request_factory else ds.services
+            )
+            result = ask(
+                question,
+                services,
+                AskSettings(as_of=moment),
+                run_id=control.run_id,
+                control=control,
+            )
+            control.check()
+            return result_payload(result, max_rows=200)
+
+        return await run_request(question, work, timeout_seconds=timeout)
 
     return server
+
+
+async def run_request(
+    question: str, work: Callable[[RequestControl], dict], *, timeout_seconds: float
+) -> dict:
+    """Bound the response wait and stop only this invocation's physical work."""
+    import anyio
+
+    started = time.monotonic()
+    control = RequestControl(timeout_seconds)
+
+    async def stop(reason):
+        callback = control.stop(reason)
+        if callback:
+            with anyio.move_on_after(2, shield=True):
+                try:
+                    await anyio.to_thread.run_sync(callback, abandon_on_cancel=True)
+                except Exception:
+                    pass  # Native statement timeout remains the fallback.
+
+    try:
+        with anyio.fail_after(control.remaining()):
+            payload = await anyio.to_thread.run_sync(
+                lambda: work(control), abandon_on_cancel=True
+            )
+            control.finish()
+    except anyio.get_cancelled_exc_class():
+        await stop("request_cancelled")
+        raise
+    except (TimeoutError, RequestStopped):
+        await stop("request_timeout")
+        payload = result_payload(
+            AskResult(
+                question=question,
+                status="failed",
+                reason="request_timeout",
+                elapsed_seconds=round(time.monotonic() - started, 3),
+            ),
+            max_rows=200,
+        )
+    except Exception:
+        await stop("request_failed")
+        payload = result_payload(
+            AskResult(
+                question=question,
+                status="failed",
+                reason="request_failed",
+                elapsed_seconds=round(time.monotonic() - started, 3),
+            ),
+            max_rows=200,
+        )
+    payload["request_id"] = control.run_id
+    return payload
 
 
 def main() -> int:
