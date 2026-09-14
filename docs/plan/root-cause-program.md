@@ -121,7 +121,19 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: bounded upstream relay study at `987671b` complete.
+Current 2026-09-14: owner requests a simple local streaming web E2E entry instead
+of an external upstream integration. HTTP/streaming/security scope and eleven
+static/public-payload rulers are prepared in `local-streaming-web.md`; no web
+implementation yet. New HTTP boundary awaits explicit ruler follow-up under the
+current AGENTS instructions. Then implement loopback/same-origin, progress SSE,
+actual stdio MCP, deterministic result/disclosure rendering and cancellation;
+validate controlled faults, browser behavior and six existing fixture queries.
+No second narration model, correction cards or production/gate change.
+The independent composition copy probe passed 23 offline checks but stopped on
+a research MCP fixture output-shape mismatch; no successful composition matrix
+or new Gemma/DB results. See `../research/relay-composition-probe-01.md`.
+
+Previous 2026-09-14: bounded upstream relay study at `987671b` complete.
 Twenty-four serial Gemma calls on twelve wholly synthetic public payloads,
 zero transport failures. Full-obligation relay pass is 8/12 with current rules
 and 10/12 with a research checklist; numeric values retained 8/8 and dispositions

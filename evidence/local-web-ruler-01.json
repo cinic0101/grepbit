@@ -1,0 +1,72 @@
+{
+  "baseline": "61c38e9",
+  "checkpoint": "local_web_specification_only",
+  "authorization": "Owner requests simple streaming web; current AGENTS requires HTTP boundary ruler follow-up",
+  "validation_source_digest": "sha256:9c2e02f601d16a254b94b0b3fc8d7600a81a9191fd843acb8ae2f25ff2588028",
+  "validation": {
+    "focused": {
+      "passed": true,
+      "tests": 11,
+      "fresh": true
+    },
+    "offline": {
+      "passed": true,
+      "tests": 1875,
+      "fresh": true
+    },
+    "static": {
+      "passed": true,
+      "tests": null,
+      "fresh": true
+    }
+  },
+  "copy_probe": {
+    "offline_tests": 23,
+    "passed": true,
+    "completed_transport_matrix": false,
+    "startup_attempt_failed_before_tool_call": true,
+    "subsequent_fixture_calls": 1,
+    "stopped_on_payload_shape": true,
+    "mcp_bare_dict_output_schema_absent": true,
+    "production_typed_dict_output_schema_present": true
+  },
+  "model_calls": 0,
+  "db_calls": 0,
+  "web_implemented": false,
+  "web_browser_tested": false,
+  "production_changed": false,
+  "historical_judgments_changed": false,
+  "new_natural_questions": false,
+  "scope_files": [
+    "docs/plan/local-streaming-web.md",
+    "docs/plan/relay-composition-probe.md",
+    "docs/research/relay-composition-probe-01.md",
+    "docs/plan/root-cause-program.md",
+    "tests/contract/t0/test_local_web_ruler.py",
+    "tests/fixtures/local_web_ruler.json"
+  ],
+  "artifact_hashes": {
+    ".artifacts/local-web-ruler-20260914/closeout.py": "ccc2dbf19fc18ee10a048d5e623594e8833df64fc222af6b44648a800ceb8aa7",
+    ".artifacts/local-web-ruler-20260914/focused/command-01.log": "d2fd206ad3765c240f66a3edc017138c2a28c08046ca957d78ea0d24f7ad07c5",
+    ".artifacts/local-web-ruler-20260914/focused/junit.xml": "4db75c41d080df346332b3cf0ebc79f267ea6d2916cb1225b0c8187e42c2e755",
+    ".artifacts/local-web-ruler-20260914/focused/result.json": "fda0563a9499a41375eeb96dd50964415b6fb3ba78910fe44316ee5fd04fdc78",
+    ".artifacts/local-web-ruler-20260914/offline/command-01.log": "39f831736d29b25e585e327140fad355c0067125efdddffc6d42c797bb4d4256",
+    ".artifacts/local-web-ruler-20260914/offline/junit.xml": "239ad5b629f3a8e795b9d1445261f0831e2c6330730b9b88bd61ea2764220f14",
+    ".artifacts/local-web-ruler-20260914/offline/result.json": "7721e3096203af24d76c5c9a4c13a1d4962a43821fb6edf1512888919f827b15",
+    ".artifacts/local-web-ruler-20260914/static/command-01.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    ".artifacts/local-web-ruler-20260914/static/command-02.log": "06ab29c13fe5b3417e871eb3dca1a0c5f537f1f8732304ad2e71b6e40d7ba4f8",
+    ".artifacts/local-web-ruler-20260914/static/command-03.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".artifacts/local-web-ruler-20260914/static/result.json": "b2d647de94d435641356e9e3a0adb59bdcdc9ec17f5270a833db15945df5a33e",
+    ".artifacts/relay-composition-20260914/focused-v2.xml": "764edc0223f1e96c1a3edf348dc0589ae6fa4f485b9870c3c40b55272741f092",
+    ".artifacts/relay-composition-20260914/focused.xml": "61ee1bea9abf54fb90644c22430501024f821d29a3896291141f6efbfadb9620",
+    ".artifacts/relay-composition-20260914/preparation-v2.json": "4c01a32a349e7c1149166172553aa6080f05fb20b29de74c224e7772594f9a3f",
+    ".artifacts/relay-composition-20260914/preparation.json": "82fd1e83c3dedbd1ef0402b2fadaa6c09f4c45792f1435ba6bbe8a2a80cd2356",
+    ".artifacts/relay-composition-20260914/probe.py": "70f9240032acde165829f5840622e77445dd5a8f8727d370eb7942d55ed14cb3",
+    ".artifacts/relay-composition-20260914/test_probe.py": "7f45135911eb01c7bbe9287dbd83992e1a03c970f19973dc9656469bd1503bc8",
+    "docs/plan/local-streaming-web.md": "c12750eb736681859614431332ff21f5af8c045916adc1856d6a20522bb8478d",
+    "docs/plan/relay-composition-probe.md": "f747ccfa4d4d55db913ee20ccfca6e2b5c7f7d030286b03cd56460f0ce6f8ad6",
+    "docs/research/relay-composition-probe-01.md": "9950155c9a1fe2b75e9a31af7c4f7ef494c191f10b49216952f90226840cebe9",
+    "tests/contract/t0/test_local_web_ruler.py": "2674a0f10ac3e3534ec896415c70921bfc264509f8e3d885062de8ba560697d4",
+    "tests/fixtures/local_web_ruler.json": "c8852b2254d8c6254a1e98590303dc616e0c0553f9f7455627a7357fb4bf29e8"
+  }
+}

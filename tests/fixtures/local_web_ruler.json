@@ -1,0 +1,40 @@
+{
+  "stage": "specification_only",
+  "bind_host": "127.0.0.1",
+  "default_port": 8765,
+  "registry_required": true,
+  "repo_registry_default": false,
+  "initial_data": "explicit_synthetic_fixtures",
+  "sampling_limit": 0,
+  "query": {
+    "method": "POST",
+    "path": "/query",
+    "fields": ["datasource_id", "question", "as_of"],
+    "content_type": "application/json",
+    "exact_origin_required": true,
+    "exact_host_required": true,
+    "custom_header_required": true,
+    "max_body_bytes": 16384,
+    "max_question_chars": 4000
+  },
+  "stream": {
+    "content_type": "text/event-stream",
+    "event_types": ["progress", "result", "error"],
+    "terminal_types": ["result", "error"],
+    "progress_reports": ["accepted", "waiting"],
+    "model_token_stream": false
+  },
+  "lifecycle": {
+    "max_active_queries": 1,
+    "busy_status": 429,
+    "bridge_timeout_seconds": 35,
+    "cancel_request_not_session": true,
+    "drop_late_results": true
+  },
+  "disclosure_fields": ["status", "reason", "clarification", "verification", "interpretation", "assumptions", "warnings", "row_count", "rows_truncated", "rows"],
+  "forbidden_public_fields": ["raw_output", "raw_output_repair", "question_values"],
+  "render_untrusted_as": "text_nodes",
+  "automatic_result_persistence": false,
+  "second_narration_model": false,
+  "production_readiness_claim": false
+}
