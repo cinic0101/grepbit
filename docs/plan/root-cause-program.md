@@ -121,7 +121,22 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: source-scoped concept-gate offline screen at `4d0152a`
+Current 2026-09-14: fixed acceptance assets and actual MCP path at `9e86ca8`
+complete. Four previously reviewed COUNT/AVG recipes are prospective alternatives
+only; original rules/history unchanged. All 24 interpretation recipes independently
+checked in PostgreSQL; six selected authored requests through stdio MCP use six
+Gemma calls: three correct answers, two necessary refusals, one known gate false
+refusal, zero transport failures. Six payload fingerprints match end to end.
+Twenty-five focused tests/static pass; source/hash-matched offline 1,841 reused.
+No production/prompt/gate change. See `../research/product-acceptance-path-01.md`
+and `../knowledge/product-acceptance.md` for the fixed asset map and boundaries.
+Next: bounded public/debug projection and request-lifecycle rulers (unique IDs,
+deadline/cancellation isolation), then implementation/controlled fault tests under
+the applicable checkpoint authority. Current serial smoke does not prove concurrent
+production safety. Natural-question intake is ready, awaiting new user input;
+do not fabricate another holdout or resume a rejected source-only gate candidate.
+
+Previous 2026-09-14: source-scoped concept-gate offline screen at `4d0152a`
 rejected. In 24 fixed question/plan pairs, the permissive reviewed-applicability
 variant rescues three false refusals but releases two previously blocked wrong
 answers; the conservative variant is identical to current behavior. Four arms,
