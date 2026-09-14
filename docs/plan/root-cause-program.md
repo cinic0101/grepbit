@@ -121,7 +121,21 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-13: full-context temporal reproduction at `771284a` complete.
+Current 2026-09-14: semantic bottleneck diagnosis at `7444676` complete.
+Thirty authored/adapted cases, 102 actual Gemma calls; zero repair/transport
+errors. Component baseline 6/6, so its comparison jobs stop at ceiling. Paired
+24-case corrective metadata only rescues the missing-lease family; two apparent
+COUNT gains are equivalent-plan annotation gaps, resolved separately by exact-hash
+replay without changing frozen scores. Cross-context screen fails: no metadata,
+retrieval or post-plan knowledge promotion. Actual correct plans expose gate
+false positives; disabling that gate also releases a known wrong scope. Name
+alternatives still become union with descriptions alone. Next: source-mention
+identity rulers; separate bidirectional gate research, not lexical exceptions.
+Primary tests 19, annotation tests 7, 368 independent checks per engine per
+preparation, static pass; source/hash-matched offline 1,841 reused. See
+`../research/semantic-bottleneck-01.md`. Production unchanged; A5 still provisional.
+
+Previous 2026-09-13: full-context temporal reproduction at `771284a` complete.
 Original 13-table / 58-column POS/HR context, historical messages/rules/oracles
 match exactly. Three cases x two passes: 6/6 accepted, correct raw/native year
 ranges, no repair or refusal rescue. Stop at the predefined baseline ceiling;

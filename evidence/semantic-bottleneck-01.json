@@ -1,0 +1,147 @@
+{
+  "baseline": "7444676",
+  "production_prompt_revision": "plan-classify-json-v15",
+  "research_revision": "bottleneck-descriptions-v1",
+  "tracked_source_digest": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+  "artifact_root": ".artifacts/semantic-bottleneck-20260914",
+  "analysis_root": ".artifacts/semantic-bottleneck-analysis-20260914",
+  "state": "complete",
+  "authored_cases": 30,
+  "paired_cases": 24,
+  "initial_calls": 102,
+  "actual_attempts": 102,
+  "max_initial_calls": 120,
+  "max_actual_attempts": 240,
+  "transport_errors": 0,
+  "validation_repairs": 0,
+  "effective_planner_max_tokens": 768,
+  "model": {
+    "name": "gemma-4-31b",
+    "temperature": 0,
+    "thinking": "off",
+    "repair_turns": 1,
+    "timeout": 20,
+    "max_tokens": 512
+  },
+  "as_of": "2026-09-01T12:00:00+08:00",
+  "call_p50_seconds": 1.877886,
+  "full_arm_counts": {
+    "A": {
+      "correct_answer": 19,
+      "necessary_refusal": 5,
+      "wrong_answer": 3,
+      "false_refusal": 1,
+      "unassessed": 2
+    },
+    "B": {
+      "correct_answer": 13,
+      "necessary_refusal": 5,
+      "wrong_answer": 3,
+      "false_refusal": 1,
+      "unassessed": 2
+    },
+    "C": {
+      "correct_answer": 15,
+      "necessary_refusal": 6,
+      "wrong_answer": 2,
+      "false_refusal": 1,
+      "unassessed": 0
+    },
+    "D": {
+      "correct_answer": 13,
+      "necessary_refusal": 7,
+      "wrong_answer": 0,
+      "false_refusal": 2,
+      "unassessed": 2
+    }
+  },
+  "paired_arm_counts": {
+    "A": {
+      "correct_answer": 13,
+      "necessary_refusal": 5,
+      "wrong_answer": 3,
+      "false_refusal": 1,
+      "unassessed": 2
+    },
+    "B": {
+      "correct_answer": 13,
+      "necessary_refusal": 5,
+      "wrong_answer": 3,
+      "false_refusal": 1,
+      "unassessed": 2
+    },
+    "C": {
+      "correct_answer": 15,
+      "necessary_refusal": 6,
+      "wrong_answer": 2,
+      "false_refusal": 1,
+      "unassessed": 0
+    },
+    "D": {
+      "correct_answer": 13,
+      "necessary_refusal": 7,
+      "wrong_answer": 0,
+      "false_refusal": 2,
+      "unassessed": 2
+    }
+  },
+  "frozen_grades_changed": false,
+  "posthoc_annotation": {
+    "id": "bottleneck-count-annotation-v2-posthoc",
+    "captured_plans": 8,
+    "instances_each": 4,
+    "accepted_replays": 32,
+    "model_calls": 0,
+    "previously_unassessed_invocations_resolved": 6
+  },
+  "corrective_metadata_semantic_rescues": 1,
+  "screen": "failed_cross_context_gain",
+  "component_comparison": "skipped_at_baseline_6_of_6_ceiling",
+  "focused_tests": {
+    "primary": 19,
+    "annotation": 7
+  },
+  "independent_checks_per_preparation": {
+    "duck": 368,
+    "postgres": 368,
+    "foil_witnesses": 23
+  },
+  "fixed_plan_gate_foil_executions": 106,
+  "answerable_gold_plans": 23,
+  "gold_passed_gate_on": 22,
+  "gold_passed_gate_off": 23,
+  "end_source_context_oracles_identical": true,
+  "static_passed": true,
+  "repository_offline_reused": 1841,
+  "repository_offline_reused_artifact": ".artifacts/temporal-reference-ruler-20260913/offline/result.json",
+  "repository_offline_reused_sha256": "eaf551ca31082614b9d404d8fda4f07f016403d627f3e7504c783699cd934a25",
+  "runtime_modified": false,
+  "production_prompt_changed": false,
+  "promoted": false,
+  "source_mention_identity_implemented": false,
+  "a5_complete": false,
+  "external_scope": {
+    "postgres": "read_only_inline_values_no_stored_rows",
+    "model": "existing_gateway_fictional_metadata_and_questions_only",
+    "new_provider": false,
+    "persistent_db_mutation": false
+  },
+  "artifacts": {
+    ".artifacts/semantic-bottleneck-20260914/preparation.json": "2d7e407b379f5dabb9346c2dd6e74d6c757a8c733f677c5107d8b8318acc9a67",
+    ".artifacts/semantic-bottleneck-20260914/offline-replay.json": "22c74949c2a33e749d9719df3a15a22b1ad9c98df9660637f7046d5e75c39bfd",
+    ".artifacts/semantic-bottleneck-20260914/live/summary.json": "505e6b54fbb4509d642b1f6729f7ede10f00218a8fe7ea10cac2717aa8633e48",
+    ".artifacts/semantic-bottleneck-20260914/live/selected-families.json": "76b10641ec0821fb69c425e6acd15f885becdd5f775a5087f40c38e256e1715b",
+    ".artifacts/semantic-bottleneck-20260914/end-check.json": "7e989a23b04c5b1743c4fd451adf37384766b989e12c9fd4e081fc1a0459a13c",
+    ".artifacts/semantic-bottleneck-20260914/ruler-tests.xml": "5190ea6c2ebe36a585e6fd256757abb8747ed39e23f7dbd02d6355151ecb8fb1",
+    ".artifacts/semantic-bottleneck-20260914/preflight-tests.xml": "3d747e183497ad0b6c0d9eb7bd9fba2e89c011205a36b20f8ef891d0fc21a515",
+    ".artifacts/semantic-bottleneck-20260914/static/result.json": "e7d19ac65c7a9330c7cea3f5f598432f0b975be399531d51e6a0193d4e2efeb7",
+    ".artifacts/semantic-bottleneck-20260914/panel.py": "9a33603f4b75b9f9519e140f18514e2076a36b07bbe03965ab1a99200d735659",
+    ".artifacts/semantic-bottleneck-20260914/study.py": "d0c0a5ee52b74acecd5a7a4c76d53f2face6cbe889d94b23faf5a47d54591c06",
+    ".artifacts/semantic-bottleneck-20260914/test_study.py": "b73dfcda51e5f617174451a1c50a755db381f82d9eacb804a3245875b608507f",
+    ".artifacts/semantic-bottleneck-analysis-20260914/count-diagnosis.json": "cdd13b6334962d4733b50c021c2feb10db2b83753da30f44b6e5e3cca5888c25",
+    ".artifacts/semantic-bottleneck-analysis-20260914/count-annotation-v2.json": "7e1e259165b6bb453465cfb99d6ca2dd210983246052e74468741cfc63af458b",
+    ".artifacts/semantic-bottleneck-analysis-20260914/annotation-ruler.xml": "e94013b92eeecd9ab389d59f49d884cc9ce93086c78480527142078b76e77ace",
+    ".artifacts/semantic-bottleneck-analysis-20260914/diagnose.py": "a0882655f31d281037cda0d36bab740794594c995807aba011117b765118127e",
+    ".artifacts/semantic-bottleneck-analysis-20260914/test_diagnosis.py": "489a18012f23471e33cec958f1c46aa5af9b70090a3e1ebed50a34f95ec5ae6a"
+  }
+}

@@ -13,6 +13,16 @@ guarantee; row redaction alone can leave values in plans or other fields. The
 current reuse manifests below publish counts and hashes only. See
 `../docs/research/evidence-reuse-live-01.md` for the pre-write field policy.
 
+`semantic-bottleneck-01.json`: 30 authored/adapted cases, 102 actual Gemma calls,
+zero repair/transport errors. Component baseline 6/6 stops comparison; paired
+24-case metadata screen fails after separating equivalent COUNT forms from real
+semantic gains. Only missing-lease knowledge helps; gate false positives and name
+union remain. Separate post-hoc exact-hash annotation: eight plans x four
+instances pass, frozen scores unchanged. Primary tests 19, annotation tests 7,
+368 independent checks per engine per preparation, static pass; source-matched
+offline 1,841 reused. No production promotion. See
+`../docs/research/semantic-bottleneck-01.md`.
+
 `temporal-full-context-01.json`: original full POS/HR fixture context restored;
 three historical message/rule/oracle records match exactly. Six baseline calls,
 6/6 accepted with correct raw ranges; no repairs/refusals. Stopped at ceiling,
