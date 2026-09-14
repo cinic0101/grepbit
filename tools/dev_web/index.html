@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Grepbit · Local E2E</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Grepbit · Local E2E</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
 <body><main>
-<header><span class="tag">LOCAL / E2E</span><h1>Grepbit</h1><p>一個問題，一次受控查詢。直接看結果，也看計算口徑。</p></header>
-<form id="query"><div class="inputs"><label>測試資料源<select id="datasource" required></select></label><label>報表基準時間（ISO）<input id="asof" required placeholder="2026-08-15T12:00:00+08:00" autocomplete="off"></label></div>
-<label>你的問題<textarea id="question" required maxlength="4000" rows="3" placeholder="例如：離線裝置有幾台？"></textarea></label>
-<div class="actions"><button id="submit" type="submit">開始查詢</button><button id="stop" type="button" disabled>停止</button><span id="progress" role="status" aria-live="polite">準備就緒</span></div></form>
-<section id="result" hidden aria-label="查詢結果"><div class="result-head"><h2 id="status"></h2><span id="identity"></span></div><p id="answered-question"></p><p id="verification"></p><h3>實際計算口徑</h3><p id="interpretation"></p><p id="refusal"></p>
-<h3>假設與限制</h3><ul id="assumptions"></ul><ul id="warnings"></ul><p id="rowmeta"></p><div class="table-wrap"><table id="rows"></table></div>
-<details><summary>查看結構化證據與 SQL（原始工具結果）</summary><pre id="evidence"></pre></details></section>
-<footer>僅供本機合成資料測試 · 不儲存查詢紀錄 · 非意圖正確性認證<br>進度串流不是模型逐字輸出；數值只在查詢完成後顯示。</footer>
+<header><span class="tag">LOCAL / E2E</span><h1>Grepbit</h1><p>One question, one governed query. See the result and how it was calculated.</p></header>
+<form id="query"><div class="inputs"><label>Test datasource<select id="datasource" required></select></label><label>Reporting time (ISO)<input id="asof" required placeholder="2026-08-15T12:00:00+08:00" autocomplete="off"></label></div>
+<label>Your question<textarea id="question" required maxlength="4000" rows="3" placeholder="For example: How many devices are offline?"></textarea></label>
+<div class="actions"><button id="submit" type="submit">Run query</button><button id="stop" type="button" disabled>Stop</button><span id="progress" role="status" aria-live="polite">Ready</span></div></form>
+<section id="result" hidden aria-label="Query result"><div class="result-head"><h2 id="status"></h2><span id="identity"></span></div><p id="answered-question"></p><p id="verification"></p><h3>Calculation and scope</h3><p id="interpretation"></p><p id="refusal"></p>
+<h3>Assumptions and limitations</h3><ul id="assumptions"></ul><ul id="warnings"></ul><p id="rowmeta"></p><div class="table-wrap"><table id="rows"></table></div>
+<details><summary>Structured evidence and SQL (original tool result)</summary><pre id="evidence"></pre></details></section>
+<footer>Local synthetic-data testing only · No query history saved · Not a certificate of intent correctness<br>Progress events are not model tokens. Values appear only after the query completes.</footer>
 </main></body></html>

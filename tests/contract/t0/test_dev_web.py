@@ -232,7 +232,10 @@ def test_only_named_assets_no_registry_environment_or_debug(registry):
             for path in ("/.env", "/registry.json", "/tools/dev_web.py"):
                 assert (await client.get(path)).status_code == 404
             page = await client.get("/")
-            assert page.status_code == 200 and "假設與限制" in page.text
+            assert (
+                page.status_code == 200 and "Assumptions and limitations" in page.text
+            )
+            assert '<html lang="en">' in page.text
 
     asyncio.run(run())
 
