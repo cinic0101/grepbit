@@ -121,7 +121,18 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: support-state confirmation from `7b0c4b9` complete.
+Current 2026-09-14: identical-text placement diagnostic from `850e967` complete.
+18 known cases × table/amount-column placement, 36 actual Gemma calls, no repairs
+or transport errors. Both arms 12 correct answers, 5 necessary refusals, 1 wrong;
+all 13 answered plan hashes identical. Table messages match prior C exactly and
+its failure reproduces. No rescue: no second pass, promotion or further placement
+tuning. Seventeen tests/static pass, source-matched offline 1,841 reused. Metadata
+is contextual help, not a hard scope boundary. Any future controlled-refusal
+proposal needs explicit reviewed scope provenance and bidirectional false-block
+tests, not another same-model certificate or a lease keyword exception.
+See `../research/support-placement-01.md`; runtime/public contracts unchanged.
+
+Previous 2026-09-14: support-state confirmation from `7b0c4b9` complete.
 18 authored cases × three metadata arms, 54 actual Gemma calls, no repairs/errors.
 A/B each 12 correct answers, 4 necessary refusals, 2 wrong answers; C 12/5/1.
 All 12 answerable controls survive; only lease-unknown is rescued. Lease-absent

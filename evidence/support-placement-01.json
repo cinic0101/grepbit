@@ -1,0 +1,112 @@
+{
+  "state": "complete",
+  "baseline": "850e967",
+  "artifact_root": ".artifacts/support-placement-20260914",
+  "analysis_root": ".artifacts/support-placement-analysis-20260914",
+  "tracked_source_digest": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+  "production_prompt": "plan-classify-json-v15",
+  "study_revision": "support-placement-v1",
+  "cases": 18,
+  "actual_calls": 36,
+  "repairs": 0,
+  "transport_errors": 0,
+  "conditional_second_pass": false,
+  "results": {
+    "0": {
+      "arms": {
+        "T": {
+          "categories": {
+            "necessary_refusal": 5,
+            "correct_answer": 12,
+            "wrong_answer": 1
+          },
+          "answered": 13,
+          "correct_answers": 12,
+          "known_wrong": 1,
+          "unassessed": 0,
+          "p50": 1.4700199164799415,
+          "unknown_scoped_statuses": {
+            "semantic_gap": 3
+          }
+        },
+        "F": {
+          "categories": {
+            "necessary_refusal": 5,
+            "correct_answer": 12,
+            "wrong_answer": 1
+          },
+          "answered": 13,
+          "correct_answers": 12,
+          "known_wrong": 1,
+          "unassessed": 0,
+          "p50": 1.4856461040035356,
+          "unknown_scoped_statuses": {
+            "semantic_gap": 3
+          }
+        }
+      },
+      "screen": {
+        "passed": false,
+        "rescues": [],
+        "losses": [],
+        "all_F_accepted": false
+      }
+    }
+  },
+  "answered_pairs": 13,
+  "identical_full_plan_pairs": 13,
+  "historical_table_status_category_plan_or_null_matches": 18,
+  "validation": {
+    "focused_tests": 14,
+    "analysis_tests": 3,
+    "static": "pass",
+    "offline_reused_tests": 1841,
+    "offline_rerun": false,
+    "oracle_pairs_per_engine_per_preparation": 120,
+    "preparations_with_postgres": 2,
+    "unchanged_compiler_recipes": 30,
+    "ask_injections": 36
+  },
+  "source_identity": {
+    "prior": {
+      "runtime": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+      "helpers": {
+        "/Users/S019977/Documents/github/grepbit/.artifacts/support-state-20260914/panel_support.py": "8f7b7321754e2a6c4a891ca0e28f21292c710cada0d5c6cc9ec0eb8de4ff1ee5",
+        "/Users/S019977/Documents/github/grepbit/.artifacts/support-state-20260914/run_support.py": "99d3e2f50b74a65f9e5568131d2e9dfd0ee9f2622b1b4b08fbaf2712513a5c03",
+        "/Users/S019977/Documents/github/grepbit/.artifacts/support-state-20260914/test_support.py": "f2698c4e894bafc7d96eefe9e7ea3f802159ff7c05ae013cd22ed1e8c20e4f9c"
+      },
+      "reused_helpers": {
+        "/Users/S019977/Documents/github/grepbit/.artifacts/semantic-bottleneck-20260914/study.py": "237e3b06f1b92fbe2948b7716c5e2ece01a0c134b83a0a3281f8956b2839955a",
+        "/Users/S019977/Documents/github/grepbit/.artifacts/semantic-bottleneck-20260914/panel.py": "9fd7138883ea6f032b5d308245078f39ae172bfd697e8bce247659e3c60dbbe1"
+      }
+    },
+    "helpers": {
+      "/Users/S019977/Documents/github/grepbit/.artifacts/support-placement-20260914/placement.py": "61378c64ea64e37fdad83ac87c7020831ef605e9699a8fcc73c81efe2262f47d",
+      "/Users/S019977/Documents/github/grepbit/.artifacts/support-placement-20260914/test_placement.py": "d4c2c5681493eaab219043bac995851a65130aac3ded0c5bf0b0f432d02b8815"
+    },
+    "prior_preparation": "6dacbf02fff7dcce5440c091afdf8afef33f962d6ae62d5953c875d313b3b10d"
+  },
+  "artifacts_sha256": {
+    ".artifacts/support-placement-20260914/placement.py": "ab4dc55ef5c0557dd42f246a39e9181c2e138292688576d2eb0ad7cd514d7ac1",
+    ".artifacts/support-placement-20260914/test_placement.py": "fe7c2420c4295c6c368e86274f0e801fdeca585515e74b46296fbe32f46e2318",
+    ".artifacts/support-placement-20260914/preflight.xml": "c8861c527062fa1adf6542fccd59385615a787252e7e130791bd20a783bd31f4",
+    ".artifacts/support-placement-20260914/preparation.json": "3a0cbcb5a9dd079b1e745a884b2f9db8444a9e3154b4811aa2a2398071559531",
+    ".artifacts/support-placement-20260914/injections.json": "ed33213eb56c84403ee707c955cf6e4aaca296b1c74d7d3e5b7eabdc589f2a12",
+    ".artifacts/support-placement-20260914/end-check.json": "781530995fc463042d7dfd7fa5b4ac74016496222d553e808e97b21d32598c20",
+    ".artifacts/support-placement-20260914/live/summary.json": "2af883e607be9d0599cccaf1612a814604f91eda76b0a7fef4f24c24a8a5809e",
+    ".artifacts/support-placement-20260914/live/screen-0.json": "4f00092813146557b8601f4d23b3b38dfcdb0380394f41b15f8830ef870734a7",
+    ".artifacts/support-placement-20260914/static/result.json": "c4f100814edb9bef3b160d33a1f81df47a4dc2adedfae2d21b09be1e6e3059a5",
+    ".artifacts/support-placement-analysis-20260914/analysis.json": "1920922b0ac0a99f6ce32a9124f5d2c7162ea6134d5bb2e8500a6dc84b7dac47",
+    ".artifacts/support-placement-analysis-20260914/analyze.py": "df25e355a150c1daa4b04aa23ddfb3aa1d14add81214b5b009861086bca7e0e1",
+    ".artifacts/support-placement-analysis-20260914/test_analysis.py": "2a739e644c0756ea1785ccd890147a0548b68ffc591cc66ddb5f97b2e90391b9",
+    ".artifacts/support-placement-analysis-20260914/tests.xml": "67b2d041a4f4f8233482e326169732cebe92de73a726c2b8cde517719961f0d5",
+    ".artifacts/temporal-reference-ruler-20260913/offline/result.json": "eaf551ca31082614b9d404d8fda4f07f016403d627f3e7504c783699cd934a25"
+  },
+  "decision": "Stop placement candidate: no rescued cases; no production promotion or further placement tuning",
+  "limits": [
+    "Known authored English single-table cases",
+    "Refusal rationale is not certified from status",
+    "No general claim that placement never matters",
+    "No runtime, gate, public format, identity or safety boundary changes"
+  ]
+}
