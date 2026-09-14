@@ -121,7 +121,15 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: retained gate-exposure audit from `cad9dd3` complete.
+Current 2026-09-14: next owner holdout intake prepared from `a759a54`.
+Inspected case/question entry points expose only already-used POS/holdout/ratio
+sets; service cases are authored, not a new owner holdout. Existing converter
+and judged-run workflow suffice; no new framework or runtime change. Synthetic
+intake checks do not count as model/generalization evidence. Formal execution
+awaits a private file of previously unsubmitted owner/domain questions plus
+datasource and reporting date. No new model/DB calls. See `next-owner-holdout.md`.
+
+Previous 2026-09-14: retained gate-exposure audit from `cad9dd3` complete.
 95 owner questions: three historically accepted absent-concept refusals, no
 recorded concept-gate refusal; current concept predicate triggers eight times,
 seven sufficiently mapped and one missing plan already stopped by absence.

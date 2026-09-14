@@ -1,0 +1,20 @@
+{
+  "state": "prepared_awaiting_owner_input",
+  "baseline": "a759a54",
+  "runtime_digest": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+  "synthetic_checks": 3,
+  "existing_runner_tests": 19,
+  "static": "pass",
+  "new_model_calls": 0,
+  "new_database_calls": 0,
+  "production_changes": false,
+  "formal_holdout_executed": false,
+  "missing": "New owner questions file, datasource and reporting date",
+  "artifacts_sha256": {
+    ".artifacts/owner-holdout-intake-20260914/test_intake.py": "a82152d4038a2a80b660ca0d52ea1611a1309d4886f047758db90330779701b4",
+    ".artifacts/owner-holdout-intake-20260914/tests.xml": "2812f40df35c66af2d74a949fb587e49ff4ad0133cb938d82ea6fe2234a3824e",
+    ".artifacts/owner-holdout-intake-20260914/focused/result.json": "e9fa4630229010a187b69f978259decd21a13a10f2fde9548d00cfb09e972b0b",
+    ".artifacts/owner-holdout-intake-20260914/static/result.json": "924b2afa56aec2378e723bd0f8a5d973c76f2b5d797cc0e97ce1c9a1029da614",
+    "evals/questions_to_cases.py": "1c6482d661293c00736ad4a1a97d7919ab1e8bdee8a9511fb6c8f4a74facbe0f"
+  }
+}
