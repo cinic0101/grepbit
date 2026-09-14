@@ -121,7 +121,19 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: retained-user name exposure audit at `fda7d81` complete.
+Current 2026-09-14: independent ratio oracle replay from `8d54710` complete.
+Owner-reviewed h2 q21/q23/q25 targets and interpretations bound to captured
+v11/v14 plans, compiled by unchanged current source. Five synthetic instances,
+90 SELECTs per engine (15 oracle, 30 captured, 45 wrong-alternative); all nine
+wrong alternatives distinguished. Real PostgreSQL: three independent aggregates
+and six captured-plan replays, six matches on one read-only snapshot. Zero Gemma
+calls; not fresh v15 planner/serving accuracy or complete holdout2 oracle closure.
+Fourteen tests/static pass, source-matched offline 1,841 reused. No compiler repair
+or prompt search justified; retain controls and return to reproducible missing
+scope/metric errors, with cross-context defined/absent/unknown support controls
+before metadata promotion. See `../research/ratio-oracle-replay-01.md`.
+
+Previous 2026-09-14: retained-user name exposure audit at `fda7d81` complete.
 95 distinct owner questions, historical v14/v15 evidence kept separate; zero
 new model calls. Current five-column public catalog has 755 values and two product
 normalization collision groups, but no source/selected-name exposure in the

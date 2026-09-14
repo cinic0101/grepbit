@@ -1,0 +1,133 @@
+{
+  "state": "complete",
+  "baseline": "8d54710",
+  "artifact_root": ".artifacts/ratio-oracle-20260914",
+  "tracked_source_digest": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+  "production_prompt_unchanged": "plan-classify-json-v15",
+  "captured_prompt_revisions": [
+    "plan-classify-json-v11",
+    "plan-classify-json-v14"
+  ],
+  "case_ids": [
+    "h2_q21",
+    "h2_q23",
+    "h2_q25"
+  ],
+  "model_calls": 0,
+  "fresh_serving_executions": 0,
+  "synthetic": {
+    "instances": 5,
+    "engines": [
+      "DuckDB",
+      "PostgreSQL"
+    ],
+    "queries_per_engine": 90,
+    "oracle_queries_per_engine": 15,
+    "captured_plan_queries_per_engine": 30,
+    "wrong_alternative_queries_per_engine": 45,
+    "paired_engine_matches": 90,
+    "captured_plan_matches_per_engine": 30,
+    "wrong_alternatives_distinguished": 9,
+    "witnesses": {
+      "q21": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1,
+          2,
+          4
+        ]
+      ],
+      "q23": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1,
+          2,
+          4
+        ]
+      ],
+      "q25": [
+        [
+          0,
+          1,
+          2,
+          4
+        ],
+        [
+          1
+        ],
+        [
+          0,
+          1
+        ]
+      ]
+    }
+  },
+  "real": {
+    "oracle_queries": 3,
+    "captured_plan_queries": 6,
+    "matches": 6,
+    "snapshot": "repeatable_read_read_only",
+    "schema_sampling": 0,
+    "rows_persisted": false
+  },
+  "validation": {
+    "focused_tests": 14,
+    "static": "pass",
+    "offline_reused_tests": 1841,
+    "offline_rerun": false,
+    "artifact_integrity": "pass",
+    "privacy_allowlist": "pass"
+  },
+  "inputs_sha256": {
+    ".artifacts/holdout2/cases.yaml": "90470898d7dd5362dd796fe9549a3bcb23b84156acf72b9b6d9652e976e5e86c",
+    ".artifacts/holdout2/run-26.json": "b90281c1c76cc17a6ffea178d0622c6a27271028c2a7412b81c4221469e2c157",
+    ".artifacts/ratios-01/run-07.json": "c844e1a6de3c6e9f02234bb066771ed4cae9503a9d794c3d8b9264bcae234b71",
+    ".artifacts/ratios-01/verdicts-07.yaml": "0ddd94cbf9873c7a7ce8aabad550db304ad7a73d1141831574ec6f9af16d023e",
+    "overlays/pos_real.json": "2536d8378a41a8e7aa3cdd21f8ae4ca835c384bacea3ad00b57613b2deb3259a",
+    "docs/research/ratios-01.md": "c8250dc81aee3785a944bba2aa6f310fff63efc6bf1bee4867e79ee6016fbf3c",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/ratio-oracle-20260914/test_replay.py": "17571c983fc810d13f3f0cf6d6c2076d3b46819594a41cbf028b5620db0be7e6",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/ratio-oracle-20260914/replay.py": "f2bf267fb67a556f331a4a18e19294e150559904252c2ebdaedf9c2cb4f6124a"
+  },
+  "artifacts_sha256": {
+    ".artifacts/ratio-oracle-20260914/result.json": "e06b3020ed20ddee33b77e0af9a135fbc259894cf20788ef6b5753c4cce8d666",
+    ".artifacts/ratio-oracle-20260914/preflight.xml": "13f9ec24aa2986e7ef45f5ed81d61a216aa536a82975650cae9a297e2deb4ffb",
+    ".artifacts/ratio-oracle-20260914/static/result.json": "5438b1fb2666b217f6d63c3c6443812385858141005c182a6492434bb5743a30",
+    ".artifacts/ratio-oracle-20260914/replay.py": "f2bf267fb67a556f331a4a18e19294e150559904252c2ebdaedf9c2cb4f6124a",
+    ".artifacts/ratio-oracle-20260914/test_replay.py": "17571c983fc810d13f3f0cf6d6c2076d3b46819594a41cbf028b5620db0be7e6",
+    ".artifacts/temporal-reference-ruler-20260913/offline/result.json": "eaf551ca31082614b9d404d8fda4f07f016403d627f3e7504c783699cd934a25"
+  },
+  "oracles_sha256": "9fc793e82dc7cbd5240f0506e8a1b831de576c140a6afddad5dd430e7fdae45e",
+  "foils_sha256": "c19f95a4f163c22d3c65a0b9fbaf778a4e9320d728992d2c85f61079e2820141",
+  "synthetic_data_sha256": [
+    "7840089030125de58ed69b2d9a40377ae2e127c6a524f3a47768bfd7a028ef4c",
+    "cb77a049ee68b9dec2d9b2222d9652c9d40ba535b159a5cc2d5e751c10cc0840",
+    "e689ac4cd25c4111d99dd4b9742f138d8865b93f0a25a51e967c05b99db3b742",
+    "7aad70079f96c48b93f25f47c2fba3e4a5077b6cf6073557918b9ad9dab3066e",
+    "5b02a0793daaffa7532e4fdc3162a18509b3a69cfb849c6bf182f2306cf5f336"
+  ],
+  "decision": "Retain independent controls; no observed numerical defect or justification for a prompt intervention.",
+  "limits": [
+    "Historical captured plans, not current planner output",
+    "Reviewed targets reused, not independent new intent annotation",
+    "q22 and q24 not covered; no full holdout2 oracle acceptance",
+    "No production, public contract, source data, gate or historical score changes"
+  ]
+}
