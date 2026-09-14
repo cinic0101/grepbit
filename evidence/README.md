@@ -13,6 +13,13 @@ guarantee; row redaction alone can leave values in plans or other fields. The
 current reuse manifests below publish counts and hashes only. See
 `../docs/research/evidence-reuse-live-01.md` for the pre-write field policy.
 
+`name-prevalence-01.json`: 95 distinct retained owner questions, no new model
+calls. Current public catalog 755 values includes two product normalization
+collisions, but no measured source/selected-name exposure. Narrow gate flags 0;
+broader policies affect 5/14 historically accepted answers, not new value-verified
+false-refusal labels. Seventeen tests/static pass; source-matched offline 1,841
+reused. No production change. See `../docs/research/name-prevalence-01.md`.
+
 `name-occurrence-01.json`: 24 authored cases x three arms, 72 jobs / 78 actual
 Gemma calls, six validation repairs, zero transport errors. Truthful hint wording
 and occurrence metadata give zero rescues. A/C have four wrong answers; B has two

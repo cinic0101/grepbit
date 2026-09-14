@@ -1,0 +1,256 @@
+{
+  "baseline": "fda7d81",
+  "state": "complete",
+  "artifact_root": ".artifacts/name-prevalence-20260914",
+  "analysis_root": ".artifacts/name-prevalence-analysis-20260914",
+  "tracked_source_digest": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+  "model_calls": 0,
+  "fresh_serving_executions": 0,
+  "question_occurrences": 95,
+  "exact_unique_questions": 95,
+  "contexts": [
+    {
+      "group": "batch1",
+      "cases_file": "evals/cases/tier0/pos_real_batch1.yaml",
+      "cases_sha256": "89d28deab09ac65816722d56f0e1b6ac5b043cca90bb4cdfc49dadacf58fa21e",
+      "report": ".artifacts/product-baseline-20260913/live/batch1.json",
+      "report_sha256": "fefacddee06a012cf33998b5e404729ef8e68ab37c4fa9bf06452c3450ba2342",
+      "verdict": null,
+      "verdict_sha256": null,
+      "prompt_revision": "plan-classify-json-v15",
+      "cases": 50
+    },
+    {
+      "group": "holdout2",
+      "cases_file": ".artifacts/holdout2/cases.yaml",
+      "cases_sha256": "90470898d7dd5362dd796fe9549a3bcb23b84156acf72b9b6d9652e976e5e86c",
+      "report": ".artifacts/holdout2/run-26.json",
+      "report_sha256": "b90281c1c76cc17a6ffea178d0622c6a27271028c2a7412b81c4221469e2c157",
+      "verdict": ".artifacts/holdout2/verdicts-26.yaml",
+      "verdict_sha256": "6dab981c5d26736f00ad3f61446a1e331dd3c534b6b8c506579b56363ff0a929",
+      "prompt_revision": "plan-classify-json-v14",
+      "cases": 30
+    },
+    {
+      "group": "holdout3",
+      "cases_file": ".artifacts/holdout3/cases.yaml",
+      "cases_sha256": "b87dd254db5551c3b2a5d6ca30d30305ce3b4dc88571c09dd694a52dd61d9c5d",
+      "report": ".artifacts/holdout3/run-13.json",
+      "report_sha256": "962643dc154ecffc6dd7521de688b1cb652780fa6470a825ce00ad354ba30e96",
+      "verdict": ".artifacts/holdout3/verdicts-13.yaml",
+      "verdict_sha256": "eaafa075c4e230a29c08c1fd7eca73902541d9736575f9b1b8d870bc4f99389b",
+      "prompt_revision": "plan-classify-json-v14",
+      "cases": 15
+    }
+  ],
+  "catalog": {
+    "category.category_name": {
+      "distinct_values": 14,
+      "normalized_groups": 14,
+      "collision_groups": 0,
+      "colliding_values": 0
+    },
+    "pos_payment.payment_method": {
+      "distinct_values": 12,
+      "normalized_groups": 12,
+      "collision_groups": 0,
+      "colliding_values": 0
+    },
+    "product.product_name": {
+      "distinct_values": 720,
+      "normalized_groups": 718,
+      "collision_groups": 2,
+      "colliding_values": 4
+    },
+    "store.store_name": {
+      "distinct_values": 5,
+      "normalized_groups": 5,
+      "collision_groups": 0,
+      "colliding_values": 0
+    },
+    "transfer_status.status": {
+      "distinct_values": 4,
+      "normalized_groups": 4,
+      "collision_groups": 0,
+      "colliding_values": 0
+    }
+  },
+  "catalog_values": 755,
+  "catalog_sha256": "6016bc90f2c3fad31468b08d9e75cfc945ca7718b2de57e927a318bd92e011c6",
+  "overlay_sha256": "2536d8378a41a8e7aa3cdd21f8ae4ca835c384bacea3ad00b57613b2deb3259a",
+  "end_catalog_identical": true,
+  "source_collision_member_cases": 0,
+  "selected_collision_member_cases": 0,
+  "coverage": {
+    "cases": 95,
+    "statuses": {
+      "answered": 81,
+      "semantic_gap": 3,
+      "clarify": 4,
+      "unsupported": 7
+    },
+    "evidence": {
+      "historical_reference_match": 47,
+      "historical_accepted_refusal": 3,
+      "historical_judged_correct": 33,
+      "historical_judged_refusal": 11,
+      "historical_judged_wrong": 1
+    },
+    "source_available": 95,
+    "occurrence_available": 95,
+    "has_hints": 24,
+    "answered_plan_available": 81,
+    "plan_unavailable": 6,
+    "outside_public_filter_cases": 8
+  },
+  "policies": {
+    "occurrence_ambiguous": {
+      "flagged": 0,
+      "affected_historical_answers": 0,
+      "historical_evidence": {},
+      "cases": [],
+      "fresh_value_verified": false,
+      "live_policy_executed": false
+    },
+    "flat_multi": {
+      "flagged": 5,
+      "affected_historical_answers": 5,
+      "historical_evidence": {
+        "historical_judged_correct": 5
+      },
+      "cases": [
+        {
+          "group": "holdout2",
+          "case_id": "q22"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q26"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q27"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q28"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q29"
+        }
+      ],
+      "fresh_value_verified": false,
+      "live_policy_executed": false
+    },
+    "selected_not_exact": {
+      "flagged": 14,
+      "affected_historical_answers": 14,
+      "historical_evidence": {
+        "historical_judged_correct": 14
+      },
+      "cases": [
+        {
+          "group": "holdout2",
+          "case_id": "q02"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q03"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q04"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q05"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q08"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q09"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q10"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q11"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q13"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q15"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q16"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q17"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q23"
+        },
+        {
+          "group": "holdout2",
+          "case_id": "q25"
+        }
+      ],
+      "fresh_value_verified": false,
+      "live_policy_executed": false
+    }
+  },
+  "combined_broad_policy_distinct_answers": 19,
+  "policy_numbers_are_historical_exposure_not_new_correctness": true,
+  "random_traffic_sample": false,
+  "primary_tests": 14,
+  "summary_tests": 3,
+  "static_passed": true,
+  "repository_offline_reused": 1841,
+  "repository_offline_artifact": ".artifacts/temporal-reference-ruler-20260913/offline/result.json",
+  "repository_offline_sha256": "eaf551ca31082614b9d404d8fda4f07f016403d627f3e7504c783699cd934a25",
+  "runtime_modified": false,
+  "prompt_changed": false,
+  "production_policy_changed": false,
+  "evaluation_scores_changed": false,
+  "public_identity_contract_changed": false,
+  "persistence_changed": false,
+  "safety_boundary_changed": false,
+  "promoted": false,
+  "a5_complete": false,
+  "decision": "lower_priority_keep_sentinels_no_stricter_policy",
+  "external_scope": {
+    "postgres": "read_only_existing_five_public_groundable_columns",
+    "value_cap_per_column": 5000,
+    "schema_sampling_limit": 0,
+    "personal_db_column_values_read": false,
+    "raw_values_persisted": false,
+    "new_provider": false
+  },
+  "artifacts": {
+    ".artifacts/name-prevalence-20260914/audit.py": "917945559929698f729874d4898437444edebe80dc2b182e2e29747b1139e910",
+    ".artifacts/name-prevalence-20260914/test_audit.py": "6d643963fc91b35236fce05e3e4308f59503a2cd55b6c7037eeead597537220d",
+    ".artifacts/name-prevalence-20260914/audit.json": "3e391f6f9e6a217a61203ea0103c20b1dc429a005cd0acab6e9151487fe6169c",
+    ".artifacts/name-prevalence-20260914/preflight-v2.xml": "30a9c8bb4661122684e4c856a7e8d8864fdbec9ff12197e6d168cecfedd95760",
+    ".artifacts/name-prevalence-20260914/static/result.json": "064d021a74723a50e7971d3eef3dca957b088b18aa0bf1687dc6d6dd336e2118",
+    ".artifacts/name-prevalence-analysis-20260914/summarize.py": "28db8ffba4970fb3b402d2acd0dec098472abeadbb59c5b27c63af47025c8ede",
+    ".artifacts/name-prevalence-analysis-20260914/test_summary.py": "6b2131ae006c1045acfd55e787a29ff0ea4a07482e53a1ab59c1647533239ab7",
+    ".artifacts/name-prevalence-analysis-20260914/tests.xml": "879d3026e690d7018d792c8b45ff2944efa2152866132442d415de1af81e3e62",
+    ".artifacts/name-prevalence-analysis-20260914/collision_exposure.py": "cfcdf7b29cfbb3c50ba2c43b3e77f8ae0d566bd6e4bbe3810980ed0707da1025",
+    ".artifacts/name-prevalence-analysis-20260914/collision-exposure.json": "a3a25d65d4a2882152e786b3881c88db4f2a8d1cc06a27fcdf63d20a09be4458",
+    ".artifacts/name-prevalence-analysis-20260914/literal_exposure.py": "d5db2c6be4c7ae531ddc2007022276d682188968afcf9e811770cd88804b1eba",
+    ".artifacts/name-prevalence-analysis-20260914/literal-exposure.json": "34aedd11b5361d7af00dc04e2ac476ad49ada350d239ab1bd1626dc551b4f1e2"
+  },
+  "occurrence_helper_sha256": "0ab091f95ef98ca8b7b1aec5bd9a15ca87d5f832069548bdc8d668619fe50abc"
+}

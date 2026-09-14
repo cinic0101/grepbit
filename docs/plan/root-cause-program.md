@@ -121,7 +121,19 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: name occurrence study at `c349881` complete. Three arms on
+Current 2026-09-14: retained-user name exposure audit at `fda7d81` complete.
+95 distinct owner questions, historical v14/v15 evidence kept separate; zero
+new model calls. Current five-column public catalog has 755 values and two product
+normalization collision groups, but no source/selected-name exposure in the
+covered corpus. Narrow ambiguity policy flags 0; broader multi-candidate and
+non-verbatim policies would affect 5 and 14 historically accepted answers, not
+freshly verified false refusals. No demonstrated rescue; lower this research
+priority and retain collision/explicit-set sentinels. Next prioritize independent
+oracles and reproducible business scope/metric wrong-valid cases. Seventeen tests,
+static pass, source-matched offline 1,841 reused; no production policy changes.
+See `../research/name-prevalence-01.md`. A5 remains open.
+
+Previous 2026-09-14: name occurrence study at `c349881` complete. Three arms on
 24 authored cases, 72 jobs / 78 actual Gemma calls, six validation repairs and
 zero transport errors. Truthful normalized-hint wording gives no rescue (two
 wrong answers become invalid-output failures); occurrence metadata leaves all
