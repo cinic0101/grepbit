@@ -73,3 +73,42 @@ ordering, row limits/truncation (and whether paging is needed), permissions
 and PII exposure. "All devices" must not silently mean only the first page,
 and "details" must not override column visibility. No new construct or
 automatic query logging is authorized or implemented by recording this case.
+
+Clarification after owner feedback: column visibility enforcement, a 200-row
+MCP output cap, `row_count`/`rows_truncated`, and the web truncation warning
+already exist. Reuse them for any future projection construct; do not build a
+second protection layer. An SQL-level LIMIT can still yield an untruncated
+result of a limited query, so disclosure must not imply database completeness.
+Column visibility is configuration-based, not automatic comprehensive PII
+classification.
+
+## Average temperature in Fahrenheit (third user report)
+
+User reported `unsupported` for site-grouped mean temperature converted to
+Fahrenheit; wording, explanation and request ID are in the private case file.
+No complete response or replay was obtained. Code inspection supports the
+capability diagnosis: an AVG over readings with a site dimension is expressible
+via readings -> devices -> sites, but Measure and ReviewedMetric do not expose
+a unit-conversion or scalar affine-transform operation. Ratios, shares and
+growth do not supply arbitrary multiplication by a constant plus an offset.
+
+For the same non-NULL observations and unweighted arithmetic mean,
+`mean_F = mean_C * 9 / 5 + 32`. This is deterministic arithmetic, not a need
+for a stronger model or a vocabulary exception. The reported refusal is safe
+under today's contract but still loses an otherwise answerable product request.
+Changing an alias to Fahrenheit without converting the values is wrong.
+
+Future narrow experiment: a server-owned, explicitly selected unit conversion,
+using a trusted source-unit binding, with disclosed source/target units and
+conversion. Compare server post-aggregation conversion against an independent
+SQL oracle that converts each reading before AVG; do not allow model-written
+formulas, SQL or computed answers. Include 0 C -> 32 F, 100 C -> 212 F,
+-40 C -> -40 F, mixed values, NULL-only groups, and a Celsius no-conversion
+control. Preserve NULL and grouping; round only after conversion. Do not
+generalize affine AVG commutation to sums, growth or nonlinear conversions.
+Whether the conversion lives in the compiler or a typed server result stage
+is a future design decision, not an implementation made by this record.
+
+This case is queued as a seen natural-language regression candidate. No new
+production tests pretending the unsupported feature exists, prompt edits or
+live model calls are included; only documentation and private case intake.
