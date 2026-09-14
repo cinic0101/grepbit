@@ -13,6 +13,14 @@ guarantee; row redaction alone can leave values in plans or other fields. The
 current reuse manifests below publish counts and hashes only. See
 `../docs/research/evidence-reuse-live-01.md` for the pre-write field policy.
 
+`name-occurrence-01.json`: 24 authored cases x three arms, 72 jobs / 78 actual
+Gemma calls, six validation repairs, zero transport errors. Truthful hint wording
+and occurrence metadata give zero rescues. A/C have four wrong answers; B has two
+wrong plus two invalid-output failures. Blanket occurrence ambiguity would also
+block two correct explicit-set controls. Twenty focused tests, 88 independent
+checks per engine per preparation/static pass; source-matched offline 1,841
+reused. No production promotion. See `../docs/research/name-occurrence-01.md`.
+
 `semantic-bottleneck-01.json`: 30 authored/adapted cases, 102 actual Gemma calls,
 zero repair/transport errors. Component baseline 6/6 stops comparison; paired
 24-case metadata screen fails after separating equivalent COUNT forms from real

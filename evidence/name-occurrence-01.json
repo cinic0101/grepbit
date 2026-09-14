@@ -1,0 +1,139 @@
+{
+  "baseline": "c349881",
+  "production_prompt_revision": "plan-classify-json-v15",
+  "research_revision": "name-occurrence-v1",
+  "tracked_source_digest": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+  "artifact_root": ".artifacts/name-occurrence-20260914",
+  "analysis_root": ".artifacts/name-occurrence-analysis-20260914",
+  "state": "complete",
+  "authored_cases": 24,
+  "initial_jobs": 72,
+  "actual_attempts": 78,
+  "validation_repairs": 6,
+  "transport_errors": 0,
+  "max_initial_jobs": 72,
+  "max_actual_attempts": 144,
+  "model": {
+    "name": "gemma-4-31b",
+    "temperature": 0,
+    "thinking": "off",
+    "repair_turns": 1,
+    "timeout": 20,
+    "max_tokens": 512
+  },
+  "effective_planner_max_tokens": 768,
+  "arms": {
+    "A": {
+      "n": 24,
+      "counts": {
+        "correct_answer": 16,
+        "wrong_answer": 4,
+        "necessary_refusal": 4
+      },
+      "p50": 2.515888833499048,
+      "calls": 26,
+      "repairs": 2
+    },
+    "B": {
+      "n": 24,
+      "counts": {
+        "correct_answer": 16,
+        "wrong_answer": 2,
+        "operational_failure": 2,
+        "necessary_refusal": 4
+      },
+      "p50": 2.499876979534747,
+      "calls": 26,
+      "repairs": 2
+    },
+    "C": {
+      "n": 24,
+      "counts": {
+        "correct_answer": 16,
+        "wrong_answer": 4,
+        "necessary_refusal": 4
+      },
+      "p50": 2.5491204995196313,
+      "calls": 26,
+      "repairs": 2
+    }
+  },
+  "decisions": [
+    {
+      "arm": "B",
+      "rescued": [],
+      "correct_controls_lost": [],
+      "new_wrong": [],
+      "screen_passed": false,
+      "promotion": false
+    },
+    {
+      "arm": "C",
+      "rescued": [],
+      "correct_controls_lost": [],
+      "new_wrong": [],
+      "screen_passed": false,
+      "promotion": false
+    }
+  ],
+  "counterfactual_blanket_gate": {
+    "necessary_refusals_detected": 4,
+    "false_refusals": 2,
+    "implemented": false
+  },
+  "primary_tests": 18,
+  "analysis_tests": 2,
+  "independent_checks_per_preparation": {
+    "duck": 88,
+    "postgres": 88,
+    "foils": 16
+  },
+  "answerable_gold_injections": 16,
+  "refusal_injections": 8,
+  "data_instances": 4,
+  "source_context_oracles_unchanged": true,
+  "frozen_grades_changed": false,
+  "static_passed": true,
+  "repository_offline_reused": 1841,
+  "repository_offline_artifact": ".artifacts/temporal-reference-ruler-20260913/offline/result.json",
+  "repository_offline_sha256": "eaf551ca31082614b9d404d8fda4f07f016403d627f3e7504c783699cd934a25",
+  "runtime_modified": false,
+  "production_prompt_changed": false,
+  "promoted": false,
+  "automatic_occurrence_gate": false,
+  "public_identity_contract_changed": false,
+  "persistence_changed": false,
+  "safety_boundary_changed": false,
+  "a5_complete": false,
+  "customer_prevalence_measured": false,
+  "external_scope": {
+    "postgres": "read_only_inline_values_no_stored_rows",
+    "gemma": "existing_gateway_fictional_context_only"
+  },
+  "artifacts": {
+    ".artifacts/name-occurrence-20260914/preparation.json": "773ccce39e0c9afd1308f9005454d204b1fb5eff5b3001b52b4a5143a00c8460",
+    ".artifacts/name-occurrence-20260914/end-check.json": "ae6d415f4eef5af5cd831a1eefe6968c470e0c147aeaa5878282bf602680311b",
+    ".artifacts/name-occurrence-20260914/live/summary.json": "3fcf5704fdd13b92f6ead57bd8174772d15f1e76d848971d9a29b42d5e0d9915",
+    ".artifacts/name-occurrence-20260914/live/selected.json": "e51e03f1df5c28c9bccda53cbd3550661344a781c66f57c85ceb94f68c6330a4",
+    ".artifacts/name-occurrence-20260914/ruler-red-v2.xml": "422e269c07cf7fd84e7c927421db34477bf7aa7b73cad21bd8c2a88e791a0547",
+    ".artifacts/name-occurrence-20260914/ruler-green-v2.xml": "37fbb120afe26a005114faca37b388aa9c06249252c9aa206ff0e430ad061204",
+    ".artifacts/name-occurrence-20260914/preflight-v2.xml": "fdd56a3b9cfdef5c4bc26b9c69230e29c2d3b0771f9860145205784ff5871b45",
+    ".artifacts/name-occurrence-20260914/static/result.json": "5f1b24c2e214ddc554daadedd4e864f8817f171b637a732f27b2d68d160c6558",
+    ".artifacts/name-occurrence-20260914/occurrences.py": "0ab091f95ef98ca8b7b1aec5bd9a15ca87d5f832069548bdc8d668619fe50abc",
+    ".artifacts/name-occurrence-20260914/cases.py": "259c74fe8460943d1554dd4f2cecaf83c0dccb954147ade0d1dfe0ccd697c6f5",
+    ".artifacts/name-occurrence-20260914/run.py": "2d6f573c4cd924e5e5373568f0a4a547a88dc73961a479ab92e73d9e3158ee2b",
+    ".artifacts/name-occurrence-20260914/test_occurrences.py": "ef003f6fd756219c6410b25013527c45b8c889c032166ce33de51cebfd0bf638",
+    ".artifacts/name-occurrence-20260914/test_run.py": "c6d6a983936a83e204484935c61c519ba037966ad8bf0823ab08f48909cdb8ec",
+    ".artifacts/name-occurrence-analysis-20260914/summarize.py": "a0a6ae86985440797fd6f54dd1b9ec8ce52cb418d6724ae3ed091cc5f40518b7",
+    ".artifacts/name-occurrence-analysis-20260914/test_counterfactual.py": "776c2e17c3c67fc5421a28668b3897637545b8aae861e27c2a80102ce4450424",
+    ".artifacts/name-occurrence-analysis-20260914/tests.xml": "4873dfee45df6f9017be2e7d8839bfd51a4500f474f9700a7a9b7fae057bbb90"
+  },
+  "shared_helpers": {
+    "runtime": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+    "helpers": {
+      "panel.py": "9a33603f4b75b9f9519e140f18514e2076a36b07bbe03965ab1a99200d735659",
+      "study.py": "d0c0a5ee52b74acecd5a7a4c76d53f2face6cbe889d94b23faf5a47d54591c06",
+      "test_study.py": "b73dfcda51e5f617174451a1c50a755db381f82d9eacb804a3245875b608507f"
+    }
+  }
+}

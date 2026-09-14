@@ -121,7 +121,19 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: semantic bottleneck diagnosis at `7444676` complete.
+Current 2026-09-14: name occurrence study at `c349881` complete. Three arms on
+24 authored cases, 72 jobs / 78 actual Gemma calls, six validation repairs and
+zero transport errors. Truthful normalized-hint wording gives no rescue (two
+wrong answers become invalid-output failures); occurrence metadata leaves all
+four wrong answers. Both screens fail; no production prompt/provenance/gate.
+A blanket multi-candidate occurrence gate would catch four refusals but falsely
+block two explicit normalized sets. Source matching is not operation intent.
+Twenty focused tests, 88 independent checks per engine per preparation/static
+pass; source/hash-matched offline 1,841 reused. Next quantify real-user prevalence
+and the false-refusal cost before imposing a narrower name policy. See
+`../research/name-occurrence-01.md`; A5 remains open, runtime unchanged.
+
+Previous 2026-09-14: semantic bottleneck diagnosis at `7444676` complete.
 Thirty authored/adapted cases, 102 actual Gemma calls; zero repair/transport
 errors. Component baseline 6/6, so its comparison jobs stop at ceiling. Paired
 24-case corrective metadata only rescues the missing-lease family; two apparent
