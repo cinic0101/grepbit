@@ -121,7 +121,20 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: the 24-question authored DB-aware baseline at `689baca` is
+Current 2026-09-14: source-scoped concept-gate offline screen at `4d0152a`
+rejected. In 24 fixed question/plan pairs, the permissive reviewed-applicability
+variant rescues three false refusals but releases two previously blocked wrong
+answers; the conservative variant is identical to current behavior. Four arms,
+360 multi-instance ask executions, zero new Gemma calls. Three opposite-intent
+pairs share the same datasource/catalog/plan/unmapped-concept signature: source
+support alone does not establish the request's semantic role. Twenty-five
+focused tests/static pass; source-matched offline 1,841 reused. No production,
+prompt, gate or public contract change. See `../research/source-scoped-gate-01.md`.
+Stop this candidate; any successor must specify a genuinely new source of
+request-role/scope evidence before another live experiment. The lexical concept
+gate is a confirmed local bottleneck, not yet the dominant population bottleneck.
+
+Previous 2026-09-14: the 24-question authored DB-aware baseline at `689baca` is
 complete: 25 Gemma calls (one repair), no transport failures. Frozen acceptance
 has 15 correct answers, four unlisted recipes, four safe refusal statuses and
 one unnecessary clarification. Post-hoc SQL-identity review confirms the four

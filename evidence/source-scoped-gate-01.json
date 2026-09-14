@@ -1,0 +1,113 @@
+{
+  "baseline_commit": "4d0152a",
+  "source_digest": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+  "research_only": true,
+  "case_plan_pairs": 24,
+  "unique_question_strings": 14,
+  "question_datasource_contexts": 15,
+  "captured_model_inputs": 3,
+  "authored_injections": 21,
+  "ask_executions": 360,
+  "pair_arm_results": 96,
+  "model_calls": 0,
+  "counts": {
+    "A": {
+      "false_refusal": 7,
+      "wrong_answer": 3,
+      "correct_answer": 7,
+      "correct_block": 7
+    },
+    "B": {
+      "false_refusal": 4,
+      "wrong_answer": 5,
+      "correct_answer": 10,
+      "correct_block": 5
+    },
+    "C": {
+      "false_refusal": 7,
+      "wrong_answer": 3,
+      "correct_answer": 7,
+      "correct_block": 7
+    },
+    "D": {
+      "correct_answer": 14,
+      "wrong_answer": 10
+    }
+  },
+  "screens": {
+    "B": {
+      "rescued": [
+        "support_cancel_missing-negated-gold",
+        "support_cancel_missing-quoted-gold",
+        "iot-i01-captured"
+      ],
+      "new_wrong_releases": [
+        "cancel_missing-unrestricted-injection",
+        "iot-product-returns-unrestricted-injection"
+      ],
+      "new_false_refusals": [],
+      "passed": false
+    },
+    "C": {
+      "rescued": [],
+      "new_wrong_releases": [],
+      "new_false_refusals": [],
+      "passed": false
+    },
+    "D": {
+      "rescued": [
+        "output_en-gold",
+        "support_cancel_missing-negated-gold",
+        "support_cancel_missing-quoted-gold",
+        "records-negated-gold",
+        "records-quoted-gold",
+        "output_en-captured-A",
+        "iot-i01-captured"
+      ],
+      "new_wrong_releases": [
+        "business_en-foil",
+        "both_en-foil",
+        "business_zh-foil",
+        "both_zh-foil",
+        "cancel_present-foil",
+        "cancel_missing-unrestricted-injection",
+        "iot-product-returns-unrestricted-injection"
+      ],
+      "new_false_refusals": [],
+      "passed": false
+    }
+  },
+  "decision": "reject_source_only_applicability",
+  "identical_feature_opposite_intent_pairs": 3,
+  "ruler": {
+    "expected_failures": 2,
+    "passes": 13
+  },
+  "focused_tests": 25,
+  "static_passed": true,
+  "offline_reused": {
+    "tests": 1841,
+    "path": ".artifacts/temporal-reference-ruler-20260913/offline/result.json",
+    "sha256": "eaf551ca31082614b9d404d8fda4f07f016403d627f3e7504c783699cd934a25"
+  },
+  "scope": {
+    "production_changed": false,
+    "prompt_changed": false,
+    "gate_changed": false,
+    "database_writes": false,
+    "public_contract_changed": false
+  },
+  "artifacts": {
+    "/Users/S019977/Documents/github/grepbit/.artifacts/source-scoped-gate-20260914/catalog.py": "a57a4f9a998fc8d8852969117239da573900aeb14e3228f44b1e1d5fd618016b",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/source-scoped-gate-20260914/closeout.py": "a44703779a92332f970f0ea72dad84a0908fea9ad5e36f4118872eb8a24a0042",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/source-scoped-gate-20260914/focused-final.xml": "963270f45f22cd19ec38df410c1e732848a4266ec5b5a0559b8c75ff5b10f8bd",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/source-scoped-gate-20260914/preparation.json": "30bfb698764f989430627124203659da29c6a635e6c26a5b2eb155020b2dd984",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/source-scoped-gate-20260914/results.json": "40da46fe29f249bb882ca7ef6647604a062a3e6a26f3cea49a9e869a03786b62",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/source-scoped-gate-20260914/ruler-green.xml": "1538a587ebc7bde39a49d8033379c9f28f4d9bcec28de0516805f8b5f88d68e8",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/source-scoped-gate-20260914/ruler-red.xml": "7b4bafaaaa5cd010b09dc396f67f2ac1fe9fb6cc424621f4e0992664c4c22305",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/source-scoped-gate-20260914/static/result.json": "c3a2ebec73f158cd5c3e48154ab8948c89880a517c2cf2509b039b5452710104",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/source-scoped-gate-20260914/study_run.py": "06ffb0be74588fcc3c33785069d89d1362b1292cc85f9f4cb94d8a34a31052f9",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/source-scoped-gate-20260914/test_catalog.py": "97a67619880da33d338b5058078df219a6dbfd41f211901c5fefa6660d404b33",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/source-scoped-gate-20260914/test_results.py": "d4ca28063e09a7e64d993bd65d98c7e851e29852913fe627358b676cc8261f06"
+  }
+}
