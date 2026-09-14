@@ -121,7 +121,21 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: identical-text placement diagnostic from `850e967` complete.
+Current 2026-09-14: controlled-refusal diagnosis from `98ccadc` complete.
+178 fixed-plan/recovered-plan ask executions, zero new Gemma calls. Existing
+absence declarations catch three scoped wrong answers but newly false-refuse
+three explicit-ignore controls; three other absence-rule false blocks overlap
+the baseline member gate. Isolated membership wording accounts for nine baseline
+quoted-control false refusals. Metric golds 15/16 with gate versus 16/16 without;
+wrong foils blocked 4/16 versus 0/16. All 16 foils have numeric witnesses; three
+historical proposals recovered by exact hash/context. PostgreSQL/DuckDB agree.
+Both candidates fail bidirectional acceptance, so no live promotion or new rules.
+Twenty-five private tests/static pass, matching offline 1,841 reused. Next proposed
+slice: retrospectively audit actual gate exposure in retained owner questions,
+with independently graded captures and unknowns kept separate; no new intent
+certifier or public API change. See `../research/controlled-refusal-01.md`.
+
+Previous 2026-09-14: identical-text placement diagnostic from `850e967` complete.
 18 known cases × table/amount-column placement, 36 actual Gemma calls, no repairs
 or transport errors. Both arms 12 correct answers, 5 necessary refusals, 1 wrong;
 all 13 answered plan hashes identical. Table messages match prior C exactly and

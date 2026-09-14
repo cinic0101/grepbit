@@ -1,0 +1,154 @@
+{
+  "state": "complete",
+  "baseline": "98ccadc",
+  "artifact_root": "/Users/S019977/Documents/github/grepbit/.artifacts/controlled-refusal-20260914",
+  "production_prompt": "plan-classify-json-v15",
+  "source": {
+    "runtime": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+    "helpers": {
+      "/Users/S019977/Documents/github/grepbit/.artifacts/controlled-refusal-20260914/panel_risk.py": "b8783c9ed291ed505ec0a9feb39a88478da3d7d65391425e5df7fbe20003c677",
+      "/Users/S019977/Documents/github/grepbit/.artifacts/controlled-refusal-20260914/risk.py": "95aebbe865575a04578bfb52bb6759de086221e92fc9c4a3221a36b5fcb40f08",
+      "/Users/S019977/Documents/github/grepbit/.artifacts/controlled-refusal-20260914/test_risk.py": "f8d3837745ed8796d60f8da00c2ee1fff2bfa614ad5873abb6caeeb4460fb179",
+      ".artifacts/semantic-bottleneck-20260914/panel.py": "9fd7138883ea6f032b5d308245078f39ae172bfd697e8bce247659e3c60dbbe1",
+      ".artifacts/semantic-bottleneck-20260914/study.py": "237e3b06f1b92fbe2948b7716c5e2ece01a0c134b83a0a3281f8956b2839955a",
+      ".artifacts/support-state-20260914/panel_support.py": "8f7b7321754e2a6c4a891ca0e28f21292c710cada0d5c6cc9ec0eb8de4ff1ee5",
+      ".artifacts/support-state-20260914/run_support.py": "99d3e2f50b74a65f9e5568131d2e9dfd0ee9f2622b1b4b08fbaf2712513a5c03"
+    }
+  },
+  "actual_model_calls": 0,
+  "ask_executions": 178,
+  "support_counts": {
+    "baseline": {
+      "correct_answer": 21,
+      "false_refusal": 9,
+      "wrong_answer": 6
+    },
+    "reviewed_absent": {
+      "correct_answer": 18,
+      "false_refusal": 12,
+      "necessary_refusal": 3,
+      "wrong_answer": 3
+    }
+  },
+  "metric_counts": {
+    "True_gold": {
+      "correct_answer": 15,
+      "false_refusal": 1
+    },
+    "True_foil": {
+      "wrong_answer": 12,
+      "necessary_refusal": 4
+    },
+    "False_gold": {
+      "correct_answer": 16
+    },
+    "False_foil": {
+      "wrong_answer": 16
+    }
+  },
+  "screen": {
+    "eligible": false,
+    "caught": [
+      "lease_absent_scoped",
+      "warranty_absent_scoped",
+      "insurance_absent_scoped"
+    ],
+    "new_false_refusals": [
+      "lease_absent_ignore",
+      "warranty_absent_ignore",
+      "insurance_absent_ignore"
+    ],
+    "unassessed_or_errors": []
+  },
+  "oracle_checks": {
+    "duck_gold": 316,
+    "pg_reference": 316,
+    "pg_gold": 316,
+    "duck_foil": 64,
+    "pg_foil": 64,
+    "pg_captured": 12
+  },
+  "postgres_selects_excluding_role_check": 708,
+  "captured_replays": [
+    {
+      "case_id": "rows_zh",
+      "recovered": true,
+      "artifact": ".artifacts/semantic-bottleneck-20260914/live/rows_zh-A.json",
+      "artifact_sha256": "33189490d217b357d037c59b8b5d3d6597557b44683654537ade61162506f850",
+      "witness_instances": [],
+      "categories": [
+        {
+          "gate": true,
+          "category": "correct_answer"
+        },
+        {
+          "gate": false,
+          "category": "correct_answer"
+        }
+      ]
+    },
+    {
+      "case_id": "output_zh",
+      "recovered": true,
+      "artifact": ".artifacts/semantic-bottleneck-20260914/live/output_zh-A.json",
+      "artifact_sha256": "71ab8164d9448475ff5a55fa8a4d7c96d3d949350a5262045a9c066e590d107d",
+      "witness_instances": [
+        0,
+        1,
+        2
+      ],
+      "categories": [
+        {
+          "gate": true,
+          "category": "wrong_answer"
+        },
+        {
+          "gate": false,
+          "category": "wrong_answer"
+        }
+      ]
+    },
+    {
+      "case_id": "output_en",
+      "recovered": true,
+      "artifact": ".artifacts/semantic-bottleneck-20260914/live/output_en-A.json",
+      "artifact_sha256": "2ec1237d08e93424c64b4d50c8583601c3657b07651196abaa96802b93f8657c",
+      "witness_instances": [],
+      "categories": [
+        {
+          "gate": true,
+          "category": "false_refusal"
+        },
+        {
+          "gate": false,
+          "category": "correct_answer"
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "driver_tests": 17,
+    "integrity_tests": 8,
+    "static": "pass",
+    "offline_reused_tests": 1841,
+    "offline_rerun": false
+  },
+  "artifacts_sha256": {
+    "/Users/S019977/Documents/github/grepbit/.artifacts/controlled-refusal-20260914/result-postgres-v2.json": "e231056d973105d60932a75e82fa62fda817aaffb86cacd21f3a1133163ac277",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/controlled-refusal-20260914/risk.py": "dd4718212f26de6c756c065310ef388944f8c2ff9e767efda1b2a8f5ce1d2235",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/controlled-refusal-20260914/panel_risk.py": "d7a50f5c4bfe03eecc86ded2f9b1dca00b67068a3394f15211f9a1fc461c8c2d",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/controlled-refusal-20260914/test_risk.py": "39d331f5b8d230bcf492295bcc4a2dd39c33e66519ffea6f5f30a5d40649df36",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/controlled-refusal-20260914/focused-v2.xml": "b4db68ce306e121ed2e0866d2bddb5485b84078944a4d1115953653f79b50c08",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/controlled-refusal-20260914/static/result.json": "899c3ad73ea114514a0768d596c47e9f6fa3c3b4819b3e1bcd6b5633d20aab9d",
+    ".artifacts/controlled-refusal-analysis-20260914/test_integrity.py": "2fcc16c16fc07412620788909b8d88a1160463475196b5b6039ca9d883ad62bd",
+    ".artifacts/controlled-refusal-analysis-20260914/tests.xml": "59fcd6eaac4a7aff6eeb679cbb92ac703505f24f16e3ae494de366fd0fe5f3a1",
+    ".artifacts/temporal-reference-ruler-20260913/offline/result.json": "eaf551ca31082614b9d404d8fda4f07f016403d627f3e7504c783699cd934a25"
+  },
+  "decision": "Neither configuration qualifies; no live comparison or production promotion",
+  "limits": [
+    "Authored fixed-plan diagnosis, not model error prevalence",
+    "Known captures replayed, not regenerated",
+    "Initial v1 capture refusal label superseded by value-checked v2",
+    "No runtime, prompt, public format, safety, identity, or acceptance-contract changes"
+  ]
+}
