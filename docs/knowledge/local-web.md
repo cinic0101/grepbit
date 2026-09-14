@@ -25,7 +25,11 @@ Ctrl-C. The explicit confirmation is an operator scope assertion, not automatic
 classification or sanitization of an arbitrary database. The supplied profile
 contains only existing fictional Service/IoT sources and samples zero values.
 
-Choose a source and reporting date before submitting. Known fixture dates:
+The page prefills the suggested reporting date when a source is selected;
+switching sources resets it, and you can edit it before submitting. The fixture
+guide lists available data, limitations and example buttons (fill only, never
+auto-submit). These hints live in `tools/dev_web/examples.json`, not planner code
+or automatically inferred business definitions. Known fixture dates:
 
 | Source | `as_of` | Example |
 |---|---|---|

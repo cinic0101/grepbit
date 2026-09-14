@@ -70,6 +70,25 @@ $("query").addEventListener("submit", async e => {
     if (current === generation) $("progress").textContent = `Not completed: ${error.message}`;
   } finally { if (current === generation) idle(); }
 });
-fetch("/config").then(response => { if (!response.ok) throw new Error(); return response.json(); }).then(config => {
+let examples = {};
+function selectDatasource() {
+  const guide = Object.hasOwn(examples, $("datasource").value) ? examples[$("datasource").value] : null;
+  $("asof").value = guide?.as_of || "";
+  $("source-summary").textContent = guide?.summary || "No fixture guide is available. Enter an explicit reporting time.";
+  $("source-limitations").textContent = guide?.limitations || "";
+  $("example-questions").replaceChildren(...(guide?.questions || []).map(question => {
+    const button = document.createElement("button"); button.type = "button"; button.textContent = question;
+    button.addEventListener("click", () => { if (!controller) $("question").value = question; });
+    return button;
+  }));
+}
+$("datasource").addEventListener("change", selectDatasource);
+async function readConfig(path) {
+  const response = await fetch(path); if (!response.ok) throw new Error(); return response.json();
+}
+Promise.all([readConfig("/config"), readConfig("/examples.json")]).then(([config, guides]) => {
+  examples = guides;
   for (const id of config.datasources) { const option = document.createElement("option"); option.value = id; option.textContent = id; $("datasource").append(option); }
+  $("datasource").value = config.datasources[0] || "";
+  selectDatasource();
 }).catch(() => { $("progress").textContent = "Could not load local configuration"; $("submit").disabled = true; });

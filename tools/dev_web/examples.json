@@ -1,0 +1,22 @@
+{
+  "iot_spike": {
+    "as_of": "2026-08-15T12:00:00+08:00",
+    "summary": "Synthetic IoT operations: 3 sites, 8 devices, 15 alerts and 1,440 telemetry readings in the seeded fixture. Ask about connectivity, monthly subscription fees, alert severity, downtime, temperature, uptime and throughput. Time-series data covers July to mid-August 2026 (Asia/Taipei).",
+    "limitations": "Lease ownership is not defined. Median is not a supported aggregate. Suggested questions are examples, not a guarantee of correct interpretation.",
+    "questions": [
+      "How many devices are offline?",
+      "How many alerts were raised at each severity level in July 2026?",
+      "What was the average temperature at each site in July 2026?"
+    ]
+  },
+  "service_test": {
+    "as_of": "2026-04-15T12:00:00+08:00",
+    "summary": "Synthetic service operations: 3 teams, 4 projects, 8 tickets, 10 work logs, 9 ticket events and 2 team links in the seeded fixture. Ask about ticket counts, logged minutes, estimates, teams, projects and records without activity. Dated work logs cover January to March 2026; some work dates or minutes are NULL.",
+    "limitations": "Work-log rows and distinct tickets are different counts. No contractual SLA definition is supplied. Average time from ticket creation to closure is outside the current query algebra.",
+    "questions": [
+      "How many work-log records are there, and how many have a minutes value? Count zero minutes as a value.",
+      "What is the total logged time in minutes for each team?",
+      "Show total logged minutes by month from January through March 2026, using the work-log date."
+    ]
+  }
+}

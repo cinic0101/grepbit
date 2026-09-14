@@ -196,6 +196,7 @@ def create_app(registry_path, *, port=8765, ask_call=None, bridge_timeout=35):
             "/": ("index.html", "text/html"),
             "/app.js": ("app.js", "text/javascript"),
             "/style.css": ("style.css", "text/css"),
+            "/examples.json": ("examples.json", "application/json"),
         }[request.url.path]
         return Response((ASSETS / name).read_bytes(), media_type=mime, headers=HEADERS)
 
@@ -203,7 +204,10 @@ def create_app(registry_path, *, port=8765, ask_call=None, bridge_timeout=35):
         routes=[
             Route("/query", query, methods=["POST"]),
             Route("/config", config),
-            *(Route(p, asset) for p in ("/", "/app.js", "/style.css")),
+            *(
+                Route(p, asset)
+                for p in ("/", "/app.js", "/style.css", "/examples.json")
+            ),
         ],
     )
 

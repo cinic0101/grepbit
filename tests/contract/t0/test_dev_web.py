@@ -236,6 +236,10 @@ def test_only_named_assets_no_registry_environment_or_debug(registry):
                 page.status_code == 200 and "Assumptions and limitations" in page.text
             )
             assert '<html lang="en">' in page.text
+            guides = (await client.get("/examples.json")).json()
+            assert guides["iot_spike"]["as_of"] == "2026-08-15T12:00:00+08:00"
+            assert guides["service_test"]["as_of"] == "2026-04-15T12:00:00+08:00"
+            assert all(len(g["questions"]) == 3 for g in guides.values())
 
     asyncio.run(run())
 
