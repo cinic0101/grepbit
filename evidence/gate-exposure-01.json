@@ -1,0 +1,391 @@
+{
+  "state": "complete",
+  "baseline": "cad9dd3",
+  "source": {
+    "runtime": "sha256:e082cb9bfcaffb40f96f2f533d635cf085c9222731eb8330a76d89a9b16880ad",
+    "helpers": {
+      "/Users/S019977/Documents/github/grepbit/.artifacts/gate-exposure-20260914/audit_gates.py": "ee3d63f53b3676013766522047e4452983fcaf2ea2548ee2ae9e064eab0f24e2",
+      "/Users/S019977/Documents/github/grepbit/.artifacts/gate-exposure-20260914/test_audit.py": "20ef114f6504d1be966a1870d1b314f5826f1dc3fdb4b46b7510b522d4aae6aa"
+    },
+    "reused_helper": "917945559929698f729874d4898437444edebe80dc2b182e2e29747b1139e910"
+  },
+  "primary": {
+    "cases": 95,
+    "unique": 95,
+    "historical_statuses": {
+      "answered": 81,
+      "semantic_gap": 3,
+      "clarify": 4,
+      "unsupported": 7
+    },
+    "historical_evidence": {
+      "historical_reference_match": 47,
+      "historical_accepted_refusal": 3,
+      "historical_judged_correct": 33,
+      "historical_judged_refusal": 11,
+      "historical_judged_wrong": 1
+    },
+    "observed_reasons": {
+      "other_or_unrecorded": 92,
+      "absent_concept": 3
+    },
+    "absent_matches": 3,
+    "triggered_cases": 8,
+    "concept_states": {
+      "no_trigger": 87,
+      "unknown_no_plan": 1,
+      "mapped": 7
+    },
+    "plan_evidence": {
+      "partial_trace_lower_bound": 47,
+      "unavailable": 9,
+      "raw_gate_projection": 39
+    },
+    "flagged": [
+      {
+        "group": "batch1",
+        "case_id": "q04",
+        "historical_evidence": "historical_accepted_refusal",
+        "observed": "absent_concept",
+        "absent": true,
+        "concept": "unknown_no_plan"
+      },
+      {
+        "group": "batch1",
+        "case_id": "q05",
+        "historical_evidence": "historical_accepted_refusal",
+        "observed": "absent_concept",
+        "absent": true,
+        "concept": "no_trigger"
+      },
+      {
+        "group": "batch1",
+        "case_id": "q06",
+        "historical_evidence": "historical_accepted_refusal",
+        "observed": "absent_concept",
+        "absent": true,
+        "concept": "no_trigger"
+      }
+    ]
+  },
+  "groups": {
+    "batch1": {
+      "cases": 50,
+      "unique": 50,
+      "historical_statuses": {
+        "answered": 47,
+        "semantic_gap": 3
+      },
+      "historical_evidence": {
+        "historical_reference_match": 47,
+        "historical_accepted_refusal": 3
+      },
+      "observed_reasons": {
+        "other_or_unrecorded": 47,
+        "absent_concept": 3
+      },
+      "absent_matches": 3,
+      "triggered_cases": 8,
+      "concept_states": {
+        "no_trigger": 42,
+        "unknown_no_plan": 1,
+        "mapped": 7
+      },
+      "plan_evidence": {
+        "partial_trace_lower_bound": 47,
+        "unavailable": 3
+      },
+      "flagged": [
+        {
+          "group": "batch1",
+          "case_id": "q04",
+          "historical_evidence": "historical_accepted_refusal",
+          "observed": "absent_concept",
+          "absent": true,
+          "concept": "unknown_no_plan"
+        },
+        {
+          "group": "batch1",
+          "case_id": "q05",
+          "historical_evidence": "historical_accepted_refusal",
+          "observed": "absent_concept",
+          "absent": true,
+          "concept": "no_trigger"
+        },
+        {
+          "group": "batch1",
+          "case_id": "q06",
+          "historical_evidence": "historical_accepted_refusal",
+          "observed": "absent_concept",
+          "absent": true,
+          "concept": "no_trigger"
+        }
+      ]
+    },
+    "holdout2": {
+      "cases": 30,
+      "unique": 30,
+      "historical_statuses": {
+        "answered": 26,
+        "clarify": 4
+      },
+      "historical_evidence": {
+        "historical_judged_correct": 26,
+        "historical_judged_refusal": 4
+      },
+      "observed_reasons": {
+        "other_or_unrecorded": 30
+      },
+      "absent_matches": 0,
+      "triggered_cases": 0,
+      "concept_states": {
+        "no_trigger": 30
+      },
+      "plan_evidence": {
+        "raw_gate_projection": 30
+      },
+      "flagged": []
+    },
+    "holdout3": {
+      "cases": 15,
+      "unique": 15,
+      "historical_statuses": {
+        "unsupported": 7,
+        "answered": 8
+      },
+      "historical_evidence": {
+        "historical_judged_refusal": 7,
+        "historical_judged_correct": 7,
+        "historical_judged_wrong": 1
+      },
+      "observed_reasons": {
+        "other_or_unrecorded": 15
+      },
+      "absent_matches": 0,
+      "triggered_cases": 0,
+      "concept_states": {
+        "no_trigger": 15
+      },
+      "plan_evidence": {
+        "raw_gate_projection": 9,
+        "unavailable": 6
+      },
+      "flagged": []
+    }
+  },
+  "contexts": [
+    {
+      "group": "batch1",
+      "cases": 50,
+      "prompt": "plan-classify-json-v15",
+      "case_file": "evals/cases/tier0/pos_real_batch1.yaml",
+      "report": ".artifacts/product-baseline-20260913/live/batch1.json"
+    },
+    {
+      "group": "holdout2",
+      "cases": 30,
+      "prompt": "plan-classify-json-v14",
+      "case_file": ".artifacts/holdout2/cases.yaml",
+      "report": ".artifacts/holdout2/run-26.json"
+    },
+    {
+      "group": "holdout3",
+      "cases": 15,
+      "prompt": "plan-classify-json-v14",
+      "case_file": ".artifacts/holdout3/cases.yaml",
+      "report": ".artifacts/holdout3/run-13.json"
+    }
+  ],
+  "primary_inputs_sha256": {
+    "evals/cases/tier0/pos_real_batch1.yaml": "89d28deab09ac65816722d56f0e1b6ac5b043cca90bb4cdfc49dadacf58fa21e",
+    ".artifacts/product-baseline-20260913/live/batch1.json": "fefacddee06a012cf33998b5e404729ef8e68ab37c4fa9bf06452c3450ba2342",
+    ".artifacts/holdout2/cases.yaml": "90470898d7dd5362dd796fe9549a3bcb23b84156acf72b9b6d9652e976e5e86c",
+    ".artifacts/holdout2/run-26.json": "b90281c1c76cc17a6ffea178d0622c6a27271028c2a7412b81c4221469e2c157",
+    ".artifacts/holdout2/verdicts-26.yaml": "6dab981c5d26736f00ad3f61446a1e331dd3c534b6b8c506579b56363ff0a929",
+    ".artifacts/holdout3/cases.yaml": "b87dd254db5551c3b2a5d6ca30d30305ce3b4dc88571c09dd694a52dd61d9c5d",
+    ".artifacts/holdout3/run-13.json": "962643dc154ecffc6dd7521de688b1cb652780fa6470a825ce00ad354ba30e96",
+    ".artifacts/holdout3/verdicts-13.yaml": "eaafa075c4e230a29c08c1fd7eca73902541d9736575f9b1b8d870bc4f99389b"
+  },
+  "current_overlay_sha256": "2536d8378a41a8e7aa3cdd21f8ae4ca835c384bacea3ad00b57613b2deb3259a",
+  "current_pack_sha256": "71bf021422718878879badb73e32137729fdf05b83bf204c2b3ef86e96fcd9a7",
+  "supplement": {
+    "executions": 292,
+    "overlapping_owner_batch1": 50,
+    "authored_executions": 242,
+    "counts": {
+      "authored": {
+        "other_or_unrecorded": 234,
+        "concept_not_mapped": 4,
+        "absent_concept": 4
+      },
+      "owner_batch1_overlap": {
+        "other_or_unrecorded": 47,
+        "absent_concept": 3
+      }
+    },
+    "flagged": [
+      {
+        "set": "pos",
+        "case_id": "returns_dec_gap",
+        "cohort": "authored",
+        "status": "clarify",
+        "observed_reason": "concept_not_mapped",
+        "historical_evidence": "historical_accepted_refusal",
+        "row_sha256": "61cd01fb82b865c0e2af514012e59127502f948fcd18e43a7fb4c7b700ed0b83",
+        "question_sha256": "484b874919dd64a0769c8e7ffebc8d7e0e095113d70a26c2bf4af405994a03ae"
+      },
+      {
+        "set": "multilingual",
+        "case_id": "ja_returns_dec_gap",
+        "cohort": "authored",
+        "status": "clarify",
+        "observed_reason": "concept_not_mapped",
+        "historical_evidence": "historical_accepted_refusal",
+        "row_sha256": "5ed1f26256b3538eec975ac8a8f8a6a2e6869796b9ec2b5ab710b9e61939a571",
+        "question_sha256": "a426e8d92c5252150d3262169ca7001cee63d355fa9dca87d10bd0ea781f3326"
+      },
+      {
+        "set": "overlay",
+        "case_id": "ov_absent_inventory",
+        "cohort": "authored",
+        "status": "semantic_gap",
+        "observed_reason": "absent_concept",
+        "historical_evidence": "historical_accepted_refusal",
+        "row_sha256": "98b0ea95f4feefa71437a0eca85fe90072f9cb29fac60fe27f5c9c2e5651f44e",
+        "question_sha256": "8bdef500907e671b18720feb216e0d4ad0edc44fe379947c581f3d614e596eca"
+      },
+      {
+        "set": "overlay",
+        "case_id": "ov_absent_installments",
+        "cohort": "authored",
+        "status": "semantic_gap",
+        "observed_reason": "absent_concept",
+        "historical_evidence": "historical_accepted_refusal",
+        "row_sha256": "123f6ee253365e50650d81e7dd749a813c1e62ca63f00f99a08d838f2f72de61",
+        "question_sha256": "b84f48e41d3571ca69df8648abb407849a46b5aac9a99f43cdda1fb8ce0cf48e"
+      },
+      {
+        "set": "overlay",
+        "case_id": "ov_absent_overtime",
+        "cohort": "authored",
+        "status": "semantic_gap",
+        "observed_reason": "absent_concept",
+        "historical_evidence": "historical_accepted_refusal",
+        "row_sha256": "632a29ee11a0ecdb0d01a9a415db56cb05851fcc24d52d6e6bd1c105322b3695",
+        "question_sha256": "16322d9f2371a8fd7cfb98caa875e571cb2755380c24dcfed864c1f5b9db7b53"
+      },
+      {
+        "set": "overlay",
+        "case_id": "ov_absent_online_en",
+        "cohort": "authored",
+        "status": "semantic_gap",
+        "observed_reason": "absent_concept",
+        "historical_evidence": "historical_accepted_refusal",
+        "row_sha256": "74b1bfadbd0d3cf00b2ce11347be3ed2fe80ea109638e3366e585a57e14609b6",
+        "question_sha256": "8af0852fed79b5e291215ed572f357fc65f95bfa4e4b7f26a5eae8cfad3005c1"
+      },
+      {
+        "set": "coverage_pos",
+        "case_id": "cov_discounted_sales",
+        "cohort": "authored",
+        "status": "clarify",
+        "observed_reason": "concept_not_mapped",
+        "historical_evidence": "historical_accepted_refusal",
+        "row_sha256": "eb098e65c0e8643523b20ab01942ce3dbd66528c57397af27ea08190901b15d4",
+        "question_sha256": "b424308bc31227e79f732614664dd5d4a7af51ba50b3a97f6da4c3d90fef1245"
+      },
+      {
+        "set": "batch1",
+        "case_id": "q04",
+        "cohort": "owner_batch1_overlap",
+        "status": "semantic_gap",
+        "observed_reason": "absent_concept",
+        "historical_evidence": "historical_accepted_refusal",
+        "row_sha256": "d304802b28176c21d69eab0d95062a1347212d6bc860de3edb388c9138c62b36",
+        "question_sha256": "f7e89546d1ea118016a7d49f8792f03160500b4578b0d8f457ddf1c83c08c845"
+      },
+      {
+        "set": "batch1",
+        "case_id": "q05",
+        "cohort": "owner_batch1_overlap",
+        "status": "semantic_gap",
+        "observed_reason": "absent_concept",
+        "historical_evidence": "historical_accepted_refusal",
+        "row_sha256": "e68509744a9ae621933dea7dd5a9b6d0812b5138c36eda31edf5e6f0edca72f4",
+        "question_sha256": "bf33915f6a19ae3a870ad92c314b0c7ce6dc89777e0b43b4d1a979ecf183f4ef"
+      },
+      {
+        "set": "batch1",
+        "case_id": "q06",
+        "cohort": "owner_batch1_overlap",
+        "status": "semantic_gap",
+        "observed_reason": "absent_concept",
+        "historical_evidence": "historical_accepted_refusal",
+        "row_sha256": "c67edb69aca529d00e771193a5e7dd3ff748425d990e6791337e073293bbb243",
+        "question_sha256": "ce6160d82d15c6e3a83cc8e4ed345a6df4be0487dad805f142720fae9b362374"
+      },
+      {
+        "set": "service_adversarial",
+        "case_id": "svc_units_en",
+        "cohort": "authored",
+        "status": "clarify",
+        "observed_reason": "concept_not_mapped",
+        "historical_evidence": "historical_not_accepted",
+        "row_sha256": "d29e594e26a0baea47c140fb81ee816422084a176272c9c06bf43503b18fa032",
+        "question_sha256": "da26c3126daaa87249954d10aba10923ede6933b0840744dd43ae2f2506a9316"
+      }
+    ]
+  },
+  "bound_historical_false_refusal": {
+    "case_id": "svc_units_en",
+    "cohort": "authored",
+    "classification": "historically_value_verified_false_refusal",
+    "matched_plan_sha256": "9737cdd17fe1373e66b0c299a7c37397d77016cb1c26daa05a46d6a5441cfd4c",
+    "question_sha256": "da26c3126daaa87249954d10aba10923ede6933b0840744dd43ae2f2506a9316",
+    "original_unmapped_ids": [
+      "returns"
+    ],
+    "without_imperative_unmapped_ids": [],
+    "historical_pg_reference_match": true,
+    "new_value_execution": false,
+    "new_model_calls": 0,
+    "inputs_sha256": {
+      ".artifacts/product-baseline-20260913/resume/service_adversarial.json": "568b9c67ea6f862096cfd4d7a2de0f1c2a8bab296275c2a25edcd1788f88f5dd",
+      ".artifacts/a5-forms-service-20260912/diagnose-svc_units_en.json": "b8745e38a47c7ba7f058f7bd52d660c302ce4e4532172285c4384e191a6016c4",
+      ".artifacts/failure-roots-20260913/counterfactual.json": "951be5ae8dfed37985ae1bd223cbaa9590b1e16f45c4ef24d465b5950f32ccb2",
+      "evidence/failure-roots-01.json": "2d2f588e8ffad13ecadd074830ff05ab51d4cb41e2d0b9eeb8ed4e1307aeb0f2",
+      "evals/cases/tier0/service_adversarial.yaml": "03b5100ae054b184d46f6a25f890b0f85e38c65963af2bf2f6f893fcddfd80fe",
+      "evals/fixtures/service_v1/overlay.json": "6abad340f0ab8265ba7b8c30d539a59311fd98a0cda209604bec143a6152ee55"
+    }
+  },
+  "model_calls": 0,
+  "database_calls": 0,
+  "validation": {
+    "driver_tests": 19,
+    "integrity_tests": 8,
+    "static": "pass",
+    "offline_reused": 1841,
+    "offline_rerun": false
+  },
+  "artifacts_sha256": {
+    "/Users/S019977/Documents/github/grepbit/.artifacts/gate-exposure-20260914/audit_gates.py": "ee3d63f53b3676013766522047e4452983fcaf2ea2548ee2ae9e064eab0f24e2",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/gate-exposure-20260914/test_audit.py": "20ef114f6504d1be966a1870d1b314f5826f1dc3fdb4b46b7510b522d4aae6aa",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/gate-exposure-20260914/audit.json": "df509a91f79dbffaa75756a79a2e4347be9e676c089568c6a706c24a3b4866ba",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/gate-exposure-20260914/tests.xml": "2af226e17a1aff4697bbabbfe2301255d4b28bf40383dc786891f53b77793047",
+    "/Users/S019977/Documents/github/grepbit/.artifacts/gate-exposure-20260914/static/result.json": "16819437ddfbbcca453e0d378782c870720a34fadcb62d371f36a5d805532b1b",
+    ".artifacts/gate-exposure-analysis-20260914/test_integrity.py": "a39a756bc7f435d4a19210efa462b2e1d264993c9249cd6906e834116e9525c8",
+    ".artifacts/gate-exposure-analysis-20260914/annotate.py": "98d19d4df8e9d586f876012a44a1bc9dc8940c3b27873ddb765160ff646e75cb",
+    ".artifacts/gate-exposure-analysis-20260914/supplement.py": "61fdf53faa19cafb86dd22e6e42a6e262ddb479a6fd1dbaa3f310190ce273838",
+    ".artifacts/gate-exposure-analysis-20260914/annotation.json": "7c724c016528dabac79dba9c085c2c127d08a557bc75535b5fd230b6c1789898",
+    ".artifacts/gate-exposure-analysis-20260914/supplement.json": "f7d95a37912eb5b5a29948cc47236ef66980f5c303810e203b6ea95e81ee5ab1",
+    ".artifacts/gate-exposure-analysis-20260914/tests.xml": "06d7b42e3a1cc68b4c5a8aa97cb21557a895760010a8c96ec069a658f0bbc331",
+    ".artifacts/temporal-reference-ruler-20260913/offline/result.json": "eaf551ca31082614b9d404d8fda4f07f016403d627f3e7504c783699cd934a25"
+  },
+  "decision": "No blanket gate removal or vocabulary expansion; retain sentinels and seek unseen owner cases",
+  "limits": [
+    "Seen owner development sets, not representative traffic",
+    "Partial traces are lower-bound predicate evidence, not reconstructed plans",
+    "Historical labels stay historical; one existing false-refusal proof bound by identity",
+    "No new live, value execution, public contract, identity or safety changes"
+  ]
+}

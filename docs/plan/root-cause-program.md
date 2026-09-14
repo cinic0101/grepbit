@@ -121,7 +121,20 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: controlled-refusal diagnosis from `98ccadc` complete.
+Current 2026-09-14: retained gate-exposure audit from `cad9dd3` complete.
+95 owner questions: three historically accepted absent-concept refusals, no
+recorded concept-gate refusal; current concept predicate triggers eight times,
+seven sufficiently mapped and one missing plan already stopped by absence.
+39 raw projections/47 partial traces/nine unavailable plans; no invented full
+plan replay or new correctness labels. Separate 292-execution inventory (50
+overlapping Batch1) finds four authored concept refusals, three historically
+accepted and one false refusal bound to exact historical PostgreSQL evidence
+(svc_units_en). No new model/DB calls. Twenty-seven tests/static pass, matching
+offline 1,841 reused. No blanket vocabulary expansion or gate removal; retain
+bidirectional sentinels and prioritize unseen non-POS/multilingual owner cases,
+not another prompt sweep over these known failures. See `../research/gate-exposure-01.md`.
+
+Previous 2026-09-14: controlled-refusal diagnosis from `98ccadc` complete.
 178 fixed-plan/recovered-plan ask executions, zero new Gemma calls. Existing
 absence declarations catch three scoped wrong answers but newly false-refuse
 three explicit-ignore controls; three other absence-rule false blocks overlap
