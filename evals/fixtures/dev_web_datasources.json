@@ -1,0 +1,17 @@
+{
+  "datasources": [
+    {
+      "id": "service_test",
+      "dsn_env": "GREPBIT_SERVICE_DSN",
+      "overlay": "service_v1/overlay.json",
+      "enum_distinct_limit": 0,
+      "business_timezone": "Asia/Taipei"
+    },
+    {
+      "id": "iot_spike",
+      "dsn_env": "GREPBIT_IOT_DSN",
+      "enum_distinct_limit": 0,
+      "business_timezone": "Asia/Taipei"
+    }
+  ]
+}

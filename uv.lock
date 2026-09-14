@@ -146,6 +146,8 @@ dev = [
     { name = "pytz" },
     { name = "pyyaml" },
     { name = "ruff" },
+    { name = "starlette" },
+    { name = "uvicorn" },
 ]
 
 [package.metadata]
@@ -165,6 +167,8 @@ dev = [
     { name = "pytz", specifier = ">=2026.3.post1" },
     { name = "pyyaml", specifier = ">=6.0,<7" },
     { name = "ruff", specifier = ">=0.9,<1" },
+    { name = "starlette", specifier = ">=1.6" },
+    { name = "uvicorn", specifier = ">=0.52" },
 ]
 
 [[package]]

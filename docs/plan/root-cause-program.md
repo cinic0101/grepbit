@@ -121,7 +121,20 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: owner requests a simple local streaming web E2E entry instead
+Current 2026-09-14: approved local streaming web implemented at baseline `f0a0841`.
+Loopback/same-origin HTTP -> actual stdio MCP; per-request child/session, bounded
+single-query admission, cancel/timeout, deterministic evidence display, no extra
+narration model. 24 new HTTP/lifecycle tests and fresh 1,899-test offline/static
+gate pass. Final six authored E2E questions use six Gemma calls and retain exact
+MCP payloads/judgments (3 answers, 2 necessary refusals, 1 known gate false refusal).
+Twelve total model calls including the earlier shared-child pass; no DB writes.
+Real socket controls and offline JS DOM-shim checks pass; actual browser/visual
+testing remains blocked by the browser-control runtime's local config parse error.
+See `../knowledge/local-web.md` and `../research/local-web-01.md`.
+Next: use this local entry, finish browser interaction checks once available,
+and collect actual user questions. No planner/gate change or generalization claim.
+
+Previous 2026-09-14: owner requests a simple local streaming web E2E entry instead
 of an external upstream integration. HTTP/streaming/security scope and eleven
 static/public-payload rulers are prepared in `local-streaming-web.md`; no web
 implementation yet. New HTTP boundary awaits explicit ruler follow-up under the

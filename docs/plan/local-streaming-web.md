@@ -5,7 +5,12 @@ instead of connecting an external upstream application. This replaces that
 integration prerequisite. Root owns this slice. Existing Gemma/readonly DB and
 local-commit authority applies; no push or deployment.
 
-**Checkpoint state: specification and rulers only.** The newly supplied AGENTS
+**Checkpoint history: specification and rulers approved by the owner.**
+Implemented 2026-09-14; see `../research/local-web-01.md`. Browser-control setup
+still blocks real-browser/visual validation. Each dev request owns its own MCP
+child/session, avoiding a shared-session reconnect supervisor. The following
+contract and ruler evidence preserve the approved pre-implementation design.
+The newly supplied AGENTS
 instructions require a follow-up checkpoint for a new security/public boundary.
 An HTTP listener is new; establish the contract here before implementation.
 The associated tests validate the static specification and existing MCP result
