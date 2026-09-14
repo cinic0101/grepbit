@@ -30,6 +30,48 @@ def policy_for(schema) -> PostgresSqlPolicy:
     )
 
 
+@pytest.mark.parametrize("base", ["devices", "readings", "alerts"])
+def test_sibling_fact_counts_cannot_share_one_base(base: str) -> None:
+    # User-web probe: independent counts for two children of every device.
+    # Neither choosing the parent nor either child permits a fan-out join.
+    with pytest.raises(PlanError) as info:
+        compile_plan(
+            {
+                "base_table": base,
+                "dimensions": [{"table": "devices", "column": "device_id"}],
+                "measures": [
+                    {
+                        "aggregate": "count",
+                        "column": {"table": table, "column": key},
+                        "alias": alias,
+                    }
+                    for table, key, alias in (
+                        ("readings", "reading_id", "reading_count"),
+                        ("alerts", "alert_id", "alert_count"),
+                    )
+                ],
+            }
+        )
+    assert info.value.code == "grain_conflict"
+
+
+@pytest.mark.parametrize("base", ["readings", "alerts"])
+def test_one_fact_count_by_device_remains_supported(base: str) -> None:
+    # This only covers devices represented in the child, NOT zero-count devices.
+    compiled = compile_plan(
+        {
+            "base_table": base,
+            "dimensions": [{"table": "devices", "column": "device_id"}],
+            "measures": [{"aggregate": "count"}],
+        }
+    )
+    assert compiled.lineage.tables == (base, "devices")
+    assert "COUNT(*)" in compiled.compiled.physical_sql
+    policy_for(iot_schema()).assert_safe_select_statement(
+        compiled.compiled.physical_sql
+    )
+
+
 def test_count_with_month_window_binds_boundaries_in_business_timezone() -> None:
     compiled = compile_plan(
         {
