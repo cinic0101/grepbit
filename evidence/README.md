@@ -1,5 +1,15 @@
 # Evidence
 
+`temporal-repair-review-01.json`: effective original/repaired bounds and unknown
+child identity corrected in shared runtime at 6942416. Nineteen new controls;
+static and 2,210 offline tests pass. No new model/DB call for the correction.
+
+`row-planning-integration-01.json`: corrected runtime, 55 paired known cases and
+six paired repeats, 143/180 actual Gemma calls. Correct answers 27 to 34, but
+two new missing-definition wrong answers and one supported-without false refusal
+repeat. Joint strategy rejected; Web/default/runtime prompts unchanged. See
+`../docs/research/row-planning-integration-01.md`.
+
 `typed-time-boundary-01.json`: owner-approved source-type/default-zone/DST binding
 repair, no prompt changes or Gemma calls. 35 initial ruler failures / 55 passes;
 181 cross-session checks, final 2,169 offline/static pass. Actual-plan replay:

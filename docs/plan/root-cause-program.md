@@ -121,7 +121,18 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-15 production closeout at baseline `8701dfd`: time binding
+Current 2026-09-15: guard reviewer corrections committed at `6942416`, 2,210
+offline tests/static pass. Joint row integration then measured on that fixed
+runtime: 55 paired cases, six paired repeats, 143/180 actual Gemma calls.
+Correct answers improve 27 to 34, but two new missing-definition wrong answers
+and one supported-without false refusal recur. Candidate not promoted; existing
+opt-in fallback and Web defaults unchanged. Next: review smaller details-only
+product entry separately from automatic routing, plus discriminating support-
+definition controls; no automatic next prompt variant. Other capability lanes
+remain independent. See `../research/row-planning-integration-01.md` and
+`production-integration-board.md`.
+
+Previous 2026-09-15 production closeout at baseline `8701dfd`: time binding
 accepted on the actual HTTP/MCP path (natural runs and separate saved-plan
 replay). Source-aware repair guard integrated after compatibility/runtime rulers
 and live acceptance; no prompt change. Thirty Gemma calls, four wrong repairs

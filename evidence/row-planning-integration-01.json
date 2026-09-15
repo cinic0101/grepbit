@@ -1,0 +1,145 @@
+{
+  "baseline_git_sha": "6942416",
+  "candidate_revision": "plan-classify-json-v18-joint-row-order",
+  "disposition": "rejected_no_production_promotion",
+  "case_source": "evals.planner_combination_study.load_panel",
+  "primary_distinct_known_cases": 55,
+  "repeat_distinct_cases": 6,
+  "budget": {
+    "initial_calls": 130,
+    "repeat_calls": 13,
+    "total_calls": 143,
+    "cap": 180,
+    "contexts_and_oracles_unchanged": true
+  },
+  "primary": {
+    "outcomes": {
+      "fallback": {
+        "correct_answer": 27,
+        "wrong_answer": 7,
+        "necessary_refusal": 11,
+        "unnecessary_refusal": 4,
+        "operational_failure": 6
+      },
+      "joint": {
+        "correct_answer": 34,
+        "necessary_refusal": 10,
+        "wrong_answer": 2,
+        "unnecessary_refusal": 4,
+        "operational_failure": 5
+      }
+    },
+    "model_calls": 130,
+    "source_unchanged": true
+  },
+  "repeat": {
+    "outcomes": {
+      "fallback": {
+        "correct_answer": 3,
+        "necessary_refusal": 3
+      },
+      "joint": {
+        "correct_answer": 2,
+        "wrong_answer": 2,
+        "necessary_refusal": 1,
+        "unnecessary_refusal": 1
+      }
+    },
+    "model_calls": 13,
+    "source_unchanged": true
+  },
+  "transport_failures": 0,
+  "source_digest": "sha256:b4199f42223ac09b080c4a60ad04e261ef024fc8d36ded5608fff34cae2dc279",
+  "artifacts": {
+    ".artifacts/row-integration-20260915/run.py": "df83b0700dd10497d1b57f01f3c0e718b700d82eba06d02df2a29e7baf08a209",
+    ".artifacts/row-integration-20260915/repeat.py": "bccbe7fbdabf82f2c91cb2a56f47887a0b04d5e47e4ab4822ad1a76d2278939a",
+    ".artifacts/row-integration-20260915/main/manifest.json": "6fa0a5554d8745ef9e0154cf906ce598b6f90a6d14f524b3a23d4406ad72bee0",
+    ".artifacts/row-integration-20260915/main/results.json": "aa87211ff3b11395506c45159897f59d6c10910f7886d847bb5728f7718297e9",
+    ".artifacts/row-integration-20260915/main/summary.json": "10cff84ad9ee09c2938d2cad2cf309ed17838355e1b397d7abb929b4aae30478",
+    ".artifacts/row-integration-20260915/repeat/main/manifest.json": "d091e05226b048aae97381157ffd506d353f3df92f5014a0e5c9b86ab9571f2f",
+    ".artifacts/row-integration-20260915/repeat/main/results.json": "2ca74cc2f298ce66741572ce2749278c12b4d4979a9c9cb17c9dc79f2276d3cc",
+    ".artifacts/row-integration-20260915/repeat/main/summary.json": "63644660b638cdf117681cebfab04485c56d31d355577b799788caacd76a800f",
+    ".artifacts/row-integration-20260915/repeat/budget.json": "97ec1c4f62edc8bf7aaecb60a2f9aaf6dbbb8a75960ba713059479ed502be853"
+  },
+  "repeat_checks": [
+    {
+      "case_id": "rows_original_device_details",
+      "arm": "fallback",
+      "outcome": "correct_answer",
+      "same_plan_as_primary": true
+    },
+    {
+      "case_id": "rows_original_device_details",
+      "arm": "joint",
+      "outcome": "correct_answer",
+      "same_plan_as_primary": true
+    },
+    {
+      "case_id": "cov_mttr",
+      "arm": "joint",
+      "outcome": "wrong_answer",
+      "same_plan_as_primary": true
+    },
+    {
+      "case_id": "cov_mttr",
+      "arm": "fallback",
+      "outcome": "necessary_refusal",
+      "same_plan_as_primary": true
+    },
+    {
+      "case_id": "cov_leased_fee",
+      "arm": "fallback",
+      "outcome": "necessary_refusal",
+      "same_plan_as_primary": true
+    },
+    {
+      "case_id": "cov_leased_fee",
+      "arm": "joint",
+      "outcome": "wrong_answer",
+      "same_plan_as_primary": true
+    },
+    {
+      "case_id": "kind_rented_rows",
+      "arm": "joint",
+      "outcome": "necessary_refusal",
+      "same_plan_as_primary": true
+    },
+    {
+      "case_id": "kind_rented_rows",
+      "arm": "fallback",
+      "outcome": "necessary_refusal",
+      "same_plan_as_primary": true
+    },
+    {
+      "case_id": "svc_absent_feb_zh",
+      "arm": "fallback",
+      "outcome": "correct_answer",
+      "same_plan_as_primary": true
+    },
+    {
+      "case_id": "svc_absent_feb_zh",
+      "arm": "joint",
+      "outcome": "unnecessary_refusal",
+      "same_plan_as_primary": true
+    },
+    {
+      "case_id": "svc_absent_feb_en",
+      "arm": "joint",
+      "outcome": "correct_answer",
+      "same_plan_as_primary": true
+    },
+    {
+      "case_id": "svc_absent_feb_en",
+      "arm": "fallback",
+      "outcome": "correct_answer",
+      "same_plan_as_primary": true
+    }
+  ],
+  "limits": [
+    "Known regression cases, not unseen user holdout",
+    "Shared ask/readonly DB acceptance, not new HTTP/MCP or deployed Web acceptance",
+    "No model-intent certification",
+    "No batching causality claim",
+    "Source-matched guard static/offline 2210 reused; closeout changes are documentation only"
+  ]
+}

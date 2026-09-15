@@ -9,7 +9,7 @@ reports remain immutable evidence; this board records product disposition.
 |---|---|---|
 | Source-typed time binding | Shared compiler integrated at 8701dfd; actual HTTP/MCP binding replay accepted | Closed for binding scope; initial-plan language errors remain separate |
 | Temporal repair preservation | Shared planner integrated; reviewer effective-bound/identity corrections validated | Narrow boundary corrections closed: compare both original and repaired restrictions; missing child identity is unknown, not changed; broader semantic preservation is not claimed |
-| Base-table details | Shared compiler and opt-in fallback present; Web default off | Planning chooses rows versus aggregates correctly, retains missing-definition refusals, scoped visibility/limits and actual consumer payload; no assumed extra router |
+| Base-table details | Shared compiler/opt-in fallback present; Web default off. Fixed-runtime joint candidate rejected: row improvement but repeated MTTR/lease wrong answers and supported-without false refusal | Review smaller caller-specified details delivery separately from automatic routing; first specify compatibility and missing-definition controls. No automatic prompt rerun; see row-planning-integration-01 |
 | Unicode question rendering | Research extension 4/4 original questions, repeated; production planner already literal Unicode | Reuse the successful research input representation in integration, not another encoding study or blanket claim that conversion still fails |
 | Unit conversion | Research compiler/planner feasibility established on bounded cases | Integrate one reviewed SQL conversion path with source/target unit, NULL, value, output and missing-definition controls |
 | Independent aggregates and cross-metric selection | Research feasibility; shared-serving parity incomplete | Reuse common component population/identity foundation; separately test ties, missing second measure, independent windows and fan-out prevention |
@@ -53,6 +53,8 @@ replay adapters and historical evidence needed to explain/reproduce decisions.
 Do not delete the whole research directory or customer artifacts as cleanup.
 
 Sources: `../research/typed-time-boundary-01.md`,
+`../research/temporal-repair-review-01.md`,
+`../research/row-planning-integration-01.md`,
 `../research/temporal-repair-study-01.md`,
 `../research/query-extension-encoding-01.md`,
 `../research/joint-regression-and-row-order-01.md`,
