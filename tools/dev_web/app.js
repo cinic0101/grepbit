@@ -19,6 +19,15 @@ function render(payload) {
   $("verification").textContent = payload.verification ? `${payload.verification} · ${meanings[payload.verification] || ""}` : "No verification level was provided for this result.";
   $("interpretation").textContent = payload.interpretation || "No calculation interpretation was produced.";
   $("refusal").textContent = [payload.reason, payload.clarification].filter(Boolean).join("\n");
+  const guidance = $("mode-guidance");
+  guidance.hidden = !["clarify", "semantic_gap", "unsupported"].includes(payload.status);
+  guidance.textContent = guidance.hidden ? "" : "Mode guidance (not a diagnosis of this refusal): " +
+    (payload.query_kind === "rows"
+      ? "Details lists individual records. For counts, totals or without queries, select Default and submit again if that is your intended task. "
+      : !$("rows-mode").disabled
+        ? "If you intended individual records, you can select Details and submit again; eligible direct-parent fields are supported. "
+        : "Details is not enabled for this datasource. ") +
+    "Changing modes does not supply missing business definitions or guarantee an answer. The original refusal above is unchanged.";
   list("assumptions", payload.assumptions);
   list("warnings", payload.warnings);
   const rows = payload.rows || [];

@@ -11,6 +11,7 @@
     {
       "id": "iot_spike",
       "dsn_env": "GREPBIT_IOT_DSN",
+      "overlay": "iot_v1/status_overlay.json",
       "enum_distinct_limit": 0,
       "business_timezone": "Asia/Taipei",
       "allow_rows": true

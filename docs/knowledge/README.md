@@ -19,6 +19,12 @@ Companion reading: `../research/tier0-generalization.md` (every experiment,
 with numbers) and `../history/lessons-from-v1.md`.
 
 Current query-extension integration result:
+[`status-and-web-closeout-01.md`](../research/status-and-web-closeout-01.md):
+synthetic IoT status value aliases accepted in the local Web profile after paired
+HTTP/MCP checks (two false refusals recovered); mode guidance preserves original
+results, isolated time witnesses distinguish boundary/month mistakes. Return
+gate and refusal-type selection remain open; no parser or router introduced.
+
 [`identifier-row-wire-closeout-01.md`](../research/identifier-row-wire-closeout-01.md):
 shared exact-identifier serialization fixes a PostgreSQL case-folding JOIN error;
 saved-response replay supports narrow traced duplicate-row-column normalization,

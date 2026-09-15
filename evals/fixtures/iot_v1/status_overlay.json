@@ -1,0 +1,14 @@
+{
+  "datasource_id": "iot_spike",
+  "revision": "iot-status-values-v1",
+  "value_aliases": [
+    {
+      "column": {"table": "devices", "column": "status"},
+      "values": [
+        {"value": "online", "names": ["在線", "線上", "online"]},
+        {"value": "offline", "names": ["離線", "offline"]},
+        {"value": "maintenance", "names": ["維護中", "maintenance"]}
+      ]
+    }
+  ]
+}
