@@ -1,5 +1,13 @@
 # Evidence
 
+`typed-time-boundary-01.json`: owner-approved source-type/default-zone/DST binding
+repair, no prompt changes or Gemma calls. 35 initial ruler failures / 55 passes;
+181 cross-session checks, final 2,169 offline/static pass. Actual-plan replay:
+25 prior matches retained, four wrong-to-match, ten wrong retained. Four bounded
+differential reports: 1,184 agreements, zero disagreements/DB errors. Source type
+fidelity is tested independently of the synthetic builder. See
+`../docs/research/typed-time-boundary-01.md`.
+
 `planner-combination-study-01.json`: four frozen prompt arms over 55 authored
 controls, predeclared repeat and separate post-hoc recurrence check, 277/320 calls.
 Time-only and combined each give 36 correct / three wrong, but fail different

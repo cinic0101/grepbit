@@ -121,7 +121,17 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-15: four-arm combination study at baseline `bbf4ef9` complete.
+Current 2026-09-15: typed-time boundary at baseline `e6c5ecf` implemented after
+owner policy approval and 35 red/55 green rulers. Full source timestamp type,
+naive business-zone default/disclosure, DST/precision refusals, wall-clock
+comparison and source-aware calendar windows now avoid session inference.
+181 cross-session tests, 2,169 offline/static pass; 1,184 differential agreements.
+39 old temporal plans replayed, four wrong-to-match and no prior match lost;
+ten other wrong plans remain. Zero Gemma calls, no prompt/gate/DB-default change.
+Next: frozen-prompt temporal live checks and independent repair-preservation
+acceptance; defer prompt stacking. See `../research/typed-time-boundary-01.md`.
+
+Previous 2026-09-15: four-arm combination study at baseline `bbf4ef9` complete.
 55 authored cases: joint baseline 32 correct / 4 wrong, time-only 36 / 3,
 composition 33 / 6, combined 36 / 3; necessary refusals and failures counted
 separately. No promotion: composition lease-scope wrong answer and combined

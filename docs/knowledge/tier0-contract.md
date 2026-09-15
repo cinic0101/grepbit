@@ -1,5 +1,37 @@
 # Tier-0 contract
 
+## Typed time binding (owner approved 2026-09-15)
+
+`SchemaColumn.data_type`, retained from PostgreSQL information_schema, determines
+storage semantics even though both timestamps share ColumnKind.TIMESTAMP.
+No new schema field or inferred source timezone is introduced.
+
+- `timestamptz`: offset-bearing literals denote instants. Naive timestamp/date
+  boundaries use the configured datasource business timezone, with an assumption.
+  Ambiguous/nonexistent local instants refuse (`timestamp_local_ambiguous`,
+  `timestamp_local_nonexistent`); request an explicit offset, do not choose a fold.
+- `timestamp without time zone`: compare naive clock values with timestamp
+  parameters, not timestamptz. An offset-bearing input refuses
+  `timestamp_zone_binding_required`: a type does not establish stored UTC or a
+  local source zone. There is no reviewed column-zone binding feature yet.
+- DATE literals retain dates; timestamps against DATE refuse
+  `date_literal_precision_loss`. Raw filter operators remain unchanged; EQ is
+  not broadened into a whole-day predicate by this binding layer. Existing
+  planner date-literal normalization remains separate.
+- More than six fractional digits refuse `timestamp_precision_unsupported`;
+  unknown timestamp storage and invalid configured zones have typed failures.
+  Plan, operand/ratio, reviewed filters, without and row-filter paths share the
+  same binding. Calendar windows, grain and latest use source-appropriate types.
+
+Changing session timezone must not change the selected population. The server
+does not implement this by fixing the session timezone. SQL selfcheck verifies
+the canonical bound literals using schema context; it does not skip timestamps.
+Compiler revisions: `plan-compiler-sqlglot-v2-typed-time` and
+`plan-compiler-rows-v3-typed-time`. The saved plan and prompt v15 remain unchanged;
+execution parameters/assumptions and new typed refusal reasons reflect this
+approved semantic correction. Tests and evidence: `../plan/typed-time-boundary.md`,
+`../research/typed-time-boundary-01.md`.
+
 ## Opt-in base-row listing pilot (2026-09-14)
 
 Scope/rulers: `../plan/base-row-pilot.md`. `DatasourceRegistration.allow_rows`
@@ -54,7 +86,8 @@ claim full algebra differential closure. All older construct scores are retained
 The research rows wrapper now follows the shared limit of two explicit sort
 keys (formerly three in that research-only format); old study evidence is not
 regraded or claimed compatible with that narrowed experimental wire.
-The row compiler is `plan-compiler-rows-v2`. Historical query-kind study arms
+The row compiler was `plan-compiler-rows-v2` before the typed-time correction above.
+Historical query-kind study arms
 pin their measured v16 prompt; `query-kind-joint-v1` is still research-only and
 does not replace the runtime fallback strategy.
 

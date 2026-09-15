@@ -124,8 +124,12 @@ def random_instance(
                         )
                 elif column.kind is ColumnKind.TIMESTAMP:
                     start = datetime(2025, 6, 1, tzinfo=zone)
-                    row[column.name] = start + timedelta(
-                        minutes=rng.randint(0, 440 * 24 * 60)
+                    moment = start + timedelta(minutes=rng.randint(0, 440 * 24 * 60))
+                    row[column.name] = (
+                        moment.replace(tzinfo=None)
+                        if column.data_type.strip().lower()
+                        in {"timestamp", "timestamp without time zone"}
+                        else moment
                     )
                 elif column.kind is ColumnKind.DATE:
                     row[column.name] = date(2025, 6, 1) + timedelta(
@@ -164,6 +168,15 @@ class DuckInstance:
             columns = []
             for column in table.columns:
                 duck_type = _DUCK_TYPES[column.kind]
+                if (
+                    column.kind is ColumnKind.TIMESTAMP
+                    and column.data_type.strip().lower()
+                    in {
+                        "timestamp",
+                        "timestamp without time zone",
+                    }
+                ):
+                    duck_type = "TIMESTAMP"
                 if column.kind is ColumnKind.NUMERIC and column.data_type in (
                     "bigint",
                     "integer",

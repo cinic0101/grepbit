@@ -1,0 +1,312 @@
+{
+  "study": "typed-time-boundary-01",
+  "date": "2026-09-15",
+  "baseline_git_sha": "e6c5ecf151a2deaf0319cb1d4064f3a385c9517a",
+  "policy": "Explicit owner approval recorded in docs/plan/typed-time-boundary.md",
+  "scope": {
+    "model_calls": 0,
+    "prompt_changes": false,
+    "database_writes": false,
+    "role": "grepbit_ro",
+    "ruler_data": "inline synthetic VALUES, READ ONLY transactions",
+    "differential_data": "existing consented IoT and Service synthetic fixtures",
+    "session_timezones": [
+      "UTC",
+      "Asia/Taipei",
+      "America/New_York"
+    ]
+  },
+  "gates": [
+    {
+      "path": ".artifacts/typed-time-20260915/ruler-complete/result.json",
+      "sha256": "e2eff91c03bb52026626b1203c3e38a0c1ef46d56cfec522715bc422a6934153",
+      "passed": false,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 35,
+        "skipped": 0,
+        "tests": 90
+      },
+      "source_digest": "sha256:29be5d09aecbf22dcd0d137457b17260183ab57f5d6844cf36cedc7e3a29982c"
+    },
+    {
+      "path": ".artifacts/typed-time-20260915/postgres/result.json",
+      "sha256": "11ab35b4fbfd0748c00f4aa493b211964303901c838d3c0ddbfa255badfdf805",
+      "passed": true,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 181
+      },
+      "source_digest": "sha256:9cd93883552e1f9fb8d34bb70f7a1462e868cc045183daa7784e19074deae330"
+    },
+    {
+      "path": ".artifacts/typed-time-20260915/green-04/result.json",
+      "sha256": "c6f4323ddd1d05c007174981da6ba742416b40f3563e20de376e1209b14de728",
+      "passed": true,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 146
+      },
+      "source_digest": "sha256:bfeada9e5c83f74042719592f86c503d24838ceb2f8b9c035ca2b9a6a1ad948e"
+    },
+    {
+      "path": ".artifacts/typed-time-20260915/offline/result.json",
+      "sha256": "be48d1065adc1740f933a8a2febf37327ad5b0ecb5088afa77fd1ff4bfcac5eb",
+      "passed": false,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 4,
+        "skipped": 0,
+        "tests": 2167
+      },
+      "source_digest": "sha256:48b34c82cd76e8fe02ea26f350bf9c9a5ae83b33f51524b3883a75c874a4e2d9"
+    },
+    {
+      "path": ".artifacts/typed-time-20260915/offline-final/result.json",
+      "sha256": "dc8bf685146745ad759b3f289e8b648db8a5ad550f4ce047159a48e85c95e421",
+      "passed": true,
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 2169
+      },
+      "source_digest": "sha256:bfeada9e5c83f74042719592f86c503d24838ceb2f8b9c035ca2b9a6a1ad948e"
+    },
+    {
+      "path": ".artifacts/typed-time-20260915/static-final/result.json",
+      "sha256": "1e01589cd9804c3bbb7b9398541a1b73fa5762610e5ab98136519c0427a1db22",
+      "passed": true,
+      "junit_counts": null,
+      "source_digest": "sha256:bfeada9e5c83f74042719592f86c503d24838ceb2f8b9c035ca2b9a6a1ad948e"
+    }
+  ],
+  "replay": {
+    "path": ".artifacts/typed-time-20260915/replay.json",
+    "sha256": "63b91b6c2538587435cdb7e4f6072a644a85d1bc277da12ff7384d4cedde33cb",
+    "driver": {
+      "path": ".artifacts/typed-time-20260915/replay.py",
+      "sha256": "bd2e7f312d1b760a4962229fe58eaddc7dae3d2784ab625920a98c0a57e79751"
+    },
+    "records": 39,
+    "outcomes": {
+      "reference_match": 29,
+      "wrong_answer": 10
+    },
+    "transitions": [
+      {
+        "case_id": "precision_noon_zh",
+        "arm": "time",
+        "old_outcome": "wrong_answer",
+        "postgres_match": true,
+        "witness_match": true,
+        "outcome": "reference_match",
+        "assumptions": [
+          {
+            "text": "Rows with no alerts.raised_at are in no period and are left out of the breakdown.",
+            "source": "default",
+            "definition_ref": "plan.time.grain"
+          },
+          {
+            "text": "Unzoned timestamp values on alerts.raised_at use datasource business timezone Asia/Taipei.",
+            "source": "default",
+            "definition_ref": "alerts.raised_at"
+          },
+          {
+            "text": "Column meanings come from the schema only; no reviewed business definition was applied.",
+            "source": "candidate",
+            "definition_ref": "schema.iot_spike"
+          },
+          {
+            "text": "Effective computation: base population: alerts; measures: alert_count = count(*); row scope: [grain] alerts.raised_at not_null; alerts.raised_at gte 2026-07-01 00:00:00; alerts.raised_at lt 2026-07-08 12:00:00; grouping: no entity grouping; time basis: alerts.raised_at; business timezone: Asia/Taipei; time grain: day; count(alerts rows): rows counted including NULL-bearing rows",
+            "source": "default",
+            "definition_ref": "plan.effective_computation"
+          }
+        ]
+      },
+      {
+        "case_id": "precision_noon_zh",
+        "arm": "combined",
+        "old_outcome": "wrong_answer",
+        "postgres_match": true,
+        "witness_match": true,
+        "outcome": "reference_match",
+        "assumptions": [
+          {
+            "text": "Rows with no alerts.raised_at are in no period and are left out of the breakdown.",
+            "source": "default",
+            "definition_ref": "plan.time.grain"
+          },
+          {
+            "text": "Unzoned timestamp values on alerts.raised_at use datasource business timezone Asia/Taipei.",
+            "source": "default",
+            "definition_ref": "alerts.raised_at"
+          },
+          {
+            "text": "Column meanings come from the schema only; no reviewed business definition was applied.",
+            "source": "candidate",
+            "definition_ref": "schema.iot_spike"
+          },
+          {
+            "text": "Effective computation: base population: alerts; measures: alert_count = count(*); row scope: [grain] alerts.raised_at not_null; alerts.raised_at gte 2026-07-01 00:00:00; alerts.raised_at lt 2026-07-08 12:00:00; grouping: no entity grouping; time basis: alerts.raised_at; business timezone: Asia/Taipei; time grain: day; count(alerts rows): rows counted including NULL-bearing rows",
+            "source": "default",
+            "definition_ref": "plan.effective_computation"
+          }
+        ]
+      },
+      {
+        "case_id": "precision_noon_ja",
+        "arm": "time",
+        "old_outcome": "wrong_answer",
+        "postgres_match": true,
+        "witness_match": true,
+        "outcome": "reference_match",
+        "assumptions": [
+          {
+            "text": "Rows with no alerts.raised_at are in no period and are left out of the breakdown.",
+            "source": "default",
+            "definition_ref": "plan.time.grain"
+          },
+          {
+            "text": "Unzoned timestamp values on alerts.raised_at use datasource business timezone Asia/Taipei.",
+            "source": "default",
+            "definition_ref": "alerts.raised_at"
+          },
+          {
+            "text": "Column meanings come from the schema only; no reviewed business definition was applied.",
+            "source": "candidate",
+            "definition_ref": "schema.iot_spike"
+          },
+          {
+            "text": "Effective computation: base population: alerts; measures: alert_count = count(*); row scope: [grain] alerts.raised_at not_null; alerts.raised_at gte 2026-07-01 00:00:00; alerts.raised_at lt 2026-07-08 12:00:00; grouping: no entity grouping; time basis: alerts.raised_at; business timezone: Asia/Taipei; time grain: day; count(alerts rows): rows counted including NULL-bearing rows",
+            "source": "default",
+            "definition_ref": "plan.effective_computation"
+          }
+        ]
+      },
+      {
+        "case_id": "precision_noon_ja",
+        "arm": "combined",
+        "old_outcome": "wrong_answer",
+        "postgres_match": true,
+        "witness_match": true,
+        "outcome": "reference_match",
+        "assumptions": [
+          {
+            "text": "Rows with no alerts.raised_at are in no period and are left out of the breakdown.",
+            "source": "default",
+            "definition_ref": "plan.time.grain"
+          },
+          {
+            "text": "Unzoned timestamp values on alerts.raised_at use datasource business timezone Asia/Taipei.",
+            "source": "default",
+            "definition_ref": "alerts.raised_at"
+          },
+          {
+            "text": "Column meanings come from the schema only; no reviewed business definition was applied.",
+            "source": "candidate",
+            "definition_ref": "schema.iot_spike"
+          },
+          {
+            "text": "Effective computation: base population: alerts; measures: alert_count = count(*); row scope: [grain] alerts.raised_at not_null; alerts.raised_at gte 2026-07-01 00:00:00; alerts.raised_at lt 2026-07-08 12:00:00; grouping: no entity grouping; time basis: alerts.raised_at; business timezone: Asia/Taipei; time grain: day; count(alerts rows): rows counted including NULL-bearing rows",
+            "source": "default",
+            "definition_ref": "plan.effective_computation"
+          }
+        ]
+      }
+    ],
+    "claim": "Stored actual plans recompiled and value-checked; not fresh model or full ask success"
+  },
+  "differential": [
+    {
+      "path": ".artifacts/typed-time-20260915/iot-pg.json",
+      "sha256": "18bdc7c92e1a094fb1e08aef0284a12b985c8d0c7936d01a49b608337b363f24",
+      "engine": "postgres",
+      "seed": 91,
+      "instances": 1,
+      "examples_requested": 250,
+      "enum_distinct_limit": 0,
+      "plans_carry_data": false,
+      "outcomes": {
+        "generated": 192,
+        "typed_refusal": 47,
+        "agree": 145
+      },
+      "disagreements": 0,
+      "errors": 0
+    },
+    {
+      "path": ".artifacts/typed-time-20260915/iot-duck.json",
+      "sha256": "c6f4a92a021a28f2f40c1780f225952297041d77d12f691d5b0ceb0aee1aecaf",
+      "engine": "duckdb",
+      "seed": 91,
+      "instances": 3,
+      "examples_requested": 250,
+      "enum_distinct_limit": 0,
+      "plans_carry_data": false,
+      "outcomes": {
+        "generated": 192,
+        "typed_refusal": 47,
+        "agree": 435
+      },
+      "disagreements": 0,
+      "errors": 0
+    },
+    {
+      "path": ".artifacts/typed-time-20260915/service-pg.json",
+      "sha256": "807bd1b28c2e896220a2b6526d5ec180250da50205d8557c2136fd31f22fe1b5",
+      "engine": "postgres",
+      "seed": 92,
+      "instances": 1,
+      "examples_requested": 250,
+      "enum_distinct_limit": 0,
+      "plans_carry_data": false,
+      "outcomes": {
+        "generated": 187,
+        "typed_refusal": 36,
+        "agree": 151
+      },
+      "disagreements": 0,
+      "errors": 0
+    },
+    {
+      "path": ".artifacts/typed-time-20260915/service-duck.json",
+      "sha256": "a2f95d6c0a23ff412ed7c30642dae317a7bce7f24d2480b82f82947e27887059",
+      "engine": "duckdb",
+      "seed": 92,
+      "instances": 3,
+      "examples_requested": 250,
+      "enum_distinct_limit": 0,
+      "plans_carry_data": false,
+      "outcomes": {
+        "generated": 187,
+        "typed_refusal": 36,
+        "agree": 453
+      },
+      "disagreements": 0,
+      "errors": 0
+    }
+  ],
+  "total_value_agreements": 1184,
+  "final_source_hashes": {
+    "src/grepbit/domain/time_literals.py": "59c1f5dbebed1ed52f20803a39fc35d9ba99d6e7931a4ae54ff517691208cc30",
+    "src/grepbit/domain/plan.py": "ca2b0a4655aae75e9382a64a16f6ad17cf55f749fac34cdb2e1f1537bd21b305",
+    "src/grepbit/adapters/sqlglot/plan_compiler.py": "0a19bad6e02a3b68fd55cb7693533ab97fc32e110736b294e621eb0b3585bcf4",
+    "src/grepbit/adapters/sqlglot/plan_check.py": "094b107cb08747d744f1be6b4f8756851cc2eaea412fbaf26f00a856d09ca2e0",
+    "evals/reference_eval.py": "676f7f2cabdc18a79dcc27c456140239017f3c8033f4688accfeceea52d88bfb",
+    "evals/synthetic.py": "5c3b472e716e0e8b46ef142cc9afabe992b7bfba92672dc36c7700df2c2861a1",
+    "tests/contract/t0/test_typed_time_boundary_ruler.py": "04b578d007846eb7dba36c21103b0109a1687325a6a3b6b9a517c8d359407f21"
+  },
+  "limits": [
+    "The baseline SHA predates these uncommitted implementation changes; use source hashes and gate provenance.",
+    "PostgreSQL matrix and replay preceded the final case-insensitive source-type compatibility fix and two new spelling controls; final offline and differential runs followed it.",
+    "PostgreSQL matrix: 103 offline controls plus 78 database arms. Final ruler has 105 offline controls.",
+    "Selfcheck shares literal normalization; independent manual expectations and PostgreSQL session matrix validate localization separately.",
+    "Reference calendar helpers remain shared; differential is not an independent proof of calendar boundaries or natural-language intent.",
+    "Four prior wrong stored plans improve, ten remain wrong. No default planner/row promotion or prompt change."
+  ]
+}

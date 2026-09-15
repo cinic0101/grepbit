@@ -47,3 +47,9 @@ history. Research only; wider combination regression remains next.
 on total correct answers but fail different cases; composition loses a required
 lease refusal twice. No promotion. Same-plan PostgreSQL replay establishes naive
 timestamp dependence on session timezone; typed-time boundary rulers are next.
+
+[`Typed-time correction`](../research/typed-time-boundary-01.md): owner-approved
+source-type/default-zone/DST policy implemented without prompt changes. Session
+matrix and stored-plan replay pass within recorded scope; 2,169 offline tests,
+1,184 differential agreements. Remaining repair truncation is not fixed by typed
+binding; default promotion and missing-definition studies remain separate.

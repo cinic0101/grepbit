@@ -26,6 +26,15 @@ without testing whether the question contains a recognised period word.
 Business vocabulary belongs in reviewed data,
 but moving a heuristic into JSON does not prove it safe across languages.
 
+`domain/time_literals.py` owns the approved source-aware time binding policy.
+Full `SchemaColumn.data_type` distinguishes timestamptz instants from unzoned
+clock values; datasource business_timezone supplies only the approved default
+for naive instant inputs, not a guessed source-column timezone. Compiler filters
+and calendar windows use it; selfcheck verifies canonical bindings. The research
+reference evaluator uses independent pytz localization rather than the production
+zoneinfo roundtrip. Synthetic DuckDB preserves both physical timestamp types.
+See `typed-time-boundary` in the contract/research map; no global session setting.
+
 `tests/contract/test_module_boundaries.py` enforces the table and adds one
 more rule: sqlglot is imported only inside `adapters/sqlglot/`.
 

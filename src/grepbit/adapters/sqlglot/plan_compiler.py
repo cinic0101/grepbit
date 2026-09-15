@@ -65,8 +65,13 @@ from grepbit.domain.structured_query import (
     resolve_time_scope,
     widened_for_previous_period,
 )
+from grepbit.domain.time_literals import (
+    bind_time_literal,
+    calendar_boundary,
+    timestamp_storage,
+)
 
-COMPILER_REVISION = "plan-compiler-sqlglot-v1"
+COMPILER_REVISION = "plan-compiler-sqlglot-v2-typed-time"
 LATEST_RANK = "latest_rank"
 PERIOD_COLUMN = "period_start"
 _AGGREGATE_FUNCTIONS = {
@@ -456,7 +461,10 @@ class PlanCompiler:
                 column_expression = exp.column(
                     time_spec.column.column, table=time_spec.column.table
                 )
-                if time_column.kind is ColumnKind.TIMESTAMP:
+                if (
+                    time_column.kind is ColumnKind.TIMESTAMP
+                    and timestamp_storage(time_column) == "timestamptz"
+                ):
                     column_expression = exp.AtTimeZone(
                         this=column_expression,
                         zone=exp.Literal.string(schema.business_timezone),
@@ -525,13 +533,25 @@ class PlanCompiler:
             clauses = []
             if metric is not None and metric.filters and not shared_filters:
                 for item in metric.filters:
-                    clauses.append(self._condition(item, resolve(item.column), bind))
+                    clauses.append(
+                        self._condition(
+                            item, resolve(item.column), bind, assumptions=assumptions
+                        )
+                    )
             if own_filters:
                 for item in operand.filters:
-                    clauses.append(self._condition(item, resolve(item.column), bind))
+                    clauses.append(
+                        self._condition(
+                            item, resolve(item.column), bind, assumptions=assumptions
+                        )
+                    )
             for _segment, item, others in operand_segment_filters:
                 if position in others:
-                    clauses.append(self._condition(item, resolve(item.column), bind))
+                    clauses.append(
+                        self._condition(
+                            item, resolve(item.column), bind, assumptions=assumptions
+                        )
+                    )
             if clauses:
                 aggregate = exp.Filter(
                     this=aggregate, expression=exp.Where(this=exp.and_(*clauses))
@@ -629,7 +649,9 @@ class PlanCompiler:
             if item in selection_filters:
                 filter_texts.append(f"[after share] {_filter_text(item)}")
                 continue
-            conditions.append(self._condition(item, column, bind))
+            conditions.append(
+                self._condition(item, column, bind, assumptions=assumptions)
+            )
             filter_texts.append(_filter_text(item))
         for item in selection_filters:
             assumptions.append(
@@ -645,7 +667,9 @@ class PlanCompiler:
             )
         for metric_id, item in metric_filters:
             column = resolve(item.column)
-            conditions.append(self._condition(item, column, bind))
+            conditions.append(
+                self._condition(item, column, bind, assumptions=assumptions)
+            )
             filter_texts.append(f"[{metric_id}] {_filter_text(item)}")
         for segment, item, _others in operand_segment_filters:
             filter_texts.append(
@@ -665,7 +689,9 @@ class PlanCompiler:
             )
         for segment, item in segment_filters:
             column = resolve(item.column)
-            conditions.append(self._condition(item, column, bind))
+            conditions.append(
+                self._condition(item, column, bind, assumptions=assumptions)
+            )
             filter_texts.append(f"[default: exclude {segment.id}] {_filter_text(item)}")
             assumptions.append(
                 Assumption(
@@ -686,10 +712,16 @@ class PlanCompiler:
             windows = []
             for index, period in enumerate(periods, start=1):
                 start = bind(
-                    f"p{index}_start_", period.start.isoformat(), "timestamptz"
+                    f"p{index}_start_",
+                    *calendar_boundary(
+                        time_column, period.start, schema.business_timezone
+                    ),
                 )
                 end = bind(
-                    f"p{index}_end_", period.end_exclusive.isoformat(), "timestamptz"
+                    f"p{index}_end_",
+                    *calendar_boundary(
+                        time_column, period.end_exclusive, schema.business_timezone
+                    ),
                 )
                 windows.append(exp.and_(reference >= start, reference < end))
                 time_texts.append(
@@ -701,7 +733,10 @@ class PlanCompiler:
             assert time_column is not None
             unit = time_spec.scope.unit
             local = exp.column(time_spec.column.column, table=time_spec.column.table)
-            if time_column.kind is ColumnKind.TIMESTAMP:
+            if (
+                time_column.kind is ColumnKind.TIMESTAMP
+                and timestamp_storage(time_column) == "timestamptz"
+            ):
                 local = exp.AtTimeZone(
                     this=local, zone=exp.Literal.string(schema.business_timezone)
                 )
@@ -826,6 +861,7 @@ class PlanCompiler:
                     resolve(item.column),
                     bind,
                     reference=exp.column(item.column.column),
+                    assumptions=assumptions,
                 )
                 for item in selection_filters
             ] + late_conditions
@@ -1129,7 +1165,11 @@ class PlanCompiler:
         # the independent reader: parse the SQL back and check it against the
         # plan; a combination this compiler misreads refuses instead of answering
         violations = check_compiled(
-            plan, compiled.physical_sql, compiled.execution_parameters, verification
+            plan,
+            compiled.physical_sql,
+            compiled.execution_parameters,
+            verification,
+            schema=schema,
         )
         if violations:
             raise PlanError("self_check_failed", "; ".join(violations))
@@ -1238,7 +1278,7 @@ class PlanCompiler:
             update={
                 "physical_sql": tree.sql(dialect="postgres"),
                 "execution_parameters": parameters,
-                "compiler_revision": "plan-compiler-rows-v2",
+                "compiler_revision": "plan-compiler-rows-v3-typed-time",
                 "semantic_refs": sorted(
                     set(population.compiled.semantic_refs)
                     | {c.id for c in refs}
@@ -1249,7 +1289,11 @@ class PlanCompiler:
         )
         checked = plan.model_copy(update={"rows": RowProjection(columns=refs)})
         violations = check_compiled(
-            checked, compiled.physical_sql, parameters, "unverified_semantics"
+            checked,
+            compiled.physical_sql,
+            parameters,
+            "unverified_semantics",
+            schema=self._schema,
         )
         if violations:
             raise PlanError("self_check_failed", "; ".join(violations))
@@ -1432,7 +1476,7 @@ class PlanCompiler:
             column = child.column(item.column.column)
             if column is None:
                 raise PlanError("unknown_column", item.column.id)
-            clauses.append(self._condition(item, column, bind))
+            clauses.append(self._condition(item, column, bind, assumptions=assumptions))
             texts.append(_filter_text(item))
         # Default-excluded segments on the child, or on a table the child reaches
         # through foreign keys, apply inside the test as they would in a plan over
@@ -1467,7 +1511,7 @@ class PlanCompiler:
             column = segment_table.column(item.column.column) if segment_table else None
             if column is None:
                 continue
-            clauses.append(self._condition(item, column, bind))
+            clauses.append(self._condition(item, column, bind, assumptions=assumptions))
             texts.append(f"[default: exclude {segment.id}] {_filter_text(item)}")
             assumptions.append(
                 Assumption(
@@ -1516,10 +1560,16 @@ class PlanCompiler:
             windows = []
             for index, period in enumerate(periods, start=1):
                 start = bind(
-                    f"w{index}_start_", period.start.isoformat(), "timestamptz"
+                    f"w{index}_start_",
+                    *calendar_boundary(
+                        time_column, period.start, schema.business_timezone
+                    ),
                 )
                 end = bind(
-                    f"w{index}_end_", period.end_exclusive.isoformat(), "timestamptz"
+                    f"w{index}_end_",
+                    *calendar_boundary(
+                        time_column, period.end_exclusive, schema.business_timezone
+                    ),
                 )
                 windows.append(exp.and_(reference >= start, reference < end))
                 time_texts.append(
@@ -1653,12 +1703,14 @@ class PlanCompiler:
             return exp.Count(this=exp.Distinct(expressions=[reference]))
         return exp.func(_AGGREGATE_FUNCTIONS[measure.aggregate], reference)
 
-    @staticmethod
     def _condition(
+        self,
         item: Filter,
         column: SchemaColumn,
         bind,
         reference: exp.Expression | None = None,
+        *,
+        assumptions: list[Assumption],
     ) -> exp.Expression:
         if reference is None:
             reference = exp.column(item.column.column, table=item.column.table)
@@ -1667,7 +1719,27 @@ class PlanCompiler:
         if item.op is FilterOp.NOT_NULL:
             return exp.Not(this=reference.is_(exp.Null()))
         type_name = _bind_type(column, item.values)
-        placeholders = [bind("f_", value, type_name) for value in item.values]
+        values = item.values
+        if column.kind in {ColumnKind.TIMESTAMP, ColumnKind.DATE}:
+            values = []
+            for value in item.values:
+                canonical, type_name, assumed = bind_time_literal(
+                    column, value, self._schema.business_timezone
+                )
+                values.append(canonical)
+                if assumed:
+                    assumption = Assumption(
+                        text=(
+                            f"Unzoned timestamp values on {item.column.id} use "
+                            "datasource business timezone "
+                            f"{self._schema.business_timezone}."
+                        ),
+                        source=AssumptionSource.DEFAULT,
+                        definition_ref=item.column.id,
+                    )
+                    if assumption not in assumptions:
+                        assumptions.append(assumption)
+        placeholders = [bind("f_", value, type_name) for value in values]
         if column.is_enum:
             # An enum compared with a literal outside its labels raises in
             # PostgreSQL; compared as text it simply matches no row.

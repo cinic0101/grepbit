@@ -21,6 +21,8 @@ from sqlglot import exp
 
 from grepbit.domain.models import QueryParameter
 from grepbit.domain.plan import Filter, FilterOp, Operand, QueryPlan
+from grepbit.domain.schema_model import ColumnKind, SchemaModel
+from grepbit.domain.time_literals import bind_time_literal
 
 _PREDICATE_KINDS: dict[FilterOp, type[exp.Expression]] = {
     FilterOp.EQ: exp.EQ,
@@ -94,6 +96,8 @@ def check_compiled(
     sql: str,
     parameters: Sequence[QueryParameter] | None,
     verification: str,
+    *,
+    schema: SchemaModel | None = None,
 ) -> list[str]:
     """Return the invariants the SQL breaks; an empty list means it passed.
 
@@ -156,6 +160,18 @@ def check_compiled(
         bound = [str(p.value) for p in parameters]
         for item in _question_filters(plan):
             for value in item.values:
+                if schema is not None:
+                    table = schema.table(item.column.table)
+                    column = table.column(item.column.column) if table else None
+                    if column and column.kind in {
+                        ColumnKind.TIMESTAMP,
+                        ColumnKind.DATE,
+                    }:
+                        # Check the approved canonical binding, never omit time
+                        # values from the invariant after representation changes.
+                        value = bind_time_literal(
+                            column, value, schema.business_timezone
+                        )[0]
                 if str(value) in bound:
                     bound.remove(str(value))
                 else:

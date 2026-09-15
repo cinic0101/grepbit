@@ -12,11 +12,14 @@ defect in one of the two, and the compiler is the one that serves users.
 
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from typing import Any
 from zoneinfo import ZoneInfo
+
+import pytz
 
 from grepbit.domain.overlay import Segment, SemanticOverlay
 from grepbit.domain.plan import Filter, FilterOp, Operand, QueryPlan
@@ -98,7 +101,9 @@ def _joined_rows(
 
 
 # ----------------------------------------------------------------- filters
-def _truth(item: Filter, row: Row, kinds: dict[str, str]) -> bool | None:
+def _truth(
+    item: Filter, row: Row, kinds: dict[str, str], *, types=None, timezone="UTC"
+) -> bool | None:
     """SQL three-valued truth of one filter on one row."""
 
     value = row.get(item.column.id)
@@ -111,8 +116,9 @@ def _truth(item: Filter, row: Row, kinds: dict[str, str]) -> bool | None:
     kind = kinds.get(item.column.id, "text")
     literals = [_coerce(v, kind) for v in item.values]
     if kind in ("timestamp", "date"):
-        value = _as_datetime(value)
-        literals = [_as_datetime(v) for v in literals]
+        physical = (types or {}).get(item.column.id, "timestamp with time zone")
+        value = _comparison_time(value, kind, physical, timezone)
+        literals = [_comparison_time(v, kind, physical, timezone) for v in literals]
     if item.op is FilterOp.IN:
         return value in literals
     [literal] = literals
@@ -136,6 +142,13 @@ def _coerce(value: Any, kind: str) -> Any:
     ):
         return Decimal(str(value))
     if kind in ("timestamp", "date") and isinstance(value, str):
+        if re.search(r"[.,]\d{7,}", value):
+            raise Unsupported("timestamp_precision_unsupported")
+        if kind == "date":
+            try:
+                return date.fromisoformat(value)
+            except ValueError:
+                raise Unsupported("date_literal_precision_loss") from None
         return datetime.fromisoformat(value)
     return value
 
@@ -148,8 +161,41 @@ def _as_datetime(value: Any) -> datetime:
     return value
 
 
-def _all_true(filters: list[Filter], row: Row, kinds: dict[str, str]) -> bool:
-    return all(_truth(f, row, kinds) is True for f in filters)
+def _comparison_time(value, kind, physical, timezone):
+    # Independent of production's zoneinfo roundtrip algorithm.
+    if kind == "date":
+        return _as_datetime(value)
+    moment = datetime.fromisoformat(value) if isinstance(value, str) else value
+    if isinstance(moment, date) and not isinstance(moment, datetime):
+        moment = datetime.combine(moment, time())
+    physical = physical.strip().lower()
+    if physical in {"timestamp", "timestamp without time zone"}:
+        if moment.tzinfo is not None:
+            raise Unsupported("timestamp_zone_binding_required")
+        return moment
+    if physical not in {"timestamptz", "timestamp with time zone"}:
+        raise Unsupported("timestamp_type_unknown")
+    if moment.tzinfo is None:
+        try:
+            return pytz.timezone(timezone).localize(moment, is_dst=None)
+        except pytz.AmbiguousTimeError:
+            raise Unsupported("timestamp_local_ambiguous") from None
+        except pytz.NonExistentTimeError:
+            raise Unsupported("timestamp_local_nonexistent") from None
+    return moment
+
+
+def _all_true(
+    filters: list[Filter],
+    row: Row,
+    kinds: dict[str, str],
+    *,
+    types=None,
+    timezone="UTC",
+) -> bool:
+    return all(
+        _truth(f, row, kinds, types=types, timezone=timezone) is True for f in filters
+    )
 
 
 def _inverse(item: Filter) -> Filter:
@@ -267,6 +313,9 @@ def evaluate(
     kinds = {
         f"{t.name}.{c.name}": c.kind.value for t in schema.tables for c in t.columns
     }
+    types = {
+        f"{t.name}.{c.name}": c.data_type for t in schema.tables for c in t.columns
+    }
     rows = _joined_rows(schema, tables, base)
     reachable = set(_parent_paths(schema, base))
 
@@ -383,9 +432,23 @@ def evaluate(
 
     def base_rows_pass(row: Row) -> bool:
         return (
-            _all_true(row_filters, row, kinds)
-            and _all_true(shared_defining, row, kinds)
-            and _all_true(row_segment_filters, row, kinds)
+            _all_true(
+                row_filters, row, kinds, types=types, timezone=schema.business_timezone
+            )
+            and _all_true(
+                shared_defining,
+                row,
+                kinds,
+                types=types,
+                timezone=schema.business_timezone,
+            )
+            and _all_true(
+                row_segment_filters,
+                row,
+                kinds,
+                types=types,
+                timezone=schema.business_timezone,
+            )
         )
 
     candidate = [r for r in rows if base_rows_pass(r)]
@@ -475,12 +538,20 @@ def evaluate(
         pos_flat = sum(len(p) for p in resolved[:parts_index]) + position
         keep = []
         for row in rows_in:
-            if not _all_true(defining, row, kinds):
+            if not _all_true(
+                defining, row, kinds, types=types, timezone=schema.business_timezone
+            ):
                 continue
-            if own and not _all_true(own_filters, row, kinds):
+            if own and not _all_true(
+                own_filters, row, kinds, types=types, timezone=schema.business_timezone
+            ):
                 continue
             if any(
-                pos_flat in others and _truth(seg, row, kinds) is not True
+                pos_flat in others
+                and _truth(
+                    seg, row, kinds, types=types, timezone=schema.business_timezone
+                )
+                is not True
                 for seg, others in operand_segment_filters
             ):
                 continue
@@ -543,7 +614,14 @@ def evaluate(
             out
             for out in table_rows
             if all(
-                _truth(f, {f.column.id: out.get(f.column.column)}, kinds) is True
+                _truth(
+                    f,
+                    {f.column.id: out.get(f.column.column)},
+                    kinds,
+                    types=types,
+                    timezone=schema.business_timezone,
+                )
+                is True
                 for f in share_selection
             )
         ]
@@ -609,6 +687,9 @@ def _rows_without_activity(
     plan, schema, overlay, as_of, tables, exclude_segments, base_rows, kinds, zone
 ):
     without = plan.without
+    types = {
+        f"{t.name}.{c.name}": c.data_type for t in schema.tables for c in t.columns
+    }
     child = without.table
     child_rows = _joined_rows(schema, tables, child)
     child_reach = set(_parent_paths(schema, child))
@@ -620,7 +701,11 @@ def _rows_without_activity(
             f.column.id for f in filters
         }:
             filters.append(_inverse(segment.filter))
-    child_rows = [r for r in child_rows if _all_true(filters, r, kinds)]
+    child_rows = [
+        r
+        for r in child_rows
+        if _all_true(filters, r, kinds, types=types, timezone=schema.business_timezone)
+    ]
     if without.time is not None and without.time.scope is not None:
         column = (
             without.time.column.id
