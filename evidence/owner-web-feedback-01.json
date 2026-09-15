@@ -1,0 +1,265 @@
+{
+  "baseline": "0e44a28",
+  "production_changed": false,
+  "scope": "owner IoT transcript plus exact Service Web bank, synthetic only, not unseen holdout",
+  "service": {
+    "http_requests": 10,
+    "correct_answers": 8,
+    "necessary_refusals": 1,
+    "false_refusals": 1,
+    "wrong_answers_observed": 0,
+    "operational_failures": 0,
+    "review_method": "Frozen independent SQL values plus case-specific manual/structural review of actual plans, parameters and assumptions; no retrospective threshold replacement",
+    "critical_evidence": "S7 and S8 final plans are exactly identical; only Return triggers the returns gate. No extra model calls for this review.",
+    "identity": {
+      "source": "sha256:0e49bffee9dbc042b6dabd2bb5ee7b56ee49a635fe311c96e98c87d82abc4784",
+      "head": "0e44a286616b2897b73581f860bfd0cf337f612c",
+      "script_sha256": "310555dbedb0fda61c73db853144c766a56aeedf26cfc7ec9f7f603b8554e309",
+      "cases_sha256": "d3ac0472a442db59e3bebc8780dec5b486a7d0e725f4d0492441843774d6a424"
+    },
+    "cases": [
+      {
+        "case_id": "S1",
+        "request_id": "b07870db73f14bee91b25ad2526e2af7",
+        "verdict": "correct_answer",
+        "mode": "default",
+        "reason": null,
+        "model_repair_turns": 0,
+        "model_retries": 0,
+        "shape_repairs": [],
+        "elapsed_seconds": 3.118
+      },
+      {
+        "case_id": "S2",
+        "request_id": "b73596ddefce471a9c8d6f020884b622",
+        "verdict": "correct_answer",
+        "mode": "default",
+        "reason": null,
+        "model_repair_turns": 0,
+        "model_retries": 0,
+        "shape_repairs": [],
+        "elapsed_seconds": 3.877
+      },
+      {
+        "case_id": "S3",
+        "request_id": "d0df5878491141799c92f0acf8163cbd",
+        "verdict": "correct_answer",
+        "mode": "default",
+        "reason": null,
+        "model_repair_turns": 0,
+        "model_retries": 0,
+        "shape_repairs": [],
+        "elapsed_seconds": 2.774
+      },
+      {
+        "case_id": "S4",
+        "request_id": "e5b57dce46ca46d3a678b66b22f162ae",
+        "verdict": "correct_answer",
+        "mode": "default",
+        "reason": null,
+        "model_repair_turns": 0,
+        "model_retries": 0,
+        "shape_repairs": [],
+        "elapsed_seconds": 4.657
+      },
+      {
+        "case_id": "S5",
+        "request_id": "1796c714df174ec2b62e1c3bc30fa46d",
+        "verdict": "correct_answer",
+        "mode": "default",
+        "reason": null,
+        "model_repair_turns": 0,
+        "model_retries": 0,
+        "shape_repairs": [],
+        "elapsed_seconds": 4.696
+      },
+      {
+        "case_id": "S6",
+        "request_id": "114539a393c6441fbeb4457334f6e021",
+        "verdict": "correct_answer",
+        "mode": "default",
+        "reason": null,
+        "model_repair_turns": 0,
+        "model_retries": 0,
+        "shape_repairs": [],
+        "elapsed_seconds": 3.434
+      },
+      {
+        "case_id": "S7",
+        "request_id": "9e947ab5a3204144ba5d0098ee858127",
+        "verdict": "correct_answer",
+        "mode": "rows",
+        "reason": null,
+        "model_repair_turns": 0,
+        "model_retries": 0,
+        "shape_repairs": [],
+        "elapsed_seconds": 2.503
+      },
+      {
+        "case_id": "S8",
+        "request_id": "27391e6653ef40fa84f5d866cb65f378",
+        "verdict": "false_refusal_correct_plan_blocked_by_gate",
+        "mode": "rows",
+        "reason": "concept_not_mapped",
+        "model_repair_turns": 0,
+        "model_retries": 0,
+        "shape_repairs": [],
+        "elapsed_seconds": 1.756
+      },
+      {
+        "case_id": "S9",
+        "request_id": "9e0dc3e011e0463191de198f1851d0a1",
+        "verdict": "correct_answer",
+        "mode": "rows",
+        "reason": null,
+        "model_repair_turns": 0,
+        "model_retries": 0,
+        "shape_repairs": [
+          "dropped exact duplicate plan.columns matching rows.columns"
+        ],
+        "elapsed_seconds": 3.297
+      },
+      {
+        "case_id": "S10",
+        "request_id": "b75e0eabf54e447bbb9d32ed0f39468e",
+        "verdict": "necessary_missing_definition_refusal",
+        "mode": "default",
+        "reason": "semantic_gap",
+        "model_repair_turns": 0,
+        "model_retries": 0,
+        "shape_repairs": [],
+        "elapsed_seconds": 2.449
+      }
+    ]
+  },
+  "iot": {
+    "origin": "Owner transcript, retrospectively checked against current readonly fixture; not source-pinned runtime replay",
+    "observations": [
+      {
+        "case_id": "iot_001",
+        "request_id": "6dbb806ce03f492b9afc45d05f8ea00b",
+        "query_kind": "default",
+        "reported_label": "semantic_gap",
+        "displayed_values_match": null
+      },
+      {
+        "case_id": "iot_002",
+        "request_id": "4f7d95a2bf3d417aafc5df511653987f",
+        "query_kind": "rows",
+        "reported_label": "ambiguous",
+        "displayed_values_match": null
+      },
+      {
+        "case_id": "iot_003",
+        "request_id": "1c5fab22dc3747ceb3d68befa65b1856",
+        "query_kind": "default",
+        "reported_label": null,
+        "displayed_values_match": true
+      },
+      {
+        "case_id": "iot_004",
+        "request_id": "8286d6f011434e62a2d8f7abc7e19b10",
+        "query_kind": "default",
+        "reported_label": null,
+        "displayed_values_match": true
+      },
+      {
+        "case_id": "iot_005",
+        "request_id": "c5e9d0c5f3fe42a5857553df9f0c5bf5",
+        "query_kind": "default",
+        "reported_label": null,
+        "displayed_values_match": true
+      },
+      {
+        "case_id": "iot_006",
+        "request_id": "55085d740b9b43068299978b36c3d31a",
+        "query_kind": "default",
+        "reported_label": null,
+        "displayed_values_match": true
+      },
+      {
+        "case_id": "iot_007",
+        "request_id": "8a0c0754ea8a4decbac6d29e2b369c61",
+        "query_kind": "default",
+        "reported_label": null,
+        "displayed_values_match": true
+      },
+      {
+        "case_id": "iot_008",
+        "request_id": "f2ea00755e13443cb342f043997a18cc",
+        "query_kind": "default",
+        "reported_label": null,
+        "displayed_values_match": true
+      },
+      {
+        "case_id": "iot_009",
+        "request_id": "030a4fe75a4c4c30b6b872ce74207ff1",
+        "query_kind": "default",
+        "reported_label": "unsupported",
+        "displayed_values_match": null
+      },
+      {
+        "case_id": "iot_010",
+        "request_id": "d6367834883a4111863ace9f68760290",
+        "query_kind": "default",
+        "reported_label": "semantic_gap",
+        "displayed_values_match": null
+      },
+      {
+        "case_id": "iot_011",
+        "request_id": "a3dc65f5a26f4ce98f860f166c090637",
+        "query_kind": "rows",
+        "reported_label": null,
+        "displayed_values_match": true
+      },
+      {
+        "case_id": "iot_012",
+        "request_id": "ffa07905bc4d4aef8da77716fdf67228",
+        "query_kind": "default",
+        "reported_label": null,
+        "displayed_values_match": true
+      },
+      {
+        "case_id": "iot_013",
+        "request_id": "781404fa8c394470acd87cac4d0732d2",
+        "query_kind": "default",
+        "reported_label": "semantic_gap",
+        "displayed_values_match": null
+      }
+    ],
+    "displayed_answer_tables": 8,
+    "tables_matching": 8,
+    "july_7_alert_rows": 0,
+    "boundary_note": "No July 7 alerts: matching displayed buckets cannot prove that the original plan included the final day. No zero-fill calendar series is promised by the current contract.",
+    "missing_evidence": [
+      "per-request as_of",
+      "raw MCP response",
+      "plan",
+      "SQL/bindings",
+      "assumptions/warnings",
+      "row truncation flag"
+    ],
+    "physical_model_calls": 0
+  },
+  "artifact_hashes": {
+    ".artifacts/owner-web-intake-20260915/iot-01.json": "7c771e4478ea7678b279a69f4329b3d6a2379bd5c0f13b396f393f1a00637501",
+    ".artifacts/owner-web-intake-20260915/iot-01-oracle.json": "b0cb0d434d0186ed16d185216deb9c440504c3197ad03c9e917f5052a1c72be8",
+    ".artifacts/owner-web-intake-20260915/service-01-cases.json": "d3ac0472a442db59e3bebc8780dec5b486a7d0e725f4d0492441843774d6a424",
+    ".artifacts/owner-web-intake-20260915/service-01-review.json": "c425f13e0458b93b1b6595481ad2959dd39e82143248fa2ff873b990be7e4579",
+    ".artifacts/owner-web-intake-20260915/run_service.py": "310555dbedb0fda61c73db853144c766a56aeedf26cfc7ec9f7f603b8554e309",
+    ".artifacts/owner-web-intake-20260915/check_iot.py": "884c0e27abeec54440033b989426593fab6a28f15cdd08d93cc330625b6e1b85",
+    ".artifacts/owner-web-intake-20260915/review_service.py": "ec2842e6b68bef8d4d9e6edd0bd2f0b7e09b4ae10077a7110bb36035b9698d6a",
+    ".artifacts/owner-web-intake-20260915/service-live/manifest.json": "e374f2c6908fa36066cda196d23f290df9d9398cf978b2302784275d7769100f",
+    ".artifacts/owner-web-intake-20260915/service-live/summary.json": "a642f71bff8083f8ecccadfdbf9dcac494ed04bd8b0ca07da54ba45c090e7950",
+    ".artifacts/owner-web-intake-20260915/service-live/S1.json": "5c2cf3eed036e7cb506c57a114c490252f7930d69aa72ed502720b6088a9ae48",
+    ".artifacts/owner-web-intake-20260915/service-live/S2.json": "9c4bd1c956f70ce6b43d30aa262307b35eb5791a4afc25a59578c8215a184ca4",
+    ".artifacts/owner-web-intake-20260915/service-live/S3.json": "fa89ab15c0e895b0acbd2c54b7779807d126f38fd2e4857ece2918bf120dd29d",
+    ".artifacts/owner-web-intake-20260915/service-live/S4.json": "ff7f3f06efa6db3fb6973ef1b45624a2ad492c920fe04808234e0fb1700a0af1",
+    ".artifacts/owner-web-intake-20260915/service-live/S5.json": "382c11cd674c0fa9b029b410616103f5220d20737a39b5a2b546ce1be9a13eba",
+    ".artifacts/owner-web-intake-20260915/service-live/S6.json": "22eb1ae5428435fe431ec8eb7a0306945ef6e1ce1ed7e6d17a6c833fbaa49413",
+    ".artifacts/owner-web-intake-20260915/service-live/S7.json": "be20b7a3bcfa365b6c32b0d1b24954c19ce935485199f550d6798d1f6c7dabfe",
+    ".artifacts/owner-web-intake-20260915/service-live/S8.json": "43a95d6e9cccdb043e8e305e8a5d54a14466bf4dff1620478ca52c40da786721",
+    ".artifacts/owner-web-intake-20260915/service-live/S9.json": "8bc2e09fe6b151e2906f80b957f1476923f2ea35bfd74bf05ac602f2ea01fafc",
+    ".artifacts/owner-web-intake-20260915/service-live/S10.json": "cb6babcebefbe6ce5b2ccb0e78c8be969f2928cf2c505f26dfcfe2d32d0cf96c"
+  }
+}
