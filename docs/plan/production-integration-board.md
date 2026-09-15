@@ -8,7 +8,7 @@ reports remain immutable evidence; this board records product disposition.
 | Capability / finding | Current disposition | Next product exit |
 |---|---|---|
 | Source-typed time binding | Shared compiler integrated at 8701dfd; actual HTTP/MCP binding replay accepted | Closed for binding scope; initial-plan language errors remain separate |
-| Temporal repair preservation | Shared planner integrated after typed compatibility and actual service acceptance | Closed for narrow invalid-range anchors; four wrong repairs become failures, not correct answers; broader semantic preservation is not claimed |
+| Temporal repair preservation | Shared planner integrated; reviewer effective-bound/identity corrections validated | Narrow boundary corrections closed: compare both original and repaired restrictions; missing child identity is unknown, not changed; broader semantic preservation is not claimed |
 | Base-table details | Shared compiler and opt-in fallback present; Web default off | Planning chooses rows versus aggregates correctly, retains missing-definition refusals, scoped visibility/limits and actual consumer payload; no assumed extra router |
 | Unicode question rendering | Research extension 4/4 original questions, repeated; production planner already literal Unicode | Reuse the successful research input representation in integration, not another encoding study or blanket claim that conversion still fails |
 | Unit conversion | Research compiler/planner feasibility established on bounded cases | Integrate one reviewed SQL conversion path with source/target unit, NULL, value, output and missing-definition controls |
@@ -42,8 +42,10 @@ load deployment readiness remains a separate final scope decision.
 A rejected candidate does not close the product capability. Review identifies
 the failing layer and chooses a materially different evidenced approach, a
 smaller useful delivery, or an explicitly blocked scope. Do not automatically
-append prompt variants. Tests/doc/evidence inventory can proceed alongside live
-work; freeze src/evals for each live phase and serialize shared model calls.
+append prompt variants. Read-only inventory can proceed alongside live work.
+Freeze every input covered by that run's fingerprint, including tests and probe
+scripts, not just src/evals; serialize shared model calls. Do not edit covered
+inputs until the live phase ends, even when a test seems independently scoped.
 
 Move accepted logic to the shared serving owner and have research wrappers reuse
 it. Remove replaced runtime implementations in the same slice; retain minimal

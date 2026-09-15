@@ -37,6 +37,35 @@ def _column(value):
     return None
 
 
+def _filter_bounds(filters, column, source, timezone, key):
+    """Read only recognizable same-column comparisons on either side."""
+    if not isinstance(filters, list):
+        return None
+    bounds = []
+    operators = {"gte", "gt"} if key == "start" else {"lt", "lte"}
+    for item in filters:
+        if (
+            not isinstance(item, dict)
+            or (identity := _column(item.get("column"))) is None
+        ):
+            return None
+        if identity != column:
+            continue  # Other-column predicates are outside the protected anchors.
+        if set(item) - {"column", "op", "values"}:
+            return None
+        op, values = item.get("op"), item.get("values")
+        if not isinstance(op, str) or op not in {"gte", "gt", "lt", "lte"}:
+            return None
+        if not isinstance(values, list) or len(values) != 1:
+            return None
+        value = _instant(values[0], source, timezone)
+        if value is None:
+            return None
+        if op in operators:
+            bounds.append((value, int(op in {"gt", "lte"})))
+    return bounds
+
+
 def temporal_repair_audit(raw, plan, model):
     """A narrow monotonic safeguard, not complete semantic equivalence."""
     try:
@@ -61,7 +90,17 @@ def temporal_repair_audit(raw, plan, model):
                 continue
             found = True
             column = _column(spec.get("column"))
-            if column is None or not draft.get("base_table"):
+            base = draft.get("base_table")
+            child = before.get("table") if location == "without" else None
+            if (
+                column is None
+                or not isinstance(base, str)
+                or model.table(base) is None
+                or (
+                    location == "without"
+                    and (not isinstance(child, str) or model.table(child) is None)
+                )
+            ):
                 return "unverifiable"
             table, field = column.split(".")
             known = model.table(table)
@@ -71,30 +110,26 @@ def temporal_repair_audit(raw, plan, model):
             instant = _instant(literal, source, model.business_timezone)
             if instant is None:
                 return "unverifiable"
-            if plan.base_table != draft["base_table"]:
+            original_bounds = _filter_bounds(
+                before.get("filters", []), column, source, model.business_timezone, key
+            )
+            if original_bounds is None:
+                return "unverifiable"
+            original_bounds.append((instant, 0))
+            if plan.base_table != base:
                 return "changed"
             after = plan if location == "plan" else plan.without
-            if after is None or (
-                location == "without" and after.table != before.get("table")
-            ):
+            if after is None or (location == "without" and after.table != child):
                 return "changed"
-            bounds = []
-            operators = {"gte", "gt"} if key == "start" else {"lt", "lte"}
-            for f in after.filters:
-                if f.column.id != column:
-                    continue
-                if f.op not in {"gte", "gt", "lt", "lte"}:
-                    return "unverifiable"
-                if f.op in operators:
-                    value = (
-                        _instant(f.values[0], source, model.business_timezone)
-                        if len(f.values) == 1
-                        else None
-                    )
-                    if value is None:
-                        return "unverifiable"
-                    # At equal instants, exclusive bounds are stronger.
-                    bounds.append((value, int(f.op in {"gt", "lte"})))
+            bounds = _filter_bounds(
+                [f.model_dump(mode="json") for f in after.filters],
+                column,
+                source,
+                model.business_timezone,
+                key,
+            )
+            if bounds is None:
+                return "unverifiable"
             window = after.time
             if window is not None and window.scope is not None:
                 if window.scope.kind != "range" or window.column is None:
@@ -112,6 +147,7 @@ def temporal_repair_audit(raw, plan, model):
             effective = (
                 (max(bounds) if key == "start" else min(bounds)) if bounds else None
             )
-            if effective != (instant, 0):
+            original = max(original_bounds) if key == "start" else min(original_bounds)
+            if effective != original:
                 return "changed"
     return "preserved" if found else "not_applicable"

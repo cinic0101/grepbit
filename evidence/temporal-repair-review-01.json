@@ -1,0 +1,71 @@
+{
+  "baseline": "a6e9c69",
+  "decision": "correct_both_reviewer_findings",
+  "model_calls": 0,
+  "database_calls": 0,
+  "checks": {
+    "ruler": {
+      "path": ".artifacts/guard-review-20260915/ruler/result.json",
+      "sha256": "4bddc6f5b34f6847ecae7a66a2c8ad0244d896668567582043be7b6cf49109a9",
+      "passed": false,
+      "counts": {
+        "errors": 0,
+        "failures": 16,
+        "skipped": 0,
+        "tests": 18
+      },
+      "source_digest": "sha256:9887d9ecc70d6c50b6b9665416012ad7b865c772068f34b2a6cd4d82ce4d6f09"
+    },
+    "green": {
+      "path": ".artifacts/guard-review-20260915/green/result.json",
+      "sha256": "6a6d13f1780e038eaa72d37b8149bf91afe120e90200f6e1cd184e70ee36b319",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 63
+      },
+      "source_digest": "sha256:55413a5757a2091efcfbc3d4b5da57025602f15b4cdb5580e5abd2f712fe47a6"
+    },
+    "malformed-ruler": {
+      "path": ".artifacts/guard-review-20260915/malformed-ruler/result.json",
+      "sha256": "02ff155f56951c31b7be6fba3c8a1458bc67dbcd3f328a7ff71f942335a8483a",
+      "passed": false,
+      "counts": {
+        "errors": 0,
+        "failures": 1,
+        "skipped": 0,
+        "tests": 19
+      },
+      "source_digest": "sha256:ca570abc768b354c4ece077faf545e2d93a6522ee27c3139d40a217eb19cba33"
+    },
+    "static": {
+      "path": ".artifacts/guard-review-20260915/static/result.json",
+      "sha256": "1f58df2377415b6cd865250956f97db65d5193a20d2ed51d468d47308642f5d2",
+      "passed": true,
+      "counts": null,
+      "source_digest": "sha256:b4199f42223ac09b080c4a60ad04e261ef024fc8d36ded5608fff34cae2dc279"
+    },
+    "offline": {
+      "path": ".artifacts/guard-review-20260915/offline/result.json",
+      "sha256": "3528eff53f719f691c3028a6a567eb50f3c0c43d9c7863f406147f4f6ad9df1b",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 2210
+      },
+      "source_digest": "sha256:b4199f42223ac09b080c4a60ad04e261ef024fc8d36ded5608fff34cae2dc279"
+    }
+  },
+  "source_hashes": {
+    "src/grepbit/domain/temporal_repair.py": "08496165e493e1a806959f8d5989858c71f53869ff56da8d2f6a29f8d72c7bda",
+    "tests/contract/t0/test_temporal_repair_review.py": "014eff0ed7f0a0bfb36830e71f8641dba3c2bf42f653ff052f3b09f75f999d14"
+  },
+  "limits": [
+    "Effective same-column range bounds only, not full intent/query equivalence.",
+    "Historical outcomes remain unchanged; new live baseline required for row/aggregate comparison."
+  ]
+}

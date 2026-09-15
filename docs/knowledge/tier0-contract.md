@@ -8,6 +8,10 @@ alter recognizable explicit timestamp range anchors in plan/without scopes.
 inclusion, column and population scope using the approved binding policy below.
 Naive instant/clock and equivalent midnight repairs remain legal; missing
 identity, unresolved DST or unbound clock offsets are unverifiable, not guessed.
+Effective-bound comparison includes recognizable existing same-column filters
+in the original draft as well as the repair. Preserving an original stronger
+restriction is legal; dropping it is changed. Unresolved original restrictions
+or a missing/unknown without.table are unverifiable, not confirmed changes.
 Changed and unverifiable repairs retain the existing public operational failure
 `failed / invalid_structured_output`, not a successful semantic refusal.
 Preserved/not_applicable do not certify user intent; initial valid plans,
