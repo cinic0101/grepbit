@@ -1,0 +1,696 @@
+{
+  "baseline": "bbf4ef9",
+  "date": "2026-09-15",
+  "decision": "no_promotion_prioritize_typed_timestamp_boundary",
+  "budget": {
+    "actual_calls": 277,
+    "limit": 320
+  },
+  "phases": {
+    "main": {
+      "artifacts": {
+        "manifest": {
+          "path": ".artifacts/planner-combination-20260915/main/manifest.json",
+          "sha256": "e3df3c4e629bd6e657cdb5e29392c64ebd92168e0edb30e3f59527815e0f9c2c"
+        },
+        "results": {
+          "path": ".artifacts/planner-combination-20260915/main/results.json",
+          "sha256": "2aea5ce2f6a327a1485e15fcfd342f420b160b7e15e325b5d5f1b98f634abf3d"
+        },
+        "calls": {
+          "path": ".artifacts/planner-combination-20260915/main/calls.json",
+          "sha256": "8bebb6ad0b03c59affe9dd95cf556189d93a966db79ada383decce0e5b12efa1"
+        },
+        "analysis": {
+          "path": ".artifacts/planner-combination-20260915/main/analysis.json",
+          "sha256": "f9c5c3fc5f3f0c1da95eff86036c38ba48feab15c953f9695b394128f5fc4f50"
+        }
+      },
+      "initial_messages_matching_main": 220,
+      "initial_requests": 220,
+      "summaries": {
+        "baseline": {
+          "outcomes": {
+            "correct_answer": 32,
+            "necessary_refusal": 12,
+            "unnecessary_refusal": 4,
+            "operational_failure": 3,
+            "wrong_answer": 4
+          },
+          "by_route": {
+            "rows": {
+              "correct_answer": 12,
+              "unnecessary_refusal": 1
+            },
+            "legacy": {
+              "correct_answer": 20,
+              "unnecessary_refusal": 3,
+              "operational_failure": 3,
+              "wrong_answer": 4
+            },
+            "decline": {
+              "necessary_refusal": 12
+            }
+          },
+          "calls": 63,
+          "repairs": 8,
+          "elapsed_p50": 2.259,
+          "elapsed_p95": 6.716,
+          "answered": 36,
+          "total": 55,
+          "correct_answer_count": 32,
+          "known_wrong_count": 4,
+          "unjudged_answer_count": 0
+        },
+        "time": {
+          "outcomes": {
+            "correct_answer": 36,
+            "necessary_refusal": 12,
+            "unnecessary_refusal": 3,
+            "wrong_answer": 3,
+            "operational_failure": 1
+          },
+          "by_route": {
+            "rows": {
+              "correct_answer": 12,
+              "unnecessary_refusal": 1
+            },
+            "legacy": {
+              "correct_answer": 24,
+              "unnecessary_refusal": 2,
+              "wrong_answer": 3,
+              "operational_failure": 1
+            },
+            "decline": {
+              "necessary_refusal": 12
+            }
+          },
+          "calls": 56,
+          "repairs": 1,
+          "elapsed_p50": 2.249,
+          "elapsed_p95": 6.21,
+          "answered": 39,
+          "total": 55,
+          "correct_answer_count": 36,
+          "known_wrong_count": 3,
+          "unjudged_answer_count": 0
+        },
+        "composition": {
+          "outcomes": {
+            "correct_answer": 33,
+            "necessary_refusal": 11,
+            "wrong_answer": 6,
+            "unnecessary_refusal": 2,
+            "operational_failure": 3
+          },
+          "by_route": {
+            "rows": {
+              "correct_answer": 12,
+              "unnecessary_refusal": 1
+            },
+            "legacy": {
+              "correct_answer": 21,
+              "unnecessary_refusal": 1,
+              "operational_failure": 3,
+              "wrong_answer": 5
+            },
+            "decline": {
+              "necessary_refusal": 11,
+              "wrong_answer": 1
+            }
+          },
+          "calls": 63,
+          "repairs": 8,
+          "elapsed_p50": 2.24,
+          "elapsed_p95": 7.444,
+          "answered": 39,
+          "total": 55,
+          "correct_answer_count": 33,
+          "known_wrong_count": 6,
+          "unjudged_answer_count": 0
+        },
+        "combined": {
+          "outcomes": {
+            "correct_answer": 36,
+            "necessary_refusal": 12,
+            "unnecessary_refusal": 3,
+            "operational_failure": 1,
+            "wrong_answer": 3
+          },
+          "by_route": {
+            "rows": {
+              "correct_answer": 12,
+              "unnecessary_refusal": 1
+            },
+            "legacy": {
+              "correct_answer": 24,
+              "unnecessary_refusal": 2,
+              "operational_failure": 1,
+              "wrong_answer": 3
+            },
+            "decline": {
+              "necessary_refusal": 12
+            }
+          },
+          "calls": 58,
+          "repairs": 3,
+          "elapsed_p50": 2.254,
+          "elapsed_p95": 7.214,
+          "answered": 39,
+          "total": 55,
+          "correct_answer_count": 36,
+          "known_wrong_count": 3,
+          "unjudged_answer_count": 0
+        }
+      },
+      "transitions": [
+        {
+          "case_id": "cov_leased_fee",
+          "outcomes": {
+            "baseline": "necessary_refusal",
+            "time": "necessary_refusal",
+            "composition": "wrong_answer",
+            "combined": "necessary_refusal"
+          }
+        },
+        {
+          "case_id": "kind_minutes_records",
+          "outcomes": {
+            "baseline": "unnecessary_refusal",
+            "time": "unnecessary_refusal",
+            "composition": "unnecessary_refusal",
+            "combined": "unnecessary_refusal"
+          }
+        },
+        {
+          "case_id": "kind_minutes_nonnull_count",
+          "outcomes": {
+            "baseline": "unnecessary_refusal",
+            "time": "unnecessary_refusal",
+            "composition": "unnecessary_refusal",
+            "combined": "unnecessary_refusal"
+          }
+        },
+        {
+          "case_id": "svc_absent_sum_en",
+          "outcomes": {
+            "baseline": "unnecessary_refusal",
+            "time": "correct_answer",
+            "composition": "correct_answer",
+            "combined": "correct_answer"
+          }
+        },
+        {
+          "case_id": "svc_absent_feb_zh",
+          "outcomes": {
+            "baseline": "correct_answer",
+            "time": "correct_answer",
+            "composition": "correct_answer",
+            "combined": "unnecessary_refusal"
+          }
+        },
+        {
+          "case_id": "svc_absent_feb_ja",
+          "outcomes": {
+            "baseline": "unnecessary_refusal",
+            "time": "unnecessary_refusal",
+            "composition": "operational_failure",
+            "combined": "operational_failure"
+          }
+        },
+        {
+          "case_id": "without_count_ja",
+          "outcomes": {
+            "baseline": "operational_failure",
+            "time": "correct_answer",
+            "composition": "correct_answer",
+            "combined": "correct_answer"
+          }
+        },
+        {
+          "case_id": "without_device_en",
+          "outcomes": {
+            "baseline": "wrong_answer",
+            "time": "correct_answer",
+            "composition": "correct_answer",
+            "combined": "correct_answer"
+          }
+        },
+        {
+          "case_id": "date_between_inclusive_v1",
+          "outcomes": {
+            "baseline": "correct_answer",
+            "time": "wrong_answer",
+            "composition": "wrong_answer",
+            "combined": "correct_answer"
+          }
+        },
+        {
+          "case_id": "date_precise_timestamp_v1",
+          "outcomes": {
+            "baseline": "wrong_answer",
+            "time": "correct_answer",
+            "composition": "wrong_answer",
+            "combined": "wrong_answer"
+          }
+        },
+        {
+          "case_id": "precision_noon_zh",
+          "outcomes": {
+            "baseline": "wrong_answer",
+            "time": "wrong_answer",
+            "composition": "wrong_answer",
+            "combined": "wrong_answer"
+          }
+        },
+        {
+          "case_id": "precision_noon_ja",
+          "outcomes": {
+            "baseline": "wrong_answer",
+            "time": "wrong_answer",
+            "composition": "wrong_answer",
+            "combined": "wrong_answer"
+          }
+        },
+        {
+          "case_id": "precision_utc_equivalent",
+          "outcomes": {
+            "baseline": "operational_failure",
+            "time": "correct_answer",
+            "composition": "operational_failure",
+            "combined": "correct_answer"
+          }
+        },
+        {
+          "case_id": "precision_without_alerts",
+          "outcomes": {
+            "baseline": "operational_failure",
+            "time": "operational_failure",
+            "composition": "operational_failure",
+            "combined": "correct_answer"
+          }
+        },
+        {
+          "case_id": "precision_service_logs",
+          "outcomes": {
+            "baseline": "correct_answer",
+            "time": "correct_answer",
+            "composition": "wrong_answer",
+            "combined": "correct_answer"
+          }
+        }
+      ]
+    },
+    "repeat": {
+      "artifacts": {
+        "manifest": {
+          "path": ".artifacts/planner-combination-20260915/repeat/manifest.json",
+          "sha256": "41b80469dcdfbe45ba37258b7732b23b1b2bf141557f0c0672dad556c413cef5"
+        },
+        "results": {
+          "path": ".artifacts/planner-combination-20260915/repeat/results.json",
+          "sha256": "933eb551df879ef75a27b51b81b859d854f42247d79d5aa769a6b3063b7ab0d5"
+        },
+        "calls": {
+          "path": ".artifacts/planner-combination-20260915/repeat/calls.json",
+          "sha256": "b5da46f10001c5e7c01bd91e119dc7cd0d698bea331f5c62698c8d088ec147ad"
+        },
+        "analysis": {
+          "path": ".artifacts/planner-combination-20260915/repeat/analysis.json",
+          "sha256": "8b642ff1fb50fb965215bd2783bf6d553c04f3e3c1a26b4c11f551c3ebcf9239"
+        }
+      },
+      "initial_messages_matching_main": 16,
+      "initial_requests": 16,
+      "summaries": {
+        "baseline": {
+          "outcomes": {
+            "necessary_refusal": 1,
+            "correct_answer": 1,
+            "unnecessary_refusal": 1,
+            "wrong_answer": 1
+          },
+          "by_route": {
+            "rows": {},
+            "legacy": {
+              "correct_answer": 1,
+              "unnecessary_refusal": 1,
+              "wrong_answer": 1
+            },
+            "decline": {
+              "necessary_refusal": 1
+            }
+          },
+          "calls": 5,
+          "repairs": 1,
+          "elapsed_p50": 3.368,
+          "elapsed_p95": 6.624,
+          "answered": 2,
+          "total": 4,
+          "correct_answer_count": 1,
+          "known_wrong_count": 1,
+          "unjudged_answer_count": 0
+        },
+        "time": {
+          "outcomes": {
+            "necessary_refusal": 1,
+            "correct_answer": 2,
+            "unnecessary_refusal": 1
+          },
+          "by_route": {
+            "rows": {},
+            "legacy": {
+              "correct_answer": 2,
+              "unnecessary_refusal": 1
+            },
+            "decline": {
+              "necessary_refusal": 1
+            }
+          },
+          "calls": 4,
+          "repairs": 0,
+          "elapsed_p50": 4.2885,
+          "elapsed_p95": 6.656,
+          "answered": 2,
+          "total": 4,
+          "correct_answer_count": 2,
+          "known_wrong_count": 0,
+          "unjudged_answer_count": 0
+        },
+        "composition": {
+          "outcomes": {
+            "necessary_refusal": 1,
+            "correct_answer": 1,
+            "operational_failure": 1,
+            "wrong_answer": 1
+          },
+          "by_route": {
+            "rows": {},
+            "legacy": {
+              "correct_answer": 1,
+              "operational_failure": 1,
+              "wrong_answer": 1
+            },
+            "decline": {
+              "necessary_refusal": 1
+            }
+          },
+          "calls": 6,
+          "repairs": 2,
+          "elapsed_p50": 5.141,
+          "elapsed_p95": 7.359,
+          "answered": 2,
+          "total": 4,
+          "correct_answer_count": 1,
+          "known_wrong_count": 1,
+          "unjudged_answer_count": 0
+        },
+        "combined": {
+          "outcomes": {
+            "necessary_refusal": 1,
+            "correct_answer": 1,
+            "operational_failure": 1,
+            "wrong_answer": 1
+          },
+          "by_route": {
+            "rows": {},
+            "legacy": {
+              "correct_answer": 1,
+              "operational_failure": 1,
+              "wrong_answer": 1
+            },
+            "decline": {
+              "necessary_refusal": 1
+            }
+          },
+          "calls": 6,
+          "repairs": 2,
+          "elapsed_p50": 5.608,
+          "elapsed_p95": 8.813,
+          "answered": 2,
+          "total": 4,
+          "correct_answer_count": 1,
+          "known_wrong_count": 1,
+          "unjudged_answer_count": 0
+        }
+      },
+      "transitions": [
+        {
+          "case_id": "svc_absent_feb_ja",
+          "outcomes": {
+            "baseline": "unnecessary_refusal",
+            "time": "unnecessary_refusal",
+            "composition": "operational_failure",
+            "combined": "operational_failure"
+          }
+        },
+        {
+          "case_id": "date_precise_timestamp_v1",
+          "outcomes": {
+            "baseline": "wrong_answer",
+            "time": "correct_answer",
+            "composition": "wrong_answer",
+            "combined": "wrong_answer"
+          }
+        }
+      ]
+    },
+    "followup": {
+      "artifacts": {
+        "manifest": {
+          "path": ".artifacts/planner-combination-20260915/followup/manifest.json",
+          "sha256": "5be2dfb880d26ad9336fdce5c87ddf0d7abdb6507b6c8953c1d4582509e3a7e8"
+        },
+        "results": {
+          "path": ".artifacts/planner-combination-20260915/followup/results.json",
+          "sha256": "48e4bea57e3beb5ed772dc020899248fceb55d3ae1599e361eda56143acb35de"
+        },
+        "calls": {
+          "path": ".artifacts/planner-combination-20260915/followup/calls.json",
+          "sha256": "850b8a2128c1ef6657eac0ae1c459a6f37ecf9c9c70a03b6767e371a63b9f433"
+        },
+        "analysis": {
+          "path": ".artifacts/planner-combination-20260915/followup/analysis.json",
+          "sha256": "6bcc5992add333826e3d9dce096a83c5b5d2edcdbecfdf41d75d91e061f35182"
+        }
+      },
+      "initial_messages_matching_main": 16,
+      "initial_requests": 16,
+      "summaries": {
+        "baseline": {
+          "outcomes": {
+            "necessary_refusal": 2,
+            "correct_answer": 1,
+            "unnecessary_refusal": 1
+          },
+          "by_route": {
+            "rows": {},
+            "legacy": {
+              "correct_answer": 1,
+              "unnecessary_refusal": 1
+            },
+            "decline": {
+              "necessary_refusal": 2
+            }
+          },
+          "calls": 4,
+          "repairs": 0,
+          "elapsed_p50": 2.2800000000000002,
+          "elapsed_p95": 5.099,
+          "answered": 1,
+          "total": 4,
+          "correct_answer_count": 1,
+          "known_wrong_count": 0,
+          "unjudged_answer_count": 0
+        },
+        "time": {
+          "outcomes": {
+            "necessary_refusal": 2,
+            "correct_answer": 2
+          },
+          "by_route": {
+            "rows": {},
+            "legacy": {
+              "correct_answer": 2
+            },
+            "decline": {
+              "necessary_refusal": 2
+            }
+          },
+          "calls": 4,
+          "repairs": 0,
+          "elapsed_p50": 2.0605,
+          "elapsed_p95": 3.031,
+          "answered": 2,
+          "total": 4,
+          "correct_answer_count": 2,
+          "known_wrong_count": 0,
+          "unjudged_answer_count": 0
+        },
+        "composition": {
+          "outcomes": {
+            "wrong_answer": 1,
+            "necessary_refusal": 1,
+            "correct_answer": 2
+          },
+          "by_route": {
+            "rows": {},
+            "legacy": {
+              "correct_answer": 2
+            },
+            "decline": {
+              "wrong_answer": 1,
+              "necessary_refusal": 1
+            }
+          },
+          "calls": 4,
+          "repairs": 0,
+          "elapsed_p50": 2.15,
+          "elapsed_p95": 3.036,
+          "answered": 3,
+          "total": 4,
+          "correct_answer_count": 2,
+          "known_wrong_count": 1,
+          "unjudged_answer_count": 0
+        },
+        "combined": {
+          "outcomes": {
+            "necessary_refusal": 2,
+            "correct_answer": 2
+          },
+          "by_route": {
+            "rows": {},
+            "legacy": {
+              "correct_answer": 2
+            },
+            "decline": {
+              "necessary_refusal": 2
+            }
+          },
+          "calls": 4,
+          "repairs": 0,
+          "elapsed_p50": 2.016,
+          "elapsed_p95": 3.052,
+          "answered": 2,
+          "total": 4,
+          "correct_answer_count": 2,
+          "known_wrong_count": 0,
+          "unjudged_answer_count": 0
+        }
+      },
+      "transitions": [
+        {
+          "case_id": "cov_leased_fee",
+          "outcomes": {
+            "baseline": "necessary_refusal",
+            "time": "necessary_refusal",
+            "composition": "wrong_answer",
+            "combined": "necessary_refusal"
+          }
+        },
+        {
+          "case_id": "svc_absent_feb_zh",
+          "outcomes": {
+            "baseline": "unnecessary_refusal",
+            "time": "correct_answer",
+            "composition": "correct_answer",
+            "combined": "correct_answer"
+          }
+        }
+      ]
+    }
+  },
+  "timezone_diagnostic": {
+    "artifact": {
+      "path": ".artifacts/planner-combination-20260915/timezone-replay.json",
+      "sha256": "cc831829f6ef211df87af8dd8c3ec407b06c06f1f2a2bb447f38393ab180c6ec"
+    },
+    "model_calls": 0,
+    "checks": [
+      {
+        "session_timezone": "UTC",
+        "variant": "actual_model_plan",
+        "matches_reference": false
+      },
+      {
+        "session_timezone": "UTC",
+        "variant": "manual_offset_contrast",
+        "matches_reference": true
+      },
+      {
+        "session_timezone": "Asia/Taipei",
+        "variant": "actual_model_plan",
+        "matches_reference": true
+      },
+      {
+        "session_timezone": "Asia/Taipei",
+        "variant": "manual_offset_contrast",
+        "matches_reference": true
+      }
+    ],
+    "scope": "SET LOCAL only within read-only connections; no stored state changes. Manual offset contrast is diagnostic, not a planner success or a production rewrite."
+  },
+  "validation": {
+    "focused": {
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 36
+      },
+      "artifact": {
+        "path": ".artifacts/planner-combination-20260915/focused/result.json",
+        "sha256": "c90ee56c680f7bda652b1f5a2c4a19ebdaa543c0a9676393445ab67564ff46e7"
+      }
+    },
+    "offline": {
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 2064
+      },
+      "artifact": {
+        "path": ".artifacts/planner-combination-20260915/offline/result.json",
+        "sha256": "efd5448b95a89fe1edc033a640daffc25c1d405b6b086d8c5184838175cc7617"
+      }
+    },
+    "static": {
+      "passed": true,
+      "counts": null,
+      "artifact": {
+        "path": ".artifacts/planner-combination-20260915/static/result.json",
+        "sha256": "066ba7a7c2fbeafd622b057486f0e7f75c1255711009569b54e5631cded81f56"
+      }
+    }
+  },
+  "source_match_all_live_phases": true,
+  "drivers": [
+    {
+      "path": ".artifacts/planner-combination-20260915/run.py",
+      "sha256": "2831da7fe75f601d03f32f1e48e58b6f3272efd4bcbba8ebf05314acf36939a3"
+    },
+    {
+      "path": ".artifacts/planner-combination-20260915/followup.py",
+      "sha256": "f05769650243b9cbac7581f82abf7c074deee30d594958fb20086140b79f223f"
+    },
+    {
+      "path": ".artifacts/planner-combination-20260915/analyze.py",
+      "sha256": "86e559d99391590c16c6e350310ede0574216c67b3b5eee2b0bf05a94785ab12"
+    },
+    {
+      "path": ".artifacts/planner-combination-20260915/timezone_replay.py",
+      "sha256": "4f58bbf0e02b839ef60c0a90d65bf5db4546e05e923da4ba7ba18b3f2c7d8267"
+    }
+  ],
+  "limits": [
+    "All arms use joint-v1, not production v15",
+    "Authored seen panel, not blind or all-product regression",
+    "No runtime or Web promotion; gates unchanged",
+    "Manual offset contrast is not a model answer",
+    "Post-hoc recurrence kept separate; no batching causal claim",
+    "No DB writes, new credentials, push or deployment"
+  ]
+}

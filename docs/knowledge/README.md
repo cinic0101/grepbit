@@ -41,3 +41,9 @@ timestamp-filter guidance passes the small 13-case panel and three-case repeat;
 guarded raw-output replay stops five wrong repairs, not first-pass mistakes.
 Separate endpoint witnesses correct one scalar false pass without overwriting
 history. Research only; wider combination regression remains next.
+
+[`Four-arm combination regression`](../research/planner-combination-study-01.md):
+55 cases plus separate recurrence checks, 277 calls. Time-only and combined tie
+on total correct answers but fail different cases; composition loses a required
+lease refusal twice. No promotion. Same-plan PostgreSQL replay establishes naive
+timestamp dependence on session timezone; typed-time boundary rulers are next.

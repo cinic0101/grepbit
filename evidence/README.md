@@ -1,5 +1,13 @@
 # Evidence
 
+`planner-combination-study-01.json`: four frozen prompt arms over 55 authored
+controls, predeclared repeat and separate post-hoc recurrence check, 277/320 calls.
+Time-only and combined each give 36 correct / three wrong, but fail different
+cases; composition loses the lease-scope refusal twice. Same actual naive-time
+plan fails under PostgreSQL UTC and matches under Asia/Taipei; explicit-offset
+manual contrast matches in both. No production change. 36 focused and 2,064
+offline tests/static pass. See `../docs/research/planner-combination-study-01.md`.
+
 `temporal-repair-study-01.json`: two live streams and their exact-output guarded
 replays, 13 authored cases plus three repeat controls, 40/96 model calls. Corrected
 multi-instance baseline: four correct, six wrong, two necessary refusals, one

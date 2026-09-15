@@ -121,7 +121,18 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-15: temporal-repair study at baseline `ccb91de`: guidance yields
+Current 2026-09-15: four-arm combination study at baseline `bbf4ef9` complete.
+55 authored cases: joint baseline 32 correct / 4 wrong, time-only 36 / 3,
+composition 33 / 6, combined 36 / 3; necessary refusals and failures counted
+separately. No promotion: composition lease-scope wrong answer and combined
+precise-time loss recur. Other absence refusals flip under identical messages.
+277/320 calls, focused 36 / offline 2,064 / static pass. New readonly same-plan
+replay proves naive timestamp filter results depend on DB session timezone.
+Next: typed-time interpretation rulers (column types, explicit offsets, naive
+default/refusal, DST, scopes), not another prompt concatenation. See
+`../research/planner-combination-study-01.md`.
+
+Previous 2026-09-15: temporal-repair study at baseline `ccb91de`: guidance yields
 11 correct answers and two necessary refusals; three-case repeat retains two
 answers and one refusal. Exact-output guard replay prevents five wrong repairs,
 not first-generation errors. Corrected separate-endpoint witnesses remove one
