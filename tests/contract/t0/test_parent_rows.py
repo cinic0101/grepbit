@@ -1,9 +1,4 @@
-"""Pending parent-projection checkpoint, deliberately not in default discovery.
-
-Run explicitly with tools/verify.py focused --tests <this file>. These are real
-red acceptance rulers, not skips or xfails. Rename to test_parent_rows.py when
-the contract is approved and implemented. No live database/model is required.
-"""
+"""Owner-approved unique-parent projection and population preservation rulers."""
 
 import pytest
 from pydantic import ValidationError
@@ -66,12 +61,13 @@ def wire(**extra):
     }
 
 
-def compile_wire(payload, *, source=None, overlay=None, enabled=True):
+def compile_wire(payload, *, source=None, overlay=None, enabled=True, **scope):
     return PlanCompiler(
         source or schema(), overlay=overlay, allow_rows=enabled
     ).compile(
         QueryPlan.model_validate(payload),
         as_of=AS_OF,
+        **scope,
     )
 
 
@@ -309,3 +305,187 @@ def test_reference_fixture_distinguishes_inner_join_and_deduplication():
         )
     finally:
         instance.con.close()
+
+
+@pytest.mark.parametrize("same_parent", [True, False])
+@pytest.mark.parametrize("lifted", [True, False])
+def test_projection_preserves_segment_population(same_parent, lifted):
+    source = schema()
+    segment_table = "parents"
+    if not same_parent:
+        segment_table = "groups"
+        source.tables.append(source.tables[1].model_copy(update={"name": "groups"}))
+        source.foreign_keys.append(
+            ForeignKey(
+                table="records",
+                column="other_parent_id",
+                referenced_table="groups",
+                referenced_column="id",
+            )
+        )
+    overlay = SemanticOverlay(
+        datasource_id="parent_ruler",
+        revision="segment",
+        segments=[
+            {
+                "id": "disabled",
+                "names": ["disabled"],
+                "table": segment_table,
+                "filter": {
+                    "column": {"table": segment_table, "column": "name"},
+                    "op": "eq",
+                    "values": ["disabled"],
+                },
+                "default_exclude": True,
+                "note": "synthetic reviewed subset",
+            }
+        ],
+    )
+    scope = {"named_segments" if lifted else "exclude_segments": overlay.segments}
+    payload = wire(
+        rows={
+            "columns": [
+                {"table": "records", "column": "id"},
+                {"table": "parents", "column": "name"},
+            ]
+        }
+    )
+    result = accepted(payload, source=source, overlay=overlay, **scope)
+    base = compile_wire(
+        wire(rows={"columns": [{"table": "records", "column": "id"}]}),
+        source=source,
+        overlay=overlay,
+        **scope,
+    )
+    records = [
+        {"id": i, "parent_id": p, "other_parent_id": p}
+        for i, p in [(1, 1), (2, 1), (3, 2), (4, None)]
+    ]
+    parents = [{"id": 1, "name": "enabled"}, {"id": 2, "name": "disabled"}]
+    data = {"records": records, "parents": parents, "groups": parents}
+    instance = DuckInstance(source, data)
+    try:
+        rows = instance.execute(result.compiled)[1]
+        expected_ids = [1, 2, 3, 4] if lifted else [1, 2]
+        assert [r[0] for r in rows] == expected_ids
+        assert [(r[0],) for r in rows] == instance.execute(base.compiled)[1]
+    finally:
+        instance.con.close()
+    assert result.applied_segments == (() if lifted else ("disabled",))
+
+
+def test_existing_inferred_population_join_is_not_projection_permission():
+    from grepbit.domain.overlay import Segment
+
+    source = schema()
+    source.foreign_keys[0].inferred = True
+    segment = Segment(
+        id="disabled",
+        names=["disabled"],
+        table="parents",
+        filter={
+            "column": {"table": "parents", "column": "name"},
+            "op": "eq",
+            "values": ["disabled"],
+        },
+        note="fixture",
+    )
+    base = compile_wire(
+        wire(rows={"columns": [{"table": "records", "column": "id"}]}),
+        source=source,
+        exclude_segments=[segment],
+    )
+    assert base.lineage.joins[0].endswith(" (inferred)")
+    with pytest.raises(PlanError, match="row_projection_unsupported"):
+        compile_wire(wire(), source=source, exclude_segments=[segment])
+
+
+def test_parent_alias_exactly_63_bytes_is_preserved():
+    source = schema()
+    name = "n" * 55
+    source.tables[1].columns[1].name = name
+    payload = wire()
+    payload["rows"]["columns"][-1]["column"] = name
+    result = compile_wire(payload, source=source)
+    assert result.output_columns[-1] == "parents." + name
+
+
+def test_selfcheck_keeps_separately_supplied_population_predicate():
+    plan = QueryPlan.model_validate(
+        {
+            "base_table": "records",
+            "rows": {"columns": [{"table": "records", "column": "id"}]},
+        }
+    )
+    sql = "SELECT records.id FROM records ORDER BY records.id"
+    population = "SELECT COUNT(*) FROM records WHERE records.id > 2"
+    assert "row_population_changed" in check_compiled(
+        plan,
+        sql,
+        [],
+        "unverified_semantics",
+        schema=schema(),
+        row_population_sql=population,
+    )
+
+
+@pytest.mark.parametrize(
+    "hazard",
+    [
+        "wrong_target",
+        "inherited_parent",
+        "inherited_base",
+        "hidden_table",
+        "hidden_base_key",
+        "self",
+        "two_parents",
+        "multihop",
+        "long_alias",
+    ],
+)
+def test_review_boundaries_refuse_before_execution(hazard):
+    source = schema()
+    payload, overlay = wire(), None
+    if hazard == "wrong_target":
+        source.foreign_keys[0].referenced_column = "name"
+    elif hazard.startswith("inherited"):
+        table = source.tables[0 if hazard.endswith("base") else 1]
+        object.__setattr__(table, "has_inheritance_children", True)
+    elif hazard.startswith("hidden"):
+        policy = (
+            {"table_policies": [{"table": "parents", "visible": False}]}
+            if hazard == "hidden_table"
+            else {
+                "column_policies": [
+                    {
+                        "column": {"table": "records", "column": "parent_id"},
+                        "visible": False,
+                    }
+                ]
+            }
+        )
+        overlay = SemanticOverlay(
+            datasource_id="parent_ruler", revision="hide", **policy
+        )
+    elif hazard == "self":
+        source.foreign_keys[0].referenced_table = "records"
+    elif hazard in {"two_parents", "multihop"}:
+        source.tables.append(source.tables[1].model_copy(update={"name": "groups"}))
+        source.foreign_keys.append(
+            ForeignKey(
+                table="records" if hazard == "two_parents" else "parents",
+                column="other_parent_id" if hazard == "two_parents" else "id",
+                referenced_table="groups",
+                referenced_column="id",
+            )
+        )
+        if hazard == "two_parents":
+            payload["rows"]["columns"].append({"table": "groups", "column": "name"})
+        else:
+            payload["rows"]["columns"][-1]["table"] = "groups"
+    elif hazard == "long_alias":
+        name = "n" * 56
+        source.tables[1].columns[1].name = name
+        payload["rows"]["columns"][-1]["column"] = name
+    with pytest.raises((ValidationError, PlanError)):
+        compile_wire(payload, source=source, overlay=overlay)

@@ -70,6 +70,52 @@ def test_column_kind_maps_postgres_types(data_type: str, kind: ColumnKind) -> No
     assert column_kind(data_type) is kind
 
 
+def test_unrepresentable_fk_keys_are_not_sampled_or_reinferred():
+    connection = _ScriptedConnection()
+    connection.catalog[4] = [
+        ("alerts", "device_id", "devices", "device_id", False),
+        ("devices", "status", "remote_table", "key", False),
+    ]
+    model = introspect_schema(lambda: connection, datasource_id="ds")
+    assert model.foreign_keys == []
+    assert model.table("alerts").foreign_key_columns == ["device_id"]
+    assert model.table("devices").foreign_key_columns == ["status"]
+    assert model.table("alerts").column("device_id").sample_values == []
+    assert model.table("devices").column("status").sample_values == []
+    from grepbit.application.policies import propose_policies
+
+    policies = {p.column.id: p for p in propose_policies(model)}
+    assert not policies["devices.status"].ground
+
+    def containment(*args):
+        pytest.fail("Omitted declared FK must not be reinferred or sampled")
+
+    inferred = infer_foreign_keys(
+        lambda: _ScriptedConnection(), model, containment=containment
+    )
+    assert inferred.foreign_keys == []
+
+
+def test_single_column_non_pk_unique_fk_is_preserved_in_common_graph():
+    connection = _ScriptedConnection()
+    connection.catalog[4] = [("alerts", "device_id", "devices", "status", True)]
+    model = introspect_schema(
+        lambda: connection, datasource_id="ds", enum_distinct_limit=0
+    )
+    assert model.foreign_keys[0].referenced_column == "status"
+    assert model.table("devices").primary_key == ["device_id"]
+
+
+def test_inheritance_catalog_fact_is_retained():
+    connection = _ScriptedConnection()
+    connection.catalog[6] = [("devices",)]
+    model = introspect_schema(
+        lambda: connection, datasource_id="ds", enum_distinct_limit=0
+    )
+    assert model.table("devices").has_inheritance_children
+    assert not model.table("alerts").has_inheritance_children
+
+
 class _Result:
     def __init__(self, rows):
         self._rows = rows
@@ -123,8 +169,9 @@ class _ScriptedConnection:
             [("devices", "Managed devices"), ("alerts", None)],  # table comments
             [("devices", 12), ("alerts", 40)],  # row estimates
             [("devices", "device_id"), ("alerts", "alert_id")],  # primary keys
-            [("alerts", "device_id", "devices", "device_id")],  # foreign keys
+            [("alerts", "device_id", "devices", "device_id", True)],  # foreign keys
             enums,  # enum labels (type metadata)
+            [],  # relations with inheritance descendants
         ]
         self.sampled: list[object] = []
 

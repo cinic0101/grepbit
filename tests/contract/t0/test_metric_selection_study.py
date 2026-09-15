@@ -26,7 +26,11 @@ def test_promoted_schema_and_fixture_preserve_approved_ruler():
     actual.pop("description")
     expected.pop("description")
     assert actual == expected
-    assert FIXTURE["schema"] == ruler_test.SCHEMA.model_dump(mode="json")
+    # Preserve the historical fixture; compare through the current schema's
+    # additive catalog defaults rather than rewriting its recorded JSON.
+    from grepbit.domain.schema_model import SchemaModel
+
+    assert SchemaModel.model_validate(FIXTURE["schema"]) == ruler_test.SCHEMA
     assert FIXTURE["plans"] == ruler_test.PLANS
     assert FIXTURE["instances"] == json.loads(json.dumps(ruler_test.INSTANCES))
     for case in RULER["cases"]:

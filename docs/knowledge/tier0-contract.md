@@ -65,7 +65,8 @@ input errors. The original Web registry and default planner messages are unchang
 the separate `dev_web_rows_datasources.json` enables only synthetic sources.
 
 Explicit rows uses the existing v17 wire plus the measured caller-kind instruction,
-`plan-classify-json-v19-explicit-rows`, without a router or legacy-first fallback.
+`plan-classify-json-v20-parent-rows` after unique-parent acceptance (v19 was the
+base-only delivery), without a router or legacy-first fallback.
 Every invocation gets its own planner. Shared ask checks the planner's final
 proposal, after its wire normalization and any repair turn, but before
 application normalization/compilation: an aggregate/latest proposal fails with
@@ -82,6 +83,42 @@ are unsupported; missing definitions are semantic_gap. These language decisions
 remain fallible; the existing concept gate is unchanged. Reuse all row visibility,
 scope, grounding, ordering, NULL/duplicate, limit and lifecycle rules below.
 References: `../plan/explicit-rows-entry.md`. No automatic routing promotion.
+
+### Unique-parent attributes (owner approved 2026-09-15)
+
+An explicit rows projection may add columns from one direct parent with one
+declared single-column FK targeting that parent's sole PK column. It does not
+allow inferred projection links, self/reverse/multi-hop joins, two projected
+parents, or FK-to-non-PK-UNIQUE projections. Such UNIQUE links remain in the
+common graph for existing aggregate/segment use; this is a rows eligibility rule.
+
+LEFT JOIN preserves one row per base record AFTER existing filters/reviewed
+segments/exclusions and BEFORE LIMIT/truncation. Parent-only projection still
+preserves duplicate parent values. Missing parents yield NULL unless existing
+population restrictions already exclude the base record. The one-parent limit
+does not cap existing population JOINs. Self-check receives population edges
+and the pre-projection predicate from the separately compiled population carrier,
+not an allowlist inferred from the final SQL. Existing inferred population links
+to a proven single PK retain their candidate disclosure; they do not authorize
+new parent projection. All used relations must avoid inheritance expansion.
+
+Parent outputs use a quoted, **flat** `table.column` key; base names are unchanged.
+Aliases over 63 bytes refuse, never truncate. all_columns stays visible base-only;
+base filters/order, row caps, NULLs and duplicate semantics are unchanged. Hidden
+tables/projections/join keys refuse. Parent filtering/order, rows+without and child
+expansion remain unsupported. No new per-datasource permission or default router.
+
+Introspector v3 retains original FK columns separately from representable edges,
+so omitting composite/cross-schema relations does not permit sampling, grounding
+proposals or reinference of those keys. It records inheritance descendants;
+rows on an expanded base/used parent refuse rather than introducing ONLY.
+Metadata/digests change; affected default schema contexts require revalidation.
+The 110 existing Default/fallback contexts on IoT/service stayed byte-identical.
+Fresh schema metadata is assumed; concurrent DDL/stale snapshots are not covered.
+
+Compiler: `plan-compiler-rows-v4-parent-projection`. Evidence and cost limitations:
+`../research/parent-row-projection-01.md`. The earlier base-only pilot below is
+historical where it conflicts with this approved extension.
 
 ## Opt-in base-row listing pilot (2026-09-14)
 

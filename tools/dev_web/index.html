@@ -5,7 +5,7 @@
 <form id="query"><div class="inputs"><label>Test datasource<select id="datasource" required></select></label><label>Reporting time (ISO)<input id="asof" required placeholder="2026-08-15T12:00:00+08:00" autocomplete="off"></label></div>
 <p class="hint">Reporting time is prefilled for the selected fixture. Switching datasource resets it; you can edit it before running.</p>
 <label>Query mode<select id="query-kind"><option value="default">Default (existing planning)</option><option id="rows-mode" value="rows" disabled>Details (individual base records)</option></select></label>
-<p class="hint">Details requires an enabled datasource. It does not infer missing business definitions or support joined details; use Default for counts, totals and without queries.</p>
+<p class="hint">Details requires an enabled datasource. It may attach one eligible direct parent's fields while preserving individual base records. No child expansion or missing business definitions are inferred; use Default for counts, totals and without queries.</p>
 <details id="source-guide"><summary>What can I ask this datasource?</summary><p id="source-summary"></p><p id="source-limitations"></p><div id="example-questions"></div></details>
 <label>Your question<textarea id="question" required maxlength="4000" rows="3" placeholder="For example: How many devices are offline?"></textarea></label>
 <div class="actions"><button id="submit" type="submit">Run query</button><button id="stop" type="button" disabled>Stop</button><span id="progress" role="status" aria-live="polite">Ready</span></div></form>

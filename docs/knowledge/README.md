@@ -19,6 +19,11 @@ Companion reading: `../research/tier0-generalization.md` (every experiment,
 with numbers) and `../history/lessons-from-v1.md`.
 
 Current query-extension integration result:
+[`parent-row-projection-01.md`](../research/parent-row-projection-01.md): explicit
+Details can attach one eligible direct parent's attributes; segment population,
+visibility, catalog/inheritance and flat output boundaries validated. Existing
+Default contexts unchanged on measured sources; extra repair cost remains named.
+
 [`explicit-rows-entry-01.md`](../research/explicit-rows-entry-01.md): explicit
 caller-selected Details accepted through shared ask/MCP/Web; separate opt-in
 synthetic profile, unchanged default planning. Automatic routing remains open;

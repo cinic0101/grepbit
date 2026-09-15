@@ -33,7 +33,15 @@ from grepbit.ports.grounding import GroundingModelError
 PLAN_PROMPT_REVISION = "plan-classify-json-v15"
 ROW_PLAN_PROMPT_REVISION = "plan-classify-json-v17-row-order"
 ROW_PLANNER_STRATEGY_REVISION = "plan-v15-rows-fallback-v1"
-EXPLICIT_ROW_PROMPT_REVISION = "plan-classify-json-v19-explicit-rows"
+EXPLICIT_ROW_PROMPT_REVISION = "plan-classify-json-v20-parent-rows"
+_PARENT_ROW_PROJECTION_RULE = (
+    "Row filters must use the base table. Projection may also include columns "
+    "from one direct parent reached by one declared foreign key to its "
+    "single-column primary key; other joins are unsupported. The server uses "
+    "LEFT JOIN and returns parent fields as flat table.column keys, preserving "
+    "one row per filtered base record, including duplicate parent values and "
+    "NULL for missing parents. all_columns still means base columns only. "
+)
 _EXPLICIT_ROW_INSTRUCTION = (
     "The caller explicitly selected query_kind=rows for this request.\n"
     """This selects only the output kind, not the population or business meaning.
@@ -932,6 +940,11 @@ class ChatCompletionsPlanClient:
                 "independent child-table combination is added by rows."
             )
         if self._query_kind == "rows":
+            rules = rules.replace(
+                "Row projection and filters may only use that base table; "
+                "joined details are unsupported. ",
+                _PARENT_ROW_PROJECTION_RULE,
+            )
             rules += "\n" + _EXPLICIT_ROW_INSTRUCTION
             payload.update(
                 query_kind="rows", prompt_revision=EXPLICIT_ROW_PROMPT_REVISION

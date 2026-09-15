@@ -146,6 +146,11 @@ serving route (`allow_rows`, default false; `../plan/base-row-pilot.md`). It use
 the same ask gates, literal grounding, policy, executor and request ownership.
 The compiler reuses typed population/segment compilation, replaces its aggregate
 projection with visible base columns and performs row-specific selfchecks.
+The approved unique-parent extension can also attach one direct, declared
+single-PK parent's attributes with LEFT JOIN. Existing population joins/predicates
+remain separate provenance; self-check verifies exact joins and unchanged scope.
+Internal schema metadata retains omitted original FK keys and inheritance flags;
+neither becomes model-generated business knowledge. See parent-row-projection-01.
 The research rows wrapper delegates to this compiler; unit conversion and
 independent aggregates remain isolated research constructs. Projected NULLs and
 duplicates survive, PK ordering is stable, and row truncation is still disclosed.

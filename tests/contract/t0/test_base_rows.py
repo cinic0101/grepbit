@@ -251,7 +251,6 @@ def test_all_columns_visibility_and_hidden_pk_fail_closed():
 @pytest.mark.parametrize(
     "extra",
     [
-        {"rows": {"columns": [ref("sites", "site_name")]}},
         {
             "filters": [
                 {"column": ref("sites", "site_name"), "op": "eq", "values": ["site"]}

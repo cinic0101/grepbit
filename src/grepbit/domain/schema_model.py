@@ -28,6 +28,7 @@ class SchemaColumn(DomainModel):
     kind: ColumnKind
     nullable: bool
     comment: str | None = None
+
     sample_values: list[str] = Field(default_factory=list)
     distinct_estimate: int | None = Field(default=None, ge=0)
     # A PostgreSQL enum: kind TEXT, data_type is the type name, sample_values are
@@ -41,6 +42,9 @@ class SchemaTable(DomainModel):
     primary_key: list[str] = Field(default_factory=list)
     row_estimate: int | None = Field(default=None, ge=0)
     comment: str | None = None
+    # Catalog facts; not projected to the planner as business semantics.
+    has_inheritance_children: bool = False
+    foreign_key_columns: list[str] = Field(default_factory=list)
 
     def column(self, name: str) -> SchemaColumn | None:
         return next((item for item in self.columns if item.name == name), None)

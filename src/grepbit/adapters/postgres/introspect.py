@@ -14,8 +14,8 @@ from grepbit.domain.schema_model import (
     SchemaTable,
 )
 
-INTROSPECTOR_REVISION = "postgres-introspect-v2"
-INFERENCE_REVISION = "fk-infer-name-containment-v1"
+INTROSPECTOR_REVISION = "postgres-introspect-v3-relation-scope"
+INFERENCE_REVISION = "fk-infer-name-containment-v2-relation-scope"
 _NUMERIC_TYPES = {
     "smallint",
     "integer",
@@ -118,17 +118,12 @@ def introspect_schema(
             (schema_name,),
         ).fetchall():
             primary_keys.setdefault(table_name, []).append(column_name)
-        foreign_keys = [
-            ForeignKey(
-                table=table_name,
-                column=column_name,
-                referenced_table=referenced_table,
-                referenced_column=referenced_column,
-            )
-            for table_name, column_name, referenced_table, referenced_column in (
-                connection.execute(
-                    """
-                    SELECT cl.relname, att.attname, rcl.relname, ratt.attname
+        raw_foreign_keys = connection.execute(
+            """
+                    SELECT cl.relname, att.attname, rcl.relname, ratt.attname,
+                           cardinality(con.conkey) = 1
+                           AND cardinality(con.confkey) = 1
+                           AND rcl.relnamespace = cl.relnamespace AS representable
                     FROM pg_catalog.pg_constraint AS con
                     JOIN pg_catalog.pg_class AS cl ON cl.oid = con.conrelid
                     JOIN pg_catalog.pg_namespace AS ns ON ns.oid = cl.relnamespace
@@ -142,9 +137,14 @@ def introspect_schema(
                     WHERE ns.nspname = %s AND con.contype = 'f'
                     ORDER BY cl.relname, att.attname
                     """,
-                    (schema_name,),
-                ).fetchall()
-            )
+            (schema_name,),
+        ).fetchall()
+        # Keep original source keys even when the relationship cannot be
+        # represented. They must not become samples or inferred single-key FKs.
+        foreign_keys = [
+            ForeignKey(table=t, column=c, referenced_table=rt, referenced_column=rc)
+            for t, c, rt, rc, representable in raw_foreign_keys
+            if representable
         ]
         # Enum labels are type metadata in pg_catalog, not row values.
         enum_labels: dict[tuple[str, str], list[str]] = {}
@@ -158,11 +158,25 @@ def introspect_schema(
             """
         ).fetchall():
             enum_labels.setdefault((type_schema, type_name), []).append(label)
+        inherited = {
+            name
+            for (name,) in connection.execute(
+                """
+                SELECT cl.relname FROM pg_catalog.pg_class AS cl
+                JOIN pg_catalog.pg_namespace AS ns ON ns.oid = cl.relnamespace
+                WHERE ns.nspname = %s AND EXISTS (
+                    SELECT 1 FROM pg_catalog.pg_inherits AS i
+                    WHERE i.inhparent = cl.oid
+                )
+                """,
+                (schema_name,),
+            ).fetchall()
+        }
         key_columns = {
             (table_name, column)
             for table_name, columns in primary_keys.items()
             for column in columns
-        } | {(fk.table, fk.column) for fk in foreign_keys}
+        } | {(t, c) for t, c, _, _, _ in raw_foreign_keys}
         columns_by_table: dict[str, list[SchemaColumn]] = {}
         for (
             table_name,
@@ -215,6 +229,10 @@ def introspect_schema(
             primary_key=primary_keys.get(name, []),
             row_estimate=row_estimates.get(name),
             comment=table_comments.get(name),
+            has_inheritance_children=name in inherited,
+            foreign_key_columns=sorted(
+                {c for t, c, _, _, _ in raw_foreign_keys if t == name}
+            ),
         )
         for name, columns in columns_by_table.items()
     ]
@@ -270,8 +288,14 @@ def infer_foreign_keys(
     """
 
     check = containment or _containment
-    declared = {(fk.table, fk.column) for fk in schema.foreign_keys}
-    parents = [t for t in schema.tables if len(t.primary_key) == 1]
+    declared = {(fk.table, fk.column) for fk in schema.foreign_keys} | {
+        (t.name, c) for t in schema.tables for c in t.foreign_key_columns
+    }
+    parents = [
+        t
+        for t in schema.tables
+        if len(t.primary_key) == 1 and not t.has_inheritance_children
+    ]
     inferred: list[ForeignKey] = []
     with connection_factory() as connection:
         for table in schema.tables:

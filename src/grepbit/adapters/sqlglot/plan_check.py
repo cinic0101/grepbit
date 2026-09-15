@@ -21,7 +21,7 @@ from sqlglot import exp
 
 from grepbit.domain.models import QueryParameter
 from grepbit.domain.plan import Filter, FilterOp, Operand, QueryPlan
-from grepbit.domain.schema_model import ColumnKind, SchemaModel
+from grepbit.domain.schema_model import ColumnKind, ForeignKey, SchemaModel
 from grepbit.domain.time_literals import bind_time_literal
 
 _PREDICATE_KINDS: dict[FilterOp, type[exp.Expression]] = {
@@ -91,6 +91,96 @@ def _strip(node: exp.Expression) -> exp.Expression:
             return node
 
 
+def _row_joins_match(plan, tree, schema, population_links):
+    """Read exact join edges; population provenance is a separate trusted input."""
+    joins = tree.args.get("joins") or []
+    parents = {r.table for r in plan.rows.columns if r.table != plan.base_table}
+    if schema is None:
+        return not joins and not parents and not population_links
+    base = schema.table(plan.base_table)
+    source = tree.args.get("from_")
+    source = source.this if source else None
+    if (
+        base is None
+        or base.has_inheritance_children
+        or len(parents) > 1
+        or not isinstance(source, exp.Table)
+        or source.name != plan.base_table
+        or source.alias
+        or source.db not in {"", schema.schema_name}
+        or source.catalog
+    ):
+        return False
+    allowed = {f.referenced_table: f for f in population_links}
+    if len(allowed) != len(population_links):
+        return False
+    for f in population_links:
+        target = schema.table(f.referenced_table)
+        if (
+            f not in schema.foreign_keys
+            or (
+                f.inferred
+                and target is not None
+                and target.primary_key != [f.referenced_column]
+            )
+            or target is None
+            or target.has_inheritance_children
+        ):
+            return False
+    for name in parents:
+        parent = schema.table(name)
+        links = [
+            f
+            for f in schema.parent_links(plan.base_table)
+            if f.referenced_table == name
+        ]
+        if (
+            parent is None
+            or parent.has_inheritance_children
+            or len(links) != 1
+            or links[0].inferred
+            or parent.primary_key != [links[0].referenced_column]
+        ):
+            return False
+        if name in allowed and allowed[name] != links[0]:
+            return False
+        allowed[name] = links[0]
+    if len(joins) != len(allowed):
+        return False
+    seen = {plan.base_table}
+    for join in joins:
+        table, on = join.this, join.args.get("on")
+        if (
+            not isinstance(table, exp.Table)
+            or table.alias
+            or table.catalog
+            or table.db not in {"", schema.schema_name}
+            or table.name in seen
+            or table.name not in allowed
+            or join.args.get("side") != "LEFT"
+            or join.args.get("kind")
+            or join.args.get("method")
+            or join.args.get("using")
+            or not isinstance(on, exp.EQ)
+        ):
+            return False
+        link = allowed[table.name]
+        if link.table not in seen:
+            return False
+        operands = [on.this, on.expression]
+        if not all(
+            isinstance(c, exp.Column) and not c.db and not c.catalog for c in operands
+        ):
+            return False
+        if {(c.table, c.name) for c in operands} != {
+            (link.table, link.column),
+            (link.referenced_table, link.referenced_column),
+        }:
+            return False
+        seen.add(table.name)
+    return True
+
+
 def check_compiled(
     plan: QueryPlan,
     sql: str,
@@ -98,6 +188,8 @@ def check_compiled(
     verification: str,
     *,
     schema: SchemaModel | None = None,
+    row_population_joins: Sequence[ForeignKey] = (),
+    row_population_sql: str | None = None,
 ) -> list[str]:
     """Return the invariants the SQL breaks; an empty list means it passed.
 
@@ -112,13 +204,26 @@ def check_compiled(
             violations.append("row_select_required")
         else:
             expected = [(c.table, c.column) for c in plan.rows.columns]
-            actual = [
-                (c.table, c.name) for c in tree.expressions if isinstance(c, exp.Column)
+            columns = [
+                e.this if isinstance(e, exp.Alias) else e for e in tree.expressions
             ]
+            actual = [(c.table, c.name) for c in columns if isinstance(c, exp.Column)]
             if len(actual) != len(tree.expressions) or (
                 not plan.rows.all_columns and actual != expected
             ):
                 violations.append("row_projection_mismatch")
+            if not plan.rows.all_columns and [
+                e.alias_or_name for e in tree.expressions
+            ] != plan.rows.output_names(plan.base_table):
+                violations.append("row_output_name_mismatch")
+            if not _row_joins_match(plan, tree, schema, row_population_joins):
+                violations.append("row_join_mismatch")
+            if row_population_sql is not None:
+                population = sqlglot.parse_one(row_population_sql, read="postgres")
+                # Compare independently supplied pre-projection population, not
+                # an allowlist inferred from the final SQL under examination.
+                if tree.args.get("where") != population.args.get("where"):
+                    violations.append("row_population_changed")
             if (
                 tree.args.get("distinct")
                 or tree.find(exp.Group)

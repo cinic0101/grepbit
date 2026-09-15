@@ -96,6 +96,7 @@ def propose_policies(schema: SchemaModel) -> list[ColumnPolicy]:
     keys = {(fk.table, fk.column) for fk in schema.foreign_keys}
     for table in schema.tables:
         keys.update((table.name, column) for column in table.primary_key)
+        keys.update((table.name, column) for column in table.foreign_key_columns)
     proposals: list[ColumnPolicy] = []
     for table in schema.tables:
         for column in table.columns:

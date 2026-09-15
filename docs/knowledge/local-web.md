@@ -30,8 +30,8 @@ For the explicit **Details (individual base records)** mode, use the separate
 profile stays unchanged and the Details option is disabled there. Default mode
 retains the existing strategy for that profile; only selecting Details sets
 `query_kind=rows`. Switching sources resets the mode to Default. Counts, sums,
-grouped statistics and without queries belong in Default, not Details. Joined
-details remain unsupported; business scopes still require definitions. This is
+grouped statistics and without queries belong in Default, not Details. Only the
+bounded parent-attribute join below is supported; business scopes need definitions. This is
 not automatic routing or a guarantee of intent understanding.
 
 The response's query kind belongs to that completed invocation and is displayed
@@ -42,6 +42,13 @@ details remain private. The page also retains a text-only, page-memory snapshot
 of the submitted question/source/mode/time through rejection, timeout or network
 failure. It is labelled "Submitted", not a tool answer or verified interpretation,
 and does not change when the user edits the next question. No history is persisted.
+
+Details now also accepts one eligible direct parent's attributes. For example,
+on IoT: `列出所有裝置的 device_id 和所在站點的 site_name，按 device_id 排序。`
+Each row still represents a device; `sites.site_name` is a flat output key and
+may repeat. Only a declared link to the parent's single-column PK qualifies.
+Multi-hop/child expansion, parent filters/order and rows+without remain outside
+this entry. Missing business scope is still a refusal, not all records.
 Updating files does not restart an already running launcher.
 
 The page prefills the suggested reporting date when a source is selected;

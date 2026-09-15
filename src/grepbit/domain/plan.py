@@ -297,6 +297,9 @@ class RowProjection(DomainModel):
     columns: list[ColumnRef] = Field(default_factory=list, max_length=32)
     all_columns: bool = False
 
+    def output_names(self, base_table: str) -> list[str]:
+        return [c.column if c.table == base_table else c.id for c in self.columns]
+
     @model_validator(mode="after")
     def one_projection(self):
         if bool(self.columns) == self.all_columns:
@@ -343,8 +346,6 @@ class QueryPlan(DomainModel):
                 raise ValueError("plan_rows_excludes_other_constructs")
             if self.base_table is None:
                 raise ValueError("plan_rows_requires_base_table")
-            if any(c.table != self.base_table for c in self.rows.columns):
-                raise ValueError("plan_rows_projection_requires_base_columns")
             if any(f.column.table != self.base_table for f in self.filters):
                 raise ValueError("plan_rows_filters_require_base_columns")
         if not self.measures and self.latest is None and self.rows is None:
@@ -361,7 +362,10 @@ class QueryPlan(DomainModel):
         if self.latest is not None:
             outputs += [ref.column for ref in self.latest.take]
         if self.rows is not None:
-            outputs += [ref.column for ref in self.rows.columns]
+            row_names = self.rows.output_names(self.base_table)
+            if any(len(name.encode("utf-8")) > 63 for name in row_names):
+                raise ValueError("plan_rows_output_name_too_long")
+            outputs += row_names
         if self.time is not None and self.time.grain is not None:
             outputs.append("period_start")
         if len(outputs) != len(set(outputs)):

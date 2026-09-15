@@ -1,0 +1,98 @@
+{
+  "baseline": "e7986a8",
+  "disposition": "bounded unique-parent projection integrated; no automatic routing",
+  "validation": {
+    "review_ruler": {
+      "failed": 15,
+      "passed": 22
+    },
+    "runtime_focused_passed": 136,
+    "schema_compatibility_passed": 209,
+    "static": "pass",
+    "offline": {
+      "passed": 2286,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "live": {
+    "primary": {
+      "requests": 35,
+      "correct": 20,
+      "appropriate_refusal": 14,
+      "false_refusal": 1,
+      "wrong": 0,
+      "failed": 0,
+      "calls": 45
+    },
+    "repeat": {
+      "requests": 5,
+      "correct": 2,
+      "appropriate_refusal": 2,
+      "false_refusal": 1,
+      "wrong": 0,
+      "failed": 0,
+      "calls": 7
+    },
+    "http_replay": {
+      "requests": 35,
+      "correct": 20,
+      "appropriate_refusal": 14,
+      "false_refusal": 1,
+      "calls": 0
+    },
+    "http_live": {
+      "requests": 6,
+      "correct": 4,
+      "appropriate_refusal": 2,
+      "wrong": 0,
+      "failed": 0,
+      "calls": 9
+    },
+    "physical_calls": 61,
+    "budget": 100,
+    "transport_errors": 0
+  },
+  "compatibility": {
+    "default_fallback_contexts_unchanged": 110,
+    "promoted_candidate_contexts_identical": 35,
+    "metadata_changes": [
+      "has_inheritance_children",
+      "foreign_key_columns"
+    ],
+    "general_context_identity_claim": false
+  },
+  "costs": {
+    "details_repair_cases": 10,
+    "details_requests": 32,
+    "primary_model_seconds_p50": 2.624,
+    "full_e2e_latency": false
+  },
+  "catalog": {
+    "real_postgres_temp_fixture": true,
+    "column_enumeration_temp_seam": true,
+    "inheritance_fanout_witness": 2,
+    "composite_excluded": true,
+    "non_pk_unique_aggregate_preserved": true,
+    "cross_schema_fixture": "mocked only",
+    "persistent_writes": false,
+    "new_roles": false
+  },
+  "non_claims": [
+    "not unseen-user generalization",
+    "not full intent certification",
+    "no owner Web restart or deployment",
+    "no general inherited aggregate safety guarantee",
+    "no concurrent DDL/stale schema guarantee",
+    "copied replay inputs are not model attempts"
+  ],
+  "artifacts": {
+    ".artifacts/parent-rows-impl/main/manifest.json": "6ba529d646d690a866072fff61efdb70ad3eb100ece630ef49b258ada370c803",
+    ".artifacts/parent-rows-impl/remaining/manifest.json": "de26cc795639df885a5946448eafad609ba4c01cada4d96f787e7988a2715774",
+    ".artifacts/parent-rows-impl/repeat/manifest.json": "ba97dc5b386336f98eb0b41c8773a9e158da0d6f25af3afa7ce3587583fb9d69",
+    ".artifacts/parent-rows-impl/catalog-result.json": "0e48a92336bf6c904c5f1de2a7d8919fbc7959be6926b405fa9d77627530c4fa",
+    ".artifacts/parent-rows-impl/serving/http-replay/summary.json": "d6007418c95c1ce9e1e5d1dd849fb66a051fd1dea7d0541798509881215cb6f7",
+    ".artifacts/parent-rows-impl/serving/http-live/summary.json": "0c4a06364a9958e03d5dd5a810145df2b6d100c799a2588f44ef69f234f77ca2",
+    ".artifacts/parent-rows-impl/offline-closeout/result.json": "d058bb035d5759f290c615a29562e099492e07c93d5e9c29e8c6b445734ed553"
+  }
+}

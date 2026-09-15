@@ -1196,12 +1196,14 @@ class PlanCompiler:
         base = self._schema.table(plan.base_table)
         if base is None or not self._visible(base.name):
             raise PlanError("unknown_table", plan.base_table)
-        if not base.primary_key or any(
-            not self._visible(base.name, k) for k in base.primary_key
+        if (
+            base.has_inheritance_children
+            or not base.primary_key
+            or any(not self._visible(base.name, k) for k in base.primary_key)
         ):
             raise PlanError(
                 "row_projection_unsupported",
-                "A visible primary key is required for stable row ordering.",
+                "A visible primary key without inheritance expansion is required.",
             )
         refs = (
             [
@@ -1216,14 +1218,47 @@ class PlanCompiler:
             raise PlanError(
                 "row_projection_unsupported", "Select between 1 and 32 visible columns."
             )
-        for ref in refs:
+        projected_parents = {r.table for r in refs if r.table != base.name}
+        if len(projected_parents) > 1:
+            raise PlanError(
+                "row_projection_unsupported", "Project at most one parent table."
+            )
+        projection_links = []
+        for name in projected_parents:
+            parent = self._schema.table(name)
+            if parent is None or not self._visible(name):
+                raise PlanError("unknown_table", name)
+            links = [
+                f
+                for f in self._schema.parent_links(base.name)
+                if f.referenced_table == name
+            ]
             if (
-                ref.table != base.name
-                or not base.column(ref.column)
-                or not self._visible(base.name, ref.column)
+                len(links) != 1
+                or links[0].inferred
+                or parent.primary_key != [links[0].referenced_column]
+                or parent.has_inheritance_children
+            ):
+                raise PlanError(
+                    "row_projection_unsupported",
+                    "A single declared FK to a non-inherited parent "
+                    "single-column PK is required.",
+                )
+            link = links[0]
+            if not self._visible(link.table, link.column) or not self._visible(
+                name, link.referenced_column
+            ):
+                raise PlanError("unknown_column", "Hidden parent join key.")
+            projection_links.append(link)
+        for ref in refs:
+            table = self._schema.table(ref.table)
+            if (
+                table is None
+                or not table.column(ref.column)
+                or not self._visible(ref.table, ref.column)
             ):
                 raise PlanError("unknown_column", ref.id)
-        outputs = [c.column for c in refs]
+        outputs = RowProjection(columns=refs).output_names(base.name)
         if any(
             not base.column(item.field) or not self._visible(base.name, item.field)
             for item in plan.order
@@ -1247,9 +1282,54 @@ class PlanCompiler:
         tree = sqlglot.parse_one(
             _sqlglot_parameter_syntax(population.compiled.physical_sql), read="postgres"
         )
+        # Population provenance comes from the separately compiled carrier, not
+        # the SQL whose new projection/join is about to be checked.
+        by_id = {f.id: f for f in self._schema.foreign_keys}
+        population_links = [
+            by_id[j.removesuffix(" (inferred)")] for j in population.lineage.joins
+        ]
+        links = list(population_links)
+        for link in projection_links:
+            existing = next(
+                (f for f in links if f.referenced_table == link.referenced_table), None
+            )
+            if existing is not None and existing != link:
+                raise PlanError(
+                    "row_projection_unsupported",
+                    "Projection and population paths disagree.",
+                )
+            if existing is None:
+                tree = tree.join(
+                    exp.table_(link.referenced_table, db=self._schema.schema_name),
+                    on=exp.column(link.column, table=link.table).eq(
+                        exp.column(link.referenced_column, table=link.referenced_table)
+                    ),
+                    join_type="left",
+                )
+                links.append(link)
+        for link in links:
+            parent = self._schema.table(link.referenced_table)
+            if parent.has_inheritance_children or (
+                link.inferred and parent.primary_key != [link.referenced_column]
+            ):
+                raise PlanError(
+                    "row_projection_unsupported",
+                    "Population join uniqueness is unproved.",
+                )
+            if not self._visible(link.table, link.column) or not self._visible(
+                link.referenced_table, link.referenced_column
+            ):
+                raise PlanError("unknown_column", "Hidden population join key.")
         tree.set(
             "expressions",
-            [exp.column(c.column, table=c.table, quoted=True) for c in refs],
+            [
+                exp.column(c.column, table=c.table, quoted=True)
+                if c.table == base.name
+                else exp.alias_(
+                    exp.column(c.column, table=c.table, quoted=True), name, quoted=True
+                )
+                for c, name in zip(refs, outputs, strict=True)
+            ],
         )
         for item in plan.order:
             tree = tree.order_by(
@@ -1278,12 +1358,14 @@ class PlanCompiler:
             update={
                 "physical_sql": tree.sql(dialect="postgres"),
                 "execution_parameters": parameters,
-                "compiler_revision": "plan-compiler-rows-v3-typed-time",
+                "compiler_revision": "plan-compiler-rows-v4-parent-projection",
                 "semantic_refs": sorted(
                     set(population.compiled.semantic_refs)
                     | {c.id for c in refs}
                     | {f"{base.name}.{o.field}" for o in plan.order}
                     | {f"{base.name}.{k}" for k in base.primary_key}
+                    | {f"{f.table}.{f.column}" for f in links}
+                    | {f"{f.referenced_table}.{f.referenced_column}" for f in links}
                 ),
             }
         )
@@ -1294,6 +1376,8 @@ class PlanCompiler:
             parameters,
             "unverified_semantics",
             schema=self._schema,
+            row_population_joins=population_links,
+            row_population_sql=population.compiled.physical_sql,
         )
         if violations:
             raise PlanError("self_check_failed", "; ".join(violations))
@@ -1309,7 +1393,14 @@ class PlanCompiler:
         description = (
             f"Visible row projection: {', '.join(c.id for c in refs)}; "
             "no aggregation or deduplication; NULL values preserved. "
-            f"Row scope: {scope_text}. "
+            + (
+                "Parent attributes use a unique LEFT JOIN; missing parents are NULL. "
+                "Existing filters and reviewed exclusions still determine "
+                "the base population. "
+                if projection_links
+                else ""
+            )
+            + f"Row scope: {scope_text}. "
             f"Order: {order_text or 'primary key'}; "
             f"stable primary-key tie breaker: {', '.join(base.primary_key)}. "
             + (
@@ -1331,7 +1422,13 @@ class PlanCompiler:
             compiled=compiled,
             output_columns=tuple(outputs),
             lineage=replace(
-                population.lineage, measures=(), projection=tuple(c.id for c in refs)
+                population.lineage,
+                measures=(),
+                projection=tuple(c.id for c in refs),
+                tables=(base.name, *(f.referenced_table for f in links)),
+                joins=tuple(
+                    f.id + (" (inferred)" if f.inferred else "") for f in links
+                ),
             ),
             assumptions=assumptions,
             interpretation=description,
