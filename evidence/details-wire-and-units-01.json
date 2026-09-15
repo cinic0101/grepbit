@@ -1,0 +1,106 @@
+{
+  "baseline_commit": "6b38aa0c4e9db0f91bd2d5880507a3bcede34a75",
+  "candidate_revision": "details-schema-only-v21-study",
+  "artifact_root": ".artifacts/details-wire-20260915",
+  "decision": "not_promoted_under_frozen_order_acceptance; no_additional_prompt_arm",
+  "production_changed": false,
+  "construct_freeze": "unchanged",
+  "execution": "shared ask with production request factory, actual model and readonly PostgreSQL; not HTTP/Web transport",
+  "requests": 180,
+  "physical_completion_calls": 180,
+  "physical_completion_cap": 240,
+  "rounds": 2,
+  "cases_per_arm_per_round": 45,
+  "details_cases": 36,
+  "default_controls": 9,
+  "raw_model_repairs": 0,
+  "model_retries": 0,
+  "model_row_fallbacks": 0,
+  "paired_default_requests_exactly_equal": 18,
+  "all_source_pins_equal": true,
+  "live_identity": {
+    "source": "sha256:8eb7de09ba0df0f5167477662bbfafe0cdfd0db05ea7382f1fd4288b2803bc47",
+    "protocol_sha256": "6ceb1b753d15c48692d67752c68538de7f9cb62cd02059921662cb7fee6bfa1f",
+    "run_py_sha256": "5ab9dc545a5614806563117a2c4f3bdd2bc3004d6621b104c9bc12108ac70546",
+    "candidate_py_sha256": "3502154d34424210c75145d7f5063e53fa3d8ab045dfe7dcd7a8c43115cdc2df",
+    "candidate_test_py_sha256": "75c6d236f149579a9b554526f5b9cd7fa5b494953916384bd43a47e4a1cae703"
+  },
+  "same_counts_in_both_rounds_not_pooled": {
+    "historical_details": {
+      "requests": 32,
+      "produced_plans_each_arm": 21,
+      "baseline_variant_cases": 8,
+      "candidate_variant_cases": 1
+    },
+    "recent_details": {
+      "requests": 4,
+      "produced_plans_each_arm": 3,
+      "baseline_variant_cases": 2,
+      "candidate_variant_cases": 0
+    },
+    "default": {
+      "requests": 9,
+      "produced_plans_each_arm": 6,
+      "baseline_variant_cases": 0,
+      "candidate_variant_cases": 0
+    },
+    "baseline_reviewed_outcomes": {
+      "correct_answer": 27,
+      "necessary_refusal": 16,
+      "false_refusal": 1,
+      "confirmed_wrong_population": 1,
+      "frozen_order_mismatch": 0,
+      "operational_failure": 0
+    },
+    "candidate_reviewed_outcomes": {
+      "correct_answer": 26,
+      "necessary_refusal": 16,
+      "false_refusal": 1,
+      "confirmed_wrong_population": 1,
+      "frozen_order_mismatch": 1,
+      "operational_failure": 0
+    }
+  },
+  "raw_schema_departures_equal_variant_counts": true,
+  "normalization_entries_equal_variant_cases": true,
+  "s7_s8_equal_correct_proposals_in_all_arms": true,
+  "s8_false_refusal_stage": "unchanged concept_not_mapped gate",
+  "retained_original_grades": {
+    "baseline_each_round": {"correct_answer": 26, "necessary_refusal": 16, "unnecessary_refusal": 1, "wrong_answer": 2},
+    "candidate_each_round": {"correct_answer": 25, "necessary_refusal": 16, "unnecessary_refusal": 1, "wrong_answer": 3}
+  },
+  "post_live_review": {
+    "recent_I12": "All four arms have exactly matching 15 ordered rows; original oracle used model instead of required flat key devices.model. Corrected only under existing projection contract.",
+    "parent_worklog_status": "Candidate reverses identical complete ids 1..10 in both rounds. Frozen ASC oracle fails; original question specifies the field but not direction. Not classified as a wrong number or explicit-direction violation; no retrospective acceptance relaxation.",
+    "default_cov_leased_fee": "Both arms and rounds sum every device to 3100.00 despite missing lease identity. Fuller recent_I9 still refuses. Baseline semantic omission; causality not established."
+  },
+  "unit_preparation": {
+    "new_research_tests": 16,
+    "focused_total": 65,
+    "public_api_implemented": false,
+    "temperature_delta_test": "representation only; not natural-language detection",
+    "outer_mutation": {
+      "engine": "DuckDB",
+      "original_value": 116,
+      "mutant_value": 78.66666666666666,
+      "both_pass_sql_safety_policy": true,
+      "model_calls": 0,
+      "interpretation": "Requires independent final-expression semantics check; not a production conversion bug"
+    }
+  },
+  "validation": {
+    "private_candidate_boundary": {"passed": true, "tests": 18, "skipped": 0, "artifact": "candidate-tests.xml", "sha256": "5a9bf35f146212064d83f7dfbd3799a467ba3001669b13f764259e8421f068d5"},
+    "static": {"passed": true, "sha256": "7edf94aa513fa595c58f16bfdf70378d44e184857dc72f71a3ecf7bf390699a7"},
+    "offline": {"passed": true, "tests": 2351, "skipped": 0, "sha256": "34489744d6171efbdc0f7cca569285c976382abd147dc25cf61ad2c791dce39a"},
+    "unit_focused": {"passed": true, "tests": 65, "skipped": 0, "sha256": "ab41467265eb4ea3b3d70e1e1655464f810d7757283ae17759e9f5b3436fa9cc"}
+  },
+  "artifact_sha256": {
+    "live/cases.json": "8d60e27abdbbafb3e34baae69a08479e1690504b1126e267264c91187a405586",
+    "live/manifest.json": "e535365d8a6722fa26751b15817d968665ef010de90134334acab9352374d60b",
+    "live/complete.json": "b0942edb3f0180482622e7d463dbd2a5289208947b6cf0ce58130c1c7799edaf",
+    "analysis.json": "4c0f62939766470ef50d270d3d70a0abec0727d8fcee04c5b6e0a2ac43d327af",
+    "unit-outer-mutant.json": "297aca1b0f557ab936dca093098d4f867371386b92f151c882874b3b9990c2a6"
+  },
+  "next_decision": "Unspecified ordering: mandatory ASC default or allowed disclosed direction for complete untruncated listings without ranking, top-N, membership-selecting LIMIT or implied direction; set prospective controls before adoption. No automatic new prompt experiment.",
+  "git_scope": "local commit authorized; no push or deployment"
+}

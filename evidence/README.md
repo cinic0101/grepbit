@@ -1,5 +1,13 @@
 # Evidence
 
+`details-wire-and-units-01.json`: one explicit-Details displayed-schema candidate,
+180/240 native Gemma calls, two fixed paired rounds. Historical Details variants
+8/32 -> 1/32 and recent Details 2/4 -> 0/4 each round, no increase in refusals.
+Not promoted: one unspecified-direction question conflicts with frozen ASC oracle;
+do not call it a wrong number. Baseline short lease wording also omits population.
+S7/S8 equal correct proposals retained; gate unchanged. Sixteen new isolated unit
+controls, 65 focused and 2,351 offline tests/static pass. No production change.
+
 `explicit-rows-entry-01.json`: caller-selected rows accepted in shared ask/MCP/Web.
 24 known cases: 13 correct, ten appropriate refusals, one existing gate false
 refusal; 14 proposals are rows. Four-case repeat, 24 actual HTTP/MCP replays and

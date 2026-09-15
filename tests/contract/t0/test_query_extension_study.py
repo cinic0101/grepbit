@@ -232,6 +232,75 @@ def test_conversion_of_mean_and_inverse():
     ] == pytest.approx((140 / 3 - 32) * 5 / 9)
 
 
+@pytest.mark.parametrize(
+    "source,target,value,expected",
+    [
+        ("fahrenheit", "celsius", 32, 0),
+        ("fahrenheit", "celsius", 212, 100),
+        ("fahrenheit", "celsius", -40, -40),
+        ("minutes", "hours", 90, 1.5),
+        ("hours", "minutes", 1.5, 90),
+        ("minutes", "hours", None, None),
+        ("celsius", "celsius", 17.125, 17.125),
+        ("hours", "hours", 1.125, 1.125),
+    ],
+)
+def test_unit_integration_golden_controls(source, target, value, expected):
+    """Reusable research rulers, not acceptance of a production conversion API."""
+    tables = sample_tables()
+    tables["readings"] = [{"reading_id": 1, "temperature_c": value, "device_id": "d1"}]
+    assert execute(conversion(target), tables, units=binding(source)) == [(expected,)]
+
+
+@pytest.mark.parametrize("aggregate", ["avg", "min", "max"])
+def test_temperature_population_and_unchanged_output_control(aggregate):
+    tables = sample_tables()
+    tables["readings"] = [
+        {"reading_id": 1, "temperature_c": 0, "device_id": "d1"},
+        {"reading_id": 2, "temperature_c": 100, "device_id": "d1"},
+        {"reading_id": 3, "temperature_c": None, "device_id": "d1"},
+        {"reading_id": 4, "temperature_c": 900, "device_id": "d2"},
+    ]
+    query = conversion(aggregate=aggregate)
+    query["plan"]["filters"] = [
+        {"column": ref("readings", "device_id"), "op": "eq", "values": ["d1"]}
+    ]
+    query["plan"]["measures"].append({"aggregate": "count", "alias": "n"})
+    target = {"avg": 122, "min": 32, "max": 212}[aggregate]
+    assert execute(query, tables, units=binding()) == [(target, 3)]
+    query["conversion"] = None
+    original = {"avg": 50, "min": 0, "max": 100}[aggregate]
+    assert execute(query, tables, units=binding()) == [(original, 3)]
+
+
+@pytest.mark.parametrize("aggregate", ["sum", "avg", "min", "max"])
+def test_duration_aggregate_matrix_before_integration(aggregate):
+    tables = sample_tables()
+    tables["readings"] = [
+        {"reading_id": i, "temperature_c": value, "device_id": "d1"}
+        for i, value in enumerate([30, 90, None], 1)
+    ]
+    # Source unit comes from the binding, not the deliberately misleading name.
+    expected = {"sum": 2, "avg": 1, "min": 0.5, "max": 1.5}[aggregate]
+    assert execute(
+        conversion("hours", aggregate), tables, units=binding("minutes")
+    ) == [(expected,)]
+
+
+def test_temperature_difference_is_not_an_absolute_temperature_unit():
+    """Representation boundary only; does not claim NL delta detection works."""
+    from grepbit.domain.query_extension_study import UnitBinding
+
+    for target in ["delta_celsius", "delta_fahrenheit"]:
+        with pytest.raises(ValidationError):
+            parse(conversion(target))
+        with pytest.raises(ValidationError):
+            UnitBinding.model_validate(binding(target)[0])
+    # A temperature value and difference do not share the affine offset.
+    assert (32 - 32) * 5 / 9 == 0
+    assert 32 * 5 / 9 != 0
+
+
 @pytest.mark.parametrize("aggregate", ["sum", "count", "count_distinct"])
 def test_temperature_sum_or_counts_cannot_be_converted(aggregate):
     with pytest.raises(StudyRefusal, match="unit_aggregate_incompatible"):
