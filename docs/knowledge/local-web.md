@@ -36,6 +36,12 @@ not automatic routing or a guarantee of intent understanding.
 
 The response's query kind belongs to that completed invocation and is displayed
 with the question. Source/mode/question/time controls are locked while running.
+HTTP-generated failures echo `query_kind` once the mode has been validated;
+malformed or pre-validation requests do not echo untrusted input. Backend error
+details remain private. The page also retains a text-only, page-memory snapshot
+of the submitted question/source/mode/time through rejection, timeout or network
+failure. It is labelled "Submitted", not a tool answer or verified interpretation,
+and does not change when the user edits the next question. No history is persisted.
 Updating files does not restart an already running launcher.
 
 The page prefills the suggested reporting date when a source is selected;

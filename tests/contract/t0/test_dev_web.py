@@ -165,8 +165,13 @@ def test_sse_framing_preserves_public_result_and_security_headers(registry):
 
 
 @pytest.mark.parametrize("fail", ["timeout", "exception", "invalid"])
-def test_failed_call_is_safe_and_next_request_works(registry, fail):
+@pytest.mark.parametrize("mode", ["default", "rows"])
+def test_failed_call_is_safe_and_next_request_works(registry, fail, mode):
     count = 0
+    config = json.loads(registry.read_text())
+    config["datasources"][0]["allow_rows"] = True
+    registry.write_text(json.dumps(config))
+    query = QUERY | {"query_kind": mode}
 
     async def call(args):
         nonlocal count
@@ -182,10 +187,12 @@ def test_failed_call_is_safe_and_next_request_works(registry, fail):
     async def run():
         app = create_app(registry, ask_call=call, bridge_timeout=0.02)
         async with Client(app) as client:
-            a = await client.post("/query", json=QUERY, headers=HEADERS)
-            b = await client.post("/query", json=QUERY, headers=HEADERS)
+            a = await client.post("/query", json=query, headers=HEADERS)
+            b = await client.post("/query", json=query, headers=HEADERS)
         assert "event: error" in a.text and "PRIVATE" not in a.text
         assert "event: result" not in a.text and "event: result" in b.text
+        failure = json.loads(a.text.strip().split("data: ")[-1])
+        assert failure["query_kind"] == mode
 
     asyncio.run(run())
 
@@ -214,6 +221,7 @@ def test_concurrent_request_rejected_and_cancel_releases_slot(registry):
             await asyncio.wait_for(entered.wait(), 1)
             second = await client.post("/query", json=QUERY, headers=HEADERS)
             assert second.status_code == 429 and count == 1
+            assert second.json()["query_kind"] == "default"
             first.cancel()
             with pytest.raises(asyncio.CancelledError):
                 await first
@@ -258,6 +266,28 @@ def test_sampled_registry_is_refused(registry):
 def test_projection_rejects_non_result_payload():
     with pytest.raises(ValueError):
         public_result({"status": "made_up", "request_id": "r", "rows": []})
+
+
+@pytest.mark.parametrize("question", ["Count records", "", "x" * 4001])
+def test_early_rejection_echoes_only_validated_mode(registry, question):
+    response, calls = run_request(
+        registry, data=QUERY | {"query_kind": "rows", "question": question}
+    )
+    assert not calls
+    assert response.json() == {"error": "row_queries_disabled", "query_kind": "rows"}
+
+
+@pytest.mark.parametrize("mode", ["PRIVATE", None, [], True])
+def test_invalid_mode_is_never_echoed(registry, mode):
+    response, calls = run_request(registry, data=QUERY | {"query_kind": mode})
+    assert not calls and "query_kind" not in response.json()
+    assert "PRIVATE" not in response.text
+
+
+def test_invalid_time_preserves_validated_mode_but_not_input(registry):
+    response, calls = run_request(registry, data=QUERY | {"as_of": "PRIVATE"})
+    assert not calls
+    assert response.json() == {"error": "invalid_request", "query_kind": "default"}
 
 
 @pytest.mark.parametrize("failure", ["die", "startup", "slow"])

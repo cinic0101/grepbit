@@ -10,12 +10,19 @@ reports remain immutable evidence; this board records product disposition.
 | Source-typed time binding | Shared compiler integrated at 8701dfd; actual HTTP/MCP binding replay accepted | Closed for binding scope; initial-plan language errors remain separate |
 | Temporal repair preservation | Shared planner integrated; reviewer effective-bound/identity corrections validated | Narrow boundary corrections closed: compare both original and repaired restrictions; missing child identity is unknown, not changed; broader semantic preservation is not claimed |
 | Base-table details | Explicit query_kind=rows accepted in shared ask/MCP/Web on separately enabled synthetic profile; joint auto-routing remains rejected | Owner use of explicit entry; known Return gate false refusal remains. No joined rows/rows+without or automatic routing claim; see explicit-rows-entry-01 |
+| Unique-parent details | Contract checkpoint: 11 intended failures, 13 controls pass; no compiler/prompt change yet | Confirm parent-row-projection.md, then implement bounded LEFT JOIN projection, schema provenance and join self-check; no new router dependency |
 | Unicode question rendering | Research extension 4/4 original questions, repeated; production planner already literal Unicode | Reuse the successful research input representation in integration, not another encoding study or blanket claim that conversion still fails |
 | Unit conversion | Research compiler/planner feasibility established on bounded cases | Integrate one reviewed SQL conversion path with source/target unit, NULL, value, output and missing-definition controls |
 | Independent aggregates and cross-metric selection | Research feasibility; shared-serving parity incomplete | Reuse common component population/identity foundation; separately test ties, missing second measure, independent windows and fan-out prevention |
 | Scoped name grounding | Shared ask path implemented (name-boundaries-01) | Retain collision/negative-filter safety regressions; A5 recall/selection acceptance remains distinct from ID roundtrip |
 | Gate replacement / intent certification | Existing candidates not accepted as replacements | Keep controls across every capability; investigate only a named failing family with new discriminating evidence, not larger N or more word exceptions |
 | HTTP/MCP consumer lifecycle | Local Web over real MCP exists | Exercise every promoted capability here; preserve request ownership/deadline/public projection; not an external upstream integration |
+
+HTTP-generated failures now echo validated modes; the page retains submission
+context even after failure. Current-runtime static and 2,244 offline tests pass.
+Saved known-entry routing diagnostic (55 historical cases) leaves one wrong answer,
+four false refusals and six operational failures; it is not a measured router or
+new paired live improvement. See `../research/parent-row-checkpoint-01.md`.
 
 ## Acceptance applies to every capability
 

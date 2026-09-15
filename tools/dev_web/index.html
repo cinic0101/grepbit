@@ -9,6 +9,7 @@
 <details id="source-guide"><summary>What can I ask this datasource?</summary><p id="source-summary"></p><p id="source-limitations"></p><div id="example-questions"></div></details>
 <label>Your question<textarea id="question" required maxlength="4000" rows="3" placeholder="For example: How many devices are offline?"></textarea></label>
 <div class="actions"><button id="submit" type="submit">Run query</button><button id="stop" type="button" disabled>Stop</button><span id="progress" role="status" aria-live="polite">Ready</span></div></form>
+<p id="request-context" hidden aria-label="Submitted request"></p>
 <section id="result" hidden aria-label="Query result"><div class="result-head"><h2 id="status"></h2><span id="identity"></span></div><p id="answered-question"></p><p id="verification"></p><h3>Calculation and scope</h3><p id="interpretation"></p><p id="refusal"></p>
 <h3>Assumptions and limitations</h3><ul id="assumptions"></ul><ul id="warnings"></ul><p id="rowmeta"></p><div class="table-wrap"><table id="rows"></table></div>
 <details><summary>Structured evidence and SQL (original tool result)</summary><pre id="evidence"></pre></details></section>

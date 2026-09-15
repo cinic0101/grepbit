@@ -1,0 +1,79 @@
+{
+  "baseline": "8cc6189",
+  "status": "HTTP repair delivered; parent contract pending",
+  "runtime_validation": {
+    "static": "pass",
+    "offline_passed": 2244,
+    "skipped": 0,
+    "http_red": {
+      "failed": 8,
+      "passed": 24
+    },
+    "focused_http_explicit_passed": 55,
+    "dom_simulation_paths_passed": 3,
+    "real_browser": false
+  },
+  "pending_ruler": {
+    "path": "tests/contract/t0/parent_rows_pending.py",
+    "failed": 11,
+    "passed": 13,
+    "skipped": 0,
+    "in_default_discovery": false,
+    "implementation_changed": false
+  },
+  "external_calls": {
+    "model": 0,
+    "database": 0
+  },
+  "owner_web_restarted": false,
+  "artifacts": ".artifacts/parent-rows-20260915/",
+  "routing": {
+    "study": "known-entry-offline-diagnostic-01",
+    "new_model_calls": 0,
+    "selection_rule": "original expected_route rows plus three explicitly listed record declines; otherwise Default",
+    "limitations": [
+      "Different historical runs, not randomized or contemporaneous paired evidence",
+      "No implemented router, no routing accuracy or measured routing latency",
+      "Known author/owner cases, not unseen user generalization",
+      "Original grades reused; original outcome definitions and references unchanged",
+      "Current runtime not replayed here; source/context histories remain separate",
+      "Not a numerical upper bound on future accuracy"
+    ],
+    "sources": {
+      "default_manifest": {
+        "path": ".artifacts/row-integration-20260915/main/manifest.json",
+        "sha256": "6fa0a5554d8745ef9e0154cf906ce598b6f90a6d14f524b3a23d4406ad72bee0"
+      },
+      "default_results": {
+        "path": ".artifacts/row-integration-20260915/main/results.json",
+        "sha256": "aa87211ff3b11395506c45159897f59d6c10910f7886d847bb5728f7718297e9"
+      },
+      "rows_manifest": {
+        "path": ".artifacts/explicit-rows-20260915/main/manifest.json",
+        "sha256": "b56515039ed7c4b4f4b7717b2517cfbfc335940b470d8b9a3b87e6b94d47f7e6"
+      },
+      "rows_results": {
+        "path": ".artifacts/explicit-rows-20260915/main/results.json",
+        "sha256": "22614389b59d3bc1d84c7b5a8a240f89f93c21955a25834f2e39085c4a44e0e0"
+      }
+    },
+    "entries": {
+      "rows": 16,
+      "default": 39
+    },
+    "baseline": {
+      "correct_answer": 27,
+      "wrong_answer": 7,
+      "necessary_refusal": 11,
+      "unnecessary_refusal": 4,
+      "operational_failure": 6
+    },
+    "selected": {
+      "correct_answer": 32,
+      "necessary_refusal": 12,
+      "unnecessary_refusal": 4,
+      "wrong_answer": 1,
+      "operational_failure": 6
+    }
+  }
+}

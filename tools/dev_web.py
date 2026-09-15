@@ -48,8 +48,11 @@ def event(kind, data):
     return f"event: {kind}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
-def error(code, status=400):
-    return JSONResponse({"error": code}, status_code=status, headers=HEADERS)
+def error(code, status=400, *, query_kind=None):
+    payload = {"error": code}
+    if query_kind in ("default", "rows"):
+        payload["query_kind"] = query_kind
+    return JSONResponse(payload, status_code=status, headers=HEADERS)
 
 
 def public_result(payload):
@@ -125,6 +128,7 @@ def create_app(registry_path, *, port=8765, ask_call=None, bridge_timeout=35):
 
     async def query(request: Request):
         nonlocal active
+        kind = None  # Echo only after validating the request's mode.
         if (
             request.headers.get("origin") != origin
             or request.headers.get("x-grepbit-local") != "1"
@@ -155,18 +159,19 @@ def create_app(registry_path, *, port=8765, ask_call=None, bridge_timeout=35):
                 return error("invalid_fields")
             if data["datasource_id"] not in ids:
                 return error("unknown_datasource")
-            kind = data.get("query_kind", "default")
-            if kind not in ("default", "rows"):
+            requested_kind = data.get("query_kind", "default")
+            if requested_kind not in ("default", "rows"):
                 return error("invalid_query_kind")
+            kind = requested_kind
             if kind == "rows" and data["datasource_id"] not in row_ids:
-                return error("row_queries_disabled")
+                return error("row_queries_disabled", query_kind=kind)
             if not data["question"].strip() or len(data["question"]) > 4000:
-                return error("invalid_question")
+                return error("invalid_question", query_kind=kind)
             datetime.fromisoformat(data["as_of"])
         except (ValueError, UnicodeError, TimeoutError):
-            return error("invalid_request")
+            return error("invalid_request", query_kind=kind)
         if active is not None:
-            return error("query_busy", 429)
+            return error("query_busy", 429, query_kind=kind)
         token = active = object()
 
         async def stream():
@@ -181,9 +186,11 @@ def create_app(registry_path, *, port=8765, ask_call=None, bridge_timeout=35):
                             yield event("progress", {"state": "waiting"})
                     yield event("result", public_result(task.result()))
             except TimeoutError:
-                yield event("error", {"code": "bridge_timeout"})
+                yield event("error", {"code": "bridge_timeout", "query_kind": kind})
             except Exception:
-                yield event("error", {"code": "backend_unavailable"})
+                yield event(
+                    "error", {"code": "backend_unavailable", "query_kind": kind}
+                )
             finally:
                 if task is not None:
                     task.cancel()

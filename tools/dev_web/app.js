@@ -41,10 +41,14 @@ $("query").addEventListener("submit", async e => {
   for (const id of ["datasource", "question", "asof", "query-kind"]) $(id).disabled = true;
   $("result").hidden = true; toolResult = null; $("evidence").textContent = "";
   $("rows").replaceChildren(); $("progress").textContent = "Sending…";
+  const submitted = Object.freeze({datasource_id:$("datasource").value,question:$("question").value,as_of:$("asof").value,query_kind:$("query-kind").value});
+  // Local submission context, not a tool answer or server-validated intent.
+  $("request-context").textContent = `Submitted: ${submitted.question} · Datasource: ${submitted.datasource_id} · Mode: ${submitted.query_kind} · Reporting time: ${submitted.as_of}`;
+  $("request-context").hidden = false;
   let terminal = false;
   try {
     const response = await fetch("/query", {method:"POST", headers:{"Content-Type":"application/json","X-Grepbit-Local":"1"}, signal:controller.signal,
-      body:JSON.stringify({datasource_id:$("datasource").value,question:$("question").value,as_of:$("asof").value,query_kind:$("query-kind").value})});
+      body:JSON.stringify(submitted)});
     if (!response.ok) { const data = await response.json(); throw new Error(data.error || "request_failed"); }
     const reader = response.body.getReader(), decoder = new TextDecoder(); let buffer = "";
     while (true) {

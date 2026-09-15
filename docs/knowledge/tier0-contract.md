@@ -57,7 +57,8 @@ approved semantic correction. Tests and evidence: `../plan/typed-time-boundary.m
 
 MCP/Web `ask` accepts optional `query_kind: "default" | "rows"`, defaulting to
 the existing per-datasource strategy. The response echoes the invocation's kind,
-including failures; it is request metadata, not a semantic verification level.
+including failures after mode validation; errors before validation do not echo
+untrusted modes. It is request metadata, not a semantic verification level.
 `allow_rows` remains a separate operator permission. A disabled source returns
 unsupported/row_queries_disabled before binding or planning. Invalid kinds are
 input errors. The original Web registry and default planner messages are unchanged;
@@ -65,11 +66,14 @@ the separate `dev_web_rows_datasources.json` enables only synthetic sources.
 
 Explicit rows uses the existing v17 wire plus the measured caller-kind instruction,
 `plan-classify-json-v19-explicit-rows`, without a router or legacy-first fallback.
-Every invocation gets its own planner. Shared ask enforces a rows plan before
-normalization/compilation: an aggregate/latest proposal fails with
+Every invocation gets its own planner. Shared ask checks the planner's final
+proposal, after its wire normalization and any repair turn, but before
+application normalization/compilation: an aggregate/latest proposal fails with
 request_query_kind_mismatch, not a necessary refusal. Permission and kind checks
 are not delegated to the model. Direct application callers configure the planner
 for the same requested kind; the serving factory does this per request.
+This is not draft-intent protection: an invalid aggregate draft may be repaired
+into rows; only the final proposal is subject to this kind guard.
 
 The question still determines population, columns and conditions. Explicit rows
 does not authorize dropping a count/sum request, a lease scope, or a without
