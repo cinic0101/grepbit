@@ -121,7 +121,16 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-15: guard reviewer corrections committed at `6942416`, 2,210
+Current 2026-09-15: explicit details request integrated after bounded acceptance.
+24 known cases: 13 correct, ten appropriate refusals, one existing gate false
+refusal; all 14 proposed plans are rows. Four-case repeat, 24 HTTP/MCP exact-output
+replays and nine fresh HTTP/MCP requests; 39 actual Gemma calls total. Static and
+2,233 offline pass. Separate opt-in synthetic Web profile; original profile and
+default planner unchanged. Next: owner use and independent unit-conversion
+integration; auto-routing and gate replacement remain open, not prerequisites
+for every capability. See `../research/explicit-rows-entry-01.md`.
+
+Previous 2026-09-15: guard reviewer corrections committed at `6942416`, 2,210
 offline tests/static pass. Joint row integration then measured on that fixed
 runtime: 55 paired cases, six paired repeats, 143/180 actual Gemma calls.
 Correct answers improve 27 to 34, but two new missing-definition wrong answers

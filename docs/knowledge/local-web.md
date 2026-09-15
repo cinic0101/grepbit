@@ -25,6 +25,19 @@ Ctrl-C. The explicit confirmation is an operator scope assertion, not automatic
 classification or sanitization of an arbitrary database. The supplied profile
 contains only existing fictional Service/IoT sources and samples zero values.
 
+For the explicit **Details (individual base records)** mode, use the separate
+`--registry evals/fixtures/dev_web_rows_datasources.json` profile. The original
+profile stays unchanged and the Details option is disabled there. Default mode
+retains the existing strategy for that profile; only selecting Details sets
+`query_kind=rows`. Switching sources resets the mode to Default. Counts, sums,
+grouped statistics and without queries belong in Default, not Details. Joined
+details remain unsupported; business scopes still require definitions. This is
+not automatic routing or a guarantee of intent understanding.
+
+The response's query kind belongs to that completed invocation and is displayed
+with the question. Source/mode/question/time controls are locked while running.
+Updating files does not restart an already running launcher.
+
 The page prefills the suggested reporting date when a source is selected;
 switching sources resets it, and you can edit it before submitting. The fixture
 guide lists available data, limitations and example buttons (fill only, never

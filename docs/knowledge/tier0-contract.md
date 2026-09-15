@@ -53,6 +53,32 @@ execution parameters/assumptions and new typed refusal reasons reflect this
 approved semantic correction. Tests and evidence: `../plan/typed-time-boundary.md`,
 `../research/typed-time-boundary-01.md`.
 
+## Explicit details request (2026-09-15)
+
+MCP/Web `ask` accepts optional `query_kind: "default" | "rows"`, defaulting to
+the existing per-datasource strategy. The response echoes the invocation's kind,
+including failures; it is request metadata, not a semantic verification level.
+`allow_rows` remains a separate operator permission. A disabled source returns
+unsupported/row_queries_disabled before binding or planning. Invalid kinds are
+input errors. The original Web registry and default planner messages are unchanged;
+the separate `dev_web_rows_datasources.json` enables only synthetic sources.
+
+Explicit rows uses the existing v17 wire plus the measured caller-kind instruction,
+`plan-classify-json-v19-explicit-rows`, without a router or legacy-first fallback.
+Every invocation gets its own planner. Shared ask enforces a rows plan before
+normalization/compilation: an aggregate/latest proposal fails with
+request_query_kind_mismatch, not a necessary refusal. Permission and kind checks
+are not delegated to the model. Direct application callers configure the planner
+for the same requested kind; the serving factory does this per request.
+
+The question still determines population, columns and conditions. Explicit rows
+does not authorize dropping a count/sum request, a lease scope, or a without
+condition. Mode conflict is an ambiguous proposal; unrepresentable rows combos
+are unsupported; missing definitions are semantic_gap. These language decisions
+remain fallible; the existing concept gate is unchanged. Reuse all row visibility,
+scope, grounding, ordering, NULL/duplicate, limit and lifecycle rules below.
+References: `../plan/explicit-rows-entry.md`. No automatic routing promotion.
+
 ## Opt-in base-row listing pilot (2026-09-14)
 
 Scope/rulers: `../plan/base-row-pilot.md`. `DatasourceRegistration.allow_rows`

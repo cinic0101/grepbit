@@ -228,7 +228,10 @@ def test_only_named_assets_no_registry_environment_or_debug(registry):
     async def run():
         app = create_app(registry, ask_call=lambda args: None)
         async with Client(app) as client:
-            assert (await client.get("/config")).json() == {"datasources": ["fixture"]}
+            assert (await client.get("/config")).json() == {
+                "datasources": ["fixture"],
+                "row_datasources": [],
+            }
             for path in ("/.env", "/registry.json", "/tools/dev_web.py"):
                 assert (await client.get(path)).status_code == 404
             page = await client.get("/")

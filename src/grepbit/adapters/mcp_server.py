@@ -24,7 +24,7 @@ from dataclasses import dataclass, field, replace
 from datetime import datetime
 from pathlib import Path
 from threading import Lock
-from typing import Any
+from typing import Any, Literal
 from zoneinfo import ZoneInfo
 
 from grepbit.adapters.datasource_registry import load_registry, overlay_path
@@ -101,7 +101,7 @@ class BoundDatasource:
     services: AskServices
     business_timezone: str
     value_index_skipped: list[str] = field(default_factory=list)
-    request_factory: Callable[[RequestControl], AskServices] | None = None
+    request_factory: Callable[..., AskServices] | None = None
 
 
 def bind_datasource(
@@ -146,6 +146,7 @@ def bind_datasource(
         return request_connection(dsn)
 
     services = AskServices(
+        allow_rows=registration.allow_rows,
         schema=schema,
         planner=ChatCompletionsPlanClient(settings, allow_rows=registration.allow_rows),
         compiler=PlanCompiler(
@@ -167,14 +168,19 @@ def bind_datasource(
         value_index=index,
     )
 
-    def request_services(request: RequestControl) -> AskServices:
+    def request_services(
+        request: RequestControl, *, query_kind: str = "default"
+    ) -> AskServices:
         def request_connect():
             return request_connection(dsn, request)
 
         return replace(
             services,
             planner=ChatCompletionsPlanClient(
-                settings, control=request, allow_rows=registration.allow_rows
+                settings,
+                control=request,
+                allow_rows=registration.allow_rows,
+                query_kind=query_kind,
             ),
             executor=PsycopgQueryExecutor(
                 connection_factory=request_connect,
@@ -213,6 +219,9 @@ def capabilities_payload(bound: dict[str, BoundDatasource]) -> dict[str, Any]:
                 "description": ds.registration.description,
                 "business_timezone": ds.business_timezone,
                 "row_queries": ds.registration.allow_rows,
+                "request_query_kinds": ["default", "rows"]
+                if ds.registration.allow_rows
+                else ["default"],
                 "tables": [
                     {
                         "name": t.name,
@@ -274,6 +283,7 @@ def capabilities_payload(bound: dict[str, BoundDatasource]) -> dict[str, Any]:
 
 PUBLIC_RESULT_FIELDS = (
     "question",
+    "query_kind",
     "status",
     "reason",
     "clarification",
@@ -429,7 +439,10 @@ def build_server(registry_path: Path, environ=os.environ, *, lazy: bool = True):
         ),
     )
     async def ask_tool(
-        datasource_id: str, question: str, as_of: str | None = None
+        datasource_id: str,
+        question: str,
+        as_of: str | None = None,
+        query_kind: Literal["default", "rows"] = "default",
     ) -> dict[str, Any]:
         # Invalid tool input stays an input error, not an operational failure.
         if registry.get(datasource_id) is None:
@@ -440,25 +453,41 @@ def build_server(registry_path: Path, environ=os.environ, *, lazy: bool = True):
             raise ValueError("invalid_as_of") from None
 
         def work(control):
+            if query_kind == "rows" and not registry.get(datasource_id).allow_rows:
+                return result_payload(
+                    AskResult(
+                        question=question,
+                        status="unsupported",
+                        reason="row_queries_disabled",
+                        query_kind=query_kind,
+                    ),
+                    max_rows=200,
+                )
             ds = get(datasource_id, control)
             zone = ZoneInfo(ds.business_timezone)
             moment = parsed or datetime.now(zone)
             if moment.tzinfo is None:
                 moment = moment.replace(tzinfo=zone)
             services = (
-                ds.request_factory(control) if ds.request_factory else ds.services
+                ds.request_factory(control, query_kind=query_kind)
+                if ds.request_factory and query_kind != "default"
+                else ds.request_factory(control)
+                if ds.request_factory
+                else ds.services
             )
             result = ask(
                 question,
                 services,
-                AskSettings(as_of=moment),
+                AskSettings(as_of=moment, query_kind=query_kind),
                 run_id=control.run_id,
                 control=control,
             )
             control.check()
             return result_payload(result, max_rows=200)
 
-        return await run_request(question, work, timeout_seconds=timeout)
+        payload = await run_request(question, work, timeout_seconds=timeout)
+        payload["query_kind"] = query_kind
+        return payload
 
     return server
 

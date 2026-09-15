@@ -92,6 +92,7 @@ def create_app(registry_path, *, port=8765, ask_call=None, bridge_timeout=35):
     if any(r.enum_distinct_limit != 0 for r in registry.datasources):
         raise ValueError("sampling_must_be_zero")
     ids = {r.id for r in registry.datasources}
+    row_ids = {r.id for r in registry.datasources if r.allow_rows}
     authority = f"127.0.0.1:{port}"
     origin = f"http://{authority}"
     active = None
@@ -139,16 +140,26 @@ def create_app(registry_path, *, port=8765, ask_call=None, bridge_timeout=35):
                     if len(body) > 16384:
                         return error("body_too_large", 413)
             data = json.loads(body)
-            if not isinstance(data, dict) or set(data) != {
+            required = {
                 "datasource_id",
                 "question",
                 "as_of",
-            }:
+            }
+            if (
+                not isinstance(data, dict)
+                or not required <= set(data)
+                or set(data) - required - {"query_kind"}
+            ):
                 return error("invalid_fields")
             if not all(isinstance(v, str) for v in data.values()):
                 return error("invalid_fields")
             if data["datasource_id"] not in ids:
                 return error("unknown_datasource")
+            kind = data.get("query_kind", "default")
+            if kind not in ("default", "rows"):
+                return error("invalid_query_kind")
+            if kind == "rows" and data["datasource_id"] not in row_ids:
+                return error("row_queries_disabled")
             if not data["question"].strip() or len(data["question"]) > 4000:
                 return error("invalid_question")
             datetime.fromisoformat(data["as_of"])
@@ -189,7 +200,10 @@ def create_app(registry_path, *, port=8765, ask_call=None, bridge_timeout=35):
         )
 
     async def config(request):
-        return JSONResponse({"datasources": sorted(ids)}, headers=HEADERS)
+        return JSONResponse(
+            {"datasources": sorted(ids), "row_datasources": sorted(row_ids)},
+            headers=HEADERS,
+        )
 
     async def asset(request):
         name, mime = {

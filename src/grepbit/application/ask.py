@@ -16,7 +16,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from grepbit.application.grounding import Resolution, ValueIndex, resolve_plan_literals
 from grepbit.application.literals import (
@@ -73,6 +73,11 @@ class AskSettings:
     shape_gate: bool = True
     literal_check: bool = True
     grounding: bool = True
+    query_kind: Literal["default", "rows"] = "default"
+
+    def __post_init__(self):
+        if self.query_kind not in ("default", "rows"):
+            raise ValueError("invalid_query_kind")
 
 
 @dataclass
@@ -89,6 +94,7 @@ class AskServices:
     overlay: SemanticOverlay | None = None
     shape_pack: ShapePack | None = None
     value_index: ValueIndex | None = None
+    allow_rows: bool = False
 
 
 @dataclass
@@ -133,6 +139,7 @@ class AskResult:
     model_repair_turns: int = 0
     model_row_fallbacks: int = 0
     elapsed_seconds: float = 0.0
+    query_kind: str = "default"
 
     @property
     def refused(self) -> bool:
@@ -203,7 +210,9 @@ def ask(
     control: RequestControl | None = None,
 ) -> AskResult:
     started = time.monotonic()
-    result = AskResult(question=question, status="not_run")
+    result = AskResult(
+        question=question, status="not_run", query_kind=settings.query_kind
+    )
     overlay, index = (
         services.overlay,
         services.value_index if settings.grounding else None,
@@ -223,7 +232,12 @@ def ask(
         if control:
             control.check()
     except RequestStopped as error:
-        result = AskResult(question=question, status="failed", reason=error.reason)
+        result = AskResult(
+            question=question,
+            status="failed",
+            reason=error.reason,
+            query_kind=settings.query_kind,
+        )
     finally:
         result.elapsed_seconds = round(time.monotonic() - started, 3)
     return result
@@ -247,6 +261,9 @@ def _ask(
             control.check()
 
     check()
+    if settings.query_kind == "rows" and not services.allow_rows:
+        result.status, result.reason = "unsupported", "row_queries_disabled"
+        return
     if services.unsafe(question):
         result.status, result.reason = "unsafe", "unsafe_language"
         return
@@ -296,6 +313,9 @@ def _ask(
         result.reason, result.clarification = proposal.reason, proposal.clarification
         return
     assert proposal.plan is not None
+    if settings.query_kind == "rows" and proposal.plan.rows is None:
+        result.status, result.reason = "failed", "request_query_kind_mismatch"
+        return
     plan, base_repair = repair_base_table(proposal.plan, services.schema, overlay)
     result.plan, result.base_repair = plan, base_repair
     if pack is not None:

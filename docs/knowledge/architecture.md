@@ -150,6 +150,13 @@ The research rows wrapper delegates to this compiler; unit conversion and
 independent aggregates remain isolated research constructs. Projected NULLs and
 duplicates survive, PK ordering is stable, and row truncation is still disclosed.
 
+MCP/Web can additionally set `query_kind=rows` for one request. The serving
+factory creates a fresh explicit-mode planner and matching AskSettings; shared
+ask checks source permission and requires a rows plan before compilation.
+Omission/default keeps the existing strategy. No separate router, planner state
+mutation on a shared object, or execution bypass. See `explicit-rows-entry-01.md`
+in research for acceptance and the intentionally separate synthetic Web profile.
+
 `application/ask.py` is the per-question pipeline as one function over
 ports (`ports/ask.py`): gates, planner with one transport retry, shape and
 base repairs, compile and policy, literal check with grounding, segment

@@ -14,7 +14,7 @@ function render(payload) {
   $("result").hidden = false;
   $("status").textContent = ({answered:"Query complete",failed:"Execution failed",clarify:"Clarification needed",semantic_gap:"Missing business definition",unsupported:"Not supported",unsafe:"Safety restriction"})[payload.status] || payload.status;
   $("identity").textContent = payload.request_id;
-  $("answered-question").textContent = payload.question || "";
+  $("answered-question").textContent = `${payload.question || ""} · Mode: ${payload.query_kind || "default"}`;
   const meanings = {verified:"Metric definitions were reviewed; this does not certify the user's intent.",partially_verified:"Some definitions were reviewed; additional question scope is not fully verified.",unverified_semantics:"Calculated from schema and column meanings, without reviewed business semantics."};
   $("verification").textContent = payload.verification ? `${payload.verification} · ${meanings[payload.verification] || ""}` : "No verification level was provided for this result.";
   $("interpretation").textContent = payload.interpretation || "No calculation interpretation was produced.";
@@ -30,7 +30,7 @@ function render(payload) {
   $("rows").replaceChildren(head, ...body);
   $("evidence").textContent = JSON.stringify(toolResult, null, 2);
 }
-function idle() { $("submit").disabled = false; $("stop").disabled = true; controller = null; for (const id of ["datasource", "question", "asof"]) $(id).disabled = false; }
+function idle() { $("submit").disabled = false; $("stop").disabled = true; controller = null; for (const id of ["datasource", "question", "asof", "query-kind"]) $(id).disabled = false; }
 $("stop").addEventListener("click", () => {
   generation++; controller?.abort(); idle(); $("progress").textContent = "Stopped. Remote model work may not stop immediately.";
 });
@@ -38,13 +38,13 @@ $("query").addEventListener("submit", async e => {
   e.preventDefault(); if (controller) return;
   const current = ++generation; controller = new AbortController();
   $("submit").disabled = true; $("stop").disabled = false;
-  for (const id of ["datasource", "question", "asof"]) $(id).disabled = true;
+  for (const id of ["datasource", "question", "asof", "query-kind"]) $(id).disabled = true;
   $("result").hidden = true; toolResult = null; $("evidence").textContent = "";
   $("rows").replaceChildren(); $("progress").textContent = "Sending…";
   let terminal = false;
   try {
     const response = await fetch("/query", {method:"POST", headers:{"Content-Type":"application/json","X-Grepbit-Local":"1"}, signal:controller.signal,
-      body:JSON.stringify({datasource_id:$("datasource").value,question:$("question").value,as_of:$("asof").value})});
+      body:JSON.stringify({datasource_id:$("datasource").value,question:$("question").value,as_of:$("asof").value,query_kind:$("query-kind").value})});
     if (!response.ok) { const data = await response.json(); throw new Error(data.error || "request_failed"); }
     const reader = response.body.getReader(), decoder = new TextDecoder(); let buffer = "";
     while (true) {
@@ -71,7 +71,10 @@ $("query").addEventListener("submit", async e => {
   } finally { if (current === generation) idle(); }
 });
 let examples = {};
+let rowDatasources = [];
 function selectDatasource() {
+  $("query-kind").value = "default";
+  $("rows-mode").disabled = !rowDatasources.includes($("datasource").value);
   const guide = Object.hasOwn(examples, $("datasource").value) ? examples[$("datasource").value] : null;
   $("asof").value = guide?.as_of || "";
   $("source-summary").textContent = guide?.summary || "No fixture guide is available. Enter an explicit reporting time.";
@@ -88,6 +91,7 @@ async function readConfig(path) {
 }
 Promise.all([readConfig("/config"), readConfig("/examples.json")]).then(([config, guides]) => {
   examples = guides;
+  rowDatasources = config.row_datasources || [];
   for (const id of config.datasources) { const option = document.createElement("option"); option.value = id; option.textContent = id; $("datasource").append(option); }
   $("datasource").value = config.datasources[0] || "";
   selectDatasource();

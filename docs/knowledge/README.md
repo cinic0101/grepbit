@@ -19,6 +19,11 @@ Companion reading: `../research/tier0-generalization.md` (every experiment,
 with numbers) and `../history/lessons-from-v1.md`.
 
 Current query-extension integration result:
+[`explicit-rows-entry-01.md`](../research/explicit-rows-entry-01.md): explicit
+caller-selected Details accepted through shared ask/MCP/Web; separate opt-in
+synthetic profile, unchanged default planning. Automatic routing remains open;
+one known concept-gate false refusal persists. Earlier records below are history.
+
 [`base-row-pilot-01.md`](../research/base-row-pilot-01.md): shared row compiler
 available only by opt-in; automatic planner selection is not ready for Web
 promotion. Conversion and independent aggregates remain research-only.

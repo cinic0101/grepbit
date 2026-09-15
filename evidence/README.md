@@ -1,5 +1,11 @@
 # Evidence
 
+`explicit-rows-entry-01.json`: caller-selected rows accepted in shared ask/MCP/Web.
+24 known cases: 13 correct, ten appropriate refusals, one existing gate false
+refusal; 14 proposals are rows. Four-case repeat, 24 actual HTTP/MCP replays and
+nine fresh HTTP/MCP requests, 39/100 actual Gemma calls. Static/2,233 offline pass.
+Separate opt-in synthetic profile; no automatic routing or default-profile change.
+
 `temporal-repair-review-01.json`: effective original/repaired bounds and unknown
 child identity corrected in shared runtime at 6942416. Nineteen new controls;
 static and 2,210 offline tests pass. No new model/DB call for the correction.

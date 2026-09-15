@@ -33,6 +33,21 @@ from grepbit.ports.grounding import GroundingModelError
 PLAN_PROMPT_REVISION = "plan-classify-json-v15"
 ROW_PLAN_PROMPT_REVISION = "plan-classify-json-v17-row-order"
 ROW_PLANNER_STRATEGY_REVISION = "plan-v15-rows-fallback-v1"
+EXPLICIT_ROW_PROMPT_REVISION = "plan-classify-json-v19-explicit-rows"
+_EXPLICIT_ROW_INSTRUCTION = (
+    "The caller explicitly selected query_kind=rows for this request.\n"
+    """This selects only the output kind, not the population or business meaning.
+Return an individual-record plan.rows or decline; never an aggregate/latest plan.
+Do not reinterpret a requested count, sum, average or grouped statistic as raw
+records to satisfy the mode. If the question needs such a computation, decline
+ambiguous and explain that default mode is needed. If the requested record
+population requires without or joined projections not expressible by rows,
+decline unsupported; do not omit the condition. Required populations, conditions
+and quantities still need support in the supplied schema or reviewed definitions.
+If any required business definition is missing, decline semantic_gap rather than
+substituting a related column or broader population. Ordinary explicit columns
+and supported filters do not require extra business definitions."""
+)
 
 _RULES_ALL = (
     "You translate one analytics question into ONE aggregate query plan over the "
@@ -821,10 +836,16 @@ class ChatCompletionsPlanClient:
         client: Any | None = None,
         control: RequestControl | None = None,
         allow_rows: bool = False,
+        query_kind: str = "default",
     ) -> None:
+        if query_kind not in ("default", "rows"):
+            raise ValueError("invalid_query_kind")
+        if query_kind == "rows" and not allow_rows:
+            raise ValueError("row_queries_disabled")
         self._settings = settings
         self._control = control
         self._allow_rows = allow_rows
+        self._query_kind = query_kind
         self._transport = ChatCompletionsGroundingClient(settings, client=client)
 
     @property
@@ -910,6 +931,11 @@ class ChatCompletionsPlanClient:
                 "avoid computing a requested count/sum. No unit conversion or "
                 "independent child-table combination is added by rows."
             )
+        if self._query_kind == "rows":
+            rules += "\n" + _EXPLICIT_ROW_INSTRUCTION
+            payload.update(
+                query_kind="rows", prompt_revision=EXPLICIT_ROW_PROMPT_REVISION
+            )
         return [
             {"role": "system", "content": rules},
             {
@@ -943,7 +969,7 @@ class ChatCompletionsPlanClient:
         with manager:
             self.last_row_fallbacks = 0
             prior = None
-            if self._allow_rows:
+            if self._allow_rows and self._query_kind != "rows":
                 # Preserve the legacy proposal before considering a new kind.
                 # Both clients use this invocation's transport and deadline.
                 baseline = ChatCompletionsPlanClient(
