@@ -1,0 +1,971 @@
+{
+  "baseline": "e08af91",
+  "date": "2026-09-15",
+  "decision": "research_candidate_only_prioritize_precision_loss_no_runtime_promotion",
+  "budget": {
+    "actual_calls": 97,
+    "limit": 120
+  },
+  "phases": {
+    "main": {
+      "results": {
+        "path": ".artifacts/without-capability-20260915/main/results.json",
+        "sha256": "f8d25b36add3fb2de6e79eb7c2abe5a5a462ed764bb8126dbed963eaaa300c2b"
+      },
+      "manifest": {
+        "path": ".artifacts/without-capability-20260915/main/manifest.json",
+        "sha256": "6ee84e8e7c6c5202e16031abbd78ccd778f5b81749d0e4318e8fe1a5383a8d60"
+      },
+      "trace": {
+        "path": ".artifacts/without-capability-20260915/main/calls.json",
+        "sha256": "fc6417101a3c125d917b01eb762254c1a122e7452d533ad907660d7c7c6306be"
+      },
+      "summary": {
+        "composition": {
+          "capability": {
+            "correct_answer": 17,
+            "operational_failure": 1,
+            "necessary_refusal": 6
+          },
+          "date": {
+            "correct_answer": 2,
+            "wrong_answer": 1
+          }
+        },
+        "joint": {
+          "capability": {
+            "unnecessary_refusal": 2,
+            "correct_answer": 15,
+            "necessary_refusal": 6,
+            "wrong_answer": 1
+          },
+          "date": {
+            "correct_answer": 2,
+            "wrong_answer": 1
+          }
+        },
+        "legacy": {
+          "capability": {
+            "correct_answer": 14,
+            "unnecessary_refusal": 3,
+            "necessary_refusal": 5,
+            "wrong_answer": 2
+          },
+          "date": {
+            "wrong_answer": 2,
+            "correct_answer": 1
+          }
+        }
+      },
+      "actual_calls": 88,
+      "per_case": [
+        {
+          "case_id": "svc_absent_sum_zh",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_sum_zh",
+          "arm": "joint",
+          "status": "unsupported",
+          "reason": "unsupported",
+          "outcome": "unnecessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_sum_zh",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_sum_en",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_sum_en",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_sum_en",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_sum_ja",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_sum_ja",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_sum_ja",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 2
+        },
+        {
+          "case_id": "svc_absent_feb_zh",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_feb_zh",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_feb_zh",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_feb_en",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_feb_en",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_feb_en",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_feb_ja",
+          "arm": "composition",
+          "status": "failed",
+          "reason": "invalid_structured_output",
+          "outcome": "operational_failure",
+          "calls": 2
+        },
+        {
+          "case_id": "svc_absent_feb_ja",
+          "arm": "legacy",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "unnecessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_feb_ja",
+          "arm": "joint",
+          "status": "unsupported",
+          "reason": "unsupported",
+          "outcome": "unnecessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_ticket_count",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_ticket_count",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_ticket_count",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_total_minutes",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_total_minutes",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_total_minutes",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_child_fanout_refusal",
+          "arm": "composition",
+          "status": "unsupported",
+          "reason": "unsupported",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_child_fanout_refusal",
+          "arm": "legacy",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_child_fanout_refusal",
+          "arm": "joint",
+          "status": "unsupported",
+          "reason": "unsupported",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "offline_devices_count",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "offline_devices_count",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "offline_devices_count",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "rows_original_device_details",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "rows_original_device_details",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "rows_original_device_details",
+          "arm": "legacy",
+          "status": "unsupported",
+          "reason": "unsupported",
+          "outcome": "unnecessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "rows_joined_details_gap",
+          "arm": "composition",
+          "status": "unsupported",
+          "reason": "unsupported",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "rows_joined_details_gap",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "wrong_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "rows_joined_details_gap",
+          "arm": "joint",
+          "status": "unsupported",
+          "reason": "unsupported",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "rows_null_minutes",
+          "arm": "legacy",
+          "status": "unsupported",
+          "reason": "unsupported",
+          "outcome": "unnecessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "rows_null_minutes",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "rows_null_minutes",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "rows_zero_minutes",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "rows_zero_minutes",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "rows_zero_minutes",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "wrong_answer",
+          "calls": 2
+        },
+        {
+          "case_id": "cov_mttr",
+          "arm": "composition",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "cov_mttr",
+          "arm": "legacy",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "cov_mttr",
+          "arm": "joint",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "cov_vip_sites_en",
+          "arm": "legacy",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "cov_vip_sites_en",
+          "arm": "joint",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "cov_vip_sites_en",
+          "arm": "composition",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "cov_leased_fee",
+          "arm": "joint",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "cov_leased_fee",
+          "arm": "composition",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "cov_leased_fee",
+          "arm": "legacy",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "without_count_zh",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_count_zh",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_count_zh",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_count_en",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_count_en",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_count_en",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_count_ja",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_count_ja",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_count_ja",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_device_zh",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_device_zh",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_device_zh",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_device_en",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_device_en",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "wrong_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_device_en",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_device_ja",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 2
+        },
+        {
+          "case_id": "without_device_ja",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "without_device_ja",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "kind_rented_rows",
+          "arm": "composition",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "kind_rented_rows",
+          "arm": "legacy",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "kind_rented_rows",
+          "arm": "joint",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "date_between_inclusive_v1",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "wrong_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "date_between_inclusive_v1",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "date_between_inclusive_v1",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "date_explicit_exclusive_v1",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "date_explicit_exclusive_v1",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "date_explicit_exclusive_v1",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "date_precise_timestamp_v1",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "wrong_answer",
+          "calls": 2
+        },
+        {
+          "case_id": "date_precise_timestamp_v1",
+          "arm": "legacy",
+          "status": "answered",
+          "reason": null,
+          "outcome": "wrong_answer",
+          "calls": 2
+        },
+        {
+          "case_id": "date_precise_timestamp_v1",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "wrong_answer",
+          "calls": 2
+        }
+      ]
+    },
+    "repeat": {
+      "results": {
+        "path": ".artifacts/without-capability-20260915/repeat/results.json",
+        "sha256": "95aed2f0321be52d61c1ad02e0c5497a48d8ec00bc3d60da32bf68a30e218f8b"
+      },
+      "manifest": {
+        "path": ".artifacts/without-capability-20260915/repeat/manifest.json",
+        "sha256": "2cdb85c3c1f545de9d3f29208c474777db8d2f1e8a132074365a4d9876c2ac39"
+      },
+      "trace": {
+        "path": ".artifacts/without-capability-20260915/repeat/calls.json",
+        "sha256": "2064b55a1d0258a9db9a0e5478b3ae93040dd754a32850166458fe95a1e90d5e"
+      },
+      "summary": {
+        "composition": {
+          "capability": {
+            "correct_answer": 2,
+            "operational_failure": 1,
+            "necessary_refusal": 1
+          },
+          "date": {}
+        },
+        "joint": {
+          "capability": {
+            "correct_answer": 2,
+            "unnecessary_refusal": 1,
+            "necessary_refusal": 1
+          },
+          "date": {}
+        }
+      },
+      "actual_calls": 9,
+      "per_case": [
+        {
+          "case_id": "svc_absent_sum_zh",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_sum_zh",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "svc_absent_feb_ja",
+          "arm": "composition",
+          "status": "failed",
+          "reason": "invalid_structured_output",
+          "outcome": "operational_failure",
+          "calls": 2
+        },
+        {
+          "case_id": "svc_absent_feb_ja",
+          "arm": "joint",
+          "status": "unsupported",
+          "reason": "unsupported",
+          "outcome": "unnecessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "rows_zero_minutes",
+          "arm": "joint",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "rows_zero_minutes",
+          "arm": "composition",
+          "status": "answered",
+          "reason": null,
+          "outcome": "correct_answer",
+          "calls": 1
+        },
+        {
+          "case_id": "cov_mttr",
+          "arm": "composition",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        },
+        {
+          "case_id": "cov_mttr",
+          "arm": "joint",
+          "status": "semantic_gap",
+          "reason": "semantic_gap",
+          "outcome": "necessary_refusal",
+          "calls": 1
+        }
+      ]
+    }
+  },
+  "repeat_request_identity": {
+    "joint": {
+      "same_messages": true,
+      "message_hashes": [
+        "8c2b6c2167d08a2c28cef6f6a152efcb04a5519b2462067dc122bd2072975af3",
+        "8c2b6c2167d08a2c28cef6f6a152efcb04a5519b2462067dc122bd2072975af3"
+      ]
+    },
+    "composition": {
+      "same_messages": true,
+      "message_hashes": [
+        "9a24c790b02294e6f27feb11447a6519b8c4b10ab16193f793edc9bf7b6bf448",
+        "9a24c790b02294e6f27feb11447a6519b8c4b10ab16193f793edc9bf7b6bf448"
+      ]
+    }
+  },
+  "date_replay": [
+    {
+      "arm": "legacy",
+      "source_sha256": "0bfedfc5fa41e178b4026b3761b6d30a5385ad491543fb73f5ebcd6dfd764bfa",
+      "old_score": true,
+      "prospective_values_match": false,
+      "boundary_witness_match": false
+    },
+    {
+      "arm": "joint",
+      "source_sha256": "c4ef5a32030ee4ddf321afac021f28b3e1a40aaa3cbf551e4259d9ee057eb3f5",
+      "old_score": false,
+      "prospective_values_match": true,
+      "boundary_witness_match": true
+    }
+  ],
+  "precision_replay": [
+    {
+      "label": "manual_existing_filters",
+      "postgres_matches_reference": true,
+      "boundary_witness_match": true,
+      "boundary_counts": [
+        1,
+        2
+      ]
+    },
+    {
+      "label": "composition",
+      "postgres_matches_reference": true,
+      "boundary_witness_match": false,
+      "boundary_counts": [
+        1
+      ]
+    },
+    {
+      "label": "legacy",
+      "postgres_matches_reference": true,
+      "boundary_witness_match": false,
+      "boundary_counts": [
+        1
+      ]
+    },
+    {
+      "label": "joint",
+      "postgres_matches_reference": true,
+      "boundary_witness_match": false,
+      "boundary_counts": [
+        1
+      ]
+    }
+  ],
+  "prompt_pack_audit": {
+    "path": ".artifacts/without-capability-20260915/prompt-pack-audit.json",
+    "sha256": "6cc5970cf541f4e06606b224a3f49d29f2caffdc5ac8b2b9479fb251c9332374"
+  },
+  "validation": {
+    "ruler": {
+      "path": ".artifacts/without-capability-20260915/ruler/result.json",
+      "sha256": "b72e19868bd71a5aa096b666e322792be09f600e15d7978e067c9840d2f1d11a",
+      "passed": false,
+      "counts": {
+        "errors": 0,
+        "failures": 3,
+        "skipped": 0,
+        "tests": 5
+      }
+    },
+    "ruler-corrected": {
+      "path": ".artifacts/without-capability-20260915/ruler-corrected/result.json",
+      "sha256": "7f4fa0f8b1c20a9008a071d1fa63da13d6187066ea0cd387483000742a42e9b1",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 5
+      }
+    },
+    "pre-live": {
+      "path": ".artifacts/without-capability-20260915/pre-live/result.json",
+      "sha256": "ca5764653f83c8c7c7ceeae952fe5799ac9f460502a48d8bc09ab6ef0ba8ced5",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 18
+      }
+    },
+    "static": {
+      "path": ".artifacts/without-capability-20260915/static/result.json",
+      "sha256": "60d001bc47f65631090cb6f87448c06043a3b66cf080fe96387afde19ed38f3a",
+      "passed": true,
+      "counts": null
+    },
+    "offline": {
+      "path": ".artifacts/without-capability-20260915/offline/result.json",
+      "sha256": "74455743d99f2c46755d8216d4abe2ddb4ed5b562c0dfac3e007b7acaedd047c",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 2035
+      }
+    }
+  },
+  "drivers": [
+    {
+      "path": ".artifacts/without-capability-20260915/run.py",
+      "sha256": "bb3236ad68529a6eb0206d38a3bf57a09fbc7c0cf2cad9f5812d4f06f69a3ae7"
+    },
+    {
+      "path": ".artifacts/without-capability-20260915/precision_replay.py",
+      "sha256": "8601b71aeb0556625ca2d7717683a09ce6f70228571fa37a9d11f74aa7f8aea1"
+    }
+  ],
+  "change_hashes": [
+    {
+      "path": "evals/without_planning_study.py",
+      "sha256": "77b1cd6877e0073739681bb7a21114b5a909ce557c661f2f448bb632b7eea978"
+    },
+    {
+      "path": "evals/cases/without_capability_study.yaml",
+      "sha256": "513a3add2483596bd5a1b0b91f557251009e440bbaee8803d6af60ceb91a7871"
+    },
+    {
+      "path": "evals/cases/tier0/iot_date_acceptance.yaml",
+      "sha256": "387bba559390dbade01ac23f2b21de4d1c011cb6ac2cd06703799c3757251696"
+    },
+    {
+      "path": "tests/contract/t0/test_without_capability_study.py",
+      "sha256": "7bb11f3992d27417f2eb8c84d85a999d8f4ba82b4fe5c1c39c809a92ff497432"
+    }
+  ],
+  "non_claims": [
+    "No production or Web prompt/gate/contract changes",
+    "Small authored panel, no user holdout/generalization claim",
+    "Identical request does not guarantee identical output; batching causality not established",
+    "Date fixture matches are insufficient without boundary witness",
+    "Initial ruler search-path and diagnostic configuration failures are not product evidence",
+    "No DB writes, customer data, push or deployment"
+  ]
+}

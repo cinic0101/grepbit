@@ -63,6 +63,16 @@ are not invented. No prompt, SQL semantics or verification level changes here.
 
 ## Case files (`evals/cases/tier0/*.yaml`)
 
+Prospective date-policy controls (2026-09-15): `iot_date_acceptance.yaml` applies
+the already-approved inclusive date-only BETWEEN interpretation using new IDs.
+It does not replace `iot.yaml` or regrade its historical end-exclusive reference.
+Explicit-exclusive and precise-timestamp endpoints are separate controls, not
+automatically extended to the end of a calendar day. The research harness also
+checks a seven-row boundary witness: fixture-only value agreement missed a
+timestamp precision loss in all three planning arms. See
+`../research/without-capability-study-01.md`. This is additional evaluation data,
+not a change to `disclosed-answer-v1` or the served verification level.
+
 ```yaml
 datasource_id: pos_test
 as_of: "2026-02-10T12:00:00+08:00"

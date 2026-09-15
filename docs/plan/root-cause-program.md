@@ -121,7 +121,17 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-15: joint-planning wider paired regression finished (64 cases per
+Current 2026-09-15: without capability study complete at baseline `e08af91`.
+Composition guidance yields 17/18 correct answers plus six required refusals on
+the 24-case panel, but Japanese rows+without stays invalid and baseline SUM also
+succeeds on repeat with identical messages. No promotion. Prospective date-policy
+bank preserves historical oracles. Boundary witnesses reveal all three arms'
+repair dropping timestamp precision despite fixture value matches; existing
+timestamp filters pass independent replay. Next prioritize repair precision-loss
+rulers, then wider frozen-candidate regression. Static/offline 2,035 pass,
+97/120 model calls. See `../research/without-capability-study-01.md`.
+
+Previous 2026-09-15: joint-planning wider paired regression finished (64 cases per
 arm); supported-without false refusal reproduced, no Web/default promotion.
 Unprojected visible base-column row ordering repaired independently, v17 optional
 row stage / rows compiler v2. Typed PostgreSQL replay and two live controls pass;

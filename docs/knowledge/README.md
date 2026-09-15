@@ -29,3 +29,9 @@ matches the router's outcomes at lower cost. The
 [`wider regression`](../research/joint-regression-and-row-order-01.md) reproduces
 one new supported-without false refusal, so no default promotion. The independent
 opt-in row-order repair passes typed PostgreSQL checks and offline validation.
+
+[`Without composition follow-up`](../research/without-capability-study-01.md):
+generic scope-then-aggregation guidance improves the small panel, but its SUM
+advantage does not recur over the unchanged baseline on repeat. A new boundary
+witness catches timestamp-to-date precision loss during model repair. No runtime
+promotion; prospective date controls retain old scores separately.

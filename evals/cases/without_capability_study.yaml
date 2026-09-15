@@ -1,0 +1,63 @@
+selections:
+  - file: evals/cases/tier0/service_adversarial.yaml
+    route: legacy
+    ids: [svc_absent_sum_zh, svc_absent_sum_en, svc_absent_sum_ja, svc_absent_feb_zh, svc_absent_feb_en, svc_absent_feb_ja]
+  - file: evals/cases/tier0/service.yaml
+    route: legacy
+    ids: [svc_ticket_count, svc_total_minutes, svc_child_fanout_refusal]
+  - file: evals/cases/tier0/iot.yaml
+    route: legacy
+    ids: [offline_devices_count]
+  - file: evals/cases/tier0/rows_iot.yaml
+    route: rows
+    ordered: true
+    ids: [rows_original_device_details, rows_joined_details_gap]
+  - file: evals/cases/tier0/rows_service.yaml
+    route: rows
+    ordered: true
+    ids: [rows_null_minutes, rows_zero_minutes]
+  - file: evals/cases/tier0/coverage_iot.yaml
+    route: decline
+    ids: [cov_mttr, cov_leased_fee, cov_vip_sites_en]
+new_cases:
+  - case_id: without_count_zh
+    datasource_id: service_test
+    as_of: "2026-04-15T12:00:00+08:00"
+    question: "從未有任何事件紀錄的工單共有幾張？"
+    expected_route: legacy
+    reference_sql: "SELECT count(*) FROM tickets t WHERE NOT EXISTS (SELECT 1 FROM ticket_events e WHERE e.ticket_id=t.id)"
+  - case_id: without_count_en
+    datasource_id: service_test
+    as_of: "2026-04-15T12:00:00+08:00"
+    question: "How many tickets have never had any event records?"
+    expected_route: legacy
+    reference_sql: "SELECT count(*) FROM tickets t WHERE NOT EXISTS (SELECT 1 FROM ticket_events e WHERE e.ticket_id=t.id)"
+  - case_id: without_count_ja
+    datasource_id: service_test
+    as_of: "2026-04-15T12:00:00+08:00"
+    question: "イベント記録が一度もないチケットは何件ですか？"
+    expected_route: legacy
+    reference_sql: "SELECT count(*) FROM tickets t WHERE NOT EXISTS (SELECT 1 FROM ticket_events e WHERE e.ticket_id=t.id)"
+  - case_id: without_device_zh
+    datasource_id: iot_spike
+    as_of: "2026-08-15T12:00:00+08:00"
+    question: "從未有任何告警的裝置共有幾台？"
+    expected_route: legacy
+    reference_sql: "SELECT count(*) FROM devices d WHERE NOT EXISTS (SELECT 1 FROM alerts a WHERE a.device_id=d.device_id)"
+  - case_id: without_device_en
+    datasource_id: iot_spike
+    as_of: "2026-08-15T12:00:00+08:00"
+    question: "How many devices have never had any alerts?"
+    expected_route: legacy
+    reference_sql: "SELECT count(*) FROM devices d WHERE NOT EXISTS (SELECT 1 FROM alerts a WHERE a.device_id=d.device_id)"
+  - case_id: without_device_ja
+    datasource_id: iot_spike
+    as_of: "2026-08-15T12:00:00+08:00"
+    question: "アラートが一度もない装置は何台ありますか？"
+    expected_route: legacy
+    reference_sql: "SELECT count(*) FROM devices d WHERE NOT EXISTS (SELECT 1 FROM alerts a WHERE a.device_id=d.device_id)"
+  - case_id: kind_rented_rows
+    datasource_id: iot_spike
+    as_of: "2026-08-15T12:00:00+08:00"
+    question: "列出租賃裝置的 device_id 和 monthly_fee。"
+    expected_route: decline

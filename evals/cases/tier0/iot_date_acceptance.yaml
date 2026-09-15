@@ -1,0 +1,17 @@
+# Prospective application of the approved date policy; iot.yaml is historical.
+# No silent regrading. Same date-only question receives a new acceptance case id.
+datasource_id: iot_spike
+as_of: "2026-08-15T12:00:00+08:00"
+cases:
+  - case_id: date_between_inclusive_v1
+    question: "Daily number of alerts between 2026-07-01 and 2026-07-08"
+    expected: {status: answered}
+    reference_sql: "SELECT date_trunc('day', raised_at AT TIME ZONE 'Asia/Taipei') AS period_start, count(*) FROM alerts WHERE raised_at >= '2026-07-01T00:00:00+08:00' AND raised_at < '2026-07-09T00:00:00+08:00' GROUP BY 1 ORDER BY 1"
+  - case_id: date_explicit_exclusive_v1
+    question: "Daily number of alerts from 2026-07-01 inclusive until 2026-07-08 exclusive, in Asia/Taipei."
+    expected: {status: answered}
+    reference_sql: "SELECT date_trunc('day', raised_at AT TIME ZONE 'Asia/Taipei') AS period_start, count(*) FROM alerts WHERE raised_at >= '2026-07-01T00:00:00+08:00' AND raised_at < '2026-07-08T00:00:00+08:00' GROUP BY 1 ORDER BY 1"
+  - case_id: date_precise_timestamp_v1
+    question: "Daily number of alerts from 2026-07-01T00:00:00+08:00 inclusive until 2026-07-08T12:00:00+08:00 exclusive, in Asia/Taipei."
+    expected: {status: answered}
+    reference_sql: "SELECT date_trunc('day', raised_at AT TIME ZONE 'Asia/Taipei') AS period_start, count(*) FROM alerts WHERE raised_at >= '2026-07-01T00:00:00+08:00' AND raised_at < '2026-07-08T12:00:00+08:00' GROUP BY 1 ORDER BY 1"
