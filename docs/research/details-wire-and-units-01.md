@@ -1,5 +1,10 @@
 # Details-only shown schema: wire gain, adoption held on ordering
 
+Follow-up 2026-09-16: owner-approved, versioned ordering adjudication and service
+acceptance now support adoption; see `details-schema-adoption-01.md`. Raw candidate
+calls omitted direction and inherited OrderSpec's desc, rather than explicitly
+choosing it. The original report, observations and scores below are retained.
+
 2026-09-15. Baseline `6b38aa0`; fixed protocol:
 [`details-wire-and-units`](../plan/details-wire-and-units.md).
 Decision: do not promote this candidate under the frozen acceptance criteria.

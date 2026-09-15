@@ -8,6 +8,19 @@ scores below still use the legacy comparator; do not silently replace them.
 
 ## Opt-in disclosed-answer policy
 
+Owner adjudication `rows-direction-adjudication-v1` (2026-09-16): a reviewed
+complete row-listing request with specified sort keys but no explicit/implicit
+direction or ranking may allow both ASC and DESC, with faithful disclosure.
+Use separate typed interpretations and independent ordered reference SQL through
+the existing opt-in policy below. Preserve NULLS LAST, stable PK ties, full
+population and multiplicity; never compare just sets or reverse an ASC array.
+Explicit direction, highest/lowest/latest/earliest, Top-N, LIMIT, OFFSET, paging
+and service-truncated results do not qualify. No runtime direction default or
+automatic natural-language classifier changes. Details:
+`../plan/details-schema-adoption.md`. The 180-call historical re-adjudication is
+versioned, symmetric and expressly post-observation; original grades stay intact.
+Future annotations must still precede model calls.
+
 Pass `--acceptance-rules <private-rules.json>` to `evals/spike_tier0.py`.
 Omitting it leaves scoring unchanged. The file has `revision` set to
 `disclosed-answer-v1` and `cases` keyed by existing case IDs. Each case requires:

@@ -200,7 +200,10 @@ _PROPOSAL = {
 
 
 def shown_schema(
-    *, has_candidates: bool = False, allow_rows: bool = False
+    *,
+    has_candidates: bool = False,
+    allow_rows: bool = False,
+    explicit_rows: bool = False,
 ) -> dict[str, Any]:
     """The JSON Schema the planner is asked to conform to (the preferred form)."""
 
@@ -256,12 +259,43 @@ def shown_schema(
                     extend(child)
 
         extend(schema)
+    if explicit_rows:
+        if not allow_rows:
+            raise ValueError("row_queries_disabled")
+        plan = schema["properties"]["plan"]
+        plan["properties"] = {
+            key: value
+            for key, value in plan["properties"].items()
+            if key in {"base_table", "rows", "filters", "order", "limit"}
+        }
+        plan["required"] = ["base_table", "rows"]
+        schema["oneOf"] = [
+            {
+                "properties": {"decision": {"const": "plan"}},
+                "required": ["plan"],
+                "not": {"required": ["reason"]},
+            },
+            {
+                "properties": {"decision": {"const": "none"}},
+                "required": ["reason"],
+                "not": {"required": ["plan"]},
+            },
+        ]
     return schema
 
 
-def shown_schema_text(*, has_candidates: bool = False, allow_rows: bool = False) -> str:
+def shown_schema_text(
+    *,
+    has_candidates: bool = False,
+    allow_rows: bool = False,
+    explicit_rows: bool = False,
+) -> str:
     return json.dumps(
-        shown_schema(has_candidates=has_candidates, allow_rows=allow_rows),
+        shown_schema(
+            has_candidates=has_candidates,
+            allow_rows=allow_rows,
+            explicit_rows=explicit_rows,
+        ),
         sort_keys=True,
         separators=(",", ":"),
     )

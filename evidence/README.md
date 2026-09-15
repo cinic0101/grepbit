@@ -1,5 +1,14 @@
 # Evidence
 
+`details-schema-adoption-01.json`: adopts the exact measured explicit-Details
+display after owner-versioned ordering adjudication. Original raw outputs omitted
+direction and inherited DESC; four saved results pass independent ordered oracles
+and readonly replay, all 180 contexts match their intended transforms. Six actual
+Web/MCP/Gemma calls: three correct, two necessary refusals, one unchanged Return
+gate false refusal; zero variants/repairs. 2,382 offline/static pass. Shared order
+default, canonical wire, gate and Default/fallback unchanged. Measured wire blocker
+closed, not a global waiver of the per-set construct threshold.
+
 `details-wire-and-units-01.json`: one explicit-Details displayed-schema candidate,
 180/240 native Gemma calls, two fixed paired rounds. Historical Details variants
 8/32 -> 1/32 and recent Details 2/4 -> 0/4 each round, no increase in refusals.

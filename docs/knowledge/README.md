@@ -19,6 +19,13 @@ Companion reading: `../research/tier0-generalization.md` (every experiment,
 with numbers) and `../history/lessons-from-v1.md`.
 
 Current query-extension integration result:
+[`details-schema-adoption-01.md`](../research/details-schema-adoption-01.md):
+explicit Details now displays only its measured rows/refusal schema. Versioned
+owner ordering adjudication resolves the prior oracle mismatch; six actual
+Web/MCP calls pass bounded acceptance with the known Return false refusal intact.
+Default/fallback and OrderSpec defaults stay unchanged. Conversion is next, not
+yet implemented; per-set construct thresholds and lease omission controls remain.
+
 [`status-and-web-closeout-01.md`](../research/status-and-web-closeout-01.md):
 synthetic IoT status value aliases accepted in the local Web profile after paired
 HTTP/MCP checks (two false refusals recovered); mode guidance preserves original

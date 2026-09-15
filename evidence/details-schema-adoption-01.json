@@ -1,0 +1,86 @@
+{
+  "baseline_commit": "91c5b46",
+  "artifact_root": ".artifacts/details-schema-adoption-20260916",
+  "decision": "adopt_exact_measured_explicit_details_schema",
+  "prompt_revision": "details-schema-only-v21-study",
+  "adjudication_revision": "rows-direction-adjudication-v1",
+  "adjudication_timing": "post_observation_explicit_owner_ruling",
+  "runtime_direction_default_changed": false,
+  "default_and_fallback_changed": false,
+  "canonical_wire_or_normalizer_changed": false,
+  "gate_changed": false,
+  "legacy_scores_untouched": true,
+  "context_checks": {
+    "candidate_details_exact": 72,
+    "default_exact_both_arms": 36,
+    "baseline_details_exact_after_only_measured_transform": 72,
+    "total": 180,
+    "model_calls": 0
+  },
+  "original_ordering_results": {
+    "baseline_calls": [29, 119],
+    "candidate_calls": [74, 164],
+    "baseline_raw_direction": "asc",
+    "candidate_raw_direction": null,
+    "candidate_effective_direction": "desc",
+    "accepted_by_existing_grader_with_independent_direction_oracles": 4,
+    "readonly_actual_sql_replays_match": 4,
+    "rows_each": 10,
+    "limit_or_truncation": false
+  },
+  "reviewed_original_counts_each_arm_each_round": {
+    "correct_answers": 27,
+    "necessary_refusals": 16,
+    "false_refusals": 1,
+    "wrong_population_answers": 1
+  },
+  "unchanged_wire_evidence_each_round": {
+    "historical_details": {"requests": 32, "baseline_variants": 8, "candidate_variants": 1},
+    "recent_details": {"requests": 4, "baseline_variants": 2, "candidate_variants": 0}
+  },
+  "service_smoke": {
+    "path": "temporary production Web 8766 -> actual stdio MCP -> shared ask -> opaque counting relay -> existing LAN Gemma",
+    "initial_requests": 6,
+    "physical_calls": 6,
+    "physical_cap": 18,
+    "calls_including_original_study": 186,
+    "original_total_cap": 240,
+    "correct_answers": 3,
+    "necessary_mode_clarification": 1,
+    "necessary_missing_definition_refusal": 1,
+    "known_gate_false_refusal": 1,
+    "wrong_answers": 0,
+    "operational_failures": 0,
+    "raw_schema_variants": 0,
+    "model_repairs": 0,
+    "retries_or_fallbacks": 0,
+    "s7_s8_equal_correct_plans": true,
+    "new_ordering_output": "explicit asc; separate from original omitted-direction evidence",
+    "all_fingerprints_match": true,
+    "source": "sha256:9ffdd55e747d4a0b807afced84d4e2b6df49e8336ea2e3f6e95d1f5affff23de",
+    "probe_sha256": "9da09b9dc3e5b5a89b3de591a7e4f6f61fad53cf043f338b757cb0d7dff60fce",
+    "protocol_sha256": "4adf8317da9e635e011b7955c8b205f8f0ebd58813cae7d8992adcfa48413005"
+  },
+  "validation": {
+    "ruler": {"tests": 30, "intended_failures": 4, "passed": 26, "setup_errors": 0},
+    "focused": {"passed": 115, "skipped": 0},
+    "offline": {"passed": 2382, "skipped": 0},
+    "static": "pass",
+    "offline_to_final_difference": "Only test_rows_direction_adjudication.py string whitespace reflow; identical Python AST; all other tested source hashes equal",
+    "formatting_only_test_ast_sha256": "1fa281ecbf8124ae3327a6ba7690f025daa08047573958d0ba67bc3a2ed65646"
+  },
+  "artifact_sha256": {
+    "adjudication.json": "cdb57c9d1a00bfdadef8a92778c68d051f5c298b82b5ab2b574f5c46d946c77a",
+    "service-review.json": "7a2f52e8856bf506c8cf638a1faad377b4117b39d08fd121c4c3d3bf41a3b9c4",
+    "smoke/manifest.json": "98da3ade2254030ecb11b0abdae5870ab281227b54297c411328b43180856c64",
+    "smoke/complete.json": "85f4f68b0c3ea88164d7ee8c8fc6e93509efceef758c4c48c188ab18ea845ca0",
+    "ruler/result.json": "45f519e45f8f2e7f06c18d019823bb19309169e012d9c28c453b82dab0508a44",
+    "focused/result.json": "024af21e9759e7aa39552def9aa69c6eab65e0d5bcd5fb3086c8c12235f8e1a0",
+    "offline/result.json": "b0af7aa7c6822d69525715bb8b18797e14692cdddc51e6954781114325c0be61",
+    "static-pass/result.json": "82266ffe91c8da1d7d4ca57dd41da22518eddbb738a49238c1c101881f736344"
+  },
+  "freeze_disposition": "Measured Details wire blocker closed for next conversion slice; existing less-than-5-percent per-set rule and affected-group regression remain; no global permanent waiver",
+  "user_web": "PID 78063 on 8765 left running; fresh MCP per invocation loads current planner; no startup-cached setting changed, so no restart needed",
+  "known_gaps": ["Return gate false refusal", "Default short lease question omits required population", "Unmeasured configurations", "Unit conversion still research-only"],
+  "git_scope": "local commit only; no push or external deployment"
+}

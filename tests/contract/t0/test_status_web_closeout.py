@@ -64,7 +64,7 @@ def test_status_aliases_reach_actual_propose_completion_boundary(monkeypatch, mo
     assert payload["prompt_revision"] == (
         "plan-classify-json-v15"
         if mode == "default"
-        else "plan-classify-json-v20-parent-rows"
+        else "details-schema-only-v21-study"
     )
     status = next(
         c

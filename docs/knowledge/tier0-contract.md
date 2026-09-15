@@ -81,9 +81,14 @@ unsupported/row_queries_disabled before binding or planning. Invalid kinds are
 input errors. The original Web registry and default planner messages are unchanged;
 the separate `dev_web_rows_datasources.json` enables only synthetic sources.
 
-Explicit rows uses the existing v17 wire plus the measured caller-kind instruction,
-`plan-classify-json-v20-parent-rows` after unique-parent acceptance (v19 was the
-base-only delivery), without a router or legacy-first fallback.
+Explicit rows uses the measured caller-kind instruction and narrowed displayed
+schema `details-schema-only-v21-study` (historical identifier retained on adoption).
+Only base_table/rows/filters/order/limit are displayed with complete refusal
+branches; canonical wire/normalization and Default/fallback remain unchanged.
+Direction is still optional and OrderSpec still defaults to desc. This is not
+the SQL grammar's direction default. There is no router or legacy-first fallback.
+v20 was the full-schema parent delivery; v19 was base-only. See
+`../plan/details-schema-adoption.md` for the bounded adoption and order adjudication.
 Every invocation gets its own planner. Shared ask checks the planner's final
 proposal, after its wire normalization and any repair turn, but before
 application normalization/compilation: an aggregate/latest proposal fails with

@@ -110,7 +110,7 @@ def test_constructor_mode_does_not_leak_into_default_messages():
     payload = json.loads(messages[2]["content"])
     assert (
         payload["query_kind"] == "rows"
-        and payload["prompt_revision"] == "plan-classify-json-v20-parent-rows"
+        and payload["prompt_revision"] == "details-schema-only-v21-study"
     )
     assert (
         ChatCompletionsPlanClient(cfg).build_messages(

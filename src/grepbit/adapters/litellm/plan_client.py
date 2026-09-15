@@ -33,7 +33,8 @@ from grepbit.ports.grounding import GroundingModelError
 PLAN_PROMPT_REVISION = "plan-classify-json-v15"
 ROW_PLAN_PROMPT_REVISION = "plan-classify-json-v17-row-order"
 ROW_PLANNER_STRATEGY_REVISION = "plan-v15-rows-fallback-v1"
-EXPLICIT_ROW_PROMPT_REVISION = "plan-classify-json-v20-parent-rows"
+# Retain the measured identifier for exact request parity despite its study suffix.
+EXPLICIT_ROW_PROMPT_REVISION = "details-schema-only-v21-study"
 _PARENT_ROW_PROJECTION_RULE = (
     "Row filters must use the base table. Projection may also include columns "
     "from one direct parent reached by one declared foreign key to its "
@@ -899,7 +900,9 @@ class ChatCompletionsPlanClient:
     ) -> list[dict[str, str]]:
         candidates = value_candidates(question_values, model, overlay)
         schema = shown_schema_text(
-            has_candidates=bool(candidates), allow_rows=self._allow_rows
+            has_candidates=bool(candidates),
+            allow_rows=self._allow_rows,
+            explicit_rows=self._query_kind == "rows",
         )
         payload: dict[str, Any] = {
             "question": question.strip(),
