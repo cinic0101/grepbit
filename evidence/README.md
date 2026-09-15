@@ -1,5 +1,13 @@
 # Evidence
 
+`temporal-repair-study-01.json`: two live streams and their exact-output guarded
+replays, 13 authored cases plus three repeat controls, 40/96 model calls. Corrected
+multi-instance baseline: four correct, six wrong, two necessary refusals, one
+invalid-output failure; guidance: 11 correct, two necessary refusals. The guard
+prevents five wrong repairs by failing, not by answering or certifying intent.
+An append-only scalar-witness correction preserves the original false-pass score.
+No runtime promotion. See `../docs/research/temporal-repair-study-01.md`.
+
 Raw artifacts of the live runs cited in `docs/research/`. Each JSON file is a
 `spike_tier0.py` report (summary plus one row per case: status, plan, SQL
 with placeholders, lineage, assumptions, interpretation, first rows, reference

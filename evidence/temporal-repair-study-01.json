@@ -1,0 +1,274 @@
+{
+  "baseline": "ccb91de",
+  "date": "2026-09-15",
+  "decision": "research_only_wider_combination_regression_next",
+  "budget": {
+    "actual_calls": 40,
+    "limit": 96
+  },
+  "phases": {
+    "main": {
+      "results": {
+        "path": ".artifacts/temporal-repair-20260915/main/results.json",
+        "sha256": "91544d529a80a76fa0882ce74e89641ce3b5a6268e7c15dedea8a7b8a34bf819"
+      },
+      "manifest": {
+        "path": ".artifacts/temporal-repair-20260915/main/manifest.json",
+        "sha256": "45cad0a71078ad55f6b30c237a53888baf7b1a4e22de8e01c1ba07889425d69c"
+      },
+      "trace": {
+        "path": ".artifacts/temporal-repair-20260915/main/calls.json",
+        "sha256": "2d94df51a11dce70a98658e54e8736857856f7791e2a7006f2b5aae7c3029b4d"
+      },
+      "outcomes": {
+        "baseline": {
+          "wrong_answer": 5,
+          "correct_answer": 5,
+          "necessary_refusal": 2,
+          "operational_failure": 1
+        },
+        "baseline_guard_replay": {
+          "wrong_answer": 1,
+          "correct_answer": 4,
+          "operational_failure": 6,
+          "necessary_refusal": 2
+        },
+        "guided": {
+          "correct_answer": 11,
+          "necessary_refusal": 2
+        },
+        "guided_guard_replay": {
+          "correct_answer": 11,
+          "necessary_refusal": 2
+        }
+      }
+    },
+    "repeat": {
+      "results": {
+        "path": ".artifacts/temporal-repair-20260915/repeat/results.json",
+        "sha256": "41471a1f5a53ee3a9dd3b03523f8b6df77b7c8ed450eb89a0de9271854df8c25"
+      },
+      "manifest": {
+        "path": ".artifacts/temporal-repair-20260915/repeat/manifest.json",
+        "sha256": "1404fb9dafaf95578fe7343ba4a00c71b61a6a86ce3295d14a83d38f9a5ee4bd"
+      },
+      "trace": {
+        "path": ".artifacts/temporal-repair-20260915/repeat/calls.json",
+        "sha256": "8aead5ecf002a59578c27f0fb93383386501133985a2a04611c2972802cd3ecd"
+      },
+      "outcomes": {
+        "baseline": {
+          "wrong_answer": 1,
+          "necessary_refusal": 1,
+          "operational_failure": 1
+        },
+        "baseline_guard_replay": {
+          "operational_failure": 2,
+          "necessary_refusal": 1
+        },
+        "guided": {
+          "correct_answer": 2,
+          "necessary_refusal": 1
+        },
+        "guided_guard_replay": {
+          "correct_answer": 2,
+          "necessary_refusal": 1
+        }
+      }
+    }
+  },
+  "corrected_replay": {
+    "result": {
+      "path": ".artifacts/temporal-repair-20260915/corrected-replay/results.json",
+      "sha256": "36a49ea7bf5b3c18f1b34adf7ca83bdbc12b9618c9d72339dbd9d3be771e8823"
+    },
+    "outcomes": {
+      "baseline": {
+        "wrong_answer": 6,
+        "correct_answer": 4,
+        "necessary_refusal": 2,
+        "operational_failure": 1
+      },
+      "baseline_guard_replay": {
+        "wrong_answer": 1,
+        "correct_answer": 4,
+        "operational_failure": 6,
+        "necessary_refusal": 2
+      },
+      "guided": {
+        "correct_answer": 11,
+        "necessary_refusal": 2
+      },
+      "guided_guard_replay": {
+        "correct_answer": 11,
+        "necessary_refusal": 2
+      }
+    },
+    "witness_details": [
+      {
+        "instance": "start_only",
+        "arm": "guided",
+        "actual": [
+          [
+            1
+          ]
+        ],
+        "expected": [
+          [
+            1
+          ]
+        ],
+        "match": true
+      },
+      {
+        "instance": "start_only",
+        "arm": "guided_guard_replay",
+        "actual": [
+          [
+            1
+          ]
+        ],
+        "expected": [
+          [
+            1
+          ]
+        ],
+        "match": true
+      },
+      {
+        "instance": "start_only",
+        "arm": "baseline",
+        "actual": [
+          [
+            2
+          ]
+        ],
+        "expected": [
+          [
+            1
+          ]
+        ],
+        "match": false
+      },
+      {
+        "instance": "end_only",
+        "arm": "guided",
+        "actual": [
+          [
+            3
+          ]
+        ],
+        "expected": [
+          [
+            3
+          ]
+        ],
+        "match": true
+      },
+      {
+        "instance": "end_only",
+        "arm": "guided_guard_replay",
+        "actual": [
+          [
+            3
+          ]
+        ],
+        "expected": [
+          [
+            3
+          ]
+        ],
+        "match": true
+      },
+      {
+        "instance": "end_only",
+        "arm": "baseline",
+        "actual": [
+          [
+            1
+          ]
+        ],
+        "expected": [
+          [
+            3
+          ]
+        ],
+        "match": false
+      }
+    ],
+    "model_calls": 0,
+    "reason": "Separate endpoint witnesses prevent cancellation of scalar count errors; original main evidence unchanged."
+  },
+  "validation": {
+    "focused-final": {
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 23
+      },
+      "result": {
+        "path": ".artifacts/temporal-repair-20260915/focused-final/result.json",
+        "sha256": "8ec14293c96f6d87d29a8b9753a6dae9d7fa35135455518a98bd17ef7e051c39"
+      }
+    },
+    "offline": {
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 2058
+      },
+      "result": {
+        "path": ".artifacts/temporal-repair-20260915/offline/result.json",
+        "sha256": "d395ecece2e95ea57ebff5bd92f25bcbac0a5d1dffe90bb15d5589b0324324d0"
+      }
+    },
+    "static-final": {
+      "passed": true,
+      "counts": null,
+      "result": {
+        "path": ".artifacts/temporal-repair-20260915/static-final/result.json",
+        "sha256": "60da338951c1e938bd00b814d062d3af353b152d8d73962f6e1f68eba9510cdb"
+      }
+    },
+    "identity-ruler": {
+      "passed": false,
+      "counts": {
+        "errors": 0,
+        "failures": 1,
+        "skipped": 0,
+        "tests": 21
+      },
+      "result": {
+        "path": ".artifacts/temporal-repair-20260915/identity-ruler/result.json",
+        "sha256": "bd6fdd688568021020f6081ab8a5eaba3034a7e20cebe0ce8397d794d87e2ef8"
+      }
+    }
+  },
+  "sources": {
+    "evals/temporal_repair_study.py": "e960780afc60080dfc800a3ee8b7a0dced3cdaffe6858e35607f05e0c24ef24b",
+    "evals/cases/temporal_repair_study.yaml": "1922a772ffcd403bf3833b7ce696f4a9ad41508a93acd62b5124582919cad393",
+    "evals/fixtures/temporal_service_witnesses.json": "219be1478dc197e19a504042fa87ba769a56d6d633cddad8d9a25a0847f5811c",
+    "tests/contract/t0/test_temporal_repair_study.py": "00e2a11e76a45d8ad082a0282dd790b7857c90de3bf8a52fd865783072b33b7b"
+  },
+  "drivers": [
+    {
+      "path": ".artifacts/temporal-repair-20260915/run.py",
+      "sha256": "af5466521d678957b000de3c0f024a06025998aa4d7323e2b88e331124b37c3d"
+    },
+    {
+      "path": ".artifacts/temporal-repair-20260915/corrected_replay.py",
+      "sha256": "f9c0bc08c6e8f9eec9a88d42f7656444f652bbd6bdf9990d66915802cbfdcadf"
+    }
+  ],
+  "limits": [
+    "Authored small panel, not blind generalization",
+    "Guarded arms replay exact outputs, not live independent calls",
+    "No live valid-temporal-repair retention denominator",
+    "Scalar witness correction is post-hoc; original report preserved",
+    "No runtime promotion, DB writes or push"
+  ]
+}

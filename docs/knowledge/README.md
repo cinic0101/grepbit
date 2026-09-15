@@ -35,3 +35,9 @@ generic scope-then-aggregation guidance improves the small panel, but its SUM
 advantage does not recur over the unchanged baseline on repeat. A new boundary
 witness catches timestamp-to-date precision loss during model repair. No runtime
 promotion; prospective date controls retain old scores separately.
+
+[`Temporal repair follow-up`](../research/temporal-repair-study-01.md): generic
+timestamp-filter guidance passes the small 13-case panel and three-case repeat;
+guarded raw-output replay stops five wrong repairs, not first-pass mistakes.
+Separate endpoint witnesses correct one scalar false pass without overwriting
+history. Research only; wider combination regression remains next.

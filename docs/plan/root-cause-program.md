@@ -121,7 +121,16 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-15: without capability study complete at baseline `e08af91`.
+Current 2026-09-15: temporal-repair study at baseline `ccb91de`: guidance yields
+11 correct answers and two necessary refusals; three-case repeat retains two
+answers and one refusal. Exact-output guard replay prevents five wrong repairs,
+not first-generation errors. Corrected separate-endpoint witnesses remove one
+scalar false pass; original artifacts retained. 40/96 calls, research only.
+Next: wider baseline/guidance/composition/combination regression, retaining row,
+without and missing-definition controls, before any promotion decision. See
+`../research/temporal-repair-study-01.md`.
+
+Previous 2026-09-15: without capability study complete at baseline `e08af91`.
 Composition guidance yields 17/18 correct answers plus six required refusals on
 the 24-case panel, but Japanese rows+without stays invalid and baseline SUM also
 succeeds on repeat with identical messages. No promotion. Prospective date-policy
