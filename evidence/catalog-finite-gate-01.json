@@ -1,0 +1,322 @@
+{
+  "baseline": "e8ff36f",
+  "production_source_changed": false,
+  "model_calls": 0,
+  "web_restarted": false,
+  "catalog": {
+    "at": "2026-09-15T07:46:47.241861+00:00",
+    "database": "grepbit_catalog_boundary_v1",
+    "physical_model_calls": 0,
+    "runtime_writes": false,
+    "reports": [
+      {
+        "search_path": "a,b",
+        "runtime_role": "grepbit_ro",
+        "readonly": true,
+        "physical_cross_schema_fk": [
+          [
+            "a",
+            "child",
+            "b",
+            "parent"
+          ]
+        ],
+        "cross_schema_edge_omitted": true,
+        "raw_text_key_retained_unsampled": true,
+        "ordinary_text_sampled": true,
+        "pk_and_unique_links_preserved": true,
+        "key_not_groundable": true,
+        "inference_does_not_recreate_decoy": true,
+        "missing_key_mutant_infers_decoy": true,
+        "decoy_has_different_values": true,
+        "schema_digest": "sha256:cb63d3d06e4c54fbb37ed1bcb3f40584113772c3c02d198e47a3ced24bd6a1e1"
+      },
+      {
+        "search_path": "b,a",
+        "runtime_role": "grepbit_ro",
+        "readonly": true,
+        "physical_cross_schema_fk": [
+          [
+            "a",
+            "child",
+            "b",
+            "parent"
+          ]
+        ],
+        "cross_schema_edge_omitted": true,
+        "raw_text_key_retained_unsampled": true,
+        "ordinary_text_sampled": true,
+        "pk_and_unique_links_preserved": true,
+        "key_not_groundable": true,
+        "inference_does_not_recreate_decoy": true,
+        "missing_key_mutant_infers_decoy": true,
+        "decoy_has_different_values": true,
+        "schema_digest": "sha256:cb63d3d06e4c54fbb37ed1bcb3f40584113772c3c02d198e47a3ced24bd6a1e1"
+      }
+    ],
+    "verifier_sha256": "04490870b8b69fcd1d9838015e9654364d17131ef2261ee6b77acedc05ba5515"
+  },
+  "gate": {
+    "decision": "stop_candidate_no_production_integration",
+    "physical_model_calls": 0,
+    "grammar_productions": 1,
+    "command_lexemes": 3,
+    "candidate_nonblank_lines": 93,
+    "parent_panel": {
+      "total": 35,
+      "typed_plans": 22,
+      "recognized": 2,
+      "verdicts": {
+        "unknown": 20,
+        "no_proposal": 13,
+        "match": 2
+      },
+      "historical_outcomes": {
+        "correct_answer": 20,
+        "necessary_refusal": 14,
+        "unnecessary_refusal": 1
+      },
+      "recognized_cases": [
+        {
+          "case_id": "kind_minutes_records",
+          "historical_outcome": "unnecessary_refusal",
+          "historical_reason": "concept_not_mapped",
+          "recognized": true,
+          "verdict": "match",
+          "before": [
+            [
+              "returns",
+              "return"
+            ]
+          ],
+          "after": [],
+          "exemptions": [
+            {
+              "concept": "returns",
+              "span": [
+                0,
+                6
+              ]
+            }
+          ]
+        },
+        {
+          "case_id": "explicit_minutes_duplicates",
+          "historical_outcome": "correct_answer",
+          "historical_reason": null,
+          "recognized": true,
+          "verdict": "match",
+          "before": [],
+          "after": [],
+          "exemptions": []
+        }
+      ]
+    },
+    "earlier_panel_recognition_only": {
+      "total": 55,
+      "recognized": 1,
+      "recognized_cases": [
+        {
+          "case_id": "kind_minutes_records",
+          "recognized": true
+        }
+      ]
+    },
+    "targets": [
+      {
+        "case_id": "kind_minutes_records",
+        "recognized": true,
+        "gate_released": true,
+        "value_witnesses": [
+          {
+            "rows": 4,
+            "values_match": true,
+            "null_preserved": true,
+            "duplicates_preserved": true
+          },
+          {
+            "rows": 4,
+            "values_match": true,
+            "null_preserved": true,
+            "duplicates_preserved": true
+          }
+        ]
+      },
+      {
+        "case_id": "svc_units_en",
+        "recognized": false,
+        "gate_released": false,
+        "evidence": "gate-exposure-01 historical false block; grammar excludes aggregate"
+      },
+      {
+        "case_id": "output_en",
+        "recognized": false,
+        "gate_released": false,
+        "evidence": "controlled-refusal-01 historical false block; Return the transaction count is outside FORM"
+      }
+    ],
+    "author_wrong_plan_controls": [
+      {
+        "schema": "records",
+        "label": "baseline_blocked_wrong",
+        "verdict": "mismatch",
+        "before": [
+          [
+            "returns",
+            "return"
+          ]
+        ],
+        "after": [
+          [
+            "returns",
+            "return"
+          ]
+        ],
+        "exemptions": []
+      },
+      {
+        "schema": "records",
+        "label": "baseline_passing_wrong",
+        "verdict": "mismatch",
+        "before": [],
+        "after": [],
+        "exemptions": []
+      },
+      {
+        "schema": "observations",
+        "label": "baseline_blocked_wrong",
+        "verdict": "mismatch",
+        "before": [
+          [
+            "returns",
+            "return"
+          ]
+        ],
+        "after": [
+          [
+            "returns",
+            "return"
+          ]
+        ],
+        "exemptions": []
+      },
+      {
+        "schema": "observations",
+        "label": "baseline_passing_wrong",
+        "verdict": "mismatch",
+        "before": [],
+        "after": [],
+        "exemptions": []
+      }
+    ],
+    "boundary": "Gate-only saved-plan replay with current fixture metadata; not served answers or unseen-user performance",
+    "source_hashes": {
+      ".artifacts/catalog-finite-gate-20260915/finite_gate.py": "2849eec27994590ac00f9375cc47c38f1057482d2e01bf6233f712ba3b2c18ed",
+      ".artifacts/catalog-finite-gate-20260915/iot_spike-schema.json": "9daa9318db3f565914b1401b16ca13cb19d1499c77c58490c88ae5bc531c7ec4",
+      ".artifacts/catalog-finite-gate-20260915/measure.py": "6e8844b76be7fc38d6d68877819844988e56b99069730648812d86e92d5761ef",
+      ".artifacts/catalog-finite-gate-20260915/service_test-schema.json": "7fbeeeb6cd2b3ddb9677ff71bbd9b1cb3dddacea2722191b90a5adbccd3cc6b2",
+      ".artifacts/catalog-finite-gate-20260915/test_finite_gate.py": "eb0fb5c0917c90d0e2e00486c57f0463e5d2dde903e6fa7d0e2ae418c5007d73",
+      ".artifacts/parent-rows-impl/main/manifest.json": "6ba529d646d690a866072fff61efdb70ad3eb100ece630ef49b258ada370c803",
+      ".artifacts/parent-rows-impl/main/result-cov_leased_fee.json": "912b612ebde2b2d0124d752fc38ca902ac8a94aa58ccb7fee3185872751e294d",
+      ".artifacts/parent-rows-impl/main/result-cov_mttr.json": "931713d3124577033504fe0dbd8638f4c7b27910ac6b3207a0be321df538a6e1",
+      ".artifacts/parent-rows-impl/main/result-explicit_minutes_duplicates.json": "cb5583e02345169b2442ff1d0693fc872b210cde6f86741f62cf28c2eb88b53c",
+      ".artifacts/parent-rows-impl/main/result-kind_critical_count.json": "581507eb5cb91551d78fb41f0b08ec42a62a57c24f2da0d396d372428cb4c387",
+      ".artifacts/parent-rows-impl/main/result-kind_critical_rows.json": "e2c316167a849f719ea1015c8e2c563b3d97e5b6d4693ed56966632efed29096",
+      ".artifacts/parent-rows-impl/main/result-kind_minutes_records.json": "95905949813bbfa09145b61ab6e2382677e37116392b179396d6824186ecf0f5",
+      ".artifacts/parent-rows-impl/main/result-kind_rented_rows.json": "3dc77ef9bbdc0f8f4a98fe67fa3952155a4c60c062781fffec4ecb6824710b1e",
+      ".artifacts/parent-rows-impl/main/result-kind_vip_rows.json": "0732e0baaf0218fac15f9fdf9282aadba39947619fc0a478c2afa7d2ab0c92fb",
+      ".artifacts/parent-rows-impl/main/result-parent_alert_models.json": "32baadea3ba58929134660935702d25a7f869487deeae62fa81c43307c10d8e5",
+      ".artifacts/parent-rows-impl/main/result-parent_labels_only.json": "12b2f2b6530c5fc6d0c826cbd3c6d1af570448b7ca40920cc0d3e03652a1b8aa",
+      ".artifacts/parent-rows-impl/main/result-parent_missing_lease.json": "00e200d56de86b4cbbccdd766d1565c455f0ce450158397c1da23194d62fdb28",
+      ".artifacts/parent-rows-impl/main/result-parent_multihop.json": "088424c445efa15b20c70790a248b0f85e6c573bff41b57bd16149c4d621aeb7",
+      ".artifacts/parent-rows-impl/main/result-parent_original_joined_request.json": "acab76e773e50b882a57e0d0e450c98355bfe4b33b5e7118325cdd3f47c2ea16",
+      ".artifacts/parent-rows-impl/main/result-parent_top_fees.json": "41a2a2bacff43ca4d436ef51fcd8fe0754df5e9a2dc57bfc6c996be271db036a",
+      ".artifacts/parent-rows-impl/main/result-parent_unique_nonpk.json": "30b97d620e0e6e478c99ae3116cdf9d563da3d205ceadf27fb7e10debd08fad5",
+      ".artifacts/parent-rows-impl/main/result-parent_worklog_ids.json": "841d7b80fac13c0dea8de7e9519359de36187b77b8b2ea4b9629d2870e6aecfc",
+      ".artifacts/parent-rows-impl/main/result-parent_worklog_status.json": "73e671d861dc0195cfa848a327ce9ec02481fcab0a6137750aef2f3567dbdbe3",
+      ".artifacts/parent-rows-impl/main/result-rows_alert_columns.json": "9ab88607c802785948a0ba0a3550ab14efd35689fd23b66c68b414a4cafae889",
+      ".artifacts/parent-rows-impl/main/result-rows_all_sites.json": "ef803433d231ed239ed7db94b603b3b05665a6d22f573f6d82379944688060e7",
+      ".artifacts/parent-rows-impl/main/result-rows_device_columns.json": "dc362fb89a1549172a94ff4aadfaebd7af627776c33a8e612099b2b7450a2eff",
+      ".artifacts/parent-rows-impl/main/result-rows_every_worklog.json": "0f120257b00e40f06758199b54d9a0d0294fa556700d8468c2918a7a3d4c5c11",
+      ".artifacts/parent-rows-impl/main/result-rows_firmware_ja.json": "869599a5a945fd93e1848c2a6f5c8935065891ff73b1d7bc0bbebe439bfee538",
+      ".artifacts/parent-rows-impl/main/result-rows_null_minutes.json": "c1002ab82da85b41131eab66fd970ebe421ac159801b1d1e5fc48ebbeaa9962d",
+      ".artifacts/parent-rows-impl/main/result-rows_offline_devices.json": "068fa30c920ca71d28eef2a07d578af611f7cfeb67abd1b66ab16442fcd6a402",
+      ".artifacts/parent-rows-impl/main/result-rows_original_device_details.json": "9b7ec4e18b10dcab74ec8e23af58e332d0004a44b6f5f586a93cbd2473656abc",
+      ".artifacts/parent-rows-impl/main/result-rows_ticket_columns.json": "1f14bb3468bbdf9f399f410961d9ace1468ff3aa415c15b0b87555d9d48c8c91",
+      ".artifacts/parent-rows-impl/main/result-rows_top_fees.json": "e3b610905c8ae3f27371c0a64a9fafa1ff4b65819554a7cabf3b49b0d9d8c41c",
+      ".artifacts/parent-rows-impl/main/result-rows_zero_minutes.json": "ebc327e3b8fcf88530a730f9f286efe16f718d4cd5d00c804ad68d063e68390a",
+      ".artifacts/parent-rows-impl/main/result-svc_absent_feb_en.json": "73620d6164da8b8a6265e602528f604f9d1de09875531361ca4b2eac958cd6fd",
+      ".artifacts/parent-rows-impl/main/result-svc_absent_feb_zh.json": "a9f4253f03af74dd934c50db77a7fa26afe4f7adde5cee60acfff246923fca58",
+      ".artifacts/parent-rows-impl/main/result-svc_team_minutes.json": "088ba35823b2654c2df75f793719cc8f86c32f066f5bb352d9006b2245bf392e",
+      ".artifacts/parent-rows-impl/main/result-svc_total_minutes.json": "4e91bca8848cb899a90122b41951796d17a1cbea23dcd2c9743ceab454d844e7",
+      ".artifacts/parent-rows-impl/remaining/result-default_cov_leased_fee.json": "fe73cb38e742062ae02ac3c6e551736288f48e1ed0d5257725e68b26f08993b2",
+      ".artifacts/parent-rows-impl/remaining/result-default_cov_mttr.json": "dec5a426c2f771e867e5b8452653d3aba60c5c131af3f219aa86bb12699167cb",
+      ".artifacts/parent-rows-impl/remaining/result-default_svc_absent_feb_zh.json": "ddab86f59f69ef150e6aae2eb2f7b68d59703270b5d7b7c2d78484b5f386df88",
+      ".artifacts/row-integration-20260915/main/manifest.json": "6fa0a5554d8745ef9e0154cf906ce598b6f90a6d14f524b3a23d4406ad72bee0",
+      "docs/plan/catalog-and-finite-gate.md": "caeec0241a27e0aa3283e7b9d616a286d3bf9a41380a144c61d013cf80f38318",
+      "evals/cases/tier0/service_adversarial.yaml": "03b5100ae054b184d46f6a25f890b0f85e38c65963af2bf2f6f893fcddfd80fe",
+      "evals/fixtures/service_v1/overlay.json": "6abad340f0ab8265ba7b8c30d539a59311fd98a0cda209604bec143a6152ee55",
+      "src/grepbit/adapters/sqlglot/plan_compiler.py": "d51ccd0c86c19974f58af85dd1b0f083655ee6f2e2bd9e6bef9d150578664282",
+      "src/grepbit/application/shapes.py": "e4a87bf4369d3d30913dc8f3d4028c67ee7afc646b91374b36c4513e713db46c",
+      "src/grepbit/resources/unsupported_shapes.json": "a9845f96a1492a147b4ebdadf6d42d28d3a802bacb5a08a4a0c529c78b67e58f"
+    }
+  },
+  "validation": {
+    "ruler-corrected": {
+      "tests": 76,
+      "failures": 26,
+      "errors": 0,
+      "skipped": 0
+    },
+    "implemented": {
+      "tests": 76,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "focused": {
+      "passed": true,
+      "profile": "focused",
+      "status": "pass",
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 65
+      },
+      "source_digest": "sha256:0e49bffee9dbc042b6dabd2bb5ee7b56ee49a635fe311c96e98c87d82abc4784"
+    },
+    "static": {
+      "passed": true,
+      "profile": "static",
+      "status": "pass",
+      "junit_counts": null,
+      "source_digest": "sha256:0e49bffee9dbc042b6dabd2bb5ee7b56ee49a635fe311c96e98c87d82abc4784"
+    },
+    "offline": {
+      "passed": true,
+      "profile": "offline",
+      "status": "pass",
+      "junit_counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 2313
+      },
+      "source_digest": "sha256:0e49bffee9dbc042b6dabd2bb5ee7b56ee49a635fe311c96e98c87d82abc4784"
+    }
+  },
+  "artifact_hashes": {
+    ".artifacts/catalog-finite-gate-20260915/catalog-final.json": "041d10451baa1e8e622f0b0e6ef333e1c8bcfc1d26d1d9fe76e63dd6e0a8a12a",
+    ".artifacts/catalog-finite-gate-20260915/gate-v1.json": "63bd96207a83906bfa61c18f5358144a92cf0e85f77b1f9927ca6ebe802376f8",
+    ".artifacts/catalog-finite-gate-20260915/ruler-corrected.xml": "211c2342a147f9156aa12565e87bdf87603067f9bef1f1668abbd4dc3a1312cb",
+    ".artifacts/catalog-finite-gate-20260915/implemented.xml": "c90a9ff833d0b21ca65bf8d64d247a77428e187c99e55afb5f4d3cb7902cdc45",
+    "evals/catalog_boundary.py": "04490870b8b69fcd1d9838015e9654364d17131ef2261ee6b77acedc05ba5515",
+    "evals/fixtures/catalog_boundary_v1/schema.sql": "0032122f5d96244b4560243b672a5d77d493be5b895c53b75e4492f7212d7d60",
+    "src/grepbit/adapters/postgres/introspect.py": "a936536634ad3ba4f359532f8b5ca373df7a111f29089d5227628f28f7ea914c",
+    "src/grepbit/application/policies.py": "3412a7faf15d4affc54e1b8fa8c45cb6cf396910f5e2c233a2f1066a0aea6375",
+    ".artifacts/catalog-finite-gate-20260915/focused/result.json": "52bfed47f88ced2907719d6c4f48252694af3e3dc9b61d0f89328a172e845056",
+    ".artifacts/catalog-finite-gate-20260915/static/result.json": "2ea9a2fea673ed13555c4f573ce6885f48d5b623b6eef0b8308c860cee70dc0e",
+    ".artifacts/catalog-finite-gate-20260915/offline/result.json": "2321965063e9e0f42e8807a279bb45eedc3077378139510f8dc87b1b6131d387"
+  }
+}
