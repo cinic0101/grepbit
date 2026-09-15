@@ -1,0 +1,99 @@
+{
+  "baseline_git_sha": "daeaf77e6973b0447200b3e991f624dea4209a63",
+  "artifact_root": ".artifacts/identifier-row-wire-closeout",
+  "physical_model_calls": 0,
+  "persistent_database_writes": false,
+  "owner_web_restarted": false,
+  "validation": {
+    "identifier-ruler": {
+      "passed": false,
+      "counts": {
+        "errors": 0,
+        "failures": 12,
+        "skipped": 0,
+        "tests": 13
+      },
+      "source": "sha256:b6151c229fa32fefcf4723378548c9290bb8f9e577e1d55605361fcd7e5efcdb"
+    },
+    "wire-ruler": {
+      "passed": false,
+      "counts": {
+        "errors": 0,
+        "failures": 4,
+        "skipped": 0,
+        "tests": 14
+      },
+      "source": "sha256:ae020db1b9a4921f8de0e3689dce65c3acb0b7274333c74b15491d7c1ba9bba7"
+    },
+    "combined-focused": {
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 124
+      },
+      "source": "sha256:99802a6d13e864ef62bc7c45198d277405485d28e5698b4f556dc6a53a7403b8"
+    },
+    "static": {
+      "passed": true,
+      "counts": null,
+      "source": "sha256:99802a6d13e864ef62bc7c45198d277405485d28e5698b4f556dc6a53a7403b8"
+    },
+    "offline": {
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 2313
+      },
+      "source": "sha256:99802a6d13e864ef62bc7c45198d277405485d28e5698b4f556dc6a53a7403b8"
+    }
+  },
+  "artifact_sha256": {
+    "identifier-ruler/result.json": "b3ff93dfc2bda863156931d6731102c9f5403a6ad48afe4655c6f9eed6cd4ba8",
+    "wire-ruler/result.json": "3dd1d08e45619ce74b3ca7bc98268abfa1b288a42662457379be1f30fe12c901",
+    "combined-focused/result.json": "1a128b0ac10a2c669a6fb2b767848322a7050134afad33407b7bbf685b214aae",
+    "postgres-result.json": "a592eb1867a9e19e317f3a2ffd91965e435402e95aa89131658b24131202450a",
+    "replay-result.json": "e0934d65c645e112956dfff683304e470151b35d013fb8b5c58bbba8d6f27f75",
+    "static/result.json": "ac9137ee66b921d89db0f12021a80658de5a2cf4517ab15ccb949ab0b1dad66f",
+    "offline/result.json": "5f800c68c273bd545071cd411a70bc6067d063b14c9a74c2a6ad57bca2524759",
+    "postgres_probe.py": "5134792f088c3e23ef0bea665e14020fcd3cfaf11789af9a2b14ffd6fee3b3ca",
+    "replay.py": "150931c2a2c1c5c8d41d78ae50c0084fd1a74df1b5022a241cb867746ee1d8f6"
+  },
+  "replay": {
+    "cases": 35,
+    "identical_proposals_and_results": true,
+    "outcomes": {
+      "correct_answer": 20,
+      "necessary_refusal": 14,
+      "unnecessary_refusal": 1
+    },
+    "simulated_completion_calls": {
+      "baseline": 45,
+      "candidate": 35
+    },
+    "model_repairs": {
+      "baseline": 10,
+      "candidate": 0
+    },
+    "duplicate_normalizations": 10,
+    "source": "sha256:99802a6d13e864ef62bc7c45198d277405485d28e5698b4f556dc6a53a7403b8",
+    "latency": "not measured; saved-response replay is not live E2E latency"
+  },
+  "postgres": {
+    "value_matches": 6,
+    "independent_hand_values": true,
+    "unquoted_join_mutant_wrong_values": true,
+    "mutant_rejected": true,
+    "relation_substitution": "SELECT-only CTE fixtures; no new catalog fixture"
+  },
+  "limits": [
+    "Known 10/32 Details noncanonical initial outputs remain shape variants; freeze unchanged",
+    "No new natural questions, model calls or live latency measurement",
+    "Existing Return/minutes gate false refusal remains",
+    "Actual cross-schema catalog fixture remains open",
+    "No new HTTP/browser acceptance or owner Web restart"
+  ]
+}

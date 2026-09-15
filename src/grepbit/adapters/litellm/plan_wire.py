@@ -25,6 +25,7 @@ from grepbit.domain.plan import is_output_name
 from grepbit.domain.schema_model import ColumnKind, SchemaModel
 
 WIRE_REVISION = "wire-v3"
+ROW_COLUMNS_NORMALIZATION = "dropped exact duplicate plan.columns matching rows.columns"
 
 _IDENT = "[A-Za-z_][A-Za-z0-9_$]*"
 _COLUMN = {"type": "string", "pattern": f"^{_IDENT}\\.{_IDENT}$"}
@@ -361,6 +362,25 @@ def normalize_variants(plan: dict[str, Any], repairs: list[str]) -> None:
     accepts; none guesses meaning. Each one is recorded in ``repairs`` so the
     distance between the shown form and what the model writes stays visible.
     """
+
+    rows = plan.get("rows")
+    columns = rows.get("columns") if isinstance(rows, dict) else None
+    if (
+        isinstance(columns, list)
+        and 1 <= len(columns) <= 32
+        and rows.get("all_columns", False) is False
+        and plan.get("columns") == columns
+        and all(
+            (isinstance(c, str) and re.fullmatch(f"{_IDENT}\\.{_IDENT}", c))
+            or (_is_reference(c) and all(re.fullmatch(_IDENT, v) for v in c.values()))
+            for c in columns
+        )
+    ):
+        # Exact ordered equality BEFORE coercion; do not infer equivalence,
+        # union conflicting requirements or forgive any other extra field.
+        # Domain/permission/visibility/kind/compiler checks still follow.
+        del plan["columns"]
+        repairs.append(ROW_COLUMNS_NORMALIZATION)
 
     # a grain written on the plan instead of inside time
     grain = plan.pop("grain", None)

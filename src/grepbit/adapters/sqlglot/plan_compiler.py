@@ -71,7 +71,7 @@ from grepbit.domain.time_literals import (
     timestamp_storage,
 )
 
-COMPILER_REVISION = "plan-compiler-sqlglot-v2-typed-time"
+COMPILER_REVISION = "plan-compiler-sqlglot-v3-exact-identifiers"
 LATEST_RANK = "latest_rank"
 PERIOD_COLUMN = "period_start"
 _AGGREGATE_FUNCTIONS = {
@@ -88,6 +88,20 @@ _ORDERED_KINDS = {
     ColumnKind.TIMESTAMP,
     ColumnKind.DATE,
 }
+
+
+def _exact_identifier_sql(tree: exp.Expression) -> str:
+    """Preserve catalog/output spelling in every nested PostgreSQL scope.
+
+    PostgreSQL folds unquoted ASCII capitals; SQLGlot retains their spelling.
+    Handle identifiers, not SQL text (literals and parameters are untouched).
+    Lowercase identifiers keep their existing representation; the dialect's
+    serializer still quotes reserved words where required.
+    """
+    for identifier in tree.find_all(exp.Identifier):
+        if any("A" <= char <= "Z" for char in identifier.name):
+            identifier.set("quoted", True)
+    return tree.sql(dialect="postgres")
 
 
 class PlanCompiler:
@@ -1155,7 +1169,7 @@ class PlanCompiler:
             }
         )
         compiled = CompiledQuery(
-            physical_sql=query.sql(dialect="postgres"),
+            physical_sql=_exact_identifier_sql(query),
             execution_parameters=parameters,
             parameter_mode=ParameterMode.PRESERVED_BINDING,
             semantic_refs=semantic_refs,
@@ -1356,9 +1370,9 @@ class PlanCompiler:
             tree = tree.limit(exp.Placeholder(this=name))
         compiled = population.compiled.model_copy(
             update={
-                "physical_sql": tree.sql(dialect="postgres"),
+                "physical_sql": _exact_identifier_sql(tree),
                 "execution_parameters": parameters,
-                "compiler_revision": "plan-compiler-rows-v4-parent-projection",
+                "compiler_revision": "plan-compiler-rows-v5-exact-identifiers",
                 "semantic_refs": sorted(
                     set(population.compiled.semantic_refs)
                     | {c.id for c in refs}

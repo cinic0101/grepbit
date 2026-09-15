@@ -19,6 +19,11 @@ Companion reading: `../research/tier0-generalization.md` (every experiment,
 with numbers) and `../history/lessons-from-v1.md`.
 
 Current query-extension integration result:
+[`identifier-row-wire-closeout-01.md`](../research/identifier-row-wire-closeout-01.md):
+shared exact-identifier serialization fixes a PostgreSQL case-folding JOIN error;
+saved-response replay supports narrow traced duplicate-row-column normalization,
+without changing the prompt, gate, answer/refusal counts or construct freeze.
+
 [`parent-row-projection-01.md`](../research/parent-row-projection-01.md): explicit
 Details can attach one eligible direct parent's attributes; segment population,
 visibility, catalog/inheritance and flat output boundaries validated. Existing

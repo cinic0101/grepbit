@@ -1,5 +1,22 @@
 # Tier-0 contract
 
+## Exact PostgreSQL identifier binding (2026-09-15 correction)
+
+The shared compiler preserves the catalog spelling of schema, relation, column
+and output identifiers. Before serialization it quotes every AST Identifier
+containing an ASCII capital, including nested latest/without/aggregate scopes.
+Already-safe lowercase SQL is unchanged; this is not a SQL-text replacement and
+does not modify literal values or bound parameters. The independent SQL reader
+rejects unquoted ASCII-capital identifiers (`identifier_case_unquoted`) before
+trusting SQLGlot's spelling-based comparisons. Quoting is identity preservation,
+not permission to query another namespace; SQL policy remains unchanged.
+
+This corrects a demonstrated ParentId/parentid JOIN collision, not planner intent.
+Compiler revisions: `plan-compiler-sqlglot-v3-exact-identifiers` and
+`plan-compiler-rows-v5-exact-identifiers`. See
+`../research/identifier-row-wire-closeout-01.md` for PostgreSQL witnesses and
+independent raw-response replay. Historical lowercase results are not regraded.
+
 ## Temporal repair preservation (integrated 2026-09-15)
 
 After a model validation failure, the existing one repair turn must not silently
@@ -619,6 +636,7 @@ superset and rewrites it to the domain models without guessing meaning:
 |---|---|---|
 | `numerator` / `denominator` beside a missing or partial `ratio` (batch 1 q49, five runs) | `ratio: {numerator, denominator}` | nothing: it is the shown form |
 | `{"table": t, "column": c}` objects (the v1 form) | kept | nothing |
+| `plan.columns` exactly duplicates the nonempty ordered `rows.columns` list of qualified strings or strict reference objects, with all_columns absent/false | drop only `plan.columns`; full validation still applies | `shape_variants` (`dropped exact duplicate plan.columns matching rows.columns`); **not** a meaning normalization |
 | an alias in the question's language (銷售總額), or any quotable text up to 63 bytes; the `order`, `having`, `growth` fields that name it | kept; the compiler quotes it, so the column comes back under that name (owner's decision 2026-09-11) | nothing |
 | a qualified output name in `order`, `having` or `growth` (`product.product_name`), or a qualified column inside its own reference | the bare name | nothing (unambiguous, owner's decision 2026-09-11) |
 | a bare column name that resolves to one table (or the base table) | `table.column` | `shape_repairs` (`c -> t.c`) |
@@ -632,6 +650,16 @@ superset and rewrites it to the domain models without guessing meaning:
 | an alias that cannot be quoted at all (a quote or control character inside, more than 63 bytes) | its ASCII part, or `measure_N`; the `order`, `having`, `growth` items that named it follow | `shape_variants` |
 | a non-ratio share measure whose own filter names a grouped column (holdout 2 q25: 1.0 for that group, 0 elsewhere) | the filter moves to the plan's filters, so the after-share selection applies; ratio-wrapper filters remain for rejection | `shape_repairs` |
 | a month (`YYYY-MM`), day or year written as a filter literal on a date or timestamp column when the plan has no window (the 12B control: `sale_date IN ('2025-12')`, PostgreSQL 22007) | the time window it can only mean; the time column taken from the filter when the plan names none | `shape_repairs` (`date literal ...`) and an assumption |
+
+Exact row-column deduplication does not accept reordered/different lists, a
+top-level-only projection, empty/malformed lists, unqualified references or
+all_columns=true. It does not canonicalize two different lists before comparing,
+take a union, ignore unrelated extras or bypass permissions, kind, visibility,
+compiler or SQL policy. The canonical shown schema/prompt are unchanged and
+extra=forbid remains in force. Ordinary validation may still reject an identical
+list (e.g. duplicate or unknown projections). Original noncanonical-output rate,
+deterministic normalization count and model repair calls are distinct metrics;
+the construct freeze is not relaxed by reducing model calls.
 
 The repair list is read two ways (`ports/ask.py`, `is_meaning_repair`):
 `shape_variants` are departures from the shown form that were rewritten

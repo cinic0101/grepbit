@@ -199,6 +199,15 @@ def check_compiled(
 
     tree = sqlglot.parse_one(sql, read="postgres")
     violations: list[str] = []
+    # SQLGlot's .name is spelling, not PostgreSQL's resolved identity. Reject
+    # case-foldable unquoted identifiers before using those names in invariants.
+    # This also covers nested scopes, relation/schema names and output aliases.
+    if any(
+        not identifier.args.get("quoted")
+        and any("A" <= char <= "Z" for char in identifier.name)
+        for identifier in tree.find_all(exp.Identifier)
+    ):
+        violations.append("identifier_case_unquoted")
     if plan.rows is not None:
         if not isinstance(tree, exp.Select):
             violations.append("row_select_required")

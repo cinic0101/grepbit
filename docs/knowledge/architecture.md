@@ -151,6 +151,11 @@ single-PK parent's attributes with LEFT JOIN. Existing population joins/predicat
 remain separate provenance; self-check verifies exact joins and unchanged scope.
 Internal schema metadata retains omitted original FK keys and inheritance flags;
 neither becomes model-generated business knowledge. See parent-row-projection-01.
+The shared SQL serialization boundary preserves case-sensitive identifier spelling
+across every nested scope; self-check rejects unquoted case-foldable identifiers.
+The wire normalizer can remove only an exact redundant top-level row projection,
+recorded as a shape variant; it does not discard conflicting or unknown fields.
+See identifier-row-wire-closeout-01 for the PostgreSQL and saved-response evidence.
 The research rows wrapper delegates to this compiler; unit conversion and
 independent aggregates remain isolated research constructs. Projected NULLs and
 duplicates survive, PK ordering is stable, and row truncation is still disclosed.
