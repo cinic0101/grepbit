@@ -1184,10 +1184,13 @@ class PlanCompiler:
             ):
                 raise PlanError("unknown_column", ref.id)
         outputs = [c.column for c in refs]
-        if any(item.field not in outputs for item in plan.order):
+        if any(
+            not base.column(item.field) or not self._visible(base.name, item.field)
+            for item in plan.order
+        ):
             raise PlanError(
                 "row_projection_unsupported",
-                "Row ordering must name a projected column.",
+                "Row ordering must name a visible base-table column.",
             )
         # Reuse the established population compiler (typed filters and segments),
         # then replace only its projection; no parallel grounding/execution path.
@@ -1211,7 +1214,7 @@ class PlanCompiler:
         for item in plan.order:
             tree = tree.order_by(
                 exp.Ordered(
-                    this=exp.column(item.field, quoted=True),
+                    this=exp.column(item.field, table=base.name, quoted=True),
                     desc=item.direction == "desc",
                     nulls_first=False,
                 )
@@ -1235,10 +1238,11 @@ class PlanCompiler:
             update={
                 "physical_sql": tree.sql(dialect="postgres"),
                 "execution_parameters": parameters,
-                "compiler_revision": "plan-compiler-rows-v1",
+                "compiler_revision": "plan-compiler-rows-v2",
                 "semantic_refs": sorted(
                     set(population.compiled.semantic_refs)
                     | {c.id for c in refs}
+                    | {f"{base.name}.{o.field}" for o in plan.order}
                     | {f"{base.name}.{k}" for k in base.primary_key}
                 ),
             }

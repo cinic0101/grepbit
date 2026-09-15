@@ -30,7 +30,7 @@ from grepbit.ports.ask import DATE_LITERAL_REPAIR, RELATIVE_WINDOW_REPAIR
 from grepbit.ports.grounding import GroundingModelError
 
 PLAN_PROMPT_REVISION = "plan-classify-json-v15"
-ROW_PLAN_PROMPT_REVISION = "plan-classify-json-v16-rows-pilot"
+ROW_PLAN_PROMPT_REVISION = "plan-classify-json-v17-row-order"
 ROW_PLANNER_STRATEGY_REVISION = "plan-v15-rows-fallback-v1"
 
 _RULES_ALL = (
@@ -665,11 +665,12 @@ def _strip_qualified_fields(
 
     Order, having and growth refer to outputs by name; the model sometimes
     qualifies them like columns. The prefix is dropped only when the bare
-    name is an output the plan produces, so nothing is guessed.
+    name is an output the plan produces, so nothing is guessed. For rows,
+    ordering may name any visible base column; never discard a foreign prefix.
     """
 
     names = _output_names(plan)
-    if (plan.get("rows") or {}).get("all_columns"):
+    if plan.get("rows") is not None:
         table = model.table(plan.get("base_table"))
         if table:
             names.update(c.name for c in table.columns)
@@ -681,6 +682,12 @@ def _strip_qualified_fields(
         for item in plan.get(section) or []:
             value = item.get(key) if isinstance(item, dict) else None
             if isinstance(value, str) and "." in value:
+                if (
+                    section == "order"
+                    and plan.get("rows") is not None
+                    and value.rsplit(".", 1)[0] != plan.get("base_table")
+                ):
+                    raise ValueError("plan_rows_order_requires_base_columns")
                 bare = value.rsplit(".", 1)[1]
                 if bare in names:
                     # a qualified output name is an unambiguous way to write it
@@ -891,7 +898,9 @@ class ChatCompletionsPlanClient:
                 "details. Require base_table and omit measures, dimensions, time, "
                 "having, growth, latest and without. Row projection and filters "
                 "may only use that base table; joined details are unsupported. "
-                "Order names projected columns. Do not add LIMIT for all records; "
+                "Order may name any visible base-table column, "
+                "even when not projected. "
+                "Do not add LIMIT for all records; "
                 "the server bounds output and discloses truncation. Rows preserve "
                 "NULL and duplicates; the server supplies primary-key ordering. "
                 "Use ordinary measures for aggregate questions, never rows to "

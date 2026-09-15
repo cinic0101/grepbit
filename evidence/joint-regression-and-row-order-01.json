@@ -1,0 +1,651 @@
+{
+  "baseline_commit": "e5c2c2cc528313fa5c6b135b2777a7dbdb330369",
+  "date": "2026-09-15",
+  "decision": "retain_opt_in_row_order_repair_no_joint_or_web_promotion",
+  "budget": {
+    "actual_calls": 167,
+    "limit": 180,
+    "runs": [
+      {
+        "name": "iot",
+        "arm": "legacy",
+        "calls": 19
+      },
+      {
+        "name": "iot",
+        "arm": "joint",
+        "calls": 19
+      },
+      {
+        "name": "service",
+        "arm": "joint",
+        "calls": 23
+      },
+      {
+        "name": "service",
+        "arm": "legacy",
+        "calls": 23
+      },
+      {
+        "name": "coverage_iot",
+        "arm": "legacy",
+        "calls": 8
+      },
+      {
+        "name": "coverage_iot",
+        "arm": "joint",
+        "calls": 8
+      },
+      {
+        "name": "service_adversarial",
+        "arm": "joint",
+        "calls": 13
+      },
+      {
+        "name": "service_adversarial",
+        "arm": "legacy",
+        "calls": 12
+      },
+      {
+        "name": "followup",
+        "calls": 42
+      }
+    ]
+  },
+  "paired_historical_grading": [
+    {
+      "path": ".artifacts/joint-regression-20260915/paired/coverage_iot-joint.json",
+      "sha256": "b4237f60cc4aa114214b1fe906daa45ff9e9ae0b7f0ebba774c8a53669141209",
+      "group": "coverage_iot-joint",
+      "counts": {
+        "cases": 8,
+        "correct": 8,
+        "answerable_correct": 0,
+        "answerable_total": 0,
+        "refusals_correct": 8,
+        "refusals_total": 8,
+        "status_counts": {
+          "semantic_gap": 8
+        },
+        "incorrect_case_ids": []
+      },
+      "actual_calls": 8
+    },
+    {
+      "path": ".artifacts/joint-regression-20260915/paired/coverage_iot-legacy.json",
+      "sha256": "4de90474db3d0e2c593445c8376ca8479d1e18cd51571a0756c847e1347ddb8a",
+      "group": "coverage_iot-legacy",
+      "counts": {
+        "cases": 8,
+        "correct": 8,
+        "answerable_correct": 0,
+        "answerable_total": 0,
+        "refusals_correct": 8,
+        "refusals_total": 8,
+        "status_counts": {
+          "semantic_gap": 8
+        },
+        "incorrect_case_ids": []
+      },
+      "actual_calls": 8
+    },
+    {
+      "path": ".artifacts/joint-regression-20260915/paired/iot-joint.json",
+      "sha256": "c4ef5a32030ee4ddf321afac021f28b3e1a40aaa3cbf551e4259d9ee057eb3f5",
+      "group": "iot-joint",
+      "counts": {
+        "cases": 20,
+        "correct": 19,
+        "answerable_correct": 14,
+        "answerable_total": 15,
+        "refusals_correct": 5,
+        "refusals_total": 5,
+        "status_counts": {
+          "answered": 16,
+          "semantic_gap": 2,
+          "unsafe": 1,
+          "unsupported": 1
+        },
+        "incorrect_case_ids": [
+          "alerts_trend_daily_july_first_week"
+        ]
+      },
+      "actual_calls": 19
+    },
+    {
+      "path": ".artifacts/joint-regression-20260915/paired/iot-legacy.json",
+      "sha256": "0bfedfc5fa41e178b4026b3761b6d30a5385ad491543fb73f5ebcd6dfd764bfa",
+      "group": "iot-legacy",
+      "counts": {
+        "cases": 20,
+        "correct": 20,
+        "answerable_correct": 15,
+        "answerable_total": 15,
+        "refusals_correct": 5,
+        "refusals_total": 5,
+        "status_counts": {
+          "answered": 16,
+          "semantic_gap": 2,
+          "unsafe": 1,
+          "unsupported": 1
+        },
+        "incorrect_case_ids": []
+      },
+      "actual_calls": 19
+    },
+    {
+      "path": ".artifacts/joint-regression-20260915/paired/service-joint.json",
+      "sha256": "9ef5bc51a2db49158cb095601fa85781bdde28acbdbe1fd5bb042c54479fa534",
+      "group": "service-joint",
+      "counts": {
+        "cases": 24,
+        "correct": 24,
+        "answerable_correct": 22,
+        "answerable_total": 22,
+        "refusals_correct": 2,
+        "refusals_total": 2,
+        "status_counts": {
+          "answered": 22,
+          "unsafe": 1,
+          "unsupported": 1
+        },
+        "incorrect_case_ids": []
+      },
+      "actual_calls": 23
+    },
+    {
+      "path": ".artifacts/joint-regression-20260915/paired/service-legacy.json",
+      "sha256": "8dc650fe70ce4938c0fa877097b9bbc14c7bb5c00988b80b3a738d82e35049b0",
+      "group": "service-legacy",
+      "counts": {
+        "cases": 24,
+        "correct": 24,
+        "answerable_correct": 22,
+        "answerable_total": 22,
+        "refusals_correct": 2,
+        "refusals_total": 2,
+        "status_counts": {
+          "answered": 22,
+          "semantic_gap": 1,
+          "unsafe": 1
+        },
+        "incorrect_case_ids": []
+      },
+      "actual_calls": 23
+    },
+    {
+      "path": ".artifacts/joint-regression-20260915/paired/service_adversarial-joint.json",
+      "sha256": "612aa14323c800627ffd32deedbf535e4ee55f75c9c141e25f7804bf8df6d2cf",
+      "group": "service_adversarial-joint",
+      "counts": {
+        "cases": 12,
+        "correct": 9,
+        "answerable_correct": 9,
+        "answerable_total": 12,
+        "refusals_correct": 0,
+        "refusals_total": 0,
+        "status_counts": {
+          "answered": 9,
+          "clarify": 1,
+          "unsupported": 2
+        },
+        "incorrect_case_ids": [
+          "svc_absent_sum_zh",
+          "svc_absent_feb_ja",
+          "svc_units_en"
+        ]
+      },
+      "actual_calls": 13
+    },
+    {
+      "path": ".artifacts/joint-regression-20260915/paired/service_adversarial-legacy.json",
+      "sha256": "24b8d103d64144b852773b86d0c48089a788e8b504d40f7c0947c354d8570b85",
+      "group": "service_adversarial-legacy",
+      "counts": {
+        "cases": 12,
+        "correct": 10,
+        "answerable_correct": 10,
+        "answerable_total": 12,
+        "refusals_correct": 0,
+        "refusals_total": 0,
+        "status_counts": {
+          "answered": 10,
+          "clarify": 1,
+          "semantic_gap": 1
+        },
+        "incorrect_case_ids": [
+          "svc_absent_feb_ja",
+          "svc_units_en"
+        ]
+      },
+      "actual_calls": 12
+    }
+  ],
+  "followup": {
+    "artifact": {
+      "path": ".artifacts/joint-regression-20260915/followup/results.json",
+      "sha256": "0833e131ed0fb9adea3137dd6e2203a2ece6f7df3d840bd72d1439d46fe9b3a8"
+    },
+    "manifest": {
+      "path": ".artifacts/joint-regression-20260915/followup/manifest.json",
+      "sha256": "1a7ebdba34780aa458bfa93eef7fe7075da9a7ca08a884abcffcca109d482a90"
+    },
+    "results": [
+      {
+        "case_id": "rows_original_device_details",
+        "arm": "fallback17",
+        "status": "answered",
+        "reason": null,
+        "outcome": "correct_answer",
+        "calls": 2
+      },
+      {
+        "case_id": "rows_device_columns",
+        "arm": "fallback17",
+        "status": "answered",
+        "reason": null,
+        "outcome": "correct_answer",
+        "calls": 2
+      },
+      {
+        "case_id": "rows_offline_devices",
+        "arm": "fallback17",
+        "status": "answered",
+        "reason": null,
+        "outcome": "wrong_answer",
+        "calls": 1
+      },
+      {
+        "case_id": "rows_top_fees",
+        "arm": "fallback17",
+        "status": "answered",
+        "reason": null,
+        "outcome": "correct_answer",
+        "calls": 2
+      },
+      {
+        "case_id": "rows_firmware_ja",
+        "arm": "fallback17",
+        "status": "answered",
+        "reason": null,
+        "outcome": "wrong_answer",
+        "calls": 1
+      },
+      {
+        "case_id": "rows_all_sites",
+        "arm": "fallback17",
+        "status": "answered",
+        "reason": null,
+        "outcome": "wrong_answer",
+        "calls": 1
+      },
+      {
+        "case_id": "rows_alert_columns",
+        "arm": "fallback17",
+        "status": "answered",
+        "reason": null,
+        "outcome": "correct_answer",
+        "calls": 2
+      },
+      {
+        "case_id": "rows_joined_details_gap",
+        "arm": "fallback17",
+        "status": "answered",
+        "reason": null,
+        "outcome": "wrong_answer",
+        "calls": 1
+      },
+      {
+        "case_id": "rows_ticket_columns",
+        "arm": "fallback17",
+        "status": "answered",
+        "reason": null,
+        "outcome": "correct_answer",
+        "calls": 2
+      },
+      {
+        "case_id": "rows_null_minutes",
+        "arm": "fallback17",
+        "status": "answered",
+        "reason": null,
+        "outcome": "correct_answer",
+        "calls": 2
+      },
+      {
+        "case_id": "rows_every_worklog",
+        "arm": "fallback17",
+        "status": "answered",
+        "reason": null,
+        "outcome": "correct_answer",
+        "calls": 2
+      },
+      {
+        "case_id": "rows_zero_minutes",
+        "arm": "fallback17",
+        "status": "answered",
+        "reason": null,
+        "outcome": "wrong_answer",
+        "calls": 2
+      },
+      {
+        "case_id": "cov_false_alarms",
+        "arm": "fallback17",
+        "status": "semantic_gap",
+        "reason": "semantic_gap",
+        "outcome": "necessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "cov_acknowledged",
+        "arm": "fallback17",
+        "status": "semantic_gap",
+        "reason": "semantic_gap",
+        "outcome": "necessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "cov_warranty_downtime",
+        "arm": "fallback17",
+        "status": "semantic_gap",
+        "reason": "semantic_gap",
+        "outcome": "necessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "cov_mttr",
+        "arm": "fallback17",
+        "status": "semantic_gap",
+        "reason": "semantic_gap",
+        "outcome": "necessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "cov_escalated_en",
+        "arm": "fallback17",
+        "status": "semantic_gap",
+        "reason": "semantic_gap",
+        "outcome": "necessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "cov_vip_sites_en",
+        "arm": "fallback17",
+        "status": "semantic_gap",
+        "reason": "semantic_gap",
+        "outcome": "necessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "cov_repeated_alerts",
+        "arm": "fallback17",
+        "status": "semantic_gap",
+        "reason": "semantic_gap",
+        "outcome": "necessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "cov_leased_fee",
+        "arm": "fallback17",
+        "status": "semantic_gap",
+        "reason": "semantic_gap",
+        "outcome": "necessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "svc_child_fanout_refusal",
+        "arm": "fallback17",
+        "status": "semantic_gap",
+        "reason": "semantic_gap",
+        "outcome": "necessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "kind_rented_rows",
+        "arm": "fallback17",
+        "status": "semantic_gap",
+        "reason": "semantic_gap",
+        "outcome": "necessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "kind_vip_rows",
+        "arm": "fallback17",
+        "status": "semantic_gap",
+        "reason": "semantic_gap",
+        "outcome": "necessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "svc_absent_sum_zh",
+        "arm": "joint",
+        "status": "unsupported",
+        "reason": "unsupported",
+        "outcome": "unnecessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "svc_absent_sum_zh",
+        "arm": "legacy",
+        "status": "answered",
+        "reason": null,
+        "outcome": "correct_answer",
+        "calls": 1
+      },
+      {
+        "case_id": "svc_absent_feb_ja",
+        "arm": "joint",
+        "status": "unsupported",
+        "reason": "unsupported",
+        "outcome": "unnecessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "svc_absent_feb_ja",
+        "arm": "legacy",
+        "status": "semantic_gap",
+        "reason": "semantic_gap",
+        "outcome": "unnecessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "svc_units_en",
+        "arm": "joint",
+        "status": "clarify",
+        "reason": "concept_not_mapped",
+        "outcome": "unnecessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "svc_units_en",
+        "arm": "legacy",
+        "status": "clarify",
+        "reason": "concept_not_mapped",
+        "outcome": "unnecessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "alerts_trend_daily_july_first_week",
+        "arm": "joint",
+        "status": "answered",
+        "reason": null,
+        "outcome": "wrong_answer",
+        "calls": 1
+      },
+      {
+        "case_id": "alerts_trend_daily_july_first_week",
+        "arm": "legacy",
+        "status": "answered",
+        "reason": null,
+        "outcome": "correct_answer",
+        "calls": 1
+      },
+      {
+        "case_id": "kind_minutes_records",
+        "arm": "joint",
+        "status": "clarify",
+        "reason": "concept_not_mapped",
+        "outcome": "unnecessary_refusal",
+        "calls": 1
+      },
+      {
+        "case_id": "minutes_list_control",
+        "arm": "direct17",
+        "status": "answered",
+        "reason": null,
+        "outcome": "correct_answer",
+        "calls": 1
+      },
+      {
+        "case_id": "minutes_desc_control",
+        "arm": "direct17",
+        "status": "answered",
+        "reason": null,
+        "outcome": "correct_answer",
+        "calls": 1
+      }
+    ]
+  },
+  "diagnostics": {
+    "historical_wire_exact": [
+      "service_test",
+      "iot_spike"
+    ],
+    "checks": [
+      {
+        "case_id": "alerts_trend_daily_july_first_week",
+        "arm": "legacy",
+        "inclusive_value_match": false,
+        "rows": 3,
+        "expected_rows": 4,
+        "old_score": true
+      },
+      {
+        "case_id": "alerts_trend_daily_july_first_week",
+        "arm": "joint",
+        "inclusive_value_match": true,
+        "rows": 4,
+        "expected_rows": 4,
+        "old_score": false
+      },
+      {
+        "case_id": "kind_minutes_records",
+        "replay_original_raw": true,
+        "projection_match": true,
+        "typed_ordered_values_match": true,
+        "rows": 10,
+        "compiler": "plan-compiler-rows-v2"
+      }
+    ]
+  },
+  "validation": {
+    "order-ruler": {
+      "path": ".artifacts/joint-regression-20260915/order-ruler/result.json",
+      "sha256": "a2eebc8d3d045c53497367e569727e452e91bd403f8ce849569c03b3da4fe296",
+      "passed": false,
+      "tests": {
+        "errors": 0,
+        "failures": 6,
+        "skipped": 0,
+        "tests": 10
+      }
+    },
+    "order-green": {
+      "path": ".artifacts/joint-regression-20260915/order-green/result.json",
+      "sha256": "b47da8ab45f88208e9fd2edaea97483556a87a66313d6a8474da4b674291aa07",
+      "passed": true,
+      "tests": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 72
+      }
+    },
+    "order-mutants": {
+      "path": ".artifacts/joint-regression-20260915/order-mutants/result.json",
+      "sha256": "e221061dac0cf68d4c65144f730f24aa57b2d2f406487e65e7e30b3cf009f5d9",
+      "passed": true,
+      "tests": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 13
+      }
+    },
+    "gate-sentinels": {
+      "path": ".artifacts/joint-regression-20260915/gate-sentinels/result.json",
+      "sha256": "0d3b01f8354864956009114bd217752d4bb08eb6ff29e5660a5a4e1d6d05b3f6",
+      "passed": true,
+      "tests": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 2
+      }
+    },
+    "static": {
+      "path": ".artifacts/joint-regression-20260915/static/result.json",
+      "sha256": "91b798e9cf7f6a08c285058de93eaf4f5ed8995916c82934b9d19c1ebfa15bfd",
+      "passed": true,
+      "tests": null
+    },
+    "offline": {
+      "path": ".artifacts/joint-regression-20260915/offline/result.json",
+      "sha256": "0cc352116c7791c1806bee076b6f2765c50dce98eb5ac138702f4cfdb701bf86",
+      "passed": true,
+      "tests": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 2028
+      }
+    }
+  },
+  "drivers": [
+    {
+      "path": ".artifacts/joint-regression-20260915/run.py",
+      "sha256": "1d562326cace6bac47b3d892bc5eed9dc8a624cef51d0087f99e899c1009ea32"
+    },
+    {
+      "path": ".artifacts/joint-regression-20260915/followup.py",
+      "sha256": "5f7d899cdeb4fb1b0eac13ca99b81d1dc8265f0075a3259fc2c9d9e5bcf3e6d3"
+    }
+  ],
+  "change_hashes": [
+    {
+      "path": "src/grepbit/domain/plan.py",
+      "sha256": "15ad546f4695e58607b01806b155a06bae130877f65b39a5fb52ac02a5e3bf08"
+    },
+    {
+      "path": "src/grepbit/adapters/sqlglot/plan_compiler.py",
+      "sha256": "4863ffbe773252c1091dad79fe2419736b5727b5764a365caf4605489cd262cb"
+    },
+    {
+      "path": "src/grepbit/adapters/sqlglot/plan_check.py",
+      "sha256": "835d9086e5b0c9592888bfe0953ddd1a30b00ef4b408cd92956e02280190cc8e"
+    },
+    {
+      "path": "src/grepbit/adapters/litellm/plan_client.py",
+      "sha256": "78959f7f9aebc55d45760d2b61c95f285d1dd948f42719ecbc320822fbf43937"
+    },
+    {
+      "path": "evals/query_kind_study.py",
+      "sha256": "792a3f724a96e76caf15a94c0d3ca8f9e2b7976709ff093117c1cba5296bedaa"
+    },
+    {
+      "path": "tests/contract/t0/test_row_order_contract.py",
+      "sha256": "865728373c700c758afd079da088378b3b776d4fcbf4dad05e38420175cd16cf"
+    },
+    {
+      "path": "tests/contract/t0/test_return_gate_sentinels.py",
+      "sha256": "6581b968f0a35a483c0afa0a223a105b3ad0e319d23ee8e48c23d71ca40ee1f3"
+    }
+  ],
+  "non_claims": [
+    "No production or Web default promotion",
+    "No gate disablement or new language exception",
+    "Historical scores unchanged; date oracle mismatch interpreted separately",
+    "No unseen user holdout or population reliability claim",
+    "No DB mutation or customer data",
+    "Paired runner does not revalidate lifecycle/transport; followup uses 30-second RequestControl"
+  ]
+}

@@ -121,7 +121,17 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-14: approved local streaming web implemented at baseline `f0a0841`.
+Current 2026-09-15: joint-planning wider paired regression finished (64 cases per
+arm); supported-without false refusal reproduced, no Web/default promotion.
+Unprojected visible base-column row ordering repaired independently, v17 optional
+row stage / rows compiler v2. Typed PostgreSQL replay and two live controls pass;
+Return gate remains. Static/offline 2,028 pass, 167/180 actual model calls, no DB
+writes. Next: reconcile prospective inclusive-date oracle, diagnose joint without
+refusal with bounded capability contrasts, then revisit fixture-only promotion.
+See `../research/joint-regression-and-row-order-01.md` for split outcome counts,
+fallback's remaining wrong-aggregate answers and exact evidence boundaries.
+
+Previous 2026-09-14: approved local streaming web implemented at baseline `f0a0841`.
 Loopback/same-origin HTTP -> actual stdio MCP; per-request child/session, bounded
 single-query admission, cancel/timeout, deterministic evidence display, no extra
 narration model. 24 new HTTP/lifecycle tests and fresh 1,899-test offline/static

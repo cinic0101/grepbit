@@ -124,6 +124,18 @@ def check_compiled(
                 violations.append("row_cardinality_changed")
             if tree.args.get("order") is None:
                 violations.append("row_order_missing")
+            elif plan.order:
+                terms = tree.args["order"].expressions[: len(plan.order)]
+                if len(terms) != len(plan.order) or any(
+                    not isinstance(term, exp.Ordered)
+                    or not isinstance(term.this, exp.Column)
+                    or term.this.name != spec.field
+                    or term.this.table not in {"", plan.base_table}
+                    or bool(term.args.get("desc")) != (spec.direction == "desc")
+                    or bool(term.args.get("nulls_first"))
+                    for term, spec in zip(terms, plan.order)
+                ):
+                    violations.append("row_order_mismatch")
             limit = tree.args.get("limit")
             if (plan.limit is None) != (limit is None):
                 violations.append("row_limit_mismatch")

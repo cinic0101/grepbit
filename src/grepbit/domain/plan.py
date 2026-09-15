@@ -367,7 +367,9 @@ class QueryPlan(DomainModel):
         if len(outputs) != len(set(outputs)):
             raise ValueError("plan_output_name_duplicate")
         for item in self.order:
-            if item.field not in outputs and not (self.rows and self.rows.all_columns):
+            # Row sort keys are schema references, not necessarily outputs;
+            # the compiler checks base-table membership and visibility.
+            if item.field not in outputs and self.rows is None:
                 raise ValueError("plan_order_field_unknown")
         measure_names = {measure.output_name for measure in self.measures}
         for item in self.having:

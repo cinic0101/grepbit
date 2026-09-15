@@ -78,6 +78,17 @@ class StudyPlanner(ChatCompletionsPlanClient):
 
     def build_messages(self, *args, **kwargs):
         messages = super().build_messages(*args, **kwargs)
+        if self._allow_rows:
+            # Historical arms retain their measured v16 wire. Compiler repairs
+            # are separately fingerprinted; do not relabel v17 as joint-v1.
+            messages[0]["content"] = messages[0]["content"].replace(
+                "Order may name any visible base-table column, "
+                "even when not projected.",
+                "Order names projected columns.",
+            )
+            context = json.loads(messages[2]["content"])
+            context["prompt_revision"] = "plan-classify-json-v16-rows-pilot"
+            messages[2]["content"] = json.dumps(context, ensure_ascii=False)
         if self.arm == "joint":
             messages[0]["content"] += "\n" + POLICY
             context = json.loads(messages[2]["content"])

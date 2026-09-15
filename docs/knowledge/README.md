@@ -25,4 +25,7 @@ promotion. Conversion and independent aggregates remain research-only.
 
 Follow-up: [`query-kind-study-01.md`](../research/query-kind-study-01.md) compares
 one-call planning policy with an independent router. The one-call candidate
-matches the router's outcomes at lower cost; wider regression is still needed.
+matches the router's outcomes at lower cost. The
+[`wider regression`](../research/joint-regression-and-row-order-01.md) reproduces
+one new supported-without false refusal, so no default promotion. The independent
+opt-in row-order repair passes typed PostgreSQL checks and offline validation.

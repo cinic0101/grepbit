@@ -6,7 +6,7 @@ Scope/rulers: `../plan/base-row-pilot.md`. `DatasourceRegistration.allow_rows`
 defaults false; disabled planners retain prompt v15 and compilers refuse
 `row_queries_disabled`. Enabled profiles use `plan-v15-rows-fallback-v1`: run
 unchanged v15 first, retain its plan/semantic_gap/ambiguous result, and only on
-explicit unsupported try `plan-classify-json-v16-rows-pilot` once. Only a rows
+explicit unsupported try `plan-classify-json-v17-row-order` once. Only a rows
 plan can be promoted; an aggregate fallback retains the original refusal.
 `model_row_fallbacks` reports that extra stage; repairs are reported separately.
 This preserves old proposals, not their correctness: a mistaken aggregate plan
@@ -22,8 +22,11 @@ latest/without/having/growth, and allows existing plan filters/order/limit only.
 Projection and question filters must belong to the base table. Resolve all
 columns against current visibility; maximum 32, no SQL wildcard, duplicate
 projection or silent hidden-column inclusion. A visible whole primary key is
-required for deterministic ordering/tie breaking. Explicit order names projected
-columns (the existing unambiguous qualified-output normalization also covers rows).
+required for deterministic ordering/tie breaking. As of 2026-09-15, explicit
+order may name an unprojected visible base-table column. A qualified row order
+must name that same base table. The sort key is disclosed and included in
+semantic references, but is not added to output projection. NULLs sort last;
+remaining primary-key columns break ties. Aggregate ordering stays output-only.
 Unknown/hidden columns refuse; unsupported projection/unchecked combinations
 give `row_projection_unsupported`. Parent-label row projection is not in this
 pilot; reviewed segment predicates retain existing parent-join semantics.
@@ -51,6 +54,9 @@ claim full algebra differential closure. All older construct scores are retained
 The research rows wrapper now follows the shared limit of two explicit sort
 keys (formerly three in that research-only format); old study evidence is not
 regraded or claimed compatible with that narrowed experimental wire.
+The row compiler is `plan-compiler-rows-v2`. Historical query-kind study arms
+pin their measured v16 prompt; `query-kind-joint-v1` is still research-only and
+does not replace the runtime fallback strategy.
 
 ## MCP serving boundary v2 (2026-09-14)
 
