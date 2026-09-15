@@ -165,13 +165,9 @@ def test_without_bounds_stay_in_the_same_child_scope():
     assert audit(before, after) == "changed"
 
 
-@pytest.mark.parametrize("change", ["column", "zone"])
-def test_unresolved_anchor_is_not_certified(change):
+def test_unresolved_column_anchor_is_not_certified():
     before = draft()
-    if change == "column":
-        del before["plan"]["time"]["column"]
-    else:
-        before["plan"]["time"]["scope"]["end_exclusive"] = "2026-07-08T12:00:00"
+    del before["plan"]["time"]["column"]
     assert audit(before, fixed()) == "unverifiable"
 
 

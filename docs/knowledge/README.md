@@ -53,3 +53,10 @@ source-type/default-zone/DST policy implemented without prompt changes. Session
 matrix and stored-plan replay pass within recorded scope; 2,169 offline tests,
 1,184 differential agreements. Remaining repair truncation is not fixed by typed
 binding; default promotion and missing-definition studies remain separate.
+
+[`Production time closeout`](../research/production-time-closeout-01.md): binding
+accepted through actual Web/MCP replay; narrow source-aware repair protection
+integrated into the shared planner. Thirty live calls, exact-reply runtime
+replay, 2,191 offline passes. Four known wrong repairs become failures, not new
+correct answers. [Integration board](../plan/production-integration-board.md)
+tracks independent deliveries and per-capability semantic/consumer acceptance.

@@ -121,7 +121,21 @@ prompt change bumps the revision and reruns every set that could move.
 
 ## Status and next order (takeover checkpoint after 746f168)
 
-Current 2026-09-15: typed-time boundary at baseline `e6c5ecf` implemented after
+Current 2026-09-15 production closeout at baseline `8701dfd`: time binding
+accepted on the actual HTTP/MCP path (natural runs and separate saved-plan
+replay). Source-aware repair guard integrated after compatibility/runtime rulers
+and live acceptance; no prompt change. Thirty Gemma calls, four wrong repairs
+become failed requests while two correct/two necessary refusals remain. One
+false refusal and one original failed repair stay unresolved. Exact-reply
+production replay confirms behavior; 2,191 offline/static pass. Candidate tail
+was separately frozen after a harness source-pin interruption, not hidden.
+Next: details/aggregate product integration with same-slice semantic, refusal,
+visibility and consumer acceptance. Guard is not an indefinite prerequisite.
+The active product order is `production-integration-board.md`; old sprint tables
+above remain history, not an instruction to rerun retired experiments. Evidence:
+`../research/production-time-closeout-01.md`.
+
+Previous 2026-09-15: typed-time boundary at baseline `e6c5ecf` implemented after
 owner policy approval and 35 red/55 green rulers. Full source timestamp type,
 naive business-zone default/disclosure, DST/precision refusals, wall-clock
 comparison and source-aware calendar windows now avoid session inference.

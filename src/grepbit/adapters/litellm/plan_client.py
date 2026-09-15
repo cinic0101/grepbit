@@ -26,6 +26,7 @@ from grepbit.application.text import phrase_in
 from grepbit.domain.overlay import SemanticOverlay
 from grepbit.domain.plan import Filter, Measure, PlanProposal, PreviousTurn, QueryPlan
 from grepbit.domain.schema_model import SchemaModel
+from grepbit.domain.temporal_repair import temporal_repair_audit
 from grepbit.ports.ask import DATE_LITERAL_REPAIR, RELATIVE_WINDOW_REPAIR
 from grepbit.ports.grounding import GroundingModelError
 
@@ -805,6 +806,8 @@ class ChatCompletionsPlanClient:
     last_repair_output: str | None = None
     # 1 when the plan came from the repair turn or the repair turn also failed
     last_model_repair_turns: int = 0
+    # Internal diagnostics, not an intent certificate or a public wire field.
+    last_temporal_repair_audit: str = "not_applicable"
     # whether the last completed call ran with the model's thinking mode
     last_thinking: bool = False
     last_value_refs: int = 0
@@ -962,6 +965,7 @@ class ChatCompletionsPlanClient:
                         "last_raw_output",
                         "last_repair_output",
                         "last_model_repair_turns",
+                        "last_temporal_repair_audit",
                         "last_thinking",
                         "last_value_refs",
                         "last_value_ref_errors",
@@ -996,6 +1000,7 @@ class ChatCompletionsPlanClient:
         self.last_raw_output = None
         self.last_repair_output = None
         self.last_model_repair_turns = 0
+        self.last_temporal_repair_audit = "not_applicable"
         self.last_value_refs = 0
         self.last_value_ref_errors = 0
         candidates = value_candidates(question_values, model, overlay)
@@ -1035,10 +1040,21 @@ class ChatCompletionsPlanClient:
             has_candidates=bool(candidates),
         )
         try:
-            return self._validate(repaired, model, candidates=candidates)
+            proposal = self._validate(repaired, model, candidates=candidates)
+            self.last_temporal_repair_audit = self._audit_repair(
+                content, proposal, model
+            )
+            if self.last_temporal_repair_audit in {"changed", "unverifiable"}:
+                raise _InvalidOutput("repair_temporal_anchor_not_preserved")
+            return proposal
         except _InvalidOutput:
             self.last_repair_output = repaired
             raise GroundingModelError("invalid_structured_output", 2) from None
+
+    def _audit_repair(self, content, proposal, model):
+        if proposal.plan is None:
+            return "not_applicable"  # A safe decline does not claim preservation.
+        return temporal_repair_audit(content, proposal.plan, model)
 
     def _complete(
         self,

@@ -1,0 +1,629 @@
+{
+  "study": "production-time-closeout-01",
+  "baseline_git_sha": "8701dfd",
+  "date": "2026-09-15",
+  "decision": "accept_shared_time_binding_and_integrate_narrow_repair_guard",
+  "model_calls": 30,
+  "max_model_calls": 48,
+  "transport_failures": 0,
+  "db_writes": 0,
+  "prompt_changed": false,
+  "live_raw_sequences_identical": 10,
+  "served_payloads_identical": 32,
+  "integrated_runtime_replay_calls": 0,
+  "saved_actual_plan_binding_replay_calls": 0,
+  "gates": {
+    "ruler": {
+      "path": ".artifacts/production-time-20260915/ruler/result.json",
+      "sha256": "c077a2d1408650906aef1241ef4920a6a9587ee598d406bdf3f36cbc06582677",
+      "passed": false,
+      "counts": {
+        "errors": 0,
+        "failures": 11,
+        "skipped": 0,
+        "tests": 37
+      },
+      "source_digest": "sha256:59fb3387a36135efdefbaec3260040d67ce68b993a848ac52213b643aaea9fc7"
+    },
+    "date-ruler": {
+      "path": ".artifacts/production-time-20260915/date-ruler/result.json",
+      "sha256": "98bff46c321e9ef799b60a4b1d33ec9391b79fc6f19368c64e94f725bff5ab17",
+      "passed": false,
+      "counts": {
+        "errors": 0,
+        "failures": 2,
+        "skipped": 0,
+        "tests": 16
+      },
+      "source_digest": "sha256:efd2e04181837223d650e633223c99fdb68c6d93ad205318f1df5215ff373356"
+    },
+    "runtime-ruler": {
+      "path": ".artifacts/production-time-20260915/runtime-ruler/result.json",
+      "sha256": "e7036ccb21be0b88daace92482a9149d37ad583f1b2a0b65210e1f4663a2cecf",
+      "passed": false,
+      "counts": {
+        "errors": 0,
+        "failures": 4,
+        "skipped": 0,
+        "tests": 6
+      },
+      "source_digest": "sha256:effc4ccb50fc9f5e143d6cf616340eed64c8578c2397439871d3b25223fa1af7"
+    },
+    "overflow-ruler": {
+      "path": ".artifacts/production-time-20260915/overflow-ruler/result.json",
+      "sha256": "d9b29843a0ca9823919984994d8e4fcde6bfd7e71bba126bcbf761d347f205d2",
+      "passed": false,
+      "counts": {
+        "errors": 0,
+        "failures": 1,
+        "skipped": 0,
+        "tests": 17
+      },
+      "source_digest": "sha256:ef0dc67ac20b03ab1fd419a29a70792e763e8ac53d7d98e843519f206c1e2029"
+    },
+    "guard-green": {
+      "path": ".artifacts/production-time-20260915/guard-green/result.json",
+      "sha256": "93c3e023e9f7dd29e4cd41a84a34a3f402a9917a486dab7fe1c5df6d031c348c",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 36
+      },
+      "source_digest": "sha256:b1ef195c927eef1630450f3c3996cd66d7ae7a61fd783f647c0cdf3368329166"
+    },
+    "guard-green-02": {
+      "path": ".artifacts/production-time-20260915/guard-green-02/result.json",
+      "sha256": "92ea2da7b508cf77d39330dff5f52b918bc1936117622a660ea4a5f2061dd648",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 38
+      },
+      "source_digest": "sha256:ec3d879a204f8bd2cd6db561634fefcdba4df3feb8bf73f41810412051d978b6"
+    },
+    "runtime-green": {
+      "path": ".artifacts/production-time-20260915/runtime-green/result.json",
+      "sha256": "3e24a55593eef40cffcd7524e7aa6f2ab92dbcad4705bda5a2e722a40e3d232e",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 44
+      },
+      "source_digest": "sha256:bdee821e25aea5b7f44955d3ea4ac513d2d5fac23db52c3f0dedfdf3bd6020bd"
+    },
+    "static": {
+      "path": ".artifacts/production-time-20260915/static/result.json",
+      "sha256": "2f608eefd85e314b3f07d13634cb0fd607b862b54bde78cc24e18e670a20984a",
+      "passed": true,
+      "counts": null,
+      "source_digest": "sha256:8144a0942d20dece729cfb7ccb9608f9b935355d6f81e5bc7585c09850850796"
+    },
+    "offline": {
+      "path": ".artifacts/production-time-20260915/offline/result.json",
+      "sha256": "8d81ff64b9b44e41eb050e84486780e7d1b930e5c8912f6c58b4fce91ceebb6f",
+      "passed": true,
+      "counts": {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 2191
+      },
+      "source_digest": "sha256:8144a0942d20dece729cfb7ccb9608f9b935355d6f81e5bc7585c09850850796"
+    }
+  },
+  "phases": {
+    "baseline": {
+      "preparation": {
+        "path": ".artifacts/production-time-20260915/baseline/preparation.json",
+        "sha256": "d4ef2dae8ef10df1c35743ffb4c02fff3aa86e0d05578301320635c12063205f"
+      },
+      "probe": {
+        "path": ".artifacts/production-time-20260915/probe-v1.py",
+        "sha256": "3bd907a8828c2da3178cd193c7f594f28a5bdf10afdd7666ffe9f40dcba77ceb"
+      },
+      "completed": 10,
+      "outcomes": {
+        "necessary_refusal": 2,
+        "false_refusal": 1,
+        "correct_answer": 2,
+        "wrong_answer": 4,
+        "operational_failure": 1
+      },
+      "model_calls": 15,
+      "http": [
+        {
+          "path": ".artifacts/production-time-20260915/baseline/cov_leased_fee-http.json",
+          "sha256": "aaaecea6c2383de93692c38e1658050be9c16208d9a6ef9293872729a213f5ff"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/cov_mttr-http.json",
+          "sha256": "5d57593d304566eed636fb5d1afd8b452e8a6ad87a5524feef00b4768c65274c"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/offline_devices_count-http.json",
+          "sha256": "b9f5a89f8b6bf970b7ffabd7f2c756266198ef46131011f996f4748e40ad740f"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/precision_calendar_control-http.json",
+          "sha256": "df7785a59fa4e4188d3c49c0896e1277a99579bec512aed506abec83a26f7498"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/precision_fractional_count-http.json",
+          "sha256": "34a0951f2d3714a3fc1b8e78f5e14ff361767ec37db5df0d6ad25a854c7855b0"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/precision_noon_ja-http.json",
+          "sha256": "eaca21ccfaf8d3df8990daf779a211b9d9765d6dd33c05f882fa868a8c681a87"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/precision_noon_zh-http.json",
+          "sha256": "a3bb12fb277f24cc770d3cab455643724d67339099a7b375e683522de2192fba"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/precision_service_logs-http.json",
+          "sha256": "8ec5ebe451916a258a9c63c8d414b62e3f143f891f7d0bba362b4d361238947a"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/precision_utc_equivalent-http.json",
+          "sha256": "1552f4690ab158aa28e89b92efc8865ea08f48b4e37d99de9a8f859cc616301d"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/precision_without_alerts-http.json",
+          "sha256": "738011d35d99363d5deee489c852bc4a120ed8eb7a84b8896372982fe465d0a2"
+        }
+      ],
+      "server": [
+        {
+          "path": ".artifacts/production-time-20260915/baseline/cov_leased_fee-server.json",
+          "sha256": "5f0d4f179495d669a8ef83e4194f7464dbc74d893b7133acaecbf6d09ca08ae0"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/cov_mttr-server.json",
+          "sha256": "298e5633bfa0e3ce4bb7374c63f7ec1d59aba5afbb71068598f86f506ebd18cf"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/offline_devices_count-server.json",
+          "sha256": "a52eb4e3041d7637701f8dd4b5c47f54cdad196011894a53620030d69ec33c1e"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/precision_calendar_control-server.json",
+          "sha256": "16cf9f39b3b27f9b1a3ff8d76b1f6a4b97fd03c0730257e894bb68265fef3b4b"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/precision_fractional_count-server.json",
+          "sha256": "69cef178606929031d4492b3e3d2ce861c61bff325651d4a3cf3cff671af6552"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/precision_noon_ja-server.json",
+          "sha256": "9c20c3b2456d5547479b6c5a4689816452a87ce905dfa7f8222c963e4cade484"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/precision_noon_zh-server.json",
+          "sha256": "f91357fa6a64037dc54b3e4119ed9886dfada3ce305b253ac85b700f8c83bc78"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/precision_service_logs-server.json",
+          "sha256": "e79050785e5c57abeed251ac79f91840507b27e0b1e7d5a7a18a391f30b06d50"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/precision_utc_equivalent-server.json",
+          "sha256": "55af97bd14a97a2a89eb42e097412b0a85375be1dcd00b33c12ec4828ca7cd27"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/precision_without_alerts-server.json",
+          "sha256": "e33694a96c46e5173c3560a5d2a51522e9c8d1eac7bb23a7dfff945997917a05"
+        }
+      ],
+      "attempts": [
+        {
+          "path": ".artifacts/production-time-20260915/baseline/call-001.json",
+          "sha256": "040a075eea017769005311de2575b0ee24ab9025d3b4e1f4b9236f702ff8cdb0"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/call-002.json",
+          "sha256": "d325601f991ee28f1dbbab050ea49082c8858bea75cb7303b4a743523e40261e"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/call-003.json",
+          "sha256": "5b21a31fd46730f03d8fe009f64be0b19b505aeed7872a58e51fb2332645e3ec"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/call-004.json",
+          "sha256": "0d621ba3d334d4e868c90f1ca5420b81b4e4eca07324a6d3943581b5e67cdb33"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/call-005.json",
+          "sha256": "fa9294b7bf7e5ca7260670ea1a8f7b9c52e805780bfb1dd94861714b43301401"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/call-006.json",
+          "sha256": "089db0bdf2299b04a1cb39cb822ddd6fa26e0d0e3532cb32c0b36bb1ee849dc1"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/call-007.json",
+          "sha256": "f5a8dd7a7102d7feb55517b2faa079ce14f4ab4db370a5ad16954b630f77cd7f"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/call-008.json",
+          "sha256": "bed1a11b3398d98e4c495e536ea029dfd6727c90cbfdb4e82b78c243eb763256"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/call-009.json",
+          "sha256": "b631280078e57aba370c0daa01e30315065540294e81d6ca517ffa0287c5e6d7"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/call-010.json",
+          "sha256": "fe9483930c9fb77e3e6899b34d61fdb75e7598837b9c65ce6a177043733816eb"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/call-011.json",
+          "sha256": "666e94456745d971364908dc97d4e5f575d5cb282b349c0621791f76e90f038f"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/call-012.json",
+          "sha256": "5db2517d188ff06d071beaef7d0ed3e22a1e8980115aa8545de634595d1f6e40"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/call-013.json",
+          "sha256": "904d487901a9678726303b999c1f0ce6c26627bd81d8655077b81bdc1f61750b"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/call-014.json",
+          "sha256": "06a86636cba16cc14037ecb1dcb475d51be3b1735529fabeeb6922acf86aa2a1"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/baseline/call-015.json",
+          "sha256": "ffa9e200d19a4fb14ddcd2b495bfbc53c46829d732566c5b2de938cb93894477"
+        }
+      ]
+    },
+    "candidate": {
+      "preparation": {
+        "path": ".artifacts/production-time-20260915/candidate/preparation.json",
+        "sha256": "98d1b12b07c4b2c84f0c1852ad1edc70055e4f5cc5b5291fc09d5af4dae94080"
+      },
+      "probe": {
+        "path": ".artifacts/production-time-20260915/probe-v1.py",
+        "sha256": "3bd907a8828c2da3178cd193c7f594f28a5bdf10afdd7666ffe9f40dcba77ceb"
+      },
+      "completed": 8,
+      "outcomes": {
+        "false_refusal": 1,
+        "correct_answer": 2,
+        "operational_failure": 5
+      },
+      "model_calls": 13,
+      "http": [
+        {
+          "path": ".artifacts/production-time-20260915/candidate/offline_devices_count-http.json",
+          "sha256": "4ccdca348ffcf557e74d40bae17e9641cfbe9a6472c69b371aa2f2334a76fbcc"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/precision_calendar_control-http.json",
+          "sha256": "b24411d50572dbaf03f0b77018e3256b26771dfe0ad6977c2a23cdac883e13fb"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/precision_fractional_count-http.json",
+          "sha256": "55913edefbefce0c96d9089ccce30a0fb4d9d5e98abdd7199be89ac1e75b832d"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/precision_noon_ja-http.json",
+          "sha256": "e13846a49126e1da431e9d3d0b5831c8093d233330d35a190ad065d67427ad90"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/precision_noon_zh-http.json",
+          "sha256": "272969c859bbd20b533492815cc048cb5a0759db9e0b64cc3793eb672f0a0751"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/precision_service_logs-http.json",
+          "sha256": "895587b17a8b8deda108681fe733dab8991f7db635623aa83edba9cd60986fbb"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/precision_utc_equivalent-http.json",
+          "sha256": "dc2d1a09f16292b63526701c036df809a12d13ec92913d73afeda8e545e21172"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/precision_without_alerts-http.json",
+          "sha256": "488d39eaec00910330e7ef8cf9ca5e349860749736518e0e129c4fc872f9bb93"
+        }
+      ],
+      "server": [
+        {
+          "path": ".artifacts/production-time-20260915/candidate/offline_devices_count-server.json",
+          "sha256": "8891edb6584337e4c0e7cfa421ac33aa625bd44f7164d538f7030e980a2e9240"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/precision_calendar_control-server.json",
+          "sha256": "5d833b374a2dba9d6813b6d7e2d139e6c9c5540f3d5c5fffefbc9c3f342f2244"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/precision_fractional_count-server.json",
+          "sha256": "c7c1bfbcf709d534dc503d536bc93147c6c94640c26fa4cdaf4686645d0a827b"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/precision_noon_ja-server.json",
+          "sha256": "e8ab73c7e230645ce0b259b20667c88da601e2cab585f883997af47f73420084"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/precision_noon_zh-server.json",
+          "sha256": "407ad6b357b34040c19ee28a89d63948b2296cb9a485491559f9d30f6116a426"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/precision_service_logs-server.json",
+          "sha256": "85b21cce86bd26458ec51ff9ebc877fbe9e01eb3682c84b48dd675192bf17e7a"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/precision_utc_equivalent-server.json",
+          "sha256": "3e7f8f11545e9e58bd79ace0643c74e90a111ae8840629dd08028e9e4d825413"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/precision_without_alerts-server.json",
+          "sha256": "04743eb215e18133b139a314a67411301eb383dbefa0e5ec4542ceed949b470a"
+        }
+      ],
+      "attempts": [
+        {
+          "path": ".artifacts/production-time-20260915/candidate/call-016.json",
+          "sha256": "040a075eea017769005311de2575b0ee24ab9025d3b4e1f4b9236f702ff8cdb0"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/call-017.json",
+          "sha256": "d325601f991ee28f1dbbab050ea49082c8858bea75cb7303b4a743523e40261e"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/call-018.json",
+          "sha256": "5b21a31fd46730f03d8fe009f64be0b19b505aeed7872a58e51fb2332645e3ec"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/call-019.json",
+          "sha256": "0d621ba3d334d4e868c90f1ca5420b81b4e4eca07324a6d3943581b5e67cdb33"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/call-020.json",
+          "sha256": "fa9294b7bf7e5ca7260670ea1a8f7b9c52e805780bfb1dd94861714b43301401"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/call-021.json",
+          "sha256": "089db0bdf2299b04a1cb39cb822ddd6fa26e0d0e3532cb32c0b36bb1ee849dc1"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/call-022.json",
+          "sha256": "f5a8dd7a7102d7feb55517b2faa079ce14f4ab4db370a5ad16954b630f77cd7f"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/call-023.json",
+          "sha256": "bed1a11b3398d98e4c495e536ea029dfd6727c90cbfdb4e82b78c243eb763256"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/call-024.json",
+          "sha256": "b631280078e57aba370c0daa01e30315065540294e81d6ca517ffa0287c5e6d7"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/call-025.json",
+          "sha256": "fe9483930c9fb77e3e6899b34d61fdb75e7598837b9c65ce6a177043733816eb"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/call-026.json",
+          "sha256": "666e94456745d971364908dc97d4e5f575d5cb282b349c0621791f76e90f038f"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/call-027.json",
+          "sha256": "5db2517d188ff06d071beaef7d0ed3e22a1e8980115aa8545de634595d1f6e40"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate/call-028.json",
+          "sha256": "904d487901a9678726303b999c1f0ce6c26627bd81d8655077b81bdc1f61750b"
+        }
+      ]
+    },
+    "candidate-tail": {
+      "preparation": {
+        "path": ".artifacts/production-time-20260915/candidate-tail/preparation.json",
+        "sha256": "a324b644e225553346a6f8bbb6e153c27e279b51b5882790868dca38aaf377b5"
+      },
+      "probe": {
+        "path": ".artifacts/production-time-20260915/probe-v2.py",
+        "sha256": "0eb92b026e3982fbfc041f6f02ba27b3e6e2bd204867072718474036c16c0b91"
+      },
+      "completed": 2,
+      "outcomes": {
+        "necessary_refusal": 2
+      },
+      "model_calls": 2,
+      "http": [
+        {
+          "path": ".artifacts/production-time-20260915/candidate-tail/cov_leased_fee-http.json",
+          "sha256": "314e1f161d1b1c9dfa8984b141d83d8d1bcc16b15b207614f19473c84d7a64d2"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate-tail/cov_mttr-http.json",
+          "sha256": "bc96720f9557d6a7dad4fd081a065c8c2c68f4aeadb9d6534556f98fa677dc59"
+        }
+      ],
+      "server": [
+        {
+          "path": ".artifacts/production-time-20260915/candidate-tail/cov_leased_fee-server.json",
+          "sha256": "4eccae1830288887b8a904e58d05202931f4084110cf5a4f105e7e88c1391cae"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate-tail/cov_mttr-server.json",
+          "sha256": "8356f3c906e08e788225ae13836ec32ad81d333e1ff411655e33bbf0f20765c1"
+        }
+      ],
+      "attempts": [
+        {
+          "path": ".artifacts/production-time-20260915/candidate-tail/call-029.json",
+          "sha256": "06a86636cba16cc14037ecb1dcb475d51be3b1735529fabeeb6922acf86aa2a1"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/candidate-tail/call-030.json",
+          "sha256": "ffa9e200d19a4fb14ddcd2b495bfbc53c46829d732566c5b2de938cb93894477"
+        }
+      ]
+    },
+    "runtime-replay": {
+      "preparation": {
+        "path": ".artifacts/production-time-20260915/runtime-replay/preparation.json",
+        "sha256": "90f6a795250cfa8a98e1edddd4c588c138dcb78d99a818620278d39e19aa62ad"
+      },
+      "probe": {
+        "path": ".artifacts/production-time-20260915/probe.py",
+        "sha256": "efb5710e01f81f70cd0370a55705024d240f63d08ea36ee1dc98489c15dcfbc0"
+      },
+      "completed": 10,
+      "outcomes": {
+        "necessary_refusal": 2,
+        "false_refusal": 1,
+        "correct_answer": 2,
+        "operational_failure": 5
+      },
+      "model_calls": 0,
+      "http": [
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/cov_leased_fee-http.json",
+          "sha256": "b5e5992a971fd2396cb996639b27b4ba76de91224151254998c0071875d6d998"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/cov_mttr-http.json",
+          "sha256": "1267d111787a535ea0a5a89fc857d499cb027588926fe98f713d3b44d20ad02d"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/offline_devices_count-http.json",
+          "sha256": "b85cb084dd1425da1a9a9c1ba8e5fb85c525e9fee87dd60bae7f9f7ec8596c3d"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/precision_calendar_control-http.json",
+          "sha256": "28ca3f6539d6bcaab36c71f6fd904233e525f94e538f9c7cc4e91d2d02a4c103"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/precision_fractional_count-http.json",
+          "sha256": "7d8f01303704337270e7887e78cc8ac9245135d662e68310d6eb268f10db6eda"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/precision_noon_ja-http.json",
+          "sha256": "0ad832ba923a2bae7da4b403ec06d2c809960999b5c0a92798f75a4f1af7e408"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/precision_noon_zh-http.json",
+          "sha256": "c1de103baf85edc440774a493a6f32d6a6f411245dd6b8c3fec5c5c024b1131a"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/precision_service_logs-http.json",
+          "sha256": "7f5a7303d2fb617b844cd9c458098b4b2951175d1c463cd78c7dcce89b7a491a"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/precision_utc_equivalent-http.json",
+          "sha256": "b23141f3264df9bb3f2b77e769da1fca961f240abbe919f05e70290b8341703a"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/precision_without_alerts-http.json",
+          "sha256": "77f2f153c920da13cdbec879ae42794f599da5ce3a885ed8bc627214d987eb18"
+        }
+      ],
+      "server": [
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/cov_leased_fee-server.json",
+          "sha256": "2d35d13c9f7ec6811e273b2fa8d57bc4d39dbee74b65bff8adb9c758d5ba5172"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/cov_mttr-server.json",
+          "sha256": "2efb5b19c3f7935735ddd1c847789bb7ef1efa5b597d7d19361b3b3b2390e0e5"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/offline_devices_count-server.json",
+          "sha256": "2070e5a67410eb7234781a0884717909487ba3232e007a2fe78923cfc6807d9a"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/precision_calendar_control-server.json",
+          "sha256": "dc83fe6e30388c86547aaa4b2e51140d0b331469b7041867d3ae5f1b688384b7"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/precision_fractional_count-server.json",
+          "sha256": "da95a1909bc5e2fd70b1f9a0896242ecf3852917f0206015fa2233b8baffa774"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/precision_noon_ja-server.json",
+          "sha256": "a41a001155e8bf8a7007d77b2c79f3fcfeb4cee57a013e8eb45aa3d5d34ede28"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/precision_noon_zh-server.json",
+          "sha256": "aa57ffe38876f2475aed2eb4f861d6dd9ade4106f76c3a57bc4f5c88398ec953"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/precision_service_logs-server.json",
+          "sha256": "e77b94836e676c18cf4be87aae2b9b5baf5480b663add860d9bfa60021944e6c"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/precision_utc_equivalent-server.json",
+          "sha256": "7ad746f41fd98b511015645acac33c01543e18fb1829218ea78d3c275422e9e8"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/runtime-replay/precision_without_alerts-server.json",
+          "sha256": "f6ec731fbb3ebc8ce5dddad0ff22a874f6129802dd1d133b868d478b9d7feb35"
+        }
+      ],
+      "attempts": []
+    },
+    "binding-replay": {
+      "preparation": {
+        "path": ".artifacts/production-time-20260915/binding-replay/preparation.json",
+        "sha256": "06fc1f4b974e2ffd0962960de3d9350e6d0525bf02db6a34ff154d7f5c5ad4c0"
+      },
+      "probe": {
+        "path": ".artifacts/production-time-20260915/probe.py",
+        "sha256": "efb5710e01f81f70cd0370a55705024d240f63d08ea36ee1dc98489c15dcfbc0"
+      },
+      "completed": 2,
+      "outcomes": {
+        "correct_answer": 2
+      },
+      "model_calls": 0,
+      "http": [
+        {
+          "path": ".artifacts/production-time-20260915/binding-replay/precision_noon_ja-http.json",
+          "sha256": "de44afb08512d93c18cf75fc95f3ffb3a4e6e24bf6015ae1be9e5218852ee692"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/binding-replay/precision_noon_zh-http.json",
+          "sha256": "5e7d9c20761485091578fe1f3220011899ac0c7874827c159f44368eececc199"
+        }
+      ],
+      "server": [
+        {
+          "path": ".artifacts/production-time-20260915/binding-replay/precision_noon_ja-server.json",
+          "sha256": "337a88e458726648bd3e5d39fadfdc2b73167d656288c7463e04ed4c6aa31221"
+        },
+        {
+          "path": ".artifacts/production-time-20260915/binding-replay/precision_noon_zh-server.json",
+          "sha256": "22e19558d1b5f4d933dfbc96385c57e84fe57d3f2584acb144daca7452a07274"
+        }
+      ],
+      "attempts": []
+    }
+  },
+  "final_source_hashes": {
+    "src/grepbit/adapters/litellm/plan_client.py": "a7e920c5ea41ec3bb1be6df684fbbf6349f6ba57a3d60e03cc6d5aa010fb6394",
+    "src/grepbit/domain/temporal_repair.py": "f10d05e5047ca57b4a5c837ee9b9cbb65dbc175fdeeeea2cc3a06944b48dcd70",
+    "evals/temporal_repair_study.py": "056c5292b0c811c6d14382e37fe65afbfa3e85f01c49a8bf43aa58e909d9f389",
+    "tests/contract/t0/test_temporal_repair_study.py": "0e119776a05aa3c0213ad068cd4083af64f209518244db5117ee5961285ca550",
+    "tests/contract/t0/test_temporal_repair_typed_policy.py": "8069ace0c80b4b934256e88fed0b3c07e3bc7c88f1b82d267b7b81a83f22e664",
+    "tests/contract/t0/test_temporal_repair_runtime.py": "45276692e2ea8a2448d054b8bd2aedf788963e625bdc2eacbc5c606ffcefd937"
+  },
+  "limitations": [
+    "Known cases, not fresh holdout or browser visual validation.",
+    "Candidate live comprised eight requests plus two separately frozen tail requests after test-file source-pin interruption before a model call; not one uninterrupted phase.",
+    "Guard reduced wrong answers from four to zero on this panel but correct answers stayed two; four additional failures are not necessary refusals.",
+    "No naturally successful temporal repairs in live panel; lawful repair retention measured with controlled runtime tests.",
+    "No unverifiable blocks in live panel; uncertain controls are tested but not credited as confirmed catches.",
+    "Only recognizable invalid plan/without range anchors; original draft and first-pass plans are not intent truth.",
+    "Serving binding replay uses saved actual plans and is not fresh natural-question success.",
+    "Model source metadata is synthetic Service/IoT, sampling zero; raw fixture outputs stored only in ignored artifacts.",
+    "Latest runtime source differs from candidate by lifting shared implementation and an overflow control; runtime exact-reply HTTP/MCP replay and broad gate verify final source."
+  ]
+}

@@ -35,6 +35,13 @@ reference evaluator uses independent pytz localization rather than the productio
 zoneinfo roundtrip. Synthetic DuckDB preserves both physical timestamp types.
 See `typed-time-boundary` in the contract/research map; no global session setting.
 
+`domain/temporal_repair.py` owns the narrow range-anchor preservation check used
+after the planner's existing repair turn. It shares the approved literal binding
+policy, not an LLM verifier. Changed/unknown anchors fail without execution;
+diagnostics distinguish them. This is not initial-plan or complete-intent
+certification. The historical study planner delegates rather than maintaining
+a second implementation. See `production-time-closeout-01.md` for adoption.
+
 `tests/contract/test_module_boundaries.py` enforces the table and adds one
 more rule: sqlglot is imported only inside `adapters/sqlglot/`.
 

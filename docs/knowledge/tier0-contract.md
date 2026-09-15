@@ -1,5 +1,22 @@
 # Tier-0 contract
 
+## Temporal repair preservation (integrated 2026-09-15)
+
+After a model validation failure, the existing one repair turn must not silently
+alter recognizable explicit timestamp range anchors in plan/without scopes.
+`domain/temporal_repair.py` compares source-typed anchors, effective bounds,
+inclusion, column and population scope using the approved binding policy below.
+Naive instant/clock and equivalent midnight repairs remain legal; missing
+identity, unresolved DST or unbound clock offsets are unverifiable, not guessed.
+Changed and unverifiable repairs retain the existing public operational failure
+`failed / invalid_structured_output`, not a successful semantic refusal.
+Preserved/not_applicable do not certify user intent; initial valid plans,
+unreadable drafts and other semantic changes are outside this narrow check.
+Safe declines and unrelated repairs remain available. No extra model call,
+prompt change or public field; internal `last_temporal_repair_audit` distinguishes
+all four outcomes and resets per request. The historical research wrapper reuses
+the production check. Evidence: `../research/production-time-closeout-01.md`.
+
 ## Typed time binding (owner approved 2026-09-15)
 
 `SchemaColumn.data_type`, retained from PostgreSQL information_schema, determines
