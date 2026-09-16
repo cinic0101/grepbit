@@ -1,5 +1,9 @@
 # Active work
 
+> **Stale after 2026-09-13.** Product disposition since then lives in
+> `production-integration-board.md`; the takeover log is in
+> `root-cause-program.md` ("Status and next order"). Entries below are history.
+
 2026-09-13 COMPLETE: owner's "ok" follows the proposed temporal-first,
 baseline/neutral/semantic-metadata research step. Baseline `69f6b57`, clean.
 Root owns private research/docs/evidence, no delegated writer. Protocol
