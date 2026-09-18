@@ -27,12 +27,12 @@ changing computation or pretending the user's question is ambiguous.
 | --- | --- | --- |
 | Taipei month boundaries | Core UTC-text reference and membership check | PG typed binding and IANA timezone parity, P4 |
 | DST / local wall time / date precision | Not implemented or validated | Explicit ambiguous/nonexistent times and typed variants, P4 |
-| Exact money | Integer fixture sums | Numeric precision, overflow and rounding, P4 |
+| Exact money | Integer fixture sums; P1.1 exact integer validation and failure on overflow | Numeric precision and rounding, P4 |
 | NULL vs zero / empty data | Zero/missing targets and zero-activity center | Aggregation/derived facts in P1/P2; PG parity in P4 |
-| Count grain / duplicate rows | SQL ledger, split-payment, fan-out and SUM(DISTINCT) controls | Runtime P1/P2; PG P4 |
-| Sort / Top-N ties / collation | Ranked reference; tie/collation mutations not yet implemented | Explicit policy and variants before portability acceptance |
-| Identifiers / parameter escaping | Fixture CLI URI-special-character test only | Production binding and quoted names, P1/P4 |
-| Snapshot / timeout / cancel | Read-only fixture check only | Short consistent snapshot; read-only/cancel/deadline, P4 |
+| Count grain / duplicate rows | SQL ledger and isolated P1.1 scalar-kernel regressions | Broader runtime P2; PG P4 |
+| Sort / Top-N ties / collation | Isolated P0 fourth-course/tied-cutoff reference witness; no runtime ranking | Native collation policy and variants, P4 |
+| Identifiers / parameter escaping | P1.1 approved identifiers and bound scalar scope values | Broader backend binding, P4 |
+| Snapshot / timeout / cancel | P1.1 single read transaction and cooperative SQLite execution budgets | Backend lifecycle, cancellation and hard limits, P4 |
 
 Do not mark a planned row green because SQLite accepted some SQL. Keep
 backend-specific native-type fixtures alongside shared logical scenarios.

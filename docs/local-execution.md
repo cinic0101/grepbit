@@ -7,6 +7,10 @@ coding agent. This repository does not establish a connection from ChatGPT to a
 local Codex/Claude CLI. Do not add a remote-control bridge, AWS OIDC setup, live
 GitHub Actions, scheduled runs or model-calling CI as part of this scaffold.
 
+P0 is accepted. For the current P1.1 offline kernel, dependency setup, example
+and separate P0/kernel test commands, see [the fact-kernel guide](fact-kernel.md).
+Installing its pinned Python dependency is not a live evaluation.
+
 Available future candidates: the owner's local LiteLLM/Gemma deployment and AWS
 Bedrock. Neither is connected or invoked by this code. There is no live command
 to run yet; do not fabricate one. Implement and review a model adapter before
@@ -16,7 +20,11 @@ The coding agent used to edit this repository is distinct from the model being
 evaluated. Authorization to develop code is not authorization to send fixture or
 real-data context to a model endpoint or to consume API/GPU resources for an eval.
 
-## Copy/paste task for the local coding agent (offline now)
+## Historical P0 reproduction task
+
+This preserves the fixture-only reproduction procedure, not a request to repeat
+P0 acceptance or a new authorization. Full test discovery now includes the
+SQLGlot-dependent kernel tests; the explicit P0 selector below remains stdlib-only.
 
 ```text
 Work in cinic0101/grepbit on dev. Read AGENTS.md, README.md and the current P0
@@ -40,9 +48,9 @@ From the repository root after safely updating `dev`:
 ```bash
 git status --short
 git rev-parse HEAD
-python3 -m unittest discover -s tests -v
-python3 tools/fixture.py build --db .artifacts/p0-local/learningops.sqlite
-python3 tools/fixture.py check --db .artifacts/p0-local/learningops.sqlite --report .artifacts/p0-local/report.json
+PYTHONPATH=tests python3.11 -m unittest test_fixture test_multilingual_cases test_review_witnesses -v
+python3.11 tools/fixture.py build --db .artifacts/p0-local/learningops.sqlite
+python3.11 tools/fixture.py check --db .artifacts/p0-local/learningops.sqlite --report .artifacts/p0-local/report.json
 ```
 
 Existing output paths are intentionally refused. Use another fresh directory,
