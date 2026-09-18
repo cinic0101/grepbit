@@ -1,0 +1,11 @@
+{
+  "metrics": [
+    "confirmed_booked_amount",
+    "confirmed_booking_count",
+    "booked_seats",
+    "known_booking_accounts"
+  ],
+  "start": "2026-03-01T00:00:00+08:00",
+  "end": "2026-04-01T00:00:00+08:00",
+  "timezone": "Asia/Taipei"
+}

@@ -5,7 +5,8 @@
 Read `README.md`, then the current GitHub issue. Read only the relevant design
 section in `docs/`; do not reload the legacy research history for every task.
 This is V3: analytical intent -> checked facts, not another expanding Text2SQL
-language. P0 contains fixture tooling, NOT a product runtime.
+language. P0 fixture tooling is separate from the bounded P1.1 scalar kernel.
+P1.1 is not P1 acceptance or authorization to begin P2.
 
 ## Authority and branches
 
@@ -41,17 +42,20 @@ language. P0 contains fixture tooling, NOT a product runtime.
 
 Use English for documentation, comments, issues and PRs. Multilingual test inputs
 are intentional. Keep `AGENTS.md` short; `CLAUDE.md` imports it instead of copying it.
-P0 needs Python 3.11+ and SQLite 3.37+; no third-party installation is needed.
+Use Python 3.11+ and SQLite 3.37+. P0 tooling is stdlib-only; kernel tests require
+the pinned `requirements.txt` dependency. See `docs/fact-kernel.md` for setup,
+the strict request contract, resource limits and an offline example.
 
 ```bash
-python3 -m unittest discover -s tests -v
-python3 tools/fixture.py build --db .artifacts/p0-local/learningops.sqlite
-python3 tools/fixture.py check --db .artifacts/p0-local/learningops.sqlite --report .artifacts/p0-local/report.json
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python tools/fixture.py build --db .artifacts/p0-local/learningops.sqlite
+.venv/bin/python tools/fixture.py check --db .artifacts/p0-local/learningops.sqlite --report .artifacts/p0-local/report.json
 ```
 
 Build and report paths are exclusive-create. Use a fresh directory on reruns;
 do not delete/overwrite evidence to make a run appear clean. These commands are
-OFFLINE fixture checks, not model evaluations. Run targeted tests while editing
+OFFLINE fixture/kernel checks, not model evaluations. Report protected P0 checks
+separately from new kernel tests. Run targeted tests while editing
 and the complete small offline suite before handoff. Report failures honestly.
 
 ## Evidence and improvement

@@ -1,7 +1,9 @@
 # V3 architecture
 
 Decision baseline: 2026-09-18. This describes the agreed direction, not delivered
-runtime capabilities. Current implementation is the P0 fixture/tooling scaffold.
+runtime capabilities. Current implementation includes the P0 fixture/tooling
+and the bounded [P1.1 offline scalar kernel](fact-kernel.md), not a planner or
+recipe engine.
 
 ## Goal and boundaries
 

@@ -1,7 +1,9 @@
 # Roadmap and phase exits
 
 Baseline: 2026-09-18. Work is on `dev`; promotion to `main` requires owner review.
-P0 scaffold exists. No P1-P5 delivery or live-model quality is claimed.
+P0 is accepted. P1.1 adds a bounded offline scalar kernel; P1 phase acceptance
+and its separately authorized model smoke remain pending. No P2-P5 delivery or
+live-model quality is claimed.
 GitHub Issues own current status; this document owns phase meaning and exits.
 
 | Phase | Deliverable | Question being tested | Exit |
