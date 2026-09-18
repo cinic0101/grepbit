@@ -7,14 +7,16 @@ coding agent. This repository does not establish a connection from ChatGPT to a
 local Codex/Claude CLI. Do not add a remote-control bridge, AWS OIDC setup, live
 GitHub Actions, scheduled runs or model-calling CI as part of this scaffold.
 
-P0 is accepted. For the current P1.1 offline kernel, dependency setup, example
+P0 and P1.1 are accepted. For the offline kernel, dependency setup, example
 and separate P0/kernel test commands, see [the fact-kernel guide](fact-kernel.md).
 Installing its pinned Python dependency is not a live evaluation.
 
-Available future candidates: the owner's local LiteLLM/Gemma deployment and AWS
-Bedrock. Neither is connected or invoked by this code. There is no live command
-to run yet; do not fabricate one. Implement and review a model adapter before
-requesting a bounded live smoke in P1/P2. Formal measurement starts at P3.
+P1.2 implements the owner's selected local LiteLLM / `gemma-4-31b` path and
+prepares, but does not execute, a bounded trilingual smoke. See the
+[integration guide](model-integration.md) for `.env.example`, explicit
+`--env-file` behavior, offline preparation and the implemented live command.
+The default/dry-run loads no credentials and makes no network calls. Bedrock is
+not implemented and is not a fallback. Formal measurement starts at P3.
 
 The coding agent used to edit this repository is distinct from the model being
 evaluated. Authorization to develop code is not authorization to send fixture or
@@ -57,7 +59,7 @@ Existing output paths are intentionally refused. Use another fresh directory,
 not deletion/overwrite. Exit code 0 means the selected offline checks passed,
 not that P0 was human-reviewed or that the product/model works.
 
-## Future live run request (procedure, not implemented CLI)
+## Live run authorization procedure
 
 Before the owner initiates each live run, provide:
 
@@ -71,8 +73,10 @@ Before the owner initiates each live run, provide:
 | Execution | Exact implemented command, environment variable NAMES only, fresh private output path |
 | Return | Safe summary, counts, observed model identity, token/latency data, errors/stop reason and source confirmation needs |
 
-A CLI flag alone is not an authorization or budget boundary: the future runner
-must enforce limits and count every attempt. Authentication failure must not
+A CLI flag alone is not authorization: the P1.2 runner enforces a pinned panel
+and bounds every client attempt, but upstream inference counts remain unknown.
+The owner must confirm the selected gateway route's retry/fallback/cache policy
+before authorizing a live run. Authentication failure must not
 print headers, environment values or verbose SDK traces. Do not fall back from
 local to cloud on failure, particularly for real data.
 

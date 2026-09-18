@@ -6,7 +6,8 @@ Read `README.md`, then the current GitHub issue. Read only the relevant design
 section in `docs/`; do not reload the legacy research history for every task.
 This is V3: analytical intent -> checked facts, not another expanding Text2SQL
 language. P0 fixture tooling is separate from the bounded P1.1 scalar kernel.
-P1.1 is not P1 acceptance or authorization to begin P2.
+P1.2 adds a thin model adapter and offline smoke preparation, not P1 acceptance
+or authorization to begin P2 or make live requests.
 
 ## Authority and branches
 
@@ -42,9 +43,11 @@ P1.1 is not P1 acceptance or authorization to begin P2.
 
 Use English for documentation, comments, issues and PRs. Multilingual test inputs
 are intentional. Keep `AGENTS.md` short; `CLAUDE.md` imports it instead of copying it.
-Use Python 3.11+ and SQLite 3.37+. P0 tooling is stdlib-only; kernel tests require
-the pinned `requirements.txt` dependency. See `docs/fact-kernel.md` for setup,
+Use Python 3.11+ and SQLite 3.37+. P0 tooling is stdlib-only; runtime tests require
+the pinned `requirements.txt` dependencies. See `docs/fact-kernel.md` for setup,
 the strict request contract, resource limits and an offline example.
+See `docs/model-integration.md` for the P1.2 fake-transport suite, safe local
+configuration and pinned smoke preparation; live mode needs separate approval.
 
 ```bash
 .venv/bin/python -m unittest discover -s tests -v
@@ -54,9 +57,10 @@ the strict request contract, resource limits and an offline example.
 
 Build and report paths are exclusive-create. Use a fresh directory on reruns;
 do not delete/overwrite evidence to make a run appear clean. These commands are
-OFFLINE fixture/kernel checks, not model evaluations. Report protected P0 checks
-separately from new kernel tests. Run targeted tests while editing
-and the complete small offline suite before handoff. Report failures honestly.
+OFFLINE fixture/kernel checks, not model evaluations. Report P0, P1.1 kernel/CLI
+and P1.2 adapter/runner suites separately; protect the original 107 tests.
+Run targeted checks while editing and the complete small offline suite before
+handoff. Report failures honestly.
 
 ## Evidence and improvement
 

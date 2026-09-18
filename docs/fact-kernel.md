@@ -1,14 +1,18 @@
 # P1.1: bounded offline SQLite fact kernel
 
 Issue #6 implements explicit requests, not natural-language planning or P1
-acceptance. There is no model client, recipe engine, synthesis, service endpoint
-or PostgreSQL adapter. The twelve P0 behavioral scenarios remain unimplemented.
+acceptance. The kernel itself has no model client, recipe engine, synthesis,
+service endpoint or PostgreSQL adapter. The separate
+[P1.2 adapter](model-integration.md) uses this same execution entry; it does not
+change these four definitions. The twelve P0 behavioral scenarios remain
+unimplemented.
 
 ## Install and run
 
-From the repository root, use Python 3.11+ and SQLite 3.37+. The only runtime
-dependency is `sqlglot==30.18.0`, pinned in `requirements.txt`; no optional
-SQLGlot extras are needed.
+From the repository root, use Python 3.11+ and SQLite 3.37+. The kernel itself
+requires only `sqlglot==30.18.0`; repository `requirements.txt` also pins the
+separate P1.2 adapter's dependencies. No optional SQLGlot extras are needed.
+Using the kernel or its existing CLI does not construct a model client.
 
 ```bash
 python3.11 -m venv .venv
