@@ -1,14 +1,14 @@
 {
-  "revision": "learningops-languages-v0.1",
+  "revision": "learningops-languages-v0.2",
   "base_catalog": "learningops.json",
-  "base_catalog_sha256": "0e408a2f934f1eb68eee05be6d4744efb5bd9a10ae962f1d552066df5918250b",
+  "base_catalog_sha256": "b287a9de51ef65137b36b2c88a0cba5fb309e7e5a2c54e36f91ddaa6d768cddf",
   "source_language": "zh-TW",
   "comparison_languages": [
     "zh-TW",
     "en",
     "ja"
   ],
-  "review_status": "authored_pending_independent_review",
+  "review_status": "revised_pending_local_recheck",
   "variants": [
     {
       "case_id": "Q01_booked_amount",
@@ -44,13 +44,13 @@
       "case_id": "Q06_cash_received",
       "input_kind": "question",
       "en": "What was the total amount of successful payments posted in March 2026, without excluding any based on booking status?",
-      "ja": "申込の状態による除外をせず、2026年3月に入金処理が完了した支払いの金額合計はいくらですか？"
+      "ja": "申込の状態による除外をせず、2026年3月に計上された、支払ステータスが「成功」の入金額の合計はいくらですか？"
     },
     {
       "case_id": "Q07_posted_refunds",
       "input_kind": "question",
       "en": "What was the total amount of successful refunds posted in March 2026?",
-      "ja": "2026年3月に返金処理が完了した金額の合計はいくらですか？"
+      "ja": "2026年3月に計上された、返金ステータスが「成功」の返金額の合計はいくらですか？"
     },
     {
       "case_id": "Q08_cohort_refunds",
@@ -85,8 +85,8 @@
     {
       "case_id": "Q13_top_courses",
       "input_kind": "question",
-      "en": "Which three courses had the highest confirmed booking amounts in March 2026? Break ties by course ID.",
-      "ja": "2026年3月の確定済み申込金額が最も高い講座を上位3件示してください。同額の場合は講座ID順にしてください。"
+      "en": "Which three courses had the highest confirmed booking amounts in March 2026? Break ties by course ID in ascending order.",
+      "ja": "2026年3月の確定済み申込金額が最も高い講座を上位3件示してください。同額の場合は講座IDの昇順にしてください。"
     },
     {
       "case_id": "Q14_boundary_membership",
@@ -169,8 +169,8 @@
     {
       "case_id": "E09_unit_conversion",
       "input_kind": "question",
-      "en": "How many hours long is course S01?",
-      "ja": "S01の講座の長さは何時間ですか？"
+      "en": "What is the duration of session S01 in hours?",
+      "ja": "開催回S01の所要時間は何時間ですか？"
     },
     {
       "case_id": "E10_budget_partial",

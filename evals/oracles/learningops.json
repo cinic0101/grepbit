@@ -212,7 +212,7 @@
   },
   {
     "id": "Q13_top_courses",
-    "question": "2026年3月已確認報名金額最高的前三個課程（同額按課程ID）？",
+    "question": "2026年3月已確認報名金額最高的前三個課程（同額按課程ID升冪）？",
     "sql": "SELECT s.course_id,SUM(i.seats*i.unit_price_minor-i.discount_minor) amount FROM bookings b JOIN booking_items i ON i.booking_id=b.booking_id JOIN sessions s ON s.session_id=i.session_id WHERE b.status='confirmed' AND b.created_at_utc>=:start AND b.created_at_utc<:end GROUP BY s.course_id ORDER BY amount DESC,s.course_id LIMIT 3",
     "params": {
       "start": "2026-02-28T16:00:00Z",

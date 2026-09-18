@@ -89,7 +89,7 @@
     },
     {
       "id": "Q13_top_courses",
-      "question": "2026年3月已確認報名金額最高的前三個課程（同額按課程ID）？",
+      "question": "2026年3月已確認報名金額最高的前三個課程（同額按課程ID升冪）？",
       "layer": "fixture_reference",
       "reference_id": "Q13_top_courses",
       "status": "authored_draft_not_model_evaluated"
@@ -187,7 +187,7 @@
     },
     {
       "id": "E09_unit_conversion",
-      "question": "S01課程時長幾小時？",
+      "question": "S01場次的時長是幾小時？",
       "layer": "controlled",
       "expected_behavior": "120 minutes -> 2 hours; alias does not change a value unit.",
       "status": "authored_draft_not_model_evaluated"
@@ -213,5 +213,6 @@
       "expected_behavior": "Fixture supports future anti-join testing; defer runtime support unless explicitly admitted. Do not infer it is implemented.",
       "status": "authored_draft_not_model_evaluated"
     }
-  ]
+  ],
+  "revision": "learningops-cases-v0.2"
 }

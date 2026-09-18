@@ -6,7 +6,7 @@ Add Traditional Chinese (`zh-TW`), English (`en`) and Japanese (`ja`) before
 P0 review. This adds language coverage, not a new product architecture or a
 live-run permission. Keep English documentation and intentional multilingual inputs.
 
-- Base questions and shared expectations: `evals/cases/learningops.json` (unchanged).
+- Base questions and shared expectations: `evals/cases/learningops.json` (wording revision v0.2).
 - Paired variants: `evals/cases/learningops-languages.json`, keyed by base case ID.
 - Side-by-side review: `evals/cases/learningops-language-review.md`.
 - Structural checks: `tests/test_multilingual_cases.py`.
@@ -29,15 +29,27 @@ stored proper names unchanged. In particular, E04 must not pick a center, E05
 must not choose seats/accounts/attendance, and E06 must not acquire a year.
 Do not make one language easier by adding definitions absent from the other two.
 
-Retain original wording during this addition. Review Q13's unspecified tie
-direction and E09's course/session naming consistently across languages rather
-than silently repairing one translation. Record a needed wording/expectation
-revision in #3, preserve historical evidence and update the supplement identity.
+Revision v0.2 follows the owner-relayed local review of `80109e5`. Japanese
+Q06/Q07 now explicitly uses posting time plus successful status. Q13 states
+ascending course ID for ties in all languages, matching the unchanged reference;
+E09 consistently names session S01. Base catalog and language identities change;
+seed, schema, SQL/parameters, numeric and behavioral expectations do not.
+Q13's duplicated oracle question metadata follows the wording change. Prior
+reports keep their original identities. The focused recheck and owner approval
+remain open in #3; do not call this native-speaker or blinded review.
 
-Offline tests check coverage, IDs, protected literals, explicit years, review-sheet
-consistency and pending-review status. They do NOT establish translation fidelity,
-Japanese fluency, semantic equivalence or model accuracy. Independent wording and
-semantic review remain open; model agreement would not replace that review.
+Offline tests check coverage, IDs, protected literals, selected complete cutoff
+and top-K phrases, posting/status wording, review-sheet consistency and pending
+approval. Deliberate date/top-K and processing-completion text mutations must
+fail even when a review sheet could be updated to match. These narrowly scoped
+surface guards are evaluator tests, NOT production language rules or semantic
+certification. Full equivalence still requires review.
+
+`tests/test_review_witnesses.py` adds an isolated fourth eligible course tied
+at the rank-3 cutoff. It distinguishes missing LIMIT, LIMIT 4 and descending
+ID tie-breaking without changing the core seed. This is a fixture/reference
+witness, not evidence that a model or runtime ranks correctly; omitted tie
+ordering may accidentally return the same rows and is not certified by it.
 
 ## Later: owner-authorized local model comparison
 

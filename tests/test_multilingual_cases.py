@@ -68,7 +68,7 @@ class MultilingualCaseTests(unittest.TestCase):
                          ["E10_budget_partial"])
 
     def test_review_sheet_matches_inputs_and_does_not_claim_reviewed(self):
-        self.assertEqual(self.languages["review_status"], "authored_pending_independent_review")
+        self.assertEqual(self.languages["review_status"], "revised_pending_local_recheck")
         for v in self.variants:
             values = [self.cases[v["case_id"]]["question"], v["en"], v["ja"]]
             row = f'| `{v["case_id"]}` / {v["input_kind"]} | ' + " | ".join(values) + " |"
