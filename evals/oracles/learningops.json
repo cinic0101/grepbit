@@ -1,0 +1,337 @@
+[
+  {
+    "id": "Q01_booked_amount",
+    "question": "2026年3月已確認報名的折扣後金額是多少（未扣退款）？",
+    "sql": "SELECT SUM(i.seats*i.unit_price_minor-i.discount_minor) FROM bookings b JOIN booking_items i ON b.booking_id=i.booking_id WHERE b.status='confirmed' AND b.created_at_utc>=:start AND b.created_at_utc<:end",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        158000
+      ]
+    ]
+  },
+  {
+    "id": "Q02_booking_count",
+    "question": "2026年3月有幾筆已確認報名？",
+    "sql": "SELECT COUNT(*) FROM bookings b WHERE b.status='confirmed' AND b.created_at_utc>=:start AND b.created_at_utc<:end",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        7
+      ]
+    ]
+  },
+  {
+    "id": "Q03_booked_seats",
+    "question": "2026年3月已確認報名合計多少席次？",
+    "sql": "SELECT SUM(i.seats) FROM bookings b JOIN booking_items i ON b.booking_id=i.booking_id WHERE b.status='confirmed' AND b.created_at_utc>=:start AND b.created_at_utc<:end",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        12
+      ]
+    ]
+  },
+  {
+    "id": "Q04_known_learners",
+    "question": "2026年3月已確認報名涉及幾個不同的具名報名帳戶（不含匿名）？",
+    "sql": "SELECT COUNT(DISTINCT learner_id) FROM bookings WHERE status='confirmed' AND created_at_utc>=:start AND created_at_utc<:end",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        5
+      ]
+    ]
+  },
+  {
+    "id": "Q05_center_amount",
+    "question": "CTR-A01 在2026年3月已確認報名金額是多少？",
+    "sql": "SELECT SUM(i.seats*i.unit_price_minor-i.discount_minor) FROM bookings b JOIN booking_items i ON b.booking_id=i.booking_id WHERE b.status='confirmed' AND b.created_at_utc>=:start AND b.created_at_utc<:end AND b.center_id='CA'",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        68000
+      ]
+    ]
+  },
+  {
+    "id": "Q06_cash_received",
+    "question": "2026年3月入帳的成功收款金額，不依報名狀態排除，是多少？",
+    "sql": "SELECT SUM(amount_minor) FROM payments WHERE status='succeeded' AND posted_at_utc>=:start AND posted_at_utc<:end",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        183000
+      ]
+    ]
+  },
+  {
+    "id": "Q07_posted_refunds",
+    "question": "2026年3月成功入帳的退款金額是多少？",
+    "sql": "SELECT SUM(amount_minor) FROM refunds WHERE status='succeeded' AND posted_at_utc>=:start AND posted_at_utc<:end",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        20000
+      ]
+    ]
+  },
+  {
+    "id": "Q08_cohort_refunds",
+    "question": "2026年3月已確認報名截至2026年4月1日零時的累計成功退款是多少？",
+    "sql": "SELECT SUM(r.amount_minor) FROM refunds r JOIN booking_items i ON r.item_id=i.item_id JOIN bookings b ON b.booking_id=i.booking_id WHERE b.status='confirmed' AND b.created_at_utc>=:start AND b.created_at_utc<:end AND r.status='succeeded' AND r.posted_at_utc<:end",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        5000
+      ]
+    ]
+  },
+  {
+    "id": "Q09_previous_amount",
+    "question": "2026年2月已確認報名金額是多少？",
+    "sql": "SELECT SUM(i.seats*i.unit_price_minor-i.discount_minor) FROM bookings b JOIN booking_items i ON b.booking_id=i.booking_id WHERE b.status='confirmed' AND b.created_at_utc>=:start AND b.created_at_utc<:end",
+    "params": {
+      "start": "2026-01-31T16:00:00Z",
+      "end": "2026-02-28T16:00:00Z"
+    },
+    "expected": [
+      [
+        50000
+      ]
+    ]
+  },
+  {
+    "id": "Q10_center_breakdown",
+    "question": "2026年3月各中心已確認報名金額，包含無報名中心？",
+    "sql": "WITH a AS (SELECT b.center_id,SUM(i.seats*i.unit_price_minor-i.discount_minor) amount FROM bookings b JOIN booking_items i ON b.booking_id=i.booking_id WHERE b.status='confirmed' AND b.created_at_utc>=:start AND b.created_at_utc<:end GROUP BY b.center_id) SELECT c.center_id,COALESCE(a.amount,0) FROM centers c LEFT JOIN a ON a.center_id=c.center_id ORDER BY c.center_id",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        "CA",
+        68000
+      ],
+      [
+        "CB",
+        30000
+      ],
+      [
+        "CC",
+        60000
+      ],
+      [
+        "CZ",
+        0
+      ]
+    ]
+  },
+  {
+    "id": "Q11_category_breakdown",
+    "question": "2026年3月已確認報名按課程分類拆分金額？",
+    "sql": "SELECT k.category,SUM(i.seats*i.unit_price_minor-i.discount_minor) FROM bookings b JOIN booking_items i ON i.booking_id=b.booking_id JOIN sessions s ON s.session_id=i.session_id JOIN courses k ON k.course_id=s.course_id WHERE b.status='confirmed' AND b.created_at_utc>=:start AND b.created_at_utc<:end GROUP BY k.category ORDER BY k.category",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        "arts",
+        90000
+      ],
+      [
+        "technology",
+        68000
+      ]
+    ]
+  },
+  {
+    "id": "Q12_daily_trend",
+    "question": "按台北日期列出2026年3月每日已確認報名金額（只列有資料日）？",
+    "sql": "SELECT date(b.created_at_utc,'+8 hours'),SUM(i.seats*i.unit_price_minor-i.discount_minor) FROM bookings b JOIN booking_items i ON b.booking_id=i.booking_id WHERE b.status='confirmed' AND b.created_at_utc>=:start AND b.created_at_utc<:end GROUP BY date(b.created_at_utc,'+8 hours') ORDER BY 1",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        "2026-03-01",
+        35000
+      ],
+      [
+        "2026-03-05",
+        8000
+      ],
+      [
+        "2026-03-07",
+        10000
+      ],
+      [
+        "2026-03-10",
+        15000
+      ],
+      [
+        "2026-03-12",
+        30000
+      ],
+      [
+        "2026-03-13",
+        40000
+      ],
+      [
+        "2026-03-20",
+        20000
+      ]
+    ]
+  },
+  {
+    "id": "Q13_top_courses",
+    "question": "2026年3月已確認報名金額最高的前三個課程（同額按課程ID升冪）？",
+    "sql": "SELECT s.course_id,SUM(i.seats*i.unit_price_minor-i.discount_minor) amount FROM bookings b JOIN booking_items i ON i.booking_id=b.booking_id JOIN sessions s ON s.session_id=i.session_id WHERE b.status='confirmed' AND b.created_at_utc>=:start AND b.created_at_utc<:end GROUP BY s.course_id ORDER BY amount DESC,s.course_id LIMIT 3",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        "K1",
+        68000
+      ],
+      [
+        "K3",
+        60000
+      ],
+      [
+        "K2",
+        30000
+      ]
+    ]
+  },
+  {
+    "id": "Q14_boundary_membership",
+    "question": "哪些已確認報名落在台北2026年3月（只驗證ID，不代表MVP提供任意明細）？",
+    "sql": "SELECT booking_id FROM bookings WHERE status='confirmed' AND created_at_utc>=:start AND created_at_utc<:end ORDER BY booking_id",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        "B01"
+      ],
+      [
+        "B02"
+      ],
+      [
+        "B03"
+      ],
+      [
+        "B04"
+      ],
+      [
+        "B05"
+      ],
+      [
+        "B06"
+      ],
+      [
+        "B13"
+      ]
+    ]
+  },
+  {
+    "id": "Q15_net_cash",
+    "question": "2026年3月淨現金流入（成功收款減同月成功退款）是多少？",
+    "sql": "SELECT (SELECT SUM(amount_minor) FROM payments WHERE status='succeeded' AND posted_at_utc>=:start AND posted_at_utc<:end)-(SELECT SUM(amount_minor) FROM refunds WHERE status='succeeded' AND posted_at_utc>=:start AND posted_at_utc<:end)",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        163000
+      ]
+    ]
+  },
+  {
+    "id": "Q16_cohort_net_amount",
+    "question": "2026年3月已確認報名金額扣除截至2026年4月1日零時的該群報名退款後是多少？",
+    "sql": "SELECT (SELECT SUM(i.seats*i.unit_price_minor-i.discount_minor) FROM bookings b JOIN booking_items i ON b.booking_id=i.booking_id WHERE b.status='confirmed' AND b.created_at_utc>=:start AND b.created_at_utc<:end)-(SELECT SUM(r.amount_minor) FROM refunds r JOIN booking_items i ON r.item_id=i.item_id JOIN bookings b ON b.booking_id=i.booking_id WHERE b.status='confirmed' AND b.created_at_utc>=:start AND b.created_at_utc<:end AND r.status='succeeded' AND r.posted_at_utc<:end)",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        153000
+      ]
+    ]
+  },
+  {
+    "id": "Q17_line_count",
+    "question": "2026年3月已確認報名有幾筆課程明細（不是報名筆數或席次）？",
+    "sql": "SELECT COUNT(*) FROM bookings b JOIN booking_items i ON b.booking_id=i.booking_id WHERE b.status='confirmed' AND b.created_at_utc>=:start AND b.created_at_utc<:end",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        8
+      ]
+    ]
+  },
+  {
+    "id": "Q18_target_missing_zero",
+    "question": "2026年3月各中心的已確認報名金額目標；缺目標保留空值，不當成0？",
+    "sql": "SELECT c.center_id,t.target_minor FROM centers c LEFT JOIN monthly_targets t ON t.center_id=c.center_id AND t.month_start_local='2026-03-01' AND t.metric_id='confirmed_booked_amount' ORDER BY c.center_id",
+    "params": {
+      "start": "2026-02-28T16:00:00Z",
+      "end": "2026-03-31T16:00:00Z"
+    },
+    "expected": [
+      [
+        "CA",
+        70000
+      ],
+      [
+        "CB",
+        40000
+      ],
+      [
+        "CC",
+        0
+      ],
+      [
+        "CZ",
+        null
+      ]
+    ]
+  }
+]

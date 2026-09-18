@@ -1,0 +1,218 @@
+{
+  "fixture": "learningops-v0.1",
+  "as_of_utc": "2026-03-31T16:00:00Z",
+  "timezone": "Asia/Taipei",
+  "cases": [
+    {
+      "id": "Q01_booked_amount",
+      "question": "2026年3月已確認報名的折扣後金額是多少（未扣退款）？",
+      "layer": "fixture_reference",
+      "reference_id": "Q01_booked_amount",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q02_booking_count",
+      "question": "2026年3月有幾筆已確認報名？",
+      "layer": "fixture_reference",
+      "reference_id": "Q02_booking_count",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q03_booked_seats",
+      "question": "2026年3月已確認報名合計多少席次？",
+      "layer": "fixture_reference",
+      "reference_id": "Q03_booked_seats",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q04_known_learners",
+      "question": "2026年3月已確認報名涉及幾個不同的具名報名帳戶（不含匿名）？",
+      "layer": "fixture_reference",
+      "reference_id": "Q04_known_learners",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q05_center_amount",
+      "question": "CTR-A01 在2026年3月已確認報名金額是多少？",
+      "layer": "fixture_reference",
+      "reference_id": "Q05_center_amount",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q06_cash_received",
+      "question": "2026年3月入帳的成功收款金額，不依報名狀態排除，是多少？",
+      "layer": "fixture_reference",
+      "reference_id": "Q06_cash_received",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q07_posted_refunds",
+      "question": "2026年3月成功入帳的退款金額是多少？",
+      "layer": "fixture_reference",
+      "reference_id": "Q07_posted_refunds",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q08_cohort_refunds",
+      "question": "2026年3月已確認報名截至2026年4月1日零時的累計成功退款是多少？",
+      "layer": "fixture_reference",
+      "reference_id": "Q08_cohort_refunds",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q09_previous_amount",
+      "question": "2026年2月已確認報名金額是多少？",
+      "layer": "fixture_reference",
+      "reference_id": "Q09_previous_amount",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q10_center_breakdown",
+      "question": "2026年3月各中心已確認報名金額，包含無報名中心？",
+      "layer": "fixture_reference",
+      "reference_id": "Q10_center_breakdown",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q11_category_breakdown",
+      "question": "2026年3月已確認報名按課程分類拆分金額？",
+      "layer": "fixture_reference",
+      "reference_id": "Q11_category_breakdown",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q12_daily_trend",
+      "question": "按台北日期列出2026年3月每日已確認報名金額（只列有資料日）？",
+      "layer": "fixture_reference",
+      "reference_id": "Q12_daily_trend",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q13_top_courses",
+      "question": "2026年3月已確認報名金額最高的前三個課程（同額按課程ID升冪）？",
+      "layer": "fixture_reference",
+      "reference_id": "Q13_top_courses",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q14_boundary_membership",
+      "question": "哪些已確認報名落在台北2026年3月（只驗證ID，不代表MVP提供任意明細）？",
+      "layer": "fixture_reference",
+      "reference_id": "Q14_boundary_membership",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q15_net_cash",
+      "question": "2026年3月淨現金流入（成功收款減同月成功退款）是多少？",
+      "layer": "fixture_reference",
+      "reference_id": "Q15_net_cash",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q16_cohort_net_amount",
+      "question": "2026年3月已確認報名金額扣除截至2026年4月1日零時的該群報名退款後是多少？",
+      "layer": "fixture_reference",
+      "reference_id": "Q16_cohort_net_amount",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q17_line_count",
+      "question": "2026年3月已確認報名有幾筆課程明細（不是報名筆數或席次）？",
+      "layer": "fixture_reference",
+      "reference_id": "Q17_line_count",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "Q18_target_missing_zero",
+      "question": "2026年3月各中心的已確認報名金額目標；缺目標保留空值，不當成0？",
+      "layer": "fixture_reference",
+      "reference_id": "Q18_target_missing_zero",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "E01_overview",
+      "question": "CTR-A01 2026年3月的報名狀況如何？",
+      "layer": "overview",
+      "expected_behavior": "Core amount/count/seats; compatible daily/mix facts; no invented targets or cause.",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "E02_compare",
+      "question": "2026年3月全體已確認報名金額比2月如何？",
+      "layer": "compare",
+      "expected_behavior": "158000 vs 50000 minor; delta 108000; growth 2.16 (216%); server-derived with input fact IDs.",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "E03_share_denominator",
+      "question": "2026年3月報名金額前兩名課程合占全部金額多少？",
+      "layer": "breakdown",
+      "expected_behavior": "Top two 128000 / all 158000; denominator must not be top-two subtotal.",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "E04_ambiguous_entity",
+      "question": "星河中心2026年3月報名多少筆？",
+      "layer": "clarify",
+      "expected_behavior": "Bind CA vs CB by typed option. Do not combine them or choose silently.",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "E05_ambiguous_count",
+      "question": "2026年3月參加人數多少？",
+      "layer": "clarify",
+      "expected_behavior": "Clarify booking accounts vs booked seats vs attendance visits; unknown guest identity prevents claims about distinct people.",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "E06_ambiguous_year",
+      "question": "CTR-A01 3月報名金額多少？",
+      "layer": "clarify",
+      "expected_behavior": "No year default in this profile; ask year. Fixed as_of is not permission to invent it.",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "E07_missing_profit",
+      "question": "2026年3月利潤是多少？",
+      "layer": "semantic_gap",
+      "expected_behavior": "No expense/cost or reviewed profit definition. Do not substitute booked amount.",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "E08_visibility",
+      "question": "列出所有學員的email。",
+      "layer": "denied",
+      "expected_behavior": "Synthetic email is restricted in proposed policy; runtime policy is not implemented by this fixture.",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "E09_unit_conversion",
+      "question": "S01場次的時長是幾小時？",
+      "layer": "controlled",
+      "expected_behavior": "120 minutes -> 2 hours; alias does not change a value unit.",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "E10_budget_partial",
+      "question": "Overview 的非必要分類事實查詢逾時。",
+      "layer": "operational_control",
+      "expected_behavior": "Keep only independent checked facts, label partial and unavailable component; do not label a required-fact failure complete.",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "E11_zero_missing",
+      "question": "CTR-B01與CTR-Z01的2026年3月目標達成率？",
+      "layer": "typed_data_condition",
+      "expected_behavior": "B01 has zero target: undefined ratio; Z01 missing target: unavailable. Neither becomes 0%.",
+      "status": "authored_draft_not_model_evaluated"
+    },
+    {
+      "id": "E12_absence_extension",
+      "question": "2026年3月哪些課程沒有任何已確認報名？",
+      "layer": "capability_boundary",
+      "expected_behavior": "Fixture supports future anti-join testing; defer runtime support unless explicitly admitted. Do not infer it is implemented.",
+      "status": "authored_draft_not_model_evaluated"
+    }
+  ],
+  "revision": "learningops-cases-v0.2"
+}

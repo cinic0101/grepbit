@@ -1,0 +1,194 @@
+{
+  "revision": "learningops-languages-v0.2",
+  "base_catalog": "learningops.json",
+  "base_catalog_sha256": "b287a9de51ef65137b36b2c88a0cba5fb309e7e5a2c54e36f91ddaa6d768cddf",
+  "source_language": "zh-TW",
+  "comparison_languages": [
+    "zh-TW",
+    "en",
+    "ja"
+  ],
+  "review_status": "revised_pending_local_recheck",
+  "variants": [
+    {
+      "case_id": "Q01_booked_amount",
+      "input_kind": "question",
+      "en": "What is the total amount after discounts for confirmed bookings in March 2026, before deducting refunds?",
+      "ja": "2026年3月の確定済み申込について、割引適用後・返金差引前の金額合計はいくらですか？"
+    },
+    {
+      "case_id": "Q02_booking_count",
+      "input_kind": "question",
+      "en": "How many confirmed bookings were there in March 2026?",
+      "ja": "2026年3月の確定済み申込は何件ですか？"
+    },
+    {
+      "case_id": "Q03_booked_seats",
+      "input_kind": "question",
+      "en": "How many seats were booked in total through confirmed bookings in March 2026?",
+      "ja": "2026年3月の確定済み申込で、予約された席数は合計いくつですか？"
+    },
+    {
+      "case_id": "Q04_known_learners",
+      "input_kind": "question",
+      "en": "How many distinct identified booking accounts were associated with confirmed bookings in March 2026, excluding anonymous bookings?",
+      "ja": "2026年3月の確定済み申込には、匿名申込を除いて、識別可能な申込アカウントが重複なしでいくつありますか？"
+    },
+    {
+      "case_id": "Q05_center_amount",
+      "input_kind": "question",
+      "en": "What was the confirmed booking amount for CTR-A01 in March 2026?",
+      "ja": "CTR-A01の2026年3月の確定済み申込金額はいくらですか？"
+    },
+    {
+      "case_id": "Q06_cash_received",
+      "input_kind": "question",
+      "en": "What was the total amount of successful payments posted in March 2026, without excluding any based on booking status?",
+      "ja": "申込の状態による除外をせず、2026年3月に計上された、支払ステータスが「成功」の入金額の合計はいくらですか？"
+    },
+    {
+      "case_id": "Q07_posted_refunds",
+      "input_kind": "question",
+      "en": "What was the total amount of successful refunds posted in March 2026?",
+      "ja": "2026年3月に計上された、返金ステータスが「成功」の返金額の合計はいくらですか？"
+    },
+    {
+      "case_id": "Q08_cohort_refunds",
+      "input_kind": "question",
+      "en": "For confirmed bookings in March 2026, what was the cumulative amount of successful refunds as of midnight at the start of April 1, 2026?",
+      "ja": "2026年3月の確定済み申込について、2026年4月1日午前0時時点での返金完了額の累計はいくらですか？"
+    },
+    {
+      "case_id": "Q09_previous_amount",
+      "input_kind": "question",
+      "en": "What was the confirmed booking amount in February 2026?",
+      "ja": "2026年2月の確定済み申込金額はいくらですか？"
+    },
+    {
+      "case_id": "Q10_center_breakdown",
+      "input_kind": "question",
+      "en": "What was the confirmed booking amount for each center in March 2026, including centers with no bookings?",
+      "ja": "申込がなかったセンターも含め、2026年3月の各センターの確定済み申込金額を教えてください。"
+    },
+    {
+      "case_id": "Q11_category_breakdown",
+      "input_kind": "question",
+      "en": "Break down the confirmed booking amount in March 2026 by course category.",
+      "ja": "2026年3月の確定済み申込金額を講座カテゴリ別に示してください。"
+    },
+    {
+      "case_id": "Q12_daily_trend",
+      "input_kind": "question",
+      "en": "List the daily confirmed booking amount for March 2026 by Taipei calendar date, showing only dates with data.",
+      "ja": "台北の日付に基づき、2026年3月の日別の確定済み申込金額を、データがある日だけ表示してください。"
+    },
+    {
+      "case_id": "Q13_top_courses",
+      "input_kind": "question",
+      "en": "Which three courses had the highest confirmed booking amounts in March 2026? Break ties by course ID in ascending order.",
+      "ja": "2026年3月の確定済み申込金額が最も高い講座を上位3件示してください。同額の場合は講座IDの昇順にしてください。"
+    },
+    {
+      "case_id": "Q14_boundary_membership",
+      "input_kind": "question",
+      "en": "Which confirmed bookings fall within March 2026 in Taipei time? This checks IDs only and does not imply arbitrary detail listings are supported in the MVP.",
+      "ja": "台北時間の2026年3月に該当する確定済み申込はどれですか？ これはIDのみの検証であり、MVPが任意の明細表示に対応することを意味しません。"
+    },
+    {
+      "case_id": "Q15_net_cash",
+      "input_kind": "question",
+      "en": "What was the net cash inflow in March 2026, defined as successful payments received minus successful refunds in the same month?",
+      "ja": "2026年3月の純現金流入額はいくらですか？ 同月の入金完了額から返金完了額を差し引いてください。"
+    },
+    {
+      "case_id": "Q16_cohort_net_amount",
+      "input_kind": "question",
+      "en": "What was the confirmed booking amount for March 2026 after deducting refunds belonging to those bookings as of midnight at the start of April 1, 2026?",
+      "ja": "2026年3月の確定済み申込金額から、その申込に対する2026年4月1日午前0時時点の返金額を差し引くと、いくらですか？"
+    },
+    {
+      "case_id": "Q17_line_count",
+      "input_kind": "question",
+      "en": "How many course line items were in confirmed bookings in March 2026, rather than the number of bookings or seats?",
+      "ja": "2026年3月の確定済み申込には、講座明細が何件ありますか？ 申込件数や席数ではありません。"
+    },
+    {
+      "case_id": "Q18_target_missing_zero",
+      "input_kind": "question",
+      "en": "Show each center's confirmed booking amount target for March 2026. Keep missing targets null instead of treating them as zero.",
+      "ja": "2026年3月の各センターの確定済み申込金額の目標値を示してください。目標値がない場合はNULLのままにし、0として扱わないでください。"
+    },
+    {
+      "case_id": "E01_overview",
+      "input_kind": "question",
+      "en": "How were bookings at CTR-A01 in March 2026?",
+      "ja": "CTR-A01の2026年3月の申込状況はどうでしたか？"
+    },
+    {
+      "case_id": "E02_compare",
+      "input_kind": "question",
+      "en": "How did the overall confirmed booking amount in March 2026 compare with February?",
+      "ja": "2026年3月の全体の確定済み申込金額は、2月と比べてどうでしたか？"
+    },
+    {
+      "case_id": "E03_share_denominator",
+      "input_kind": "question",
+      "en": "What share of the total booking amount in March 2026 came from the top two courses by booking amount?",
+      "ja": "2026年3月の申込金額上位2講座は、全体の申込金額のどれくらいの割合を占めますか？"
+    },
+    {
+      "case_id": "E04_ambiguous_entity",
+      "input_kind": "question",
+      "en": "How many bookings did 星河中心 have in March 2026?",
+      "ja": "星河中心の2026年3月の申込は何件ですか？"
+    },
+    {
+      "case_id": "E05_ambiguous_count",
+      "input_kind": "question",
+      "en": "How many people participated in March 2026?",
+      "ja": "2026年3月の参加人数は何人ですか？"
+    },
+    {
+      "case_id": "E06_ambiguous_year",
+      "input_kind": "question",
+      "en": "What was the booking amount for CTR-A01 in March?",
+      "ja": "CTR-A01の3月の申込金額はいくらですか？"
+    },
+    {
+      "case_id": "E07_missing_profit",
+      "input_kind": "question",
+      "en": "What was the profit in March 2026?",
+      "ja": "2026年3月の利益はいくらですか？"
+    },
+    {
+      "case_id": "E08_visibility",
+      "input_kind": "question",
+      "en": "List the email addresses of all learners.",
+      "ja": "すべての受講者のメールアドレスを一覧表示してください。"
+    },
+    {
+      "case_id": "E09_unit_conversion",
+      "input_kind": "question",
+      "en": "What is the duration of session S01 in hours?",
+      "ja": "開催回S01の所要時間は何時間ですか？"
+    },
+    {
+      "case_id": "E10_budget_partial",
+      "input_kind": "scenario_description",
+      "en": "The query for an optional category fact in an overview times out.",
+      "ja": "概要分析で、必須ではないカテゴリ別の事実を取得するクエリがタイムアウトする。"
+    },
+    {
+      "case_id": "E11_zero_missing",
+      "input_kind": "question",
+      "en": "What were the target attainment rates for CTR-B01 and CTR-Z01 in March 2026?",
+      "ja": "CTR-B01とCTR-Z01の2026年3月の目標達成率はいくらですか？"
+    },
+    {
+      "case_id": "E12_absence_extension",
+      "input_kind": "question",
+      "en": "Which courses had no confirmed bookings at all in March 2026?",
+      "ja": "2026年3月に確定済みの申込が一件もなかった講座はどれですか？"
+    }
+  ]
+}
