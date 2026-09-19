@@ -1,6 +1,6 @@
 # V3 architecture
 
-Decision baseline: 2026-09-18; current status follows #13/#22. The architecture below
+Decision baseline: 2026-09-18; current status follows #13/#24. The architecture below
 includes future responsibilities, not a claim that all are implemented.
 P0 and P1 are accepted at `6d6be30bed321806e0a2ef90fec53a1fc1118373`:
 the [scalar kernel](fact-kernel.md) and [model boundary](model-integration.md)
@@ -14,9 +14,12 @@ binding and Overview-specific output types around that same composition.
 Binding, required facts and optional views share one read transaction, base
 admission and global budget. Both composition entries use the same inner body
 and finalize only after transaction exit; neither chains public fact wrappers.
-Compare and Overview remain separate public contracts, not a generic recipe
-framework. Breakdown, model recipe selection and the other future layers below
-are not implemented.
+P2.5 (#24) adds required-only Breakdown: independently execute the all-scope
+scalar denominator and course top-k in one transaction, then derive exact
+selected subtotal/share with role-linked provenance. It reuses lifecycle checks,
+not Overview's optional composer or recovery policy. All three recipes retain
+separate public contracts, not a generic recipe framework. Model recipe selection
+and the other future layers below are not implemented.
 
 ## Goal and boundaries
 

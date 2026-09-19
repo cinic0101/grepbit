@@ -5,8 +5,9 @@ Status: design accepted in #14 / PR #15 on `dev` at
 P2.1 (#16 / PR #17) accepted the offline scalar Compare slice below. P2.2
 (#18 / PR #19) accepted the [observed grouped-amount primitive](grouped-amount.md).
 P2.3 (#20 / PR #21) accepted the private required/optional witness below.
-P2.4 (#22) exposes public deterministic Overview by reusing that composition.
-Breakdown and the remaining recipe matrix are admission for future work.
+P2.4 (#22 / PR #23) accepted public deterministic Overview using that composition.
+P2.5 (#24) adds deterministic Breakdown with an independent whole-scope
+denominator and two exact derivations. Model recipe paths remain future work.
 These slices do not change prompts, dependencies, fixtures, gold or live-run
 authorizations.
 
@@ -99,10 +100,10 @@ Compatibility checks cover catalog/digest, metric/unit, population/grain,
 filters, time basis/timezone, complete checked coverage, bound role ranges and
 the common snapshot. No user-editable compatibility rules are introduced.
 
-Only `difference` and `relative_change` are implemented derivations. P2.2
-separately adds grouped facts and P2.3 adds private required/optional execution.
-P2.4 adds public Overview below. Subtotal/share, Breakdown, rendering, model
-instantiation and live recipe evidence remain future work. P2.1 does not
+Compare implements only `difference` and `relative_change`. P2.2 separately adds
+grouped facts and P2.3 adds private required/optional execution. P2.4 adds public
+Overview, and P2.5 adds Breakdown's selected subtotal/share below. Rendering,
+model instantiation and live recipe evidence remain future work. P2.1 does not
 complete the P2 exit or establish model quality, backend parity or generalization.
 
 ## P2.3 private required/optional composition
@@ -270,7 +271,112 @@ isolation. Existing P2.3 regressions protect the full recovery/precedence matrix
 This is a deterministic Python API, not natural-language recipe selection,
 rendering, an API/CLI framework or live recipe validation. No analytical
 primitive, derived operation, dependency, configuration, model path or evaluator
-asset changes. Breakdown, subtotal/share and the remaining P2 exit stay open.
+asset changes in P2.4. Breakdown is the separate P2.5 slice below; the remaining
+P2 exit stays open.
+
+## P2.5 public deterministic Breakdown
+
+`grepbit.execute_breakdown(database, request, *, limits)` accepts
+`BreakdownRequest(start, end, timezone, top_k)`. All four fields are required.
+The typed constructor and strict `from_mapping` path reuse existing aware
+instant parsing and grouped full-month validation: exactly one explicit month
+in the fixed UTC+08:00 profile labeled `Asia/Taipei`, with equivalent absolute
+offset representations allowed. `top_k` must be an actual integer from 1 to 3,
+not bool/float/string, an inferred default or a clamped value.
+
+```python
+from pathlib import Path
+from grepbit import BreakdownRequest, execute_breakdown
+
+request = BreakdownRequest.from_mapping({
+    "start": "2026-03-01T00:00:00+08:00",
+    "end": "2026-04-01T00:00:00+08:00",
+    "timezone": "Asia/Taipei",
+    "top_k": 2,
+})
+pack = execute_breakdown(Path("learningops.sqlite"), request)
+document = pack.to_dict()
+```
+
+Only those request fields are admitted. Metric, dimension, all-center scope,
+population/time basis and ranking are recipe-owned. Center filters/codes,
+selected-course predicates, denominator overrides, formulas, SQL, ordering,
+callbacks, role changes and recipe-version overrides are rejected. There is no
+new CLI/model route or public supplied-fact API.
+
+| Fixed required slot | Evidence |
+| --- | --- |
+| `top_courses` | Existing checked course top-k GroupedAmountFact, amount descending / course ID ascending |
+| `all_amount` | Independently executed scalar amount over the original unranked all-center period |
+| `top_subtotal` | `selected_subtotal`, with exactly one logical input: the grouped fact ID |
+| `share` | `share_of_scope`, with ordered inputs: subtotal ID, independent whole-amount ID |
+
+Execution opens one existing admitted read transaction and cumulative `_Budget`,
+reads the whole scalar first, then runs the existing course admission/query
+helper on the same scope. It does not chain public wrappers, invoke Overview's
+five-slot composer or copy optional recovery. Only neutral transaction-boundary
+and finalization checks are shared with that module. The original snapshot ID
+and independently read denominator identity are captured separately. Public
+construction follows successful transaction exit and final budget/ID checks.
+
+Both sources must match the bound recipe, not merely one another: approved
+catalog/digest/amount, unit, booking-line grain, current-confirmed population,
+creation-time range, timezone, all-center filters, original snapshot and required
+checks. Scalar whole-scope completeness/empty evidence and grouped course
+profile/admission, requested k, complete declared top-k coverage, bounded integer
+rows, valid distinct keys and exact ordering are checked. Returned SQL/parameters
+must match the independently compiled needs; expected parameter dictionaries
+are copied before execution rather than compared through shared aliases.
+
+The denominator has no rank, limit or selected-course predicate. Membership
+rests on trusted independent scalar execution and the reviewed grouped partition,
+not merely `subtotal <= total`. No second verifier query is added. A selection
+may contain fewer than k observed courses; it is never padded. Coverage stays
+`top_k` even when subtotal equals total or share is 1; equality does not establish
+whole-universe coverage.
+
+Exactly two fixed derivations are added, not a formula registry. Subtotal sums
+only returned integer amounts, with signed-64-bit overflow rejection. Share
+validates the subtotal's actual selection reference, value/state and unit/snapshot
+plus the captured denominator role before dividing. Each derived fact has its
+own opaque ID; source IDs are unchanged. Share uses stdlib Fraction and serializes
+as integer `numerator` / positive `denominator`, with no float truth or renderer.
+The source population label is now a shared private constant; its existing
+scalar/grouped output text is unchanged.
+
+| Data or failure condition | Result |
+| --- | --- |
+| Compatible nonempty inputs, positive total | Checked subtotal/share; `complete` |
+| Nonempty zero total and zero subtotal | Checked zero subtotal; share `undefined`, `zero_total`, no numeric value; `complete` |
+| Valid empty scope | Checked NULL scalar and empty grouped source; subtotal `unavailable: empty_input`, share `unavailable: unavailable_subtotal`; `failed` |
+| Subtotal above total, positive subtotal over zero, contradictory or incompatible evidence | Error; no pack, repair or clamping |
+| Required admission/query, overflow, budget, interruption, SQLite/connection/transaction/snapshot or finalization failure | Abort; no pack, retry or reopened transaction |
+
+Public output types are `BreakdownAnalysisPack`, `BreakdownDerivedFact` and
+`BreakdownSlotResult`, not Compare aliases or a generic superclass. The pack
+contains the original request, resolved all-center FactRequest scope, original
+scalar/grouped facts, two derived facts, all four explicitly required slots,
+common snapshot and final runtime/execution/check/limitation evidence. Status is
+derived from required slot states and is only `complete` or `failed`, never
+`partial`. Output DTOs cannot be used as trusted execution requests.
+
+On the unchanged fixture, base admission visits 31 rows and required course
+admission adds 17, for 48 validation-loop visits. No limits/counters/progress
+handler are reset or raised. Course grouping does not require category columns;
+the inherited session parent/FK prerequisites and permission restoration remain.
+These counters do not measure all query/FK/join/sort work.
+
+Focused controls cover E03 and k=1/2/3, an unselected-course mutation that changes
+only the denominator/share, ranking/ties, role/metadata incompatibility, zero/
+empty distinctions, pure arithmetic overflow, and an actual WAL writer between
+the scalar and grouped reads. Scalar SUM may legitimately overflow before the
+derived subtotal stage; the pure overflow control does not claim otherwise.
+E10 remains private optional fault injection for Overview, not an optional
+policy or component timer for Breakdown.
+
+This slice does not change dependencies, configuration, evaluator/gold/translation
+assets or model paths. It adds no metric, dimension or SQL/grouping primitive.
+Model recipe selection, authorized live paths and the remaining P2 exit stay open.
 
 ## 1. Admission and evidence
 
@@ -373,7 +479,7 @@ the fixed `as_of` supplies no missing year.
 ## 3. Minimum contracts, not a serialized plan
 
 These are the broader accepted **sketch**, not a generic runtime API.
-The narrow public types above describe Compare and Overview separately.
+The narrow public types above describe Compare, Overview and Breakdown separately.
 Parameters express WHAT; a reviewed server template supplies HOW. No caller
 provides tasks, dependency graphs, operators, SQL, arbitrary filters or expressions.
 
@@ -638,8 +744,9 @@ what is implemented, not authorization to begin the next slice:
    and explicit coverage; E10 plus required-failure counterparts.
 3. **Overview instantiation (P2.4):** exact same-snapshot code binding and public
    request/result contracts over the shared fixed composition; no new primitive.
-   **Breakdown remains separate future work:** finite derivations with explicit
-   denominator provenance; no case-ID branches.
+   **Breakdown instantiation (P2.5):** independently executed denominator,
+   selected subtotal and exact share with role-linked provenance; no case-ID
+   branches or optional recovery.
 4. **Model selection/instantiation:** one shared bounded recipe contract and the
    same execution path, not separate recipe parsers or repair turns.
 5. **Owner-authorized integration:** at least one live natural-language path

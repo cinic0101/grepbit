@@ -68,6 +68,7 @@ _VALUE_CONSTRAINTS = {
     ),
 }
 _GRAINS = {"bookings": "booking", "booking_items": "booking_line"}
+_POPULATION = "Current confirmed bookings within the explicit creation-time scope."
 _COLUMNS = {
     "b": {"booking_id", "learner_id"},
     "i": {"seats", "unit_price_minor", "discount_minor"},
@@ -378,7 +379,7 @@ def _execute_scope(conn: sqlite3.Connection, request: FactRequest,
         excluded = rows[0][2] if binding.excluded_null_column else None
         facts.append(Fact(
             metric, catalog.version, catalog_hash, value, binding.unit, _GRAINS[binding.source],
-            "Current confirmed bookings within the explicit creation-time scope.",
+            _POPULATION,
             "bookings.created_at_utc", utc_text(request.start), utc_text(request.end),
             request.timezone, {"center_id": request.center_id} if request.center_id is not None else {},
             count, count == 0, excluded, binding.disclosures, sql, parameters, snapshot_id, _CHECKS,
