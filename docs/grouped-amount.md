@@ -160,6 +160,8 @@ A private split between dimension admission and the admitted grouped query
 allows precise local-failure classification without a second SQL executor.
 The public wrapper still performs both stages, and source/permission rules and
 public result fields remain unchanged.
+P2.4's [public Overview](p2-recipes.md#p24-public-deterministic-overview) reuses
+that composition without modifying the grouped primitive or its public API.
 
 Full category/day sums are tested against the compatible scalar amount in one
 snapshot, both all-center and center-scoped. Empty rows reconcile to scalar
@@ -169,5 +171,6 @@ selected subset and is never presented as the total/denominator.
 Q11/Q12/Q13 are witnesses for one primitive, not three operators or independent
 recipe promises. This does not admit distinct-count aggregation, zero-filled
 members, calendar filling, Q10 completion, subtotal/share, public
-Overview/Breakdown, model calls or PostgreSQL parity. P2.3's fixed internal
-optional-failure contract is separate from this standalone grouped API.
+recipe selection, Breakdown, model calls or PostgreSQL parity. P2.3's fixed
+optional-failure contract and P2.4's public Overview boundary are separate from
+this standalone grouped API.
