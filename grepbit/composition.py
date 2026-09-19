@@ -1,10 +1,11 @@
-"""Private fixed required/optional witness, not a public recipe or workflow API."""
+"""One private fixed required/optional composition shared by trusted entries."""
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 import sqlite3
-from typing import Literal
+from typing import Iterator, Literal
 
 from . import grouped, kernel
 from .catalog import LEARNINGOPS
@@ -40,6 +41,9 @@ class _CompositionSlot:
     state: Literal["checked", "unavailable"]
     fact_id: str | None = None
     reason: _UnavailableReason | None = None
+
+
+_CompositionParts = tuple[tuple[Fact, ...], tuple[GroupedAmountFact, ...], tuple[_CompositionSlot, ...]]
 
 
 @dataclass(frozen=True)
@@ -162,50 +166,75 @@ def _execute_optional(conn: sqlite3.Connection, request: GroupedAmountRequest,
     return reason
 
 
+@contextmanager
+def _read_composition_transaction(database: Path, budget: kernel._Budget) -> Iterator[
+    tuple[sqlite3.Connection, dict[str, str]]
+]:
+    try:
+        with kernel._read_transaction(database, budget) as opened:
+            yield opened
+    except sqlite3.Error as exc:
+        raise KernelError("execution_failure", "The analysis connection could not complete or close safely.") from exc
+
+
+def _execute_in_transaction(conn: sqlite3.Connection, scope: FactRequest,
+                            snapshot: dict[str, str], budget: kernel._Budget,
+                            snapshot_id: str) -> _CompositionParts:
+    """Compose the fixed bound needs without opening or finalizing a transaction."""
+    _check_boundary(conn, budget, snapshot, snapshot_id)
+    amount_scope = replace(scope, metrics=("confirmed_booked_amount",))
+    optional = tuple((slot, GroupedAmountRequest(amount_scope, dimension))
+                     for slot, dimension in _OPTIONAL)
+    compiled = kernel._compile_scope(scope, LEARNINGOPS)
+    checked_groups = []
+    facts = kernel._execute_scope(conn, scope, compiled, LEARNINGOPS, snapshot_id, budget)
+    _check_boundary(conn, budget, snapshot, snapshot_id)
+    _check_required(facts, scope, snapshot_id)
+    identities = {fact.fact_id for fact in facts}
+    slots = [_CompositionSlot(slot, "required", "checked", fact.fact_id)
+             for (slot, _), fact in zip(_REQUIRED, facts)]
+    for slot, request in optional:
+        outcome = _execute_optional(conn, request, snapshot, budget, facts[0])
+        _check_boundary(conn, budget, snapshot, snapshot_id)
+        if isinstance(outcome, GroupedAmountFact):
+            if outcome.fact_id in identities:
+                raise KernelError("incompatible_facts", "Composition fact identities must be distinct.")
+            identities.add(outcome.fact_id)
+            checked_groups.append(outcome)
+            slots.append(_CompositionSlot(slot, "optional", "checked", outcome.fact_id))
+        else:
+            slots.append(_CompositionSlot(slot, "optional", "unavailable", reason=outcome))
+    _check_boundary(conn, budget, snapshot, snapshot_id)
+    return facts, tuple(checked_groups), tuple(slots)
+
+
+def _finalize_composition(parts: _CompositionParts, snapshot: dict[str, str],
+                          budget: kernel._Budget, snapshot_id: str) -> _CompositionResult:
+    """Materialize only after successful read-transaction exit."""
+    budget.check()
+    if snapshot.get("id") != snapshot_id:
+        raise KernelError("snapshot_lost", "The completed analysis snapshot identity changed.")
+    return _CompositionResult(
+        *parts, snapshot,
+        kernel._runtime_evidence(), kernel._execution_evidence(budget),
+        kernel._LIMITATIONS + (
+            "Fixed required/optional composition; callers cannot select slots or their roles.",
+            "Optional gaps have only reviewed local causes; required/global failures return no result.",
+            "Component timeout semantics are injected; general component timer mechanics are not implemented.",
+            "Grouped execution counters are cumulative checkpoints; composition counters cover the whole batch.",
+        ),
+    )
+
+
 def _execute_required_optional(database: Path, scope: FactRequest, *,
                                limits: ExecutionLimits = ExecutionLimits()) -> _CompositionResult:
     """Run only the fixed bound-center/month witness; required/global failures raise."""
     if (not isinstance(scope, FactRequest) or scope.metrics != _METRICS
             or scope.center_id is None or not isinstance(limits, ExecutionLimits)):
         raise KernelError("invalid_request", "Supply the fixed scalar core, canonical center and trusted limits.")
-    amount_scope = replace(scope, metrics=("confirmed_booked_amount",))
-    optional = tuple((slot, GroupedAmountRequest(amount_scope, dimension))
-                     for slot, dimension in _OPTIONAL)
+    GroupedAmountRequest(replace(scope, metrics=("confirmed_booked_amount",)), "booking_day")
     budget = kernel._Budget(limits)
-    compiled = kernel._compile_scope(scope, LEARNINGOPS)
-    checked_groups = []
-    try:
-        with kernel._read_transaction(database, budget) as (conn, snapshot):
-            snapshot_id = snapshot["id"]
-            facts = kernel._execute_scope(conn, scope, compiled, LEARNINGOPS, snapshot_id, budget)
-            _check_boundary(conn, budget, snapshot, snapshot_id)
-            _check_required(facts, scope, snapshot_id)
-            identities = {fact.fact_id for fact in facts}
-            slots = [_CompositionSlot(slot, "required", "checked", fact.fact_id)
-                     for (slot, _), fact in zip(_REQUIRED, facts)]
-            for slot, request in optional:
-                outcome = _execute_optional(conn, request, snapshot, budget, facts[0])
-                _check_boundary(conn, budget, snapshot, snapshot_id)
-                if isinstance(outcome, GroupedAmountFact):
-                    if outcome.fact_id in identities:
-                        raise KernelError("incompatible_facts", "Composition fact identities must be distinct.")
-                    identities.add(outcome.fact_id)
-                    checked_groups.append(outcome)
-                    slots.append(_CompositionSlot(slot, "optional", "checked", outcome.fact_id))
-                else:
-                    slots.append(_CompositionSlot(slot, "optional", "unavailable", reason=outcome))
-            _check_boundary(conn, budget, snapshot, snapshot_id)
-    except sqlite3.Error as exc:
-        raise KernelError("execution_failure", "The analysis connection could not complete or close safely.") from exc
-    if snapshot.get("id") != snapshot_id:
-        raise KernelError("snapshot_lost", "The completed analysis snapshot identity changed.")
-    return _CompositionResult(
-        facts, tuple(checked_groups), tuple(slots), snapshot,
-        kernel._runtime_evidence(), kernel._execution_evidence(budget),
-        kernel._LIMITATIONS + (
-            "Internal fixed composition witness, not a public Overview recipe.",
-            "Optional gaps have only reviewed local causes; required/global failures return no result.",
-            "Component timeout semantics are injected; general component timer mechanics are not implemented.",
-            "Grouped execution counters are cumulative checkpoints; composition counters cover the whole batch.",
-        ),
-    )
+    with _read_composition_transaction(database, budget) as (conn, snapshot):
+        snapshot_id = snapshot["id"]
+        parts = _execute_in_transaction(conn, scope, snapshot, budget, snapshot_id)
+    return _finalize_composition(parts, snapshot, budget, snapshot_id)

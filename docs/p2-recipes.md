@@ -4,8 +4,9 @@ Status: design accepted in #14 / PR #15 on `dev` at
 `ea1c62c6ceecd5c12e4a359d8532d04f80b59850`, under roadmap #1.
 P2.1 (#16 / PR #17) accepted the offline scalar Compare slice below. P2.2
 (#18 / PR #19) accepted the [observed grouped-amount primitive](grouped-amount.md).
-P2.3 (#20) adds the private required/optional witness below, not public
-Overview/Breakdown. The remaining recipe matrix is admission for future work.
+P2.3 (#20 / PR #21) accepted the private required/optional witness below.
+P2.4 (#22) exposes public deterministic Overview by reusing that composition.
+Breakdown and the remaining recipe matrix are admission for future work.
 These slices do not change prompts, dependencies, fixtures, gold or live-run
 authorizations.
 
@@ -89,7 +90,7 @@ delta is unavailable (`empty_input`), growth is unavailable
 and overflow errors raise `KernelError`, never a partial or success-shaped pack.
 Checked facts with null values are not converted into zero.
 
-Both public execution entries use the same private compilation, source
+The scalar and Compare execution entries use the same private compilation, source
 admission, read-only transaction, authorizer and scalar-result checks. Compare
 opens one connection/transaction, validates the source once, and runs both
 scopes under one `_Budget`: timeout, VM callbacks and source-validation rows
@@ -100,8 +101,8 @@ the common snapshot. No user-editable compatibility rules are introduced.
 
 Only `difference` and `relative_change` are implemented derivations. P2.2
 separately adds grouped facts and P2.3 adds private required/optional execution.
-Subtotal/share, public Overview/Breakdown, rendering, model instantiation and
-live recipe evidence remain future work. P2.1 does not
+P2.4 adds public Overview below. Subtotal/share, Breakdown, rendering, model
+instantiation and live recipe evidence remain future work. P2.1 does not
 complete the P2 exit or establish model quality, backend parity or generalization.
 
 ## P2.3 private required/optional composition
@@ -111,7 +112,8 @@ not a public recipe API. It accepts a local database Path and an already-bound
 FactRequest with exactly `confirmed_booked_amount`, `confirmed_booking_count`,
 `booked_seats` in that order, a canonical non-null center ID, and one explicit
 full month in the reviewed fixed UTC+08:00 Asia/Taipei profile. There is no center
-code/name resolution, caller-selected slot list or public OverviewRequest.
+code/name resolution or caller-selected slot list in this private entry.
+P2.4's separate public request/binding boundary is described below.
 
 | Fixed slot | Role | Computation |
 | --- | --- | --- |
@@ -132,8 +134,8 @@ unavailable reason with no fact reference. `_CompositionResult` retains the
 three scalar facts, only checked grouped facts, all five named slots, shared
 snapshot and final execution evidence. It returns `complete` only when all five
 slots are checked, or `partial` when required coverage is checked and at least
-one optional has a reviewed local failure. No new type/function is exported from
-`grepbit`; existing public signatures and serialization are unchanged.
+one optional has a reviewed local failure. P2.3 exported no new type/function
+from `grepbit`; its private types are not the public P2.4 contract.
 
 Recoverability is stage-specific, not inferred from an error string:
 
@@ -180,6 +182,95 @@ existing transaction, finite recoverable/fatal classifications, empty/zero and
 reconciliation, and a real WAL writer changing both amount and category between
 required and optional reads. These are deterministic synthetic regression
 controls, not model evaluations or proof of a public Overview recipe.
+
+## P2.4 public deterministic Overview
+
+`grepbit.execute_overview(database, request, *, limits)` exposes `overview@0.1`
+with `OverviewRequest(center_code, start, end, timezone)`. The typed constructor
+requires aware datetimes; `from_mapping` uses the existing strict offset-aware
+ISO parsing. Both bounds must be explicit and describe exactly one full month
+in the reviewed **fixed UTC+08:00** profile labeled `Asia/Taipei`. Equivalent
+absolute instants with other explicit offsets are allowed, not alternate
+business timezones or historical IANA/DST calendar behavior.
+
+```python
+from pathlib import Path
+from grepbit import OverviewRequest, execute_overview
+
+request = OverviewRequest.from_mapping({
+    "center_code": "CTR-A01",
+    "start": "2026-03-01T00:00:00+08:00",
+    "end": "2026-04-01T00:00:00+08:00",
+    "timezone": "Asia/Taipei",
+})
+pack = execute_overview(Path("learningops.sqlite"), request)
+document = pack.to_dict()
+```
+
+Only those four request fields are accepted. There is no missing-year/month
+default, partial/multi-month period, canonical-ID override, metric/role/optional
+selection, formula, SQL, callback or recipe-version override. Trusted callers
+may supply the existing global `ExecutionLimits`; there is no component budget
+or injection parameter.
+
+The code is preserved exactly and bounded to **1-64 UTF-8 bytes**. A parameterized
+`centers.code = ?` lookup returns at most two matches under the existing read-only
+policy. Zero matches raises `unknown_entity`; more than one raises
+`ambiguous_entity`, before fact execution. The inherited base validator does
+not establish code uniqueness, even though the fixture declares it. Overview
+therefore checks this lookup's cardinality without tightening scalar/Compare
+admission. There is no trimming, case-folding, LIKE, name/ID fallback, default
+center or hard-coded code-to-ID mapping. A name/ID-shaped or punctuation-bearing
+string works only if it is an actual exact stored code.
+
+Binding happens **inside the same transaction, snapshot and global budget**
+as all five fixed slots from P2.3. The original snapshot ID is captured before
+binding. A narrow private extraction lets the retained P2.3 entry and Overview
+call the same inner composition, stage-specific recovery, reconciliation and
+post-transaction finalizer. Neither calls a second public executor or starts
+another transaction. The public pack is constructed only after successful exit
+and final budget/original-ID checks.
+
+The public types are Overview-specific: `OverviewAnalysisPack`,
+`OverviewCenterBinding` and `OverviewSlotResult`, not exports/aliases of private
+`_Composition*` types or a common superclass with Compare.
+
+| Output | P2.4 shape / behavior |
+| --- | --- |
+| `recipe_id`, `recipe_version`, `request` | Fixed `overview`, `0.1`, validated original request; dates serialize as ISO instants |
+| `binding` | Exact supplied code, canonical center ID, common snapshot ID and `method: exact_unique_code` |
+| `scope` | Resolved three-metric FactRequest with the original period/timezone and bound canonical center |
+| `facts`, `grouped_facts` | Original checked scalar/grouped objects and fact IDs, not reconstructed computations |
+| `slots` | All five fixed slots, required/optional role, checked/unavailable state, fact reference or bounded gap reason; no copied metric definitions |
+| `status` | `complete` when all five are checked; `partial` only for P2.3's admitted optional gaps |
+| `snapshot`, `runtime`, `execution`, `checks`, `limitations` | Shared source/snapshot identity, final cumulative execution evidence, binding/composition checks and bounded claims |
+
+Binding, base, required, incompatible-evidence, global-budget and
+transaction/snapshot failures abort with **no Overview pack**. The public wrapper
+does not add recovery rules. A known center without activity is checked-empty:
+amount NULL, bookings 0, seats NULL, and both optional rowsets empty/checked.
+Measured zero remains distinct. E10 is still private fault injection, **not**
+real component timeout/cancellation mechanics or a runtime option.
+
+Binding adds one explicit validation-loop visit per returned match. On the
+unmodified fixture a successful Overview visits 49 rows: 31 base, 1 binding and
+17 category-extension visits; grouped checkpoints are 32 and 49. The retained
+private P2.3 entry still visits 48. `source_rows_validated` is not total database
+work; query/FK/join/sort work remains subject to the same cooperative VM/time
+budget. No counter resets, raised limits or new progress handler are introduced.
+
+Public regressions cover exact/duplicate/literal binding, request rejection,
+five-slot evidence/JSON, real missing-category partial output, injected E10,
+empty/zero, binding/global budgets and post-exit construction. A real WAL writer
+changes both code mapping and amounts after binding: the in-flight result
+retains the original binding/data, while a fresh run observes the changes.
+Separate metadata-corruption/exit-failure controls do not stand in for WAL
+isolation. Existing P2.3 regressions protect the full recovery/precedence matrix.
+
+This is a deterministic Python API, not natural-language recipe selection,
+rendering, an API/CLI framework or live recipe validation. No analytical
+primitive, derived operation, dependency, configuration, model path or evaluator
+asset changes. Breakdown, subtotal/share and the remaining P2 exit stay open.
 
 ## 1. Admission and evidence
 
@@ -282,7 +373,7 @@ the fixed `as_of` supplies no missing year.
 ## 3. Minimum contracts, not a serialized plan
 
 These are the broader accepted **sketch**, not a generic runtime API.
-The narrow P2.1 types above implement only Compare and identified scalar outputs.
+The narrow public types above describe Compare and Overview separately.
 Parameters express WHAT; a reviewed server template supplies HOW. No caller
 provides tasks, dependency graphs, operators, SQL, arbitrary filters or expressions.
 
@@ -443,9 +534,9 @@ facts have been checked. Return core evidence (and any checked daily view),
 `status=partial`, and that named slot as unavailable. Injecting the same failure
 into a core slot must instead yield `failed`. A dependency on an unavailable
 fact is unavailable too; successful unrelated facts never repair it.
-P2.3 implements only the fixed private witness above, with finite local failure
-classification. It represents required/global failure by raising, not by
-returning a failed or partially successful pack.
+P2.3's fixed private witness and P2.4's public Overview share the finite local
+failure classification above. They represent required/global failure by
+raising, not by returning a failed or partially successful pack.
 
 ## 8. Worked WHAT -> HOW decompositions
 
@@ -523,7 +614,7 @@ insert selected-course filters into the total or replace total with subtotal.
 Across all recipes: no model SQL/Python, arithmetic, invented metric/period,
 causal claims, silent requirement removal or evaluator/gold context.
 
-## 9. Smallest next implementation issue
+## 9. Bounded implementation sequence
 
 **P2.1 scope (#16): offline scalar Compare on one controlled analysis snapshot.**
 Compare can come first: it needs no grouping, new metric or relational operator.
@@ -537,15 +628,18 @@ catalog/snapshot; failed required input; exact arithmetic and write-race
 consistency. Use disposable scenarios, not edits to core seed or gold.
 No grouped runtime, optional execution, prompt change or live call in that issue.
 
-Then, each as separately authorized work:
+The following slices require separate authorization; the sections above record
+what is implemented, not authorization to begin the next slice:
 
 1. **Reusable grouped amount fact:** Q11-Q13 and existing tie witness; three
    reviewed dimensions, observed membership, stable order and k=1-3. Prove NULL,
    empty, row-budget and fan-out behavior. Q10 member completion stays out.
 2. **Required/optional composition:** controlled analysis-batch failure isolation
    and explicit coverage; E10 plus required-failure counterparts.
-3. **Overview and Breakdown instantiation:** the same facts and finite
-   derivations, with explicit denominator provenance; no case-ID branches.
+3. **Overview instantiation (P2.4):** exact same-snapshot code binding and public
+   request/result contracts over the shared fixed composition; no new primitive.
+   **Breakdown remains separate future work:** finite derivations with explicit
+   denominator provenance; no case-ID branches.
 4. **Model selection/instantiation:** one shared bounded recipe contract and the
    same execution path, not separate recipe parsers or repair turns.
 5. **Owner-authorized integration:** at least one live natural-language path
@@ -554,7 +648,7 @@ Then, each as separately authorized work:
 
 P2 exit still requires common-kernel reuse, required/optional behavior, a live
 path per recipe and no special operator/repair for equivalent combinations.
-Completing this document or scalar Compare alone does not complete P2.
+Completing these offline slices does not complete P2.
 
 ## 10. Operational metadata and expansion stop
 

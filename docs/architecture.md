@@ -1,14 +1,22 @@
 # V3 architecture
 
-Decision baseline: 2026-09-18; current status follows #13/#16. The architecture below
+Decision baseline: 2026-09-18; current status follows #13/#22. The architecture below
 includes future responsibilities, not a claim that all are implemented.
 P0 and P1 are accepted at `6d6be30bed321806e0a2ef90fec53a1fc1118373`:
 the [scalar kernel](fact-kernel.md) and [model boundary](model-integration.md)
 passed the second authorized four-family smoke (#13), 12/12 inputs. The first
 smoke's envelope failures (#10) remain historical evidence.
 [P2 v0.1 admission](p2-recipes.md) is accepted; #16 implements offline scalar
-Compare through the same private kernel helpers. Grouped/optional recipes,
-model recipe selection and the other future layers below are not implemented.
+Compare through the same private kernel helpers. P2.2 adds bounded observed
+grouping; P2.3 adds fixed required/optional composition. P2.4 (#22) exposes
+public deterministic Overview by adding strict request, exact center-code
+binding and Overview-specific output types around that same composition.
+Binding, required facts and optional views share one read transaction, base
+admission and global budget. Both composition entries use the same inner body
+and finalize only after transaction exit; neither chains public fact wrappers.
+Compare and Overview remain separate public contracts, not a generic recipe
+framework. Breakdown, model recipe selection and the other future layers below
+are not implemented.
 
 ## Goal and boundaries
 

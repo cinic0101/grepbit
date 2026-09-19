@@ -1,6 +1,6 @@
 # Roadmap and phase exits
 
-Phase baseline: 2026-09-18; current status follows #13/#20. Work is on `dev`;
+Phase baseline: 2026-09-18; current status follows #13/#22. Work is on `dev`;
 promotion to `main` requires owner review. P0 and P1 are accepted at
 `6d6be30bed321806e0a2ef90fec53a1fc1118373`. The first smoke (#10) failed
 envelope validation on all 12 inputs and remains unchanged. After P1.3a
@@ -8,9 +8,11 @@ envelope validation on all 12 inputs and remains unchanged. After P1.3a
 inputs, with 4/4 families all-three-correct. This satisfies the bounded P1 exit,
 not P3 generalization, PostgreSQL parity or real-data transfer.
 P2.0 (#14 / PR #15) and offline P2.1 Compare (#16 / PR #17) are accepted on dev.
-P2.2 (#18 / PR #19) accepted one observed grouped-amount primitive. P2.3 (#20)
-adds private fixed required/optional composition and injected local-failure
-semantics; public Overview/Breakdown and remaining P2 requirements stay open.
+P2.2 (#18 / PR #19) accepted one observed grouped-amount primitive. P2.3
+(#20 / PR #21) accepted private fixed required/optional composition and injected
+local-failure semantics. P2.4 (#22) exposes public deterministic Overview using
+that same composition; its owner acceptance is separate from implementation.
+Breakdown and remaining P2 requirements stay open.
 All P3-P5 delivery remains open. P2 is not promoted to main.
 GitHub Issues own current status; this document owns phase meaning and exits.
 
@@ -43,9 +45,12 @@ and one shared private scalar transaction/budget path with P1. No Compare CLI,
 model selection or live recipe run is included in #16.
 P2.3 adds [private required/optional composition](p2-recipes.md#p23-private-requiredoptional-composition)
 with one snapshot/global budget and explicit local gaps. Component timeout is
-an injected operational control, not general timer mechanics. Public
-Overview/Breakdown, model instantiation and separately authorized recipe live
-paths follow. These offline slices do not complete the P2 exit above.
+an injected operational control, not general timer mechanics.
+P2.4 adds [public Overview](p2-recipes.md#p24-public-deterministic-overview):
+exact code binding and fixed-month input validation in front of that composition,
+with binding sharing the facts' snapshot and budget. Breakdown, model
+instantiation and separately authorized recipe live paths follow.
+These offline slices do not complete the P2 exit above.
 
 ## Historical P0 delivery scope
 
