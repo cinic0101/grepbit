@@ -5,9 +5,10 @@
 Read `README.md`, then the current GitHub issue. Read only the relevant design
 section in `docs/`; do not reload the legacy research history for every task.
 This is V3: analytical intent -> checked facts, not another expanding Text2SQL
-language. P0 fixture tooling is separate from the bounded P1.1 scalar kernel.
-P1.2 adds a thin model adapter and offline smoke preparation, not P1 acceptance
-or authorization to begin P2 or make live requests.
+language. P0 fixture tooling is separate from the accepted P1 scalar kernel and
+thin model adapter. P1's accepted smoke covers four frozen semantic families.
+P2.0 (#14) is design/admission only; it does not authorize recipe runtime
+implementation or new live requests. See `docs/p2-recipes.md`.
 
 ## Authority and branches
 

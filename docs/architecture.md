@@ -1,10 +1,12 @@
 # V3 architecture
 
-Decision baseline: 2026-09-18. This describes the agreed direction, not delivered
-runtime capabilities. Current implementation includes the P0 fixture/tooling
-and the bounded [P1.1 offline scalar kernel](fact-kernel.md), not a planner or
-recipe engine. [P1.2](model-integration.md) adds one strict model-to-request
-boundary and a prepared smoke runner; no live result or P1 acceptance is implied.
+Decision baseline: 2026-09-18; current status follows #13/#14. The architecture below
+includes future responsibilities, not a claim that all are implemented.
+P0 and P1 are accepted at `6d6be30bed321806e0a2ef90fec53a1fc1118373`:
+the [scalar kernel](fact-kernel.md) and [model boundary](model-integration.md)
+passed the second authorized four-family smoke (#13), 12/12 inputs. The first
+smoke's envelope failures (#10) remain historical evidence. Recipe runtime is
+not implemented; [P2 v0.1 admission](p2-recipes.md) is the design checkpoint.
 
 ## Goal and boundaries
 
@@ -32,6 +34,9 @@ Question -> Grounding -> Recipe selection/instantiation
 
 These are responsibilities, not microservices, separate agents or a required
 number of model calls. Start with one process and a small number of modules.
+In P2 v0.1, the HOW layer means fixed server-owned tasks and dependencies, not
+a serialized Execution DAG/QueryPlan supplied by the model. The recipe admission
+document bounds the subset of this architecture to implement next.
 
 ## Architecture rules
 
@@ -77,6 +82,11 @@ Overview: core facts plus approved trend/mix/ranking facts.
 Compare: the same defined metric over two explicit scopes, with server-derived
 change. Breakdown: a reviewed dimension, ranking and an explicit denominator.
 A one-fact question need not execute an entire overview.
+These are architectural families, not blanket feature admission. The
+[v0.1 matrix](p2-recipes.md#2-recipe-capability-matrix) fixes Overview's
+amount/count/seats core and optional amount views, amount-only Compare, and
+course top-k share Breakdown. Overview ranking and other combinations are not
+automatically admitted.
 
 One datasource per request; SQLite first, PG at P4. Reviewed semantics, typed
 clarification, bounded outputs, SQL/parameters and checked facts. One additional

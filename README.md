@@ -8,17 +8,24 @@ clarification, explicit limitations and scoped verification are product features
 
 ## Current state
 
-P0 and P1.1 are accepted. The bounded **offline fact kernel** accepts explicit
+P0 and P1 are accepted at `6d6be30bed321806e0a2ef90fec53a1fc1118373`.
+The bounded **offline fact kernel** accepts explicit
 requests for four reviewed LearningOps metrics, compiles their runtime bindings
 with SQLGlot and returns scoped Fact Packs from read-only SQLite.
 **P1.2** adds a thin local LiteLLM / `gemma-4-31b` interpretation adapter and
 a network-free preparation command for a 12-input trilingual smoke.
 The first authorized live smoke (#10) completed 12 HTTP attempts, all rejected
-at response-envelope validation; multilingual interpretation remains unassessed.
-P1.3a (#11) normalizes provider metadata offline while keeping the FactRequest
-contract strict. Another live run requires separate owner authorization.
+at response-envelope validation; its failures remain preserved. After accepted
+P1.3a normalization (#11 / PR #12), the second authorized smoke (#13) passed
+12/12 inputs, with all three languages correct in 4/4 semantic families.
+This meets the bounded P1 exit, not generalization or broad language-quality
+claims. Every future live run still requires separate owner authorization.
 This is not a general natural-language resolver, recipe engine,
-PostgreSQL adapter, API or MCP server; P1 is not complete.
+PostgreSQL adapter, API or MCP server.
+
+**P2.0** (#14) is a [recipe design/admission checkpoint](docs/p2-recipes.md)
+for Overview, Compare and Breakdown. No P2 runtime is implemented by this
+checkpoint; Compare-first scalar composition is the proposed next step.
 
 The seed has 10 tables and 88 rows. There are 30 authored case descriptions:
 18 reference-SQL checks and 12 behavioral scenarios awaiting implementation.
@@ -58,7 +65,8 @@ are ignored by Git; rebuild from the committed source instead of committing a DB
 | [Portability](docs/portability.md) | SQLite-first and PostgreSQL P4 preparation |
 | [Local execution](docs/local-execution.md) | Owner-triggered work and copy/paste handoff |
 | [P1.1 fact kernel](docs/fact-kernel.md) | Explicit request contract, installation, example and bounded execution guarantees |
-| [P1.2 model integration](docs/model-integration.md) | Local credential configuration, strict adapter and unexecuted smoke command |
+| [P1 model integration](docs/model-integration.md) | Accepted adapter boundaries, smoke history and separately authorized execution |
+| [P2 recipes v0.1](docs/p2-recipes.md) | Design-only capability matrix, composition contracts and admission decisions |
 | [LearningOps](evals/fixtures/learningops/README.md) | Schema, reviewed-for-development semantics and limitations |
 | `evals/cases/`, `evals/oracles/` | Evaluator-only material; never model context |
 | `tools/fixture.py`, `tools/smoke.py`, `tests/` | Evaluator-only checks, smoke preparation/grading and offline regressions |
@@ -68,7 +76,9 @@ are ignored by Git; rebuild from the committed source instead of committing a DB
 
 Implement on `dev`, review before merging into `main`. GitHub Issues are the
 single active-work tracker. The roadmap is not a second chronological work log.
-Track roadmap #1 and P1.2 in #8; accepted P1.1 is #6 / PR #7.
+Track roadmap #1 and current P2.0 design in #14. Accepted P1 includes
+#6 / PR #7, #8 / PR #9, #11 / PR #12 and the successful smoke #13;
+the first smoke's failed envelope results remain in #10.
 P0 history is in #2, #3, #4 and merged PR #5.
 All project documents and issue/PR text are English; fixture questions may be
 multilingual. A future real-data pilot is distinct from this synthetic regression

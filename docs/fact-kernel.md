@@ -1,11 +1,13 @@
 # P1.1: bounded offline SQLite fact kernel
 
-Issue #6 implements explicit requests, not natural-language planning or P1
-acceptance. The kernel itself has no model client, recipe engine, synthesis,
+The accepted P1 kernel from #6 implements explicit requests, not analytical
+recipe planning. The kernel itself has no model client, recipe engine, synthesis,
 service endpoint or PostgreSQL adapter. The separate
 [P1.2 adapter](model-integration.md) uses this same execution entry; it does not
-change these four definitions. The twelve P0 behavioral scenarios remain
-unimplemented.
+change these four definitions. P1 was accepted after the separately authorized
+successful smoke #13; the earlier #10 failures remain preserved. The twelve
+P0 behavioral scenarios remain unimplemented. The [P2 design](p2-recipes.md)
+proposes multi-scope/optional composition; neither is an existing kernel feature.
 
 ## Install and run
 

@@ -23,8 +23,11 @@ not a retrospective upgrade of historical results.
 The current command builds/checks a synthetic SQLite instance. It runs 18 SQL
 references, integrity/foreign-key/catalog checks, a Python ledger, read-only write
 rejection and four isolated variant controls. Reports enumerate every executed
-check and list 12 behavioral descriptions as `not_implemented`. There is no model
-adapter or product evaluator. Do not report 30/30 product passes.
+check and list 12 behavioral descriptions as `not_implemented`. This fixture-only
+command contains no model adapter or product evaluator. The separate accepted
+P1 smoke (#13) passed Q01-Q04 in three languages after #10's preserved envelope
+failures; it does not implement those twelve behavioral scenarios or establish
+30/30 product passes.
 
 Reports include source-file hashes, aggregate source identity, DB digest,
 Git commit/dirty state when a checkout is available, Python/SQLite versions,
@@ -37,7 +40,12 @@ incomplete (or unparsable if interrupted), never successful. Output is exclusive
 The checker trusts the committed fixture SQL and is not an arbitrary-SQL sandbox.
 Its detailed diagnostics are for synthetic data only, not a live logging policy.
 
-## Product evaluation contract to implement in P1-P3
+## Product evaluation contract across P1-P3
+
+P1 implements the bounded scalar/model path and its four-family smoke. The
+[P2.0 recipe admission](p2-recipes.md) names future composition witnesses,
+not newly passed cases or permission to update frozen asset/review statuses.
+P3 still owns formal quality/stability measurement.
 
 Evaluate four dimensions separately: interpretation/binding; fact correctness;
 request coverage/response faithfulness; operational/maintenance cost. Compare
