@@ -2,7 +2,7 @@
 
 ## Scope and assets
 
-Add Traditional Chinese (`zh-TW`), English (`en`) and Japanese (`ja`) before
+Traditional Chinese (`zh-TW`), English (`en`) and Japanese (`ja`) were added for
 P0 review. This adds language coverage, not a new product architecture or a
 live-run permission. Keep English documentation and intentional multilingual inputs.
 
@@ -21,7 +21,7 @@ translations of the E10 injected-timeout scenario. E10 is NOT a user prompt or
 three language-understanding trials. Q14 remains reference-only; E12 support
 remains conditional. This catalog is not a selected 87-call live panel.
 
-## Before P0 review: wording, not model quality
+## Historical P0 wording review, not model quality
 
 Check naturalness and the preservation of count unit, population, time basis,
 cutoff, negation, units, denominator and ambiguity. Keep source entity codes and
@@ -35,8 +35,9 @@ ascending course ID for ties in all languages, matching the unchanged reference;
 E09 consistently names session S01. Base catalog and language identities change;
 seed, schema, SQL/parameters, numeric and behavioral expectations do not.
 Q13's duplicated oracle question metadata follows the wording change. Prior
-reports keep their original identities. The focused recheck and owner approval
-remain open in #3; do not call this native-speaker or blinded review.
+reports keep their original identities. P0 was subsequently accepted through
+PR #5, including #3; do not call this native-speaker or blinded review. Frozen
+review labels in the assets are not rewritten by this current-status update.
 
 Offline tests check coverage, IDs, protected literals, selected complete cutoff
 and top-K phrases, posting/status wording, review-sheet consistency and pending
@@ -51,14 +52,18 @@ ID tie-breaking without changing the core seed. This is a fixture/reference
 witness, not evidence that a model or runtime ranks correctly; omitted tie
 ordering may accidentally return the same rows and is not certified by it.
 
-## Later: owner-authorized local model comparison
+## Owner-authorized local model comparison
 
 The first implemented preparation is the bounded [P1.2 smoke](model-integration.md):
 Q01_booked_amount, Q02_booking_count, Q03_booked_seats and Q04_known_learners,
 each in zh-TW/en/ja. This is 12 inputs and four semantic families, not twelve
-independent cases. Preparation is network-free; live execution remains separately
-authorized and has not been performed. The manifest pins shared runtime context,
-settings, accepted texts/gold and an interleaved stateless call order.
+independent cases. Preparation is network-free. The first authorized run (#10)
+failed envelope validation on all inputs without assessing interpretation. After
+P1.3a, the second run (#13) passed 12/12, with zh-TW/en/ja each 4/4 correct and
+4/4 families all-three-correct. Both histories remain preserved; this is not
+fresh holdout evidence. The manifest pins shared runtime context, settings,
+accepted texts/gold and an interleaved stateless call order. Every additional
+live run requires separate authorization.
 
 An earlier, broader proposal listed eight families:
 Q01_booked_amount, Q02_booking_count, Q03_booked_seats, Q06_cash_received,

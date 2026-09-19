@@ -1,9 +1,14 @@
 # P1.2: local Gemma integration and smoke preparation
 
-Issue #8 adds one bounded interpretation call, **not** a general planner or P1
-acceptance. Implementation and fake-transport checks do not authorize live calls.
-The first authorized smoke (#10) is preserved separately. P1.3a (#11) corrects
-provider-envelope compatibility offline; it does not authorize a second live run.
+This guide documents the bounded model integration accepted with P1 at
+`6d6be30bed321806e0a2ef90fec53a1fc1118373`, **not** a general planner.
+The first authorized smoke (#10) completed 12 HTTP responses but all failed
+envelope validation; those failures remain unchanged. After P1.3a (#11 / PR #12),
+the separately authorized second smoke (#13) passed normalization, exact model
+identity, JSON/FactRequest, kernel and value agreement on all 12 inputs:
+4/4 semantic families all-three-correct. This is bounded synthetic evidence,
+not generalization. Implementation or fake-transport checks never authorize live
+calls. [P2.0](p2-recipes.md) is a design checkpoint with no new runtime or live run.
 
 ```text
 One question + shared runtime meanings
@@ -206,7 +211,8 @@ The manifest is evaluator-only: it contains accepted question text and one gold
 scope/value per family. The runner passes neither that object nor its oracle
 fields to the model. Do not use the manifest as model context.
 
-**Prepared live command — NOT EXECUTED; requires a subsequent owner instruction:**
+**Command template for a future separately authorized P1-panel run, not new
+authorization or a P2 recipe runner. Historical runs are recorded in #10/#13:**
 
 ```bash
 .venv/bin/python tools/smoke.py --live \
@@ -223,6 +229,9 @@ and cache policy. These flags record an operator attestation, not independently
 verified gateway evidence; actual enabled policies must be reported honestly.
 The tool never changes shared gateway configuration. An available key or a
 `--live` flag alone is not authorization.
+For #10 and #13, the operator attested **retries enabled, fallback disabled,
+response cache disabled**; the disabled-retry example above is not their command
+record. Their client attempts do not prove total upstream inference work.
 
 | Bound | First panel |
 | --- | --- |

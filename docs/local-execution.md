@@ -7,16 +7,20 @@ coding agent. This repository does not establish a connection from ChatGPT to a
 local Codex/Claude CLI. Do not add a remote-control bridge, AWS OIDC setup, live
 GitHub Actions, scheduled runs or model-calling CI as part of this scaffold.
 
-P0 and P1.1 are accepted. For the offline kernel, dependency setup, example
+P0 and P1 are accepted. For the offline kernel, dependency setup, example
 and separate P0/kernel test commands, see [the fact-kernel guide](fact-kernel.md).
 Installing its pinned Python dependency is not a live evaluation.
 
-P1.2 implements the owner's selected local LiteLLM / `gemma-4-31b` path and
-prepares, but does not execute, a bounded trilingual smoke. See the
+P1 implements the owner's selected local LiteLLM / `gemma-4-31b` path. The
+separately authorized first smoke (#10) failed envelope compatibility; after
+P1.3a, the second smoke (#13) passed 12/12 inputs across four semantic families.
+These completed authorizations do not permit more calls. See the
 [integration guide](model-integration.md) for `.env.example`, explicit
 `--env-file` behavior, offline preparation and the implemented live command.
 The default/dry-run loads no credentials and makes no network calls. Bedrock is
 not implemented and is not a fallback. Formal measurement starts at P3.
+P2.0 is [design/admission only](p2-recipes.md), not recipe execution or live
+authorization.
 
 The coding agent used to edit this repository is distinct from the model being
 evaluated. Authorization to develop code is not authorization to send fixture or

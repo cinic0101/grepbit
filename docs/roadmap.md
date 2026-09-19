@@ -1,10 +1,13 @@
 # Roadmap and phase exits
 
-Baseline: 2026-09-18. Work is on `dev`; promotion to `main` requires owner review.
-P0 and P1.1 are accepted. P1.2 adds a thin local Gemma adapter and offline
-preparation of a bounded trilingual smoke (#8); P1 phase acceptance and its
-separately authorized live smoke remain pending. No P2-P5 delivery or live-model
-quality is claimed.
+Phase baseline: 2026-09-18; current status follows #13/#14. Work is on `dev`;
+promotion to `main` requires owner review. P0 and P1 are accepted at
+`6d6be30bed321806e0a2ef90fec53a1fc1118373`. The first smoke (#10) failed
+envelope validation on all 12 inputs and remains unchanged. After P1.3a
+(#11 / PR #12), the separately authorized second smoke (#13) passed 12/12
+inputs, with 4/4 families all-three-correct. This satisfies the bounded P1 exit,
+not P3 generalization, PostgreSQL parity or real-data transfer.
+P2.0 (#14) is a design/admission checkpoint; no P2-P5 runtime delivery is claimed.
 GitHub Issues own current status; this document owns phase meaning and exits.
 
 | Phase | Deliverable | Question being tested | Exit |
@@ -20,6 +23,17 @@ P1/P2 are deterministic-first, NOT LLM-free. Separate component tests isolate
 calculation failures; small live integration checks reveal unusable model
 interfaces early. P3 starts formal quality measurement, not first model contact.
 Every live call remains an owner-authorized local run, including smoke tests.
+
+## P2.0 admission before implementation
+
+[Recipes v0.1](p2-recipes.md) defines Overview, Compare and Breakdown using
+E01/E02/E03 and the E10 operational control. It proposes **scalar Compare first**:
+one controlled multi-scope snapshot and deterministic derived facts, without
+waiting for grouped execution. Q11-Q13 justify one observed-group amount
+primitive; Q10's catalog-complete zero members remain outside that admission.
+Required/optional composition, the remaining recipes, model instantiation and
+separately authorized recipe live paths follow. Neither the design checkpoint
+nor Compare alone completes the P2 exit above.
 
 ## Historical P0 delivery scope
 
