@@ -1,11 +1,12 @@
 """Bounded scalar fact requests and execution evidence, not natural-language plans."""
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 import math
 import re
 from typing import Mapping
+from uuid import uuid4
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 MAX_FACTS = 4
@@ -138,6 +139,7 @@ class Fact:
     snapshot_id: str
     checks: tuple[str, ...]
     completeness: str = "complete"
+    fact_id: str = field(default_factory=lambda: str(uuid4()), kw_only=True)
 
 
 @dataclass(frozen=True)

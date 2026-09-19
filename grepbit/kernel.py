@@ -1,6 +1,7 @@
 """One bounded read-only SQLite path for reviewed scalar fact bindings."""
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 import hashlib
@@ -10,6 +11,7 @@ import re
 import sqlite3
 import sys
 import time
+from typing import Iterator
 from uuid import uuid4
 
 import sqlglot
@@ -283,29 +285,32 @@ def _authorize(action: int, table: str | None, column: str | None,
     return sqlite3.SQLITE_DENY
 
 
-def execute_facts(database: Path, request: FactRequest, *, catalog: Catalog = LEARNINGOPS,
-                  limits: ExecutionLimits = ExecutionLimits()) -> FactPack:
-    """Execute an all-required scalar batch; failures raise KernelError, never partial packs."""
-    if not isinstance(request, FactRequest):
-        raise KernelError("invalid_request", "Use FactRequest; SQL and unvalidated mappings are not executable.")
-    if not isinstance(limits, ExecutionLimits) or not isinstance(catalog, Catalog):
-        raise KernelError("invalid_request", "Use typed trusted catalog and execution limits.")
-    budget = _Budget(limits)
+_CompiledScalar = tuple[str, MetricBinding, str, dict[str, str]]
+
+
+def _compile_scope(request: FactRequest, catalog: Catalog) -> list[_CompiledScalar]:
     unknown = set(request.metrics) - catalog.metrics.keys()
     if unknown:
         raise KernelError("unknown_metric", "The request contains a metric not admitted by this catalog.")
-    compiled = [(metric, catalog.metrics[metric], *_compile(catalog.metrics[metric], request))
-                for metric in request.metrics]
-    catalog_hash = catalog.digest()
+    return [(metric, catalog.metrics[metric], *_compile(catalog.metrics[metric], request))
+            for metric in request.metrics]
+
+
+@contextmanager
+def _read_transaction(database: Path, budget: _Budget) -> Iterator[
+    tuple[sqlite3.Connection, dict[str, str]]
+]:
     budget.check()
     if sqlite3.sqlite_version_info < (3, 37):
         raise KernelError("unsupported_source", "SQLite 3.37+ is required.")
     if not isinstance(database, Path):
         raise KernelError("invalid_request", "Database must be a local filesystem Path, not a connection or SQL.")
     conn = None
-    facts = []
-    snapshot_id = str(uuid4())
-    opened_at = utc_text(datetime.now(timezone.utc))
+    snapshot = {
+        "id": str(uuid4()), "scope": "single_read_transaction", "source_file": database.name,
+        "started_at_utc": utc_text(datetime.now(timezone.utc)), "source_profile": PROFILE_ID,
+        "identity_kind": "ephemeral_batch_not_persistent_database_version",
+    }
     try:
         conn = sqlite3.connect(database.resolve().as_uri() + "?mode=ro", uri=True,
                                timeout=0, isolation_level=None)
@@ -318,30 +323,9 @@ def execute_facts(database: Path, request: FactRequest, *, catalog: Catalog = LE
         conn.execute("PRAGMA trusted_schema=OFF")
         conn.set_progress_handler(budget.progress, 100)
         conn.execute("BEGIN")
-        schema_hash = _validate_source(conn, budget)
-        if request.center_id is not None and conn.execute(
-            "SELECT 1 FROM main.centers WHERE center_id=?", (request.center_id,),
-        ).fetchone() is None:
-            raise KernelError("unknown_entity", "Center ID is not present in the reviewed source.")
+        snapshot["schema_sha256"] = _validate_source(conn, budget)
         conn.set_authorizer(_authorize)
-        for metric, binding, sql, parameters in compiled:
-            budget.check()
-            rows = conn.execute(sql, parameters).fetchmany(2)
-            size = 3 if binding.excluded_null_column else 2
-            if (len(rows) != 1 or len(rows[0]) != size
-                    or any(value is not None and type(value) is not int for value in rows[0])):
-                raise KernelError("execution_failure", "Expected one exact integer-or-null scalar aggregate row.")
-            value, count = rows[0][:2]
-            if type(count) is not int or count < 0 or (count > 0 and value is None):
-                raise KernelError("execution_failure", "Invalid scalar population evidence.")
-            excluded = rows[0][2] if binding.excluded_null_column else None
-            facts.append(Fact(
-                metric, catalog.version, catalog_hash, value, binding.unit, _GRAINS[binding.source],
-                "Current confirmed bookings within the explicit creation-time scope.",
-                "bookings.created_at_utc", utc_text(request.start), utc_text(request.end),
-                request.timezone, {"center_id": request.center_id} if request.center_id is not None else {},
-                count, count == 0, excluded, binding.disclosures, sql, parameters, snapshot_id, _CHECKS,
-            ))
+        yield conn, snapshot
         budget.check()
     except sqlite3.Error as exc:
         if budget.reason:
@@ -355,15 +339,61 @@ def execute_facts(database: Path, request: FactRequest, *, catalog: Catalog = LE
             conn.set_authorizer(None)
             conn.close()
     budget.check()
-    return FactPack(
-        request, tuple(facts),
-        {"id": snapshot_id, "scope": "single_read_transaction", "source_file": database.name,
-         "started_at_utc": opened_at, "completed_at_utc": utc_text(datetime.now(timezone.utc)),
-         "source_profile": PROFILE_ID, "schema_sha256": schema_hash,
-         "identity_kind": "ephemeral_batch_not_persistent_database_version"},
-        {"python": sys.version.split()[0], "sqlite": sqlite3.sqlite_version, "sqlglot": sqlglot.__version__},
-        {**asdict(limits), "progress_callbacks": budget.callbacks, "vm_step_check_interval": 100,
-         "source_rows_validated": budget.rows,
-         "elapsed_seconds": round(time.monotonic() - budget.started, 6)},
-        _LIMITATIONS,
-    )
+    snapshot["completed_at_utc"] = utc_text(datetime.now(timezone.utc))
+
+
+def _execute_scope(conn: sqlite3.Connection, request: FactRequest,
+                   compiled: list[_CompiledScalar], catalog: Catalog,
+                   snapshot_id: str, budget: _Budget) -> tuple[Fact, ...]:
+    if request.center_id is not None and conn.execute(
+        "SELECT 1 FROM main.centers WHERE center_id=?", (request.center_id,),
+    ).fetchone() is None:
+        raise KernelError("unknown_entity", "Center ID is not present in the reviewed source.")
+    catalog_hash = catalog.digest()
+    facts = []
+    for metric, binding, sql, parameters in compiled:
+        budget.check()
+        rows = conn.execute(sql, parameters).fetchmany(2)
+        size = 3 if binding.excluded_null_column else 2
+        if (len(rows) != 1 or len(rows[0]) != size
+                or any(value is not None and type(value) is not int for value in rows[0])):
+            raise KernelError("execution_failure", "Expected one exact integer-or-null scalar aggregate row.")
+        value, count = rows[0][:2]
+        if type(count) is not int or count < 0 or (count > 0 and value is None):
+            raise KernelError("execution_failure", "Invalid scalar population evidence.")
+        excluded = rows[0][2] if binding.excluded_null_column else None
+        facts.append(Fact(
+            metric, catalog.version, catalog_hash, value, binding.unit, _GRAINS[binding.source],
+            "Current confirmed bookings within the explicit creation-time scope.",
+            "bookings.created_at_utc", utc_text(request.start), utc_text(request.end),
+            request.timezone, {"center_id": request.center_id} if request.center_id is not None else {},
+            count, count == 0, excluded, binding.disclosures, sql, parameters, snapshot_id, _CHECKS,
+        ))
+    budget.check()
+    return tuple(facts)
+
+
+def _runtime_evidence() -> dict[str, str]:
+    return {"python": sys.version.split()[0], "sqlite": sqlite3.sqlite_version,
+            "sqlglot": sqlglot.__version__}
+
+
+def _execution_evidence(budget: _Budget) -> dict[str, int | float]:
+    return {**asdict(budget.limits), "progress_callbacks": budget.callbacks,
+            "vm_step_check_interval": 100, "source_rows_validated": budget.rows,
+            "elapsed_seconds": round(time.monotonic() - budget.started, 6)}
+
+
+def execute_facts(database: Path, request: FactRequest, *, catalog: Catalog = LEARNINGOPS,
+                  limits: ExecutionLimits = ExecutionLimits()) -> FactPack:
+    """Execute an all-required scalar batch; failures raise KernelError, never partial packs."""
+    if not isinstance(request, FactRequest):
+        raise KernelError("invalid_request", "Use FactRequest; SQL and unvalidated mappings are not executable.")
+    if not isinstance(limits, ExecutionLimits) or not isinstance(catalog, Catalog):
+        raise KernelError("invalid_request", "Use typed trusted catalog and execution limits.")
+    budget = _Budget(limits)
+    compiled = _compile_scope(request, catalog)
+    with _read_transaction(database, budget) as (conn, snapshot):
+        facts = _execute_scope(conn, request, compiled, catalog, snapshot["id"], budget)
+    return FactPack(request, facts, snapshot, _runtime_evidence(), _execution_evidence(budget),
+                    _LIMITATIONS)

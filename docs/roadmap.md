@@ -1,13 +1,14 @@
 # Roadmap and phase exits
 
-Phase baseline: 2026-09-18; current status follows #13/#14. Work is on `dev`;
+Phase baseline: 2026-09-18; current status follows #13/#16. Work is on `dev`;
 promotion to `main` requires owner review. P0 and P1 are accepted at
 `6d6be30bed321806e0a2ef90fec53a1fc1118373`. The first smoke (#10) failed
 envelope validation on all 12 inputs and remains unchanged. After P1.3a
 (#11 / PR #12), the separately authorized second smoke (#13) passed 12/12
 inputs, with 4/4 families all-three-correct. This satisfies the bounded P1 exit,
 not P3 generalization, PostgreSQL parity or real-data transfer.
-P2.0 (#14) is a design/admission checkpoint; no P2-P5 runtime delivery is claimed.
+P2.0 (#14 / PR #15) is accepted design. P2.1 (#16) implements offline scalar
+Compare only; remaining P2 requirements and all P3-P5 delivery remain open.
 GitHub Issues own current status; this document owns phase meaning and exits.
 
 | Phase | Deliverable | Question being tested | Exit |
@@ -27,10 +28,13 @@ Every live call remains an owner-authorized local run, including smoke tests.
 ## P2.0 admission before implementation
 
 [Recipes v0.1](p2-recipes.md) defines Overview, Compare and Breakdown using
-E01/E02/E03 and the E10 operational control. It proposes **scalar Compare first**:
+E01/E02/E03 and the E10 operational control. P2.1 implements **scalar Compare first**:
 one controlled multi-scope snapshot and deterministic derived facts, without
 waiting for grouped execution. Q11-Q13 justify one observed-group amount
 primitive; Q10's catalog-complete zero members remain outside that admission.
+Compare now has a narrow typed Python API, exact input-linked difference/growth,
+and one shared private scalar transaction/budget path with P1. No Compare CLI,
+model selection or live recipe run is included in #16.
 Required/optional composition, the remaining recipes, model instantiation and
 separately authorized recipe live paths follow. Neither the design checkpoint
 nor Compare alone completes the P2 exit above.

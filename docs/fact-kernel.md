@@ -1,13 +1,15 @@
 # P1.1: bounded offline SQLite fact kernel
 
 The accepted P1 kernel from #6 implements explicit requests, not analytical
-recipe planning. The kernel itself has no model client, recipe engine, synthesis,
+recipe planning. The scalar executor itself has no model client, synthesis,
 service endpoint or PostgreSQL adapter. The separate
 [P1.2 adapter](model-integration.md) uses this same execution entry; it does not
 change these four definitions. P1 was accepted after the separately authorized
-successful smoke #13; the earlier #10 failures remain preserved. The twelve
-P0 behavioral scenarios remain unimplemented. The [P2 design](p2-recipes.md)
-proposes multi-scope/optional composition; neither is an existing kernel feature.
+successful smoke #13; the earlier #10 failures remain preserved. The fixture
+checker does not execute the twelve P0 behavioral scenarios. The [P2 design](p2-recipes.md)
+admits multi-scope/optional composition. P2.1 adds only
+[offline Compare](p2-recipes.md#p21-offline-scalar-compare), using the same
+private transaction and scalar helpers. Optional execution remains future work.
 
 ## Install and run
 
@@ -57,7 +59,9 @@ is not a live evaluation. No credentials or evaluated-model endpoint is used.
 
 ## Request and bindings
 
-The one execution entry is `grepbit.execute_facts(Path, FactRequest, ...)`.
+The P1 scalar entry remains `grepbit.execute_facts(Path, FactRequest, ...)`.
+`grepbit.execute_compare(Path, CompareRequest, ...)` is the finite P2.1 entry;
+both share one internal executor, not separate SQL paths.
 `FactRequest.from_mapping` validates the CLI's JSON shape:
 
 | Field | Contract |
@@ -151,6 +155,13 @@ filters, empty/exclusion disclosures, generated SQL and parameters, named checks
 backend/dependency versions, limits and observed execution counters. The snapshot
 UUID identifies only this batch's read transaction. Its schema digest is not a
 data digest or a persistent database version.
+
+P2.1 adds an opaque server-generated UUID `fact_id` to each `Fact`, including
+P1 FactPack JSON. This is an intentional **additive serialization change**;
+all existing fields, values and public `execute_facts` parameters are preserved.
+IDs are batch-local references, not durable metric/business identifiers or a
+promise of the same identity on repeated execution. Facts are output evidence,
+not accepted caller-supplied execution inputs.
 
 Checked execution does not certify user intent, source truth, authorization for
 arbitrary real data, multilingual quality or generalization. Evaluator cases,
