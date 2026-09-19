@@ -26,6 +26,20 @@ _KERNEL_CODES = {
     "invalid_request", "invalid_limits", "unknown_metric", "unknown_entity",
     "invalid_catalog", "unsupported_source", "budget_exceeded", "execution_failure",
 }
+_FINISH_REASONS = ("stop", "length", "tool_calls", "function_call", "content_filter", "error")
+# Diagnostic vocabulary only: arbitrary provider field names can themselves contain secrets.
+_ENVELOPE_KEYS = {
+    "id", "object", "created", "model", "choices", "usage", "system_fingerprint",
+    "service_tier", "error", "provider_specific_fields", "prompt_logprobs", "prompt_token_ids",
+}
+_CHOICE_KEYS = {
+    "index", "message", "finish_reason", "logprobs", "delta", "text",
+    "provider_specific_fields", "stop_reason", "token_ids",
+}
+_MESSAGE_KEYS = {
+    "role", "content", "reasoning", "reasoning_content", "tool_calls",
+    "function_call", "refusal", "audio", "annotations", "provider_specific_fields",
+}
 
 SYSTEM_INSTRUCTION = (
     "Select facts for exactly the supplied question using only the runtime semantic context. "
@@ -153,9 +167,7 @@ def _usage(raw: object) -> dict[str, int | None]:
     result: dict[str, int | None] = dict.fromkeys(sorted(keys))
     if raw is None:
         return result
-    if not isinstance(raw, dict) or not raw.keys() <= keys | {
-        "prompt_tokens_details", "completion_tokens_details",
-    }:
+    if not isinstance(raw, dict):
         raise ModelError("invalid_response")
     for key in keys:
         value = raw.get(key)
@@ -170,23 +182,73 @@ def _usage(raw: object) -> dict[str, int | None]:
     }
     for key, allowed in details.items():
         value = raw.get(key)
-        if value is not None and (not isinstance(value, dict) or not value.keys() <= allowed
+        if value is not None and (not isinstance(value, dict)
                 or any(type(count) is not int or not 0 <= count <= 2**63 - 1
-                       for count in value.values() if count is not None)):
+                       for name, count in value.items() if name in allowed and count is not None)):
             raise ModelError("invalid_response")
     return result
 
 
+def _json_type(value: object) -> str:
+    return {type(None): "null", bool: "boolean", int: "integer", float: "number",
+            str: "string", list: "array", dict: "object"}.get(type(value), "unavailable")
+
+
+def _response_shape(data: object, *, parsed: bool, error: ModelError) -> dict[str, object]:
+    def fields(value: object, allowed: set[str]) -> dict[str, object]:
+        return {
+            "type": _json_type(value) if parsed else "unavailable",
+            "keys": sorted(value.keys() & allowed) if isinstance(value, dict) else [],
+            "unknown_key_count": len(value.keys() - allowed) if isinstance(value, dict) else None,
+        }
+
+    top = data if isinstance(data, dict) else {}
+    choices = top.get("choices")
+    choice = choices[0] if isinstance(choices, list) and len(choices) == 1 else None
+    item = choice if isinstance(choice, dict) else {}
+    message = item.get("message")
+    index, finish = item.get("index"), item.get("finish_reason")
+    return {
+        "json_parsed": parsed, "top_level": fields(data, _ENVELOPE_KEYS),
+        "choices_type": _json_type(choices) if parsed else "unavailable",
+        "choice_count": len(choices) if isinstance(choices, list) else None,
+        "choice": fields(choice, _CHOICE_KEYS), "message": fields(message, _MESSAGE_KEYS),
+        "index": {
+            "present": "index" in item if parsed else None,
+            "type": (_json_type(index) if "index" in item else "absent") if parsed else "unavailable",
+            "value_class": ("zero" if index == 0 else "nonzero") if type(index) is int else None,
+        },
+        "finish_reason": {
+            "present": "finish_reason" in item if parsed else None,
+            "type": (_json_type(finish) if "finish_reason" in item else "absent") if parsed else "unavailable",
+            "value_class": finish if isinstance(finish, str) and finish in _FINISH_REASONS else None,
+        },
+        "model_present": "model" in top if parsed else None,
+        "usage_present": "usage" in top if parsed else None,
+        "failure_code": error.code, "failure_stage": error.stage,
+    }
+
+
 def _content(body: bytes, evidence: dict[str, object]) -> str:
-    data = strict_json(body, code="invalid_response")
-    allowed = {"id", "object", "created", "model", "choices", "usage", "system_fingerprint",
-               "service_tier"}
-    if not isinstance(data, dict) or not data.keys() <= allowed:
+    data, parsed = None, False
+    try:
+        data = strict_json(body, code="invalid_response")
+        parsed = True
+        return _normalized_content(data, evidence)
+    except ModelError as exc:
+        evidence["response_shape"] = _response_shape(data, parsed=parsed, error=exc)
+        raise
+
+
+def _normalized_content(data: object, evidence: dict[str, object]) -> str:
+    if not isinstance(data, dict):
         raise ModelError("invalid_response")
     for key in ("id", "object", "system_fingerprint", "service_tier"):
         if data.get(key) is not None and not isinstance(data[key], str):
             raise ModelError("invalid_response")
     if data.get("object", "chat.completion") != "chat.completion":
+        raise ModelError("unsupported_output")
+    if data.get("error") is not None:
         raise ModelError("unsupported_output")
     if "created" in data and (type(data["created"]) is not int or data["created"] < 0):
         raise ModelError("invalid_response")
@@ -195,11 +257,11 @@ def _content(body: bytes, evidence: dict[str, object]) -> str:
     if not isinstance(choices, list) or len(choices) != 1:
         raise ModelError("invalid_response")
     choice = choices[0]
-    if (not isinstance(choice, dict) or set(choice) - {"index", "message", "finish_reason", "logprobs"}
-            or type(choice.get("index")) is not int or choice["index"] != 0):
+    if (not isinstance(choice, dict) or "index" in choice
+            and (type(choice["index"]) is not int or choice["index"] != 0)):
         raise ModelError("invalid_response")
     finish = choice.get("finish_reason")
-    if finish in ("stop", "length", "tool_calls", "function_call", "content_filter", "error"):
+    if finish in _FINISH_REASONS:
         evidence["finish_reason"] = finish
     model = data.get("model")
     if model is not None:
@@ -212,15 +274,13 @@ def _content(body: bytes, evidence: dict[str, object]) -> str:
         raise ModelError("output_token_budget")
     if finish == "length":
         raise ModelError("truncated_output")
-    if finish != "stop" or choice.get("logprobs") is not None:
+    if (finish != "stop" or any(choice.get(key) is not None
+                              for key in ("logprobs", "delta", "text"))):
         raise ModelError("unsupported_output")
     message = choice.get("message")
-    if (not isinstance(message, dict)
-            or set(message) - {"role", "content", "reasoning_content", "reasoning",
-                               "tool_calls", "function_call", "refusal"}
-            or message.get("role") != "assistant"):
+    if not isinstance(message, dict) or message.get("role") != "assistant":
         raise ModelError("invalid_response")
-    if message.get("tool_calls") is not None or message.get("function_call") is not None:
+    if any(message.get(key) is not None for key in ("tool_calls", "function_call", "audio")):
         raise ModelError("unsupported_output")
     for key in ("reasoning_content", "reasoning", "refusal"):
         if message.get(key) is not None and not isinstance(message[key], str):
@@ -271,7 +331,7 @@ async def interpret_and_execute(
         "requested_model": MODEL, "returned_model": None, "response_mode": "json_content",
         "finish_reason": None, "usage": _usage(None), "http_status": None,
         "transport_security": client.config.transport_security, "stages": stages,
-        "kernel_error_code": None,
+        "kernel_error_code": None, "response_shape": None,
     }
     try:
         messages = messages_for(question, constraints=constraints)
@@ -308,6 +368,8 @@ async def interpret_and_execute(
     except ModelError as exc:
         error = exc
         stages[exc.stage] = "failed"
+        if exc.stage == "response_validation" and evidence["response_shape"] is None:
+            evidence["response_shape"] = _response_shape(None, parsed=False, error=exc)
         if exc.http_status is not None:
             evidence["http_status"] = exc.http_status
     evidence.update({

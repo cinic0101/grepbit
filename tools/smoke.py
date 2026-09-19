@@ -65,7 +65,7 @@ SAFE_CODES = {
     "missing_manifest", "manifest_drift", "unstable_database", "unsupported_database",
     "database_drift", "gateway_policy_required", "invalid_configuration", "invalid_arguments",
     "configuration_failure", "budget_exhausted", "panel_budget", "attempt_budget",
-    "consecutive_transport_failures", "interrupted", "internal_failure",
+    "consecutive_transport_failures", "envelope_incompatibility", "interrupted", "internal_failure",
 }
 
 
@@ -333,7 +333,7 @@ def _empty_evidence() -> dict[str, object]:
         "http_status": None, "transport_security": None, "stages": dict.fromkeys(STAGES, "not_run"),
         "kernel_error_code": None, "client_http_attempts": 0, "elapsed_seconds": None,
         "error_code": None, "stop_reason": None, "transport_failure": False,
-        "request": None, "fact_pack": None,
+        "request": None, "fact_pack": None, "response_shape": None,
     }
 
 
@@ -565,7 +565,8 @@ async def run_panel(
         )
         classification = ("budget_exhausted" if reason in (
             "budget_exhausted", "panel_budget", "attempt_budget",
-        ) else "operational_failure" if reason == "consecutive_transport_failures"
+        ) else "envelope_incompatibility" if reason == "envelope_incompatibility"
+            else "operational_failure" if reason == "consecutive_transport_failures"
             else "configuration_failure")
         report.update(status="stopped", stop_reason=reason, error_code=exc.code,
                       stop_classification=classification)

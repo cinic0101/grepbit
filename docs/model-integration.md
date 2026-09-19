@@ -2,7 +2,8 @@
 
 Issue #8 adds one bounded interpretation call, **not** a general planner or P1
 acceptance. Implementation and fake-transport checks do not authorize live calls.
-The prepared command below has **not** been executed by this delivery.
+The first authorized smoke (#10) is preserved separately. P1.3a (#11) corrects
+provider-envelope compatibility offline; it does not authorize a second live run.
 
 ```text
 One question + shared runtime meanings
@@ -125,15 +126,42 @@ numbers, invalid Unicode, wrong types, prose, code fences, multiple JSON values,
 inline reasoning and unknown output modes fail explicitly. No JSON-fragment
 extraction or reasoning stripping is attempted.
 
-The HTTP response must be UTF-8 JSON with one assistant choice at index 0,
-string content and `finish_reason: stop`. Truncation, tool calls, logprobs and
-unknown envelope/message fields fail. Known optional OpenAI metadata and usage
-detail counters are accepted but not copied wholesale. Separately returned
+The provider envelope is an open interoperability boundary; the model-authored
+FactRequest is a closed product contract. The HTTP response must be UTF-8 JSON
+with exactly one assistant choice, string content and `finish_reason: stop`.
+`index` is optional, but when present must be integer zero (not a boolean).
+Unknown top-level, choice, message and usage metadata is ignored, not exported
+or passed to the content parser. This includes provider-specific wrappers and
+direct-vLLM choice fields such as `stop_reason` and token metadata.
+
+Known semantic fields retain strict validation: competing error/streaming/text/
+audio output, truncation, tool/function calls, logprobs and invalid required
+fields are rejected. Known usage counters and detail counters must remain
+bounded non-negative integers when supplied; unknown counters do not fill
+missing known counters. Known optional OpenAI metadata is still type-checked.
+Separately returned
 string `reasoning`/`reasoning_content` is ignored, never parsed or exported.
 Missing model/usage metadata is unknown, not fabricated. A returned different
 model identity stops the panel as a configuration failure; if a deployment
 returns an underlying identity rather than the requested alias, that requires
 an explicit reviewed policy change, not an automatic alias/fallback repair.
+
+Envelope failures retain an allowlisted `response_shape`: sorted recognized
+top-level/choice/message key names, counts of unknown keys, object/array types,
+choice count, index presence/type/zero-or-nonzero class, bounded known finish
+reason or its type, model/usage presence, and fixed failure code/stage.
+Unknown field names can themselves contain secrets, so only a fixed diagnostic
+vocabulary is named; all others are counted. No arbitrary provider values, content, reasoning,
+headers or addresses are copied. Unparseable/unavailable envelopes are marked
+as such. Successful responses and content-level errors do not need a fingerprint.
+Existing `invalid_response`/`unsupported_output` codes now stop a panel with
+`envelope_incompatibility`; this is separate from malformed model JSON or a
+wrong-but-valid request. Model-identity and budget stopping rules are unchanged.
+
+The design lesson matches legacy V2's content extraction boundary, not its
+planner or repair loop. This does not identify the precise rejected field in
+the first live run: that run intentionally retained no raw responses. Its
+manifest, reports and outcome remain historical evidence, not repaired results.
 
 For trusted programmatic callers, optional partial `constraints` use the same
 request field names. They are validated before sending, included in shared
@@ -215,7 +243,9 @@ server retry, fallback and cache can change the relationship. Temperature 0 is
 not proof of determinism.
 
 Stop on auth/configuration failure, two consecutive transport/timeouts, or
-budget exhaustion. HTTP 429/5xx count as transport failures. A JSON or
+budget exhaustion. Stop after the first deployment-envelope incompatibility;
+preserve that failed input and mark remaining inputs not-run. HTTP 429/5xx count
+as transport failures. A model-content JSON or
 interpretation failure is recorded without rescue; the next distinct input may
 still run. Attempt/output accounting is checkpointed before requests so an
 interruption remains incomplete, with not-run cases preserved.
@@ -245,6 +275,7 @@ PYTHONPATH=tests .venv/bin/python -m unittest \
 .venv/bin/python -m unittest discover -s tests -p 'test_kernel*.py' -v
 PYTHONPATH=tests .venv/bin/python -m unittest test_gateway test_model test_smoke -v
 PYTHONPATH=tests .venv/bin/python -m unittest test_gateway_logging -v
+PYTHONPATH=tests .venv/bin/python -m unittest test_envelope -v
 .venv/bin/python -m unittest discover -s tests -v
 ```
 

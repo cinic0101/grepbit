@@ -407,7 +407,7 @@ class SmokeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(success["grading"]["value_agreement"], "passed")
         self.assertEqual(len(self.sent), 12)
 
-    async def test_malformed_envelope_is_invalid_output_not_operational_failure(self):
+    async def test_malformed_envelope_stops_once_as_incompatibility_not_transport_failure(self):
         def handler(request):
             return httpx.Response(200, json=(
                 {"choices": []} if len(self.sent) == 1 else envelope(self.request_for(request))
@@ -419,8 +419,10 @@ class SmokeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(first["error_code"], "invalid_response")
         self.assertEqual(first["evidence"]["stages"]["response_validation"], "failed")
         self.assertEqual(set(first["grading"].values()), {"not_run"})
-        self.assertEqual(report["summary"]["outcomes"], {"invalid_output": 1, "correct": 11})
-        self.assertEqual(len(self.sent), 12)
+        self.assertEqual(report["summary"]["outcomes"], {"invalid_output": 1, "not_run": 11})
+        self.assertEqual(report["stop_classification"], "envelope_incompatibility")
+        self.assertEqual(len(self.sent), 1)
+        self.assert_not_run(report, 1, "envelope_incompatibility")
 
     async def test_kernel_failure_does_not_claim_value_agreement(self):
         with patch("grepbit.model.execute_facts", side_effect=KernelError("unknown_entity", CANARY)):
