@@ -27,15 +27,20 @@ PostgreSQL adapter, API or MCP server.
 **P2.1** (#16 / PR #17) provides the accepted
 [offline scalar Compare](docs/p2-recipes.md#p21-offline-scalar-compare):
 two explicit months, one read snapshot, exact difference/relative change and
-input-linked evidence. **P2.2** (#18) adds one
+input-linked evidence. **P2.2** (#18 / PR #19) accepted one
 [observed grouped-amount primitive](docs/grouped-amount.md) for category,
-booking day and course top-k. Overview, Breakdown, optional facts and model
-recipe selection remain unimplemented. This does not complete P2.
+booking day and course top-k. **P2.3** (#20) adds a
+[private required/optional composition witness](docs/p2-recipes.md#p23-private-requiredoptional-composition):
+one snapshot and global budget, explicit optional gaps, and fail-closed
+required/global errors. Component-local timeout semantics are injected, not a
+new timer engine. Public Overview/Breakdown and model recipe selection remain
+unimplemented. This does not complete P2.
 
 The seed has 10 tables and 88 rows. There are 30 authored case descriptions:
 18 reference-SQL checks and 12 behavioral scenarios. The fixture checker still
 marks those scenarios `not_implemented`; separate runtime tests exercise E02's
-deterministic composition and Q11-Q13 grouped witnesses, not model recipe paths.
+deterministic composition, Q11-Q13 grouped witnesses and E10's injected
+optional-failure semantics, not model recipe paths.
 Passing fixture checks is NOT passing 30 product cases or a live model eval.
 No legacy data, question text, business mapping or production code was imported.
 
@@ -84,9 +89,9 @@ are ignored by Git; rebuild from the committed source instead of committing a DB
 
 Implement on `dev`, review before merging into `main`. GitHub Issues are the
 single active-work tracker. The roadmap is not a second chronological work log.
-Track roadmap #1 and current grouped-amount implementation in #18;
-P2.0 design and P2.1 Compare were accepted through #14 / PR #15 and
-#16 / PR #17. Accepted P1 includes
+Track roadmap #1 and current required/optional composition in #20;
+P2.0 design, P2.1 Compare and P2.2 grouping were accepted through #14 / PR #15,
+#16 / PR #17 and #18 / PR #19. Accepted P1 includes
 #6 / PR #7, #8 / PR #9, #11 / PR #12 and the successful smoke #13;
 the first smoke's failed envelope results remain in #10.
 P0 history is in #2, #3, #4 and merged PR #5.

@@ -3,10 +3,11 @@
 Status: design accepted in #14 / PR #15 on `dev` at
 `ea1c62c6ceecd5c12e4a359d8532d04f80b59850`, under roadmap #1.
 P2.1 (#16 / PR #17) accepted the offline scalar Compare slice below. P2.2
-(#18) adds the [observed grouped-amount primitive](grouped-amount.md), not
-Overview/Breakdown or optional execution. The remaining recipe matrix is
-admission for future work. Neither slice changes prompts, dependencies,
-fixtures, gold or live-run authorizations.
+(#18 / PR #19) accepted the [observed grouped-amount primitive](grouped-amount.md).
+P2.3 (#20) adds the private required/optional witness below, not public
+Overview/Breakdown. The remaining recipe matrix is admission for future work.
+These slices do not change prompts, dependencies, fixtures, gold or live-run
+authorizations.
 
 **Question:** is composition useful without expanding a language?
 
@@ -98,9 +99,87 @@ filters, time basis/timezone, complete checked coverage, bound role ranges and
 the common snapshot. No user-editable compatibility rules are introduced.
 
 Only `difference` and `relative_change` are implemented derivations. P2.2
-separately adds grouped facts; subtotal/share, Overview/Breakdown, optional slots,
-rendering, model instantiation and live recipe evidence remain future work. P2.1 does not
+separately adds grouped facts and P2.3 adds private required/optional execution.
+Subtotal/share, public Overview/Breakdown, rendering, model instantiation and
+live recipe evidence remain future work. P2.1 does not
 complete the P2 exit or establish model quality, backend parity or generalization.
+
+## P2.3 private required/optional composition
+
+`grepbit.composition._execute_required_optional` is an internal fixed witness,
+not a public recipe API. It accepts a local database Path and an already-bound
+FactRequest with exactly `confirmed_booked_amount`, `confirmed_booking_count`,
+`booked_seats` in that order, a canonical non-null center ID, and one explicit
+full month in the reviewed fixed UTC+08:00 Asia/Taipei profile. There is no center
+code/name resolution, caller-selected slot list or public OverviewRequest.
+
+| Fixed slot | Role | Computation |
+| --- | --- | --- |
+| amount | Required | Scalar confirmed_booked_amount |
+| bookings | Required | Scalar confirmed_booking_count |
+| seats | Required | Scalar booked_seats |
+| daily_amount | Optional, first | Full observed booking_day amount |
+| category_amounts | Optional, second | Full observed category amount |
+
+The roles are fixed before execution. One existing multi-metric scalar helper
+executes the required core; P2.2's admitted grouped query helper executes each
+optional view. All use one read-only connection, one actual transaction/snapshot,
+one base admission and one `_Budget`. Public scalar/grouped wrappers are not
+chained, and no transaction is reopened to fill a gap.
+
+The small private `_CompositionSlot` references a checked fact ID, or carries an
+unavailable reason with no fact reference. `_CompositionResult` retains the
+three scalar facts, only checked grouped facts, all five named slots, shared
+snapshot and final execution evidence. It returns `complete` only when all five
+slots are checked, or `partial` when required coverage is checked and at least
+one optional has a reviewed local failure. No new type/function is exported from
+`grepbit`; existing public signatures and serialization are unchanged.
+
+Recoverability is stage-specific, not inferred from an error string:
+
+| Failure | Disposition |
+| --- | --- |
+| `unsupported_source` during optional category dimension admission | Category unavailable; retain checked core/daily |
+| `output_limit_exceeded` during an optional grouped query | That optional unavailable; no truncated fact |
+| Trusted private `_ComponentTimeout` injection at an optional query boundary | That optional unavailable: `component_timeout` |
+| Otherwise-compatible optional amount/absence does not reconcile | That optional unavailable: `reconciliation_failed`; no row repair |
+| Invalid base, required failure, incompatible semantic/coverage/snapshot evidence, global budget exhaustion, transaction/connection loss, SQLite error, interruption or unknown KernelError | Abort; no composition result |
+
+Even an `unsupported_source` from grouped query execution, rather than category
+admission, remains fatal. An arbitrary KernelError with code `component_timeout`
+is not the trusted injected control. No exception message/source text is copied
+into an unavailable reason. The same global budget is checked after recoverable
+failures, and the existing transaction must still be active and readable.
+Its original batch ID is retained separately and checked through recovery and
+finalization; comparing two references to the same mutable snapshot dictionary
+is not sufficient evidence of identity consistency.
+
+E10 timeout semantics are **injected in P2.3; general component timer mechanics
+are not implemented**. Tests inject the private timeout at the category query
+boundary, after required facts and the independent daily view. Production has no
+case-ID route, timer knob, per-node budget, scheduler, retry or fallback. A
+global deadline/VM/source-row failure always wins over a local injection.
+
+Before accepting an optional fact, its amount semantics, scope, full observed
+coverage, named checks and snapshot must match the checked required amount.
+Compatible nonempty rows must sum exactly to that amount; an empty required
+amount requires an empty grouped result, never `sum([]) == 0`. A checked-empty
+view remains checked. In a no-data scope, core values remain NULL amount,
+zero bookings and NULL seats. Measured zero on a real population remains zero.
+
+A recoverable daily failure does not suppress category; a recoverable category
+failure preserves daily. Both may be unavailable, with both slots retained.
+If a global/snapshot failure follows a successful view, the entire analysis
+still aborts. The result is materialized only after successful transaction exit.
+Grouped execution counters are cumulative checkpoints; composition execution
+contains final cumulative counters. Source-validation row counts do not measure
+all FK/query/sort work, and cooperative budgets are not OS resource isolation.
+
+Focused regressions cover failed-admission permission restoration within an
+existing transaction, finite recoverable/fatal classifications, empty/zero and
+reconciliation, and a real WAL writer changing both amount and category between
+required and optional reads. These are deterministic synthetic regression
+controls, not model evaluations or proof of a public Overview recipe.
 
 ## 1. Admission and evidence
 
@@ -296,10 +375,10 @@ private transaction/scalar helpers, reusing the existing compiler, admission,
 authorizer and execution path. No raw connection/SQL or generic multi-scope
 planner is exposed to callers or models.
 
-For later optional execution, a query failure must not invalidate previously
-materialized independent required facts. If the transaction/snapshot is lost,
-do not reopen it to fill gaps or mix new facts with old ones. Mark affected
-optional slots unavailable; any affected required coverage makes analysis fail.
+For optional execution, a reviewed component-local failure need not invalidate
+previously materialized independent required facts. If the transaction/snapshot
+is lost, abort the analysis even when some required facts were materialized.
+Do not reopen it to fill gaps, mix snapshots or call a global failure partial.
 Global interruption/incomplete evidence is not a successful AnalysisPack.
 Exact SQLite cleanup/isolation mechanics need offline witnesses in implementation;
 PostgreSQL cancellation/isolation remains P4.
@@ -364,6 +443,9 @@ facts have been checked. Return core evidence (and any checked daily view),
 `status=partial`, and that named slot as unavailable. Injecting the same failure
 into a core slot must instead yield `failed`. A dependency on an unavailable
 fact is unavailable too; successful unrelated facts never repair it.
+P2.3 implements only the fixed private witness above, with finite local failure
+classification. It represents required/global failure by raising, not by
+returning a failed or partially successful pack.
 
 ## 8. Worked WHAT -> HOW decompositions
 

@@ -37,6 +37,10 @@ _ORDERING = {
     "booking_day": ("key_asc",),
     "course": ("value_desc", "key_asc"),
 }
+_GROUP_CHECKS = tuple(check for check in kernel._CHECKS if check != "scalar_result_shape_and_type") + (
+    "reviewed_dimension_binding", "grouped_integer_shape_and_key_bounds",
+    "declared_group_coverage_and_row_bound",
+)
 
 
 @dataclass(frozen=True)
@@ -259,6 +263,13 @@ def _execute_grouped(conn: sqlite3.Connection, request: GroupedAmountRequest,
                      budget: kernel._Budget) -> GroupedAmountFact:
     kernel._check_center(conn, request.scope)
     extension_hash = _validate_dimension_source(conn, request.dimension, budget)
+    return _execute_grouped_query(conn, request, compiled, snapshot, budget, extension_hash)
+
+
+def _execute_grouped_query(conn: sqlite3.Connection, request: GroupedAmountRequest,
+                           compiled: tuple[str, dict[str, str | int]], snapshot: dict[str, str],
+                           budget: kernel._Budget, extension_hash: str | None) -> GroupedAmountFact:
+    """Run only after base and selected dimension admission in this transaction."""
     sql, parameters = compiled
     conn.set_authorizer(_group_authorizer(request.dimension))
     try:
@@ -279,10 +290,7 @@ def _execute_grouped(conn: sqlite3.Connection, request: GroupedAmountRequest,
         conn.set_authorizer(kernel._authorize)
     budget.check()
     scope = request.scope
-    checks = tuple(check for check in kernel._CHECKS if check != "scalar_result_shape_and_type") + (
-        "reviewed_dimension_binding", "grouped_integer_shape_and_key_bounds",
-        "declared_group_coverage_and_row_bound",
-    )
+    checks = _GROUP_CHECKS
     if extension_hash is not None:
         checks += ("dimension_source_keys_and_relationships",)
     return GroupedAmountFact(

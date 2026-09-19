@@ -2,7 +2,7 @@
 
 Issue #18 adds one offline fact primitive, not Overview, Breakdown or a generic
 GROUP BY API. It starts from accepted P2.1 on
-`dev@c2cf2826994d8d198e12232a19a0a28d7bf8fa1e`. Model selection, optional
+`dev@c2cf2826994d8d198e12232a19a0a28d7bf8fa1e`. Model selection, public recipe
 orchestration, subtotal/share, rendering and live recipe runs remain future work.
 
 ## Public contract
@@ -154,6 +154,13 @@ Any dimension admission, grouping/ranking and finalization use the same timeout,
 VM accounting and row-validation budget. Existing defaults/hard maxima do not
 change.
 
+P2.3 reuses this path for its
+[private required/optional witness](p2-recipes.md#p23-private-requiredoptional-composition).
+A private split between dimension admission and the admitted grouped query
+allows precise local-failure classification without a second SQL executor.
+The public wrapper still performs both stages, and source/permission rules and
+public result fields remain unchanged.
+
 Full category/day sums are tested against the compatible scalar amount in one
 snapshot, both all-center and center-scoped. Empty rows reconcile to scalar
 NULL/empty evidence as absence, not `sum([]) == 0`. Course top-k is tested as a
@@ -161,5 +168,6 @@ selected subset and is never presented as the total/denominator.
 
 Q11/Q12/Q13 are witnesses for one primitive, not three operators or independent
 recipe promises. This does not admit distinct-count aggregation, zero-filled
-members, calendar filling, Q10 completion, subtotal/share, optional failure
-handling, Overview/Breakdown, model calls or PostgreSQL parity.
+members, calendar filling, Q10 completion, subtotal/share, public
+Overview/Breakdown, model calls or PostgreSQL parity. P2.3's fixed internal
+optional-failure contract is separate from this standalone grouped API.
