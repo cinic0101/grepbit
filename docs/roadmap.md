@@ -1,9 +1,10 @@
 # Roadmap and phase exits
 
 Baseline: 2026-09-18. Work is on `dev`; promotion to `main` requires owner review.
-P0 is accepted. P1.1 adds a bounded offline scalar kernel; P1 phase acceptance
-and its separately authorized model smoke remain pending. No P2-P5 delivery or
-live-model quality is claimed.
+P0 and P1.1 are accepted. P1.2 adds a thin local Gemma adapter and offline
+preparation of a bounded trilingual smoke (#8); P1 phase acceptance and its
+separately authorized live smoke remain pending. No P2-P5 delivery or live-model
+quality is claimed.
 GitHub Issues own current status; this document owns phase meaning and exits.
 
 | Phase | Deliverable | Question being tested | Exit |
@@ -20,7 +21,7 @@ calculation failures; small live integration checks reveal unusable model
 interfaces early. P3 starts formal quality measurement, not first model contact.
 Every live call remains an owner-authorized local run, including smoke tests.
 
-## Scope of this first delivery
+## Historical P0 delivery scope
 
 Commit the English design, AGENTS/CLAUDE instructions, new fixture sources and
 P0 checks. Do not add a runtime framework, model client, credentials, live CI,

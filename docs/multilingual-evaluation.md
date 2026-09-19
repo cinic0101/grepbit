@@ -53,11 +53,19 @@ ordering may accidentally return the same rows and is not certified by it.
 
 ## Later: owner-authorized local model comparison
 
-Once the relevant runtime path exists, start with eight proposed families:
+The first implemented preparation is the bounded [P1.2 smoke](model-integration.md):
+Q01_booked_amount, Q02_booking_count, Q03_booked_seats and Q04_known_learners,
+each in zh-TW/en/ja. This is 12 inputs and four semantic families, not twelve
+independent cases. Preparation is network-free; live execution remains separately
+authorized and has not been performed. The manifest pins shared runtime context,
+settings, accepted texts/gold and an interleaved stateless call order.
+
+An earlier, broader proposal listed eight families:
 Q01_booked_amount, Q02_booking_count, Q03_booked_seats, Q06_cash_received,
 E04_ambiguous_entity, E05_ambiguous_count, E06_ambiguous_year, E07_missing_profit.
-This means 24 initial inputs per selected model, not 24 independent semantic
-problems. Freeze the final selection and exact budget before the owner authorizes
+That would mean 24 initial inputs per selected model, not 24 independent semantic
+problems. It is **not** the P1.2 panel: cash and clarification are not admitted by
+this slice. Freeze any later selection and exact budget before the owner authorizes
 local execution. Missing runtime capabilities remain not_implemented; do not
 substitute a mock planner and call it a language-quality result.
 
@@ -72,7 +80,8 @@ The model receives one question and permitted runtime context, never this review
 sheet, the complete case record, expectations or reference SQL. Freeze source,
 supplement and context hashes along with the commit. Current fixture-check-v1
 hashes the base fixture assets, NOT this supplement: retain the unittest result
-and supplement hash separately until a real live runner is implemented.
+and supplement hash separately. The P1.2 manifest additionally pins runtime
+context and the language supplement without changing fixture-check-v1.
 
 Report per-language outcomes, necessary/unnecessary clarification and false
 refusal, operational failures, latency/tokens and per-family discrepancies.

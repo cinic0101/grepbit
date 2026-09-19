@@ -3,7 +3,8 @@
 Decision baseline: 2026-09-18. This describes the agreed direction, not delivered
 runtime capabilities. Current implementation includes the P0 fixture/tooling
 and the bounded [P1.1 offline scalar kernel](fact-kernel.md), not a planner or
-recipe engine.
+recipe engine. [P1.2](model-integration.md) adds one strict model-to-request
+boundary and a prepared smoke runner; no live result or P1 acceptance is implied.
 
 ## Goal and boundaries
 
