@@ -296,7 +296,7 @@ def _execute_grouped_query(conn: sqlite3.Connection, request: GroupedAmountReque
     return GroupedAmountFact(
         "confirmed_booked_amount", LEARNINGOPS.version, LEARNINGOPS.digest(), request.dimension,
         tuple(rows), "TWD_minor", "booking_line",
-        "Current confirmed bookings within the explicit creation-time scope.",
+        kernel._POPULATION,
         "bookings.created_at_utc", utc_text(scope.start), utc_text(scope.end), scope.timezone,
         {"center_id": scope.center_id} if scope.center_id is not None else {},
         snapshot["id"], checks, "top_k" if request.dimension == "course" else "all_observed_groups",

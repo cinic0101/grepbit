@@ -162,6 +162,10 @@ The public wrapper still performs both stages, and source/permission rules and
 public result fields remain unchanged.
 P2.4's [public Overview](p2-recipes.md#p24-public-deterministic-overview) reuses
 that composition without modifying the grouped primitive or its public API.
+P2.5's [public Breakdown](p2-recipes.md#p25-public-deterministic-breakdown) instead
+requires course grouping and a separately executed whole-scope scalar amount
+in one transaction. It adds recipe-specific subtotal/share outside this primitive;
+course admission failures are fatal, not optional gaps.
 
 Full category/day sums are tested against the compatible scalar amount in one
 snapshot, both all-center and center-scoped. Empty rows reconcile to scalar
@@ -170,7 +174,6 @@ selected subset and is never presented as the total/denominator.
 
 Q11/Q12/Q13 are witnesses for one primitive, not three operators or independent
 recipe promises. This does not admit distinct-count aggregation, zero-filled
-members, calendar filling, Q10 completion, subtotal/share, public
-recipe selection, Breakdown, model calls or PostgreSQL parity. P2.3's fixed
-optional-failure contract and P2.4's public Overview boundary are separate from
-this standalone grouped API.
+members, calendar filling, Q10 completion, public recipe selection, model calls
+or PostgreSQL parity. Subtotal/share and required/optional recipe policies remain
+separate from this standalone grouped API.

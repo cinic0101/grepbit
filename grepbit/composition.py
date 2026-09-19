@@ -208,12 +208,17 @@ def _execute_in_transaction(conn: sqlite3.Connection, scope: FactRequest,
     return facts, tuple(checked_groups), tuple(slots)
 
 
-def _finalize_composition(parts: _CompositionParts, snapshot: dict[str, str],
-                          budget: kernel._Budget, snapshot_id: str) -> _CompositionResult:
-    """Materialize only after successful read-transaction exit."""
+def _check_finalized_snapshot(snapshot: dict[str, str], budget: kernel._Budget,
+                              snapshot_id: str) -> None:
     budget.check()
     if snapshot.get("id") != snapshot_id:
         raise KernelError("snapshot_lost", "The completed analysis snapshot identity changed.")
+
+
+def _finalize_composition(parts: _CompositionParts, snapshot: dict[str, str],
+                          budget: kernel._Budget, snapshot_id: str) -> _CompositionResult:
+    """Materialize only after successful read-transaction exit."""
+    _check_finalized_snapshot(snapshot, budget, snapshot_id)
     return _CompositionResult(
         *parts, snapshot,
         kernel._runtime_evidence(), kernel._execution_evidence(budget),
