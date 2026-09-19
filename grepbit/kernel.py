@@ -164,7 +164,7 @@ def _table(name: str, alias: str) -> exp.Table:
                      alias=exp.TableAlias(this=exp.to_identifier(alias, quoted=True)))
 
 
-def _compile(binding: MetricBinding, request: FactRequest) -> tuple[str, dict[str, str]]:
+def _scalar_query(binding: MetricBinding, request: FactRequest) -> tuple[exp.Select, dict[str, str]]:
     _validate_binding(binding)
     expressions = [
         binding.expression.copy().as_("value", quoted=True),
@@ -196,7 +196,24 @@ def _compile(binding: MetricBinding, request: FactRequest) -> tuple[str, dict[st
     if request.center_id is not None:
         predicates.append(_column("center_id", "b").eq(exp.Placeholder(this="center_id")))
         parameters["center_id"] = request.center_id
-    return query.where(*predicates).sql(dialect="sqlite"), parameters
+    return query.where(*predicates), parameters
+
+
+def _compile(binding: MetricBinding, request: FactRequest) -> tuple[str, dict[str, str]]:
+    query, parameters = _scalar_query(binding, request)
+    return query.sql(dialect="sqlite"), parameters
+
+
+def _declared_foreign_keys(conn: sqlite3.Connection, table: str) -> set[
+    tuple[str, tuple[tuple[str, str], ...]]
+]:
+    grouped: dict[int, list[tuple]] = {}
+    for row in conn.execute(f'PRAGMA main.foreign_key_list("{table}")'):
+        grouped.setdefault(row[0], []).append(row)
+    return {
+        (rows[0][2], tuple((r[3], r[4]) for r in sorted(rows, key=lambda r: r[1])))
+        for rows in grouped.values()
+    }
 
 
 def _validate_source(conn: sqlite3.Connection, budget: _Budget) -> str:
@@ -232,14 +249,7 @@ def _validate_source(conn: sqlite3.Connection, budget: _Budget) -> str:
         if not isinstance(definition, exp.Create) or actual_checks != expected_checks:
             raise KernelError("unsupported_source", "Reviewed CHECK constraint definitions have changed.")
         budget.check()
-        grouped: dict[int, list[tuple]] = {}
-        for row in conn.execute(f'PRAGMA main.foreign_key_list("{table}")'):
-            grouped.setdefault(row[0], []).append(row)
-        foreign_keys = {
-            (rows[0][2], tuple((r[3], r[4]) for r in sorted(rows, key=lambda r: r[1])))
-            for rows in grouped.values()
-        }
-        if foreign_keys != _FOREIGN_KEYS[table]:
+        if _declared_foreign_keys(conn, table) != _FOREIGN_KEYS[table]:
             raise KernelError("unsupported_source", "Required relationship declarations have changed.")
         if conn.execute(f'PRAGMA main.foreign_key_check("{table}")').fetchone() is not None:
             raise KernelError("unsupported_source", "Source violates reviewed relationship constraints.")
@@ -342,13 +352,17 @@ def _read_transaction(database: Path, budget: _Budget) -> Iterator[
     snapshot["completed_at_utc"] = utc_text(datetime.now(timezone.utc))
 
 
-def _execute_scope(conn: sqlite3.Connection, request: FactRequest,
-                   compiled: list[_CompiledScalar], catalog: Catalog,
-                   snapshot_id: str, budget: _Budget) -> tuple[Fact, ...]:
+def _check_center(conn: sqlite3.Connection, request: FactRequest) -> None:
     if request.center_id is not None and conn.execute(
         "SELECT 1 FROM main.centers WHERE center_id=?", (request.center_id,),
     ).fetchone() is None:
         raise KernelError("unknown_entity", "Center ID is not present in the reviewed source.")
+
+
+def _execute_scope(conn: sqlite3.Connection, request: FactRequest,
+                   compiled: list[_CompiledScalar], catalog: Catalog,
+                   snapshot_id: str, budget: _Budget) -> tuple[Fact, ...]:
+    _check_center(conn, request)
     catalog_hash = catalog.digest()
     facts = []
     for metric, binding, sql, parameters in compiled:

@@ -24,15 +24,18 @@ This is not a general natural-language resolver, recipe engine,
 PostgreSQL adapter, API or MCP server.
 
 **P2.0** (#14 / PR #15) admitted Overview, Compare and Breakdown.
-**P2.1** (#16) implements [offline scalar Compare](docs/p2-recipes.md#p21-offline-scalar-compare):
+**P2.1** (#16 / PR #17) provides the accepted
+[offline scalar Compare](docs/p2-recipes.md#p21-offline-scalar-compare):
 two explicit months, one read snapshot, exact difference/relative change and
-input-linked evidence. Grouping, Overview, Breakdown, optional facts and model
+input-linked evidence. **P2.2** (#18) adds one
+[observed grouped-amount primitive](docs/grouped-amount.md) for category,
+booking day and course top-k. Overview, Breakdown, optional facts and model
 recipe selection remain unimplemented. This does not complete P2.
 
 The seed has 10 tables and 88 rows. There are 30 authored case descriptions:
 18 reference-SQL checks and 12 behavioral scenarios. The fixture checker still
-marks those scenarios `not_implemented`; separate P2.1 tests exercise E02's
-deterministic composition, not a natural-language recipe path.
+marks those scenarios `not_implemented`; separate runtime tests exercise E02's
+deterministic composition and Q11-Q13 grouped witnesses, not model recipe paths.
 Passing fixture checks is NOT passing 30 product cases or a live model eval.
 No legacy data, question text, business mapping or production code was imported.
 
@@ -71,6 +74,7 @@ are ignored by Git; rebuild from the committed source instead of committing a DB
 | [P1.1 fact kernel](docs/fact-kernel.md) | Explicit request contract, installation, example and bounded execution guarantees |
 | [P1 model integration](docs/model-integration.md) | Accepted adapter boundaries, smoke history and separately authorized execution |
 | [P2 recipes v0.1](docs/p2-recipes.md) | Accepted admission matrix, offline Compare API and still-future composition |
+| [Grouped amount](docs/grouped-amount.md) | One bounded observed-group primitive, source-extension isolation and coverage |
 | [LearningOps](evals/fixtures/learningops/README.md) | Schema, reviewed-for-development semantics and limitations |
 | `evals/cases/`, `evals/oracles/` | Evaluator-only material; never model context |
 | `tools/fixture.py`, `tools/smoke.py`, `tests/` | Evaluator-only checks, smoke preparation/grading and offline regressions |
@@ -80,8 +84,9 @@ are ignored by Git; rebuild from the committed source instead of committing a DB
 
 Implement on `dev`, review before merging into `main`. GitHub Issues are the
 single active-work tracker. The roadmap is not a second chronological work log.
-Track roadmap #1 and current offline Compare implementation in #16;
-P2.0 design was accepted through #14 / PR #15. Accepted P1 includes
+Track roadmap #1 and current grouped-amount implementation in #18;
+P2.0 design and P2.1 Compare were accepted through #14 / PR #15 and
+#16 / PR #17. Accepted P1 includes
 #6 / PR #7, #8 / PR #9, #11 / PR #12 and the successful smoke #13;
 the first smoke's failed envelope results remain in #10.
 P0 history is in #2, #3, #4 and merged PR #5.

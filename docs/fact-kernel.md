@@ -10,6 +10,8 @@ checker does not execute the twelve P0 behavioral scenarios. The [P2 design](p2-
 admits multi-scope/optional composition. P2.1 adds only
 [offline Compare](p2-recipes.md#p21-offline-scalar-compare), using the same
 private transaction and scalar helpers. Optional execution remains future work.
+P2.2's [grouped-amount primitive](grouped-amount.md) reuses that transaction,
+budget and native query construction without broadening scalar admission.
 
 ## Install and run
 
@@ -114,6 +116,11 @@ constraint rewrites are not automatically admitted. Explicit collations,
 views, generated columns, changed required schema and other physical encodings
 fail; this is not generic schema discovery. Related FK parent tables must exist
 and satisfy SQLite's relationship checks.
+In particular, valid session parent keys were already required by the item FK;
+this does not mean scalar queries validate or query course/category dimensions.
+Booking-day grouping inherits that prerequisite. Only category/course grouping
+adds the reviewed sessions/courses dimension profile; see the
+[admission clarification](grouped-amount.md#why-the-existing-fk-parent-requirement-is-retained).
 
 Input offsets define absolute instants. The business timezone is preserved, not
 used to guess a calendar period or override those instants. Fractional bounds
@@ -122,8 +129,9 @@ grid, both SQL bounds are rounded **up** to the next stored second. This exactly
 preserves half-open membership, unlike truncation or comparing fractional TEXT
 directly with the fixture's `...SSZ` encoding.
 
-There is no historical-status reconstruction, local-wall-time interpretation,
-date bucketing or claim of general timezone/PostgreSQL parity. Integer
+The scalar API has no historical-status reconstruction, local-wall-time
+interpretation or date bucketing. P2.2 separately admits fixed UTC+08:00
+booking-day grouping, not general timezone/PostgreSQL parity. Integer
 multiplication overflow is rejected during validation; aggregate overflow is an
 explicit batch failure, never a float conversion or fallback value.
 
