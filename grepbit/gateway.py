@@ -130,6 +130,11 @@ _PRIVATE_TRANSPORT: ContextVar[bool] = ContextVar("grepbit_private_transport", d
 
 class _PrivateTransportFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
+        # Resolver diagnostics run without our context and may finish after timeout.
+        # Keep this narrow stdlib origin suppressed for the rest of the process.
+        if (record.name == "asyncio" and record.module == "base_events"
+                and record.funcName == "_getaddrinfo_debug"):
+            return False
         return not _PRIVATE_TRANSPORT.get()
 
 
@@ -138,9 +143,8 @@ _PRIVATE_FILTER = _PrivateTransportFilter()
 
 @contextmanager
 def _private_transport_logs():
-    # httpx INFO logs URLs; httpcore DEBUG traces may include headers. Silence only
-    # this task's transport records, without changing other callers' logging levels.
-    names = {"httpx", "httpcore", "httpcore.connection", "httpcore.http11", "httpcore.http2",
+    # Retain filters after exit: executor DNS diagnostics can arrive late.
+    names = {"asyncio", "httpx", "httpcore", "httpcore.connection", "httpcore.http11", "httpcore.http2",
              "httpcore.proxy", "httpcore.socks"}
     names.update(name for name in tuple(logging.Logger.manager.loggerDict)
                  if name.startswith(("httpx.", "httpcore.")))

@@ -74,11 +74,25 @@ are not added; HTTPS uses the pinned client's default verified certificate bundl
 
 Keys/URLs are absent from prompts and public reports. HTTP error bodies,
 exception strings, request headers, raw completions and separate reasoning are
-not exported. Transport log records are suppressed only in the request's task
-context, including HTTPX INFO URLs and HTTPcore DEBUG traces. Config/response
-reprs hide sensitive fields; typed public evidence is additionally checked for
-known key/endpoint fragments. This is not a general sensitive-data detector for
-arbitrary real questions or databases: P1.2 is synthetic-only.
+not exported. HTTPX, HTTPcore and asyncio records emitted in the protected
+request context are suppressed, including connection diagnostics.
+
+**R1 process-wide effect:** the first guarded request also installs a persistent
+filter on the `asyncio` logger for records whose module is `base_events` and
+function is `_getaddrinfo_debug`. All records from that specific stdlib DNS
+diagnostic origin are suppressed for the rest of the process, including
+unrelated DNS lookups. This is deliberately not task-local: resolver executor
+threads lack the request's `ContextVar`, and can log after timeout/cancellation.
+The filter retains no keys, URLs or address registry and is not removed when a
+request ends. It does not disable logging, change logger levels or turn off loop
+debugging. Ordinary application logging and non-DNS asyncio diagnostics outside
+the protected context remain available. Applications must not remove/bypass
+these filters; other event-loop implementations or diagnostic origins require
+separate verification rather than a claim of general log sanitization.
+
+Config/response reprs hide sensitive fields; typed public evidence is additionally
+checked for known key/endpoint fragments. This is not a general sensitive-data
+detector for arbitrary real questions or databases: P1.2 is synthetic-only.
 
 ## Shared context and strict response contract
 
@@ -230,6 +244,7 @@ PYTHONPATH=tests .venv/bin/python -m unittest \
   test_fixture test_multilingual_cases test_review_witnesses -v
 .venv/bin/python -m unittest discover -s tests -p 'test_kernel*.py' -v
 PYTHONPATH=tests .venv/bin/python -m unittest test_gateway test_model test_smoke -v
+PYTHONPATH=tests .venv/bin/python -m unittest test_gateway_logging -v
 .venv/bin/python -m unittest discover -s tests -v
 ```
 
@@ -238,6 +253,11 @@ checking separately retains 18 references and 9 mechanisms. New tests use fake
 transports and disposable real SQLite databases, including wrong-but-valid
 requests and failures; they are **offline/mock evidence, not live model quality**.
 Protected gold and question text are not changed to make checks pass.
+The additive R1 regressions retain the stock HTTPX/HTTPcore/AnyIO and asyncio
+diagnostic path with DNS/TCP stubbed and real-socket guards. They cover debug
+on/off, success/failure, delayed executor completion after timeout/cancellation,
+and unrelated benign logging. Log capture continues until resolver work finishes;
+returning from the request alone is not proof that late diagnostics are safe.
 
 Live deployment compatibility, quality of Gemma's trilingual interpretation,
 native-language equivalence, repeated-run stability, real-data transfer and
