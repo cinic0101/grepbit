@@ -2,10 +2,11 @@
 
 Status: design accepted in #14 / PR #15 on `dev` at
 `ea1c62c6ceecd5c12e4a359d8532d04f80b59850`, under roadmap #1.
-P2.1 (#16) implements only the offline scalar Compare slice described below;
-the remaining matrix is admission for future work, not implemented capability.
-No grouping, optional execution, model prompt, dependency, fixture, gold or live
-run changes are part of P2.1.
+P2.1 (#16 / PR #17) accepted the offline scalar Compare slice below. P2.2
+(#18) adds the [observed grouped-amount primitive](grouped-amount.md), not
+Overview/Breakdown or optional execution. The remaining recipe matrix is
+admission for future work. Neither slice changes prompts, dependencies,
+fixtures, gold or live-run authorizations.
 
 **Question:** is composition useful without expanding a language?
 
@@ -96,9 +97,9 @@ Compatibility checks cover catalog/digest, metric/unit, population/grain,
 filters, time basis/timezone, complete checked coverage, bound role ranges and
 the common snapshot. No user-editable compatibility rules are introduced.
 
-Only `difference` and `relative_change` are implemented derivations. Grouped
-facts, subtotal/share, Overview/Breakdown, optional slots, rendering, model
-instantiation and live recipe evidence remain future work. P2.1 does not
+Only `difference` and `relative_change` are implemented derivations. P2.2
+separately adds grouped facts; subtotal/share, Overview/Breakdown, optional slots,
+rendering, model instantiation and live recipe evidence remain future work. P2.1 does not
 complete the P2 exit or establish model quality, backend parity or generalization.
 
 ## 1. Admission and evidence
@@ -230,7 +231,8 @@ recipe parameters. A checked fact with `value=null` and `empty_population=true`
 is not a measured zero.
 
 P2.1 adds individual `fact_id` values to the existing `Fact` rather than
-duplicating all of its evidence fields. Grouped coverage remains future work.
+duplicating all of its evidence fields. P2.2's `GroupedAmountFact` has its own
+identified rowset and observed/top-k coverage; it is not a generic recipe pack.
 The snapshot UUID is an ephemeral read-transaction identity. A schema hash or
 source filename is **not** a database-data version.
 
@@ -245,10 +247,12 @@ confirmed-booking population and booking-creation time as the scalar metric:
 | `booking_day` | Booking creation instant assigned to its Asia/Taipei date | Only days with eligible data; chronological ascending, no calendar filling | Overview trend, Q12 |
 | `course` | Booking line -> session -> canonical course ID | Observed courses; amount descending then course ID ascending under top-k | Breakdown, Q13 |
 
-These are trusted SQLGlot/catalog bindings, not a new relational AST. Grouped
-execution must extend source/relationship admission and row-budget enforcement
-inside the common kernel; the current scalar-only executor does not already
-support it. The Taipei date rule is not a general timezone/DST promise.
+These are trusted SQLGlot/catalog bindings, not a new relational AST. P2.2
+implements them with shared scalar query construction/transactions and
+on-demand dimension admission, without globally extending scalar permissions.
+The [runtime guide](grouped-amount.md) defines fixed output/key caps and explains
+why existing FK parent requirements remain. The Taipei date rule is not a
+general timezone/DST promise.
 
 Each eligible line belongs to exactly one member of each admitted dimension.
 Amounts are additive under these partitions; the accepted discount constraints
