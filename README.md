@@ -13,8 +13,11 @@ requests for four reviewed LearningOps metrics, compiles their runtime bindings
 with SQLGlot and returns scoped Fact Packs from read-only SQLite.
 **P1.2** adds a thin local LiteLLM / `gemma-4-31b` interpretation adapter and
 a network-free preparation command for a 12-input trilingual smoke.
-The live mode requires separate owner authorization and has not been evaluated
-live. This is not a general natural-language resolver, recipe engine,
+The first authorized live smoke (#10) completed 12 HTTP attempts, all rejected
+at response-envelope validation; multilingual interpretation remains unassessed.
+P1.3a (#11) normalizes provider metadata offline while keeping the FactRequest
+contract strict. Another live run requires separate owner authorization.
+This is not a general natural-language resolver, recipe engine,
 PostgreSQL adapter, API or MCP server; P1 is not complete.
 
 The seed has 10 tables and 88 rows. There are 30 authored case descriptions:

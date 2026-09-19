@@ -400,12 +400,11 @@ class ModelTests(unittest.IsolatedAsyncioTestCase):
                 self.assert_rejected(result, execution, code="invalid_response",
                                      stage="response_validation")
 
-    async def test_envelope_requires_exactly_one_index_zero_assistant_choice(self):
+    async def test_envelope_requires_one_assistant_choice_and_zero_index_when_present(self):
         valid_choice = envelope()["choices"][0]
         choices = (
             None, {}, [], [valid_choice, valid_choice],
             [{**valid_choice, "index": 1}], [{**valid_choice, "index": True}],
-            [{key: value for key, value in valid_choice.items() if key != "index"}],
             [{**valid_choice, "message": {"role": "user", "content": request_content()}}],
             [{**valid_choice, "message": {"content": request_content()}}],
             [None], ["text"],
@@ -414,6 +413,11 @@ class ModelTests(unittest.IsolatedAsyncioTestCase):
             with self.subTest(index=index):
                 result, _, execution = await self.interpret(document=envelope(choices=value))
                 self.assert_rejected(result, execution, code="invalid_response")
+        document = envelope()
+        del document["choices"][0]["index"]
+        result, _, execution = await self.interpret(document=document)
+        self.assertIsNone(result.error)
+        execution.assert_called_once()
 
     async def test_choice_content_must_be_string_and_finish_stop(self):
         for content in (None, {}, [], 7, True):
@@ -436,7 +440,7 @@ class ModelTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(result.error.stop_reason, "budget_exhausted")
                     self.assertEqual(result.evidence["stop_reason"], "budget_exhausted")
 
-    async def test_tool_calls_function_calls_logprobs_and_unknown_metadata_rejected(self):
+    async def test_tool_calls_function_calls_logprobs_rejected_but_metadata_ignored(self):
         changes = (
             ("message", "tool_calls", [{"id": "call", "function": {"name": "execute"}}]),
             ("message", "function_call", {"name": "execute", "arguments": "{}"}),
@@ -452,7 +456,13 @@ class ModelTests(unittest.IsolatedAsyncioTestCase):
                           if location == "choice" else document["choices"][0]["message"])
                 target[field] = value
                 result, _, execution = await self.interpret(document=document)
-                self.assert_rejected(result, execution)
+                if field == "unexpected_metadata":
+                    self.assertIsNone(result.error)
+                    execution.assert_called_once()
+                    self.assertEqual(tuple(f.value for f in result.fact_pack.facts), VALUES)
+                    self.assertNotIn(field, json.dumps(result.evidence))
+                else:
+                    self.assert_rejected(result, execution)
 
     async def test_separate_reasoning_is_discarded_never_parsed_or_exported(self):
         reasoning = "PRIVATE_REASONING_SENTINEL " + KEY + BASE + ' {"outcome":"declined"}'
@@ -533,18 +543,23 @@ class ModelTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(result.error)
         self.assertEqual(result.evidence["usage"], unknown)
 
-    async def test_usage_requires_safe_integer_counters_not_bool_or_extra_fields(self):
+    async def test_usage_requires_safe_known_integer_counters_not_bool(self):
         for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
             for value in (True, -1, 1.0, "1", [], 2**63):
                 with self.subTest(key=key, kind=type(value).__name__):
                     result, _, execution = await self.interpret(document=envelope(usage={key: value}))
                     self.assert_rejected(result, execution, code="invalid_response")
-        for usage in ([], 7, True, {"extra_tokens": 0},
-                      {"prompt_tokens_details": {"cached_tokens": True}},
-                      {"completion_tokens_details": {"unexpected_tokens": 1}}):
+        for usage in ([], 7, True, {"prompt_tokens_details": {"cached_tokens": True}}):
             with self.subTest(kind=type(usage).__name__):
                 result, _, execution = await self.interpret(document=envelope(usage=usage))
                 self.assert_rejected(result, execution, code="invalid_response")
+        for usage in ({"extra_tokens": 0},
+                      {"completion_tokens_details": {"unexpected_tokens": 1}}):
+            with self.subTest(usage_keys=list(usage)):
+                result, _, execution = await self.interpret(document=envelope(usage=usage))
+                self.assertIsNone(result.error)
+                execution.assert_called_once()
+                self.assertEqual(set(result.evidence["usage"].values()), {None})
 
     async def test_usage_boundary_and_known_token_details_are_accepted(self):
         usage = {
