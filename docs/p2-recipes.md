@@ -6,10 +6,12 @@ P2.1 (#16 / PR #17) accepted the offline scalar Compare slice below. P2.2
 (#18 / PR #19) accepted the [observed grouped-amount primitive](grouped-amount.md).
 P2.3 (#20 / PR #21) accepted the private required/optional witness below.
 P2.4 (#22 / PR #23) accepted public deterministic Overview using that composition.
-P2.5 (#24) adds deterministic Breakdown with an independent whole-scope
-denominator and two exact derivations. Model recipe paths remain future work.
-These slices do not change prompts, dependencies, fixtures, gold or live-run
-authorizations.
+P2.5 (#24 / PR #25) accepted deterministic Breakdown with an independent
+whole-scope denominator and two exact derivations. P2.6 (#26) adds the bounded
+[one-shot model route](recipe-model-integration.md), pending owner acceptance.
+It introduces a separate shared recipe prompt/contract, not a change to P1's
+prompt. Dependencies, deterministic APIs, fixtures, gold and live-run
+authorizations remain unchanged; recipe live evidence remains future work.
 
 **Question:** is composition useful without expanding a language?
 
@@ -747,8 +749,12 @@ what is implemented, not authorization to begin the next slice:
    **Breakdown instantiation (P2.5):** independently executed denominator,
    selected subtotal and exact share with role-linked provenance; no case-ID
    branches or optional recovery.
-4. **Model selection/instantiation:** one shared bounded recipe contract and the
-   same execution path, not separate recipe parsers or repair turns.
+4. **Model selection/instantiation (P2.6, #26):** the
+   [shared one-shot adapter](recipe-model-integration.md) validates one closed
+   proposal and dispatches the selected unchanged native request. It preserves
+   native outcomes and wrong-but-valid interpretations, without a second model,
+   repair, evaluator constraints or per-language routing. Offline fake-transport
+   checks do not establish model quality or complete P2.
 5. **Owner-authorized integration:** at least one live natural-language path
    per admitted recipe. Declare panels and budgets separately; E10 stays an
    injected operational control.

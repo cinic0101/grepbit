@@ -9,6 +9,9 @@ identity, JSON/FactRequest, kernel and value agreement on all 12 inputs:
 4/4 semantic families all-three-correct. This is bounded synthetic evidence,
 not generalization. Implementation or fake-transport checks never authorize live
 calls. [P2.0](p2-recipes.md) is a design checkpoint with no new runtime or live run.
+The separate [P2.6 recipe route](recipe-model-integration.md) reuses this gateway
+and protocol boundary with a new shared recipe contract. It does not change this
+P1 guide's prompt, scalar API, constraints, historical runner or manifest pins.
 
 ```text
 One question + shared runtime meanings

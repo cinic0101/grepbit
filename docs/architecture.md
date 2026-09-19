@@ -1,6 +1,6 @@
 # V3 architecture
 
-Decision baseline: 2026-09-18; current status follows #13/#24. The architecture below
+Decision baseline: 2026-09-18; current status follows #13/#26. The architecture below
 includes future responsibilities, not a claim that all are implemented.
 P0 and P1 are accepted at `6d6be30bed321806e0a2ef90fec53a1fc1118373`:
 the [scalar kernel](fact-kernel.md) and [model boundary](model-integration.md)
@@ -18,8 +18,13 @@ P2.5 (#24) adds required-only Breakdown: independently execute the all-scope
 scalar denominator and course top-k in one transaction, then derive exact
 selected subtotal/share with role-linked provenance. It reuses lifecycle checks,
 not Overview's optional composer or recovery policy. All three recipes retain
-separate public contracts, not a generic recipe framework. Model recipe selection
-and the other future layers below are not implemented.
+separate public contracts, not a generic recipe framework. P2.6 (#26) adds
+[one-shot recipe selection/instantiation](recipe-model-integration.md): one
+shared model contract, existing strict protocol normalization, selected native
+validation and fixed dispatch to exactly one of those public APIs. It preserves
+native evidence and wrong-but-valid proposals without repair or a universal pack.
+This is offline-tested wiring, not live model acceptance. The remaining future
+layers below are not implemented.
 
 ## Goal and boundaries
 

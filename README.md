@@ -36,17 +36,22 @@ required/global errors. Component-local timeout semantics are injected, not a
 new timer engine. **P2.4** (#22 / PR #23) accepted
 [public deterministic Overview](docs/p2-recipes.md#p24-public-deterministic-overview):
 strict explicit center-code/month inputs, exact binding in the same snapshot,
-and the reused five-slot composition. **P2.5** (#24) adds
+and the reused five-slot composition. **P2.5** (#24 / PR #25) accepted
 [deterministic Breakdown](docs/p2-recipes.md#p25-public-deterministic-breakdown):
 course top-k, an independently executed whole-scope denominator, exact selected
-subtotal/share and required-slot evidence. Model recipe selection and live
-recipe paths remain unimplemented. This does not complete P2.
+subtotal/share and required-slot evidence. **P2.6** (#26) adds
+[bounded model recipe selection](docs/recipe-model-integration.md):
+one shared versioned prompt/contract, one proposal and one unchanged native
+recipe execution, with strict parsing and wrong-interpretation visibility.
+Offline mocks are not live model evidence; owner acceptance and recipe live
+paths remain outstanding. This does not complete P2.
 
 The seed has 10 tables and 88 rows. There are 30 authored case descriptions:
 18 reference-SQL checks and 12 behavioral scenarios. The fixture checker still
 marks those scenarios `not_implemented`; separate runtime tests exercise E01-E03's
 deterministic composition, Q11-Q13 grouped witnesses and E10's injected
-optional-failure semantics, not model recipe paths.
+optional-failure semantics. P2.6 separately checks model-route wiring with fake
+transport, not live model quality or the complete behavioral bank.
 Passing fixture checks is NOT passing 30 product cases or a live model eval.
 No legacy data, question text, business mapping or production code was imported.
 
@@ -84,6 +89,7 @@ are ignored by Git; rebuild from the committed source instead of committing a DB
 | [Local execution](docs/local-execution.md) | Owner-triggered work and copy/paste handoff |
 | [P1.1 fact kernel](docs/fact-kernel.md) | Explicit request contract, installation, example and bounded execution guarantees |
 | [P1 model integration](docs/model-integration.md) | Accepted adapter boundaries, smoke history and separately authorized execution |
+| [P2 recipe model integration](docs/recipe-model-integration.md) | Shared one-shot recipe contract, native dispatch, safe evidence and offline-only scope |
 | [P2 recipes v0.1](docs/p2-recipes.md) | Accepted admission matrix, offline Compare/Overview/Breakdown APIs and shared execution |
 | [Grouped amount](docs/grouped-amount.md) | One bounded observed-group primitive, source-extension isolation and coverage |
 | [LearningOps](evals/fixtures/learningops/README.md) | Schema, reviewed-for-development semantics and limitations |
@@ -95,10 +101,10 @@ are ignored by Git; rebuild from the committed source instead of committing a DB
 
 Implement on `dev`, review before merging into `main`. GitHub Issues are the
 single active-work tracker. The roadmap is not a second chronological work log.
-Track roadmap #1 and current deterministic Breakdown work in #24;
+Track roadmap #1 and current bounded recipe interpretation work in #26;
 P2.0 design, P2.1 Compare and P2.2 grouping were accepted through #14 / PR #15,
 #16 / PR #17 and #18 / PR #19; P2.3 through #20 / PR #21 and public Overview
-through #22 / PR #23. Accepted P1 includes
+through #22 / PR #23; deterministic Breakdown through #24 / PR #25. Accepted P1 includes
 #6 / PR #7, #8 / PR #9, #11 / PR #12 and the successful smoke #13;
 the first smoke's failed envelope results remain in #10.
 P0 history is in #2, #3, #4 and merged PR #5.
