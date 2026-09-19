@@ -50,7 +50,7 @@ class CompareRequest:
 
 
 @dataclass(frozen=True)
-class DerivedFact:
+class CompareDerivedFact:
     derivation: Literal["difference", "relative_change"]
     input_fact_ids: tuple[str, str]
     value: int | Fraction | None
@@ -68,7 +68,7 @@ class DerivedFact:
 
 
 @dataclass(frozen=True)
-class SlotResult:
+class CompareSlotResult:
     slot_id: Literal["current", "baseline", "delta", "growth"]
     fact_id: str
     state: Literal["checked", "undefined", "unavailable"]
@@ -76,11 +76,11 @@ class SlotResult:
 
 
 @dataclass(frozen=True)
-class AnalysisPack:
+class CompareAnalysisPack:
     request: CompareRequest
     facts: tuple[Fact, Fact]
-    derived_facts: tuple[DerivedFact, DerivedFact]
-    slots: tuple[SlotResult, SlotResult, SlotResult, SlotResult]
+    derived_facts: tuple[CompareDerivedFact, CompareDerivedFact]
+    slots: tuple[CompareSlotResult, CompareSlotResult, CompareSlotResult, CompareSlotResult]
     snapshot: dict[str, str]
     runtime: dict[str, str]
     execution: dict[str, int | float]
@@ -126,20 +126,20 @@ def _check_compatibility(request: CompareRequest, current: Fact, baseline: Fact,
             raise KernelError("incompatible_facts", "Compare requires exact integer-or-empty amount evidence.")
 
 
-def _difference(current: Fact, baseline: Fact) -> DerivedFact:
+def _difference(current: Fact, baseline: Fact) -> CompareDerivedFact:
     value = None
     if current.value is not None and baseline.value is not None:
         value = current.value - baseline.value
         if not -(2**63) <= value < 2**63:
             raise KernelError("arithmetic_overflow", "Compare difference exceeds signed 64-bit integer range.")
-    return DerivedFact(
+    return CompareDerivedFact(
         "difference", (current.fact_id, baseline.fact_id), value, current.unit, current.snapshot_id,
         "checked" if value is not None else "unavailable",
         None if value is not None else "empty_input",
     )
 
 
-def _relative_change(delta: DerivedFact, baseline: Fact) -> DerivedFact:
+def _relative_change(delta: CompareDerivedFact, baseline: Fact) -> CompareDerivedFact:
     if (delta.derivation != "difference" or delta.input_fact_ids[1] != baseline.fact_id
             or delta.snapshot_id != baseline.snapshot_id or delta.unit != baseline.unit
             or (delta.state == "checked" and type(delta.value) is not int)):
@@ -153,14 +153,14 @@ def _relative_change(delta: DerivedFact, baseline: Fact) -> DerivedFact:
         state, reason, value = "undefined", "zero_baseline", None
     else:
         state, reason, value = "checked", None, Fraction(delta.value, baseline.value)
-    return DerivedFact(
+    return CompareDerivedFact(
         "relative_change", (delta.fact_id, baseline.fact_id), value, "dimensionless",
         baseline.snapshot_id, state, reason,
     )
 
 
 def execute_compare(database: Path, request: CompareRequest, *,
-                    limits: ExecutionLimits = ExecutionLimits()) -> AnalysisPack:
+                    limits: ExecutionLimits = ExecutionLimits()) -> CompareAnalysisPack:
     """Execute compare@0.1; source/budget/compatibility failures raise KernelError."""
     if not isinstance(request, CompareRequest) or not isinstance(limits, ExecutionLimits):
         raise KernelError("invalid_request", "Use a typed CompareRequest and trusted ExecutionLimits.")
@@ -178,12 +178,12 @@ def execute_compare(database: Path, request: CompareRequest, *,
         delta = _difference(current, baseline)
         growth = _relative_change(delta, baseline)
         slots = (
-            SlotResult("current", current.fact_id, "checked"),
-            SlotResult("baseline", baseline.fact_id, "checked"),
-            SlotResult("delta", delta.fact_id, delta.state, delta.reason),
-            SlotResult("growth", growth.fact_id, growth.state, growth.reason),
+            CompareSlotResult("current", current.fact_id, "checked"),
+            CompareSlotResult("baseline", baseline.fact_id, "checked"),
+            CompareSlotResult("delta", delta.fact_id, delta.state, delta.reason),
+            CompareSlotResult("growth", growth.fact_id, growth.state, growth.reason),
         )
-    return AnalysisPack(
+    return CompareAnalysisPack(
         request, (current, baseline), (delta, growth), slots, snapshot,
         kernel._runtime_evidence(), kernel._execution_evidence(budget),
         kernel._LIMITATIONS + (

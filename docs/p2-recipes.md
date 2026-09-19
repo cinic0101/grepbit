@@ -54,6 +54,14 @@ The recipe ID/version are fixed output metadata, not configurable parameters.
 There is no new CLI or model route, no custom catalog parameter, and no public
 API for supplying facts, SQL, connections or execution callbacks.
 
+The public output types are `CompareAnalysisPack`, `CompareDerivedFact` and
+`CompareSlotResult`: their fixed shapes describe only Compare, not reusable
+P2-wide contracts. The broader AnalysisPack/DerivedFact concepts below remain
+design vocabulary, not generic exported Python types. The former unaccepted
+generic type names have no compatibility aliases; callers must update imports
+and type annotations. Serialized JSON field names and values are unchanged,
+and `Fact.fact_id` remains generic.
+
 | Output | P2.1 shape / behavior |
 | --- | --- |
 | `recipe_id`, `recipe_version`, `request` | `compare`, `0.1`, both preserved explicit scopes |

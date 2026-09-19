@@ -18,8 +18,8 @@ from uuid import UUID
 
 import grepbit
 from grepbit import (
-    AnalysisPack, CompareRequest, DerivedFact, ExecutionLimits, Fact, FactRequest,
-    KernelError, SlotResult, execute_compare, execute_facts,
+    CompareAnalysisPack, CompareRequest, CompareDerivedFact, ExecutionLimits, Fact, FactRequest,
+    KernelError, CompareSlotResult, execute_compare, execute_facts,
 )
 from grepbit import compare, kernel
 from grepbit.catalog import LEARNINGOPS
@@ -82,11 +82,13 @@ class CompareRequestTests(CompareAssertions):
         self.assertEqual(signature.parameters["limits"].default, ExecutionLimits())
         self.assertEqual(get_type_hints(execute_compare), {
             "database": Path, "request": CompareRequest,
-            "limits": ExecutionLimits, "return": AnalysisPack,
+            "limits": ExecutionLimits, "return": CompareAnalysisPack,
         })
-        for name in ("CompareRequest", "AnalysisPack", "DerivedFact", "SlotResult", "execute_compare"):
+        for name in ("CompareRequest", "CompareAnalysisPack", "CompareDerivedFact",
+                     "CompareSlotResult", "execute_compare"):
             self.assertIn(name, grepbit.__all__)
-        for name in ("_check_compatibility", "_difference", "_relative_change", "_execute_scope"):
+        for name in ("_check_compatibility", "_difference", "_relative_change", "_execute_scope",
+                     "AnalysisPack", "DerivedFact", "SlotResult"):
             self.assertNotIn(name, grepbit.__all__)
             self.assertFalse(hasattr(grepbit, name))
 
@@ -253,7 +255,7 @@ class CompareFixture(CompareAssertions):
 
     def execute(self, request=None, **kwargs):
         pack = execute_compare(self.db, self.request if request is None else request, **kwargs)
-        self.assertIsInstance(pack, AnalysisPack)
+        self.assertIsInstance(pack, CompareAnalysisPack)
         return pack
 
     def mutate(self, *statements):
@@ -318,7 +320,7 @@ class CompareFixture(CompareAssertions):
         before = database.read_bytes() if database.exists() else None
         with (
             self.capture_connections() as (connections, _),
-            patch.object(compare, "AnalysisPack", wraps=AnalysisPack) as pack_constructor,
+            patch.object(compare, "CompareAnalysisPack", wraps=CompareAnalysisPack) as pack_constructor,
         ):
             error = self.assert_kernel_error(
                 code, execute_compare, database, self.request, **kwargs,
@@ -374,7 +376,7 @@ class CompareValueTests(CompareFixture):
         self.assertEqual((pack.recipe_id, pack.recipe_version, pack.status), ("compare", "0.1", "complete"))
         self.assertEqual(tuple(slot.slot_id for slot in pack.slots),
                          ("current", "baseline", "delta", "growth"))
-        self.assertTrue(all(isinstance(slot, SlotResult) for slot in pack.slots))
+        self.assertTrue(all(isinstance(slot, CompareSlotResult) for slot in pack.slots))
         self.assertTrue(all(slot.state == "checked" and slot.reason is None for slot in pack.slots))
         self.assertEqual(tuple(f.population_rows for f in pack.facts), (8, 3))
         self.assertTrue(all(not fact.empty_population for fact in pack.facts))
