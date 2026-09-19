@@ -1,9 +1,11 @@
 # P2 recipes v0.1: design and admission checkpoint
 
-Status: proposed contract for owner review in #14, under roadmap #1.
-Baseline: accepted P1 at `6d6be30bed321806e0a2ef90fec53a1fc1118373`.
-This document admits **future implementation**, not delivered recipe runtime.
-No production code, prompt, dependency, fixture, gold or live run changes here.
+Status: design accepted in #14 / PR #15 on `dev` at
+`ea1c62c6ceecd5c12e4a359d8532d04f80b59850`, under roadmap #1.
+P2.1 (#16) implements only the offline scalar Compare slice described below;
+the remaining matrix is admission for future work, not implemented capability.
+No grouping, optional execution, model prompt, dependency, fixture, gold or live
+run changes are part of P2.1.
 
 **Question:** is composition useful without expanding a language?
 
@@ -13,6 +15,83 @@ template + ID/version + human explanation**. Tables below define those
 templates; they are not executable YAML, a user-editable formula system or
 question-specific routing. Case IDs below are evaluator witnesses only. They
 must not appear in runtime dispatch or evaluated-model context.
+
+## P2.1 offline scalar Compare
+
+The typed Python API is `grepbit.execute_compare(database, request, *, limits)`.
+It accepts only `CompareRequest(current, baseline)`, containing two explicit
+FactRequests. Both must use only `confirmed_booked_amount`, all centers and
+`Asia/Taipei`. Their absolute instants must describe distinct full calendar
+months in that timezone. Equivalent offset representations are allowed;
+explicit cross-year comparisons are allowed. No baseline, year or metric is
+inferred. Same-month, partial-month and multi-month comparisons are rejected.
+
+```python
+from pathlib import Path
+from grepbit import CompareRequest, execute_compare
+
+request = CompareRequest.from_mapping({
+    "current": {
+        "metrics": ["confirmed_booked_amount"],
+        "start": "2026-03-01T00:00:00+08:00",
+        "end": "2026-04-01T00:00:00+08:00",
+        "timezone": "Asia/Taipei",
+    },
+    "baseline": {
+        "metrics": ["confirmed_booked_amount"],
+        "start": "2026-02-01T00:00:00+08:00",
+        "end": "2026-03-01T00:00:00+08:00",
+        "timezone": "Asia/Taipei",
+    },
+})
+pack = execute_compare(Path("learningops.sqlite"), request)
+document = pack.to_dict()
+```
+
+`from_mapping` admits exactly `current` and `baseline`, each with the strict P1
+FactRequest fields; unknown recipe/formula/filter/third-scope fields are errors.
+The recipe ID/version are fixed output metadata, not configurable parameters.
+There is no new CLI or model route, no custom catalog parameter, and no public
+API for supplying facts, SQL, connections or execution callbacks.
+
+| Output | P2.1 shape / behavior |
+| --- | --- |
+| `recipe_id`, `recipe_version`, `request` | `compare`, `0.1`, both preserved explicit scopes |
+| `facts` | Checked current/baseline Facts, including SQL/parameters, scalar checks, source population/empty evidence and opaque `fact_id` |
+| `derived_facts` | Difference and relative-change records: own ID, ordered input IDs, unit, common snapshot ID, value, state and reason |
+| `slots` | Exactly current/baseline/delta/growth; all required; each has state and fact reference, with reason where needed |
+| `snapshot`, `runtime`, `execution`, `limitations` | Common read-transaction/source identity, dependency versions, aggregate budget/counters and bounded claims |
+| `status` | `complete` if all required slots are checked/contract-defined undefined; `failed` if a required derivation is unavailable; no partial state |
+
+Difference uses signed-64-bit integer arithmetic with explicit overflow rejection.
+Growth is a reduced stdlib `Fraction`, serialized as
+`{"numerator": 54, "denominator": 25}` for E02, not binary float or percentage
+text. Delta references current/baseline fact IDs; growth references delta and the
+same baseline. Fact IDs are server-assigned opaque UUIDs without cross-run
+persistence. Adding `Fact.fact_id` also adds that field to existing P1 JSON;
+no existing field is removed or reinterpreted.
+
+A nonempty baseline amount of zero yields checked delta and
+`growth: undefined, reason: zero_baseline`, including zero versus zero.
+An empty baseline stays a checked null Fact with empty-population evidence;
+delta is unavailable (`empty_input`), growth is unavailable
+(`unavailable_difference`) and status is failed. Source, budget, compatibility
+and overflow errors raise `KernelError`, never a partial or success-shaped pack.
+Checked facts with null values are not converted into zero.
+
+Both public execution entries use the same private compilation, source
+admission, read-only transaction, authorizer and scalar-result checks. Compare
+opens one connection/transaction, validates the source once, and runs both
+scopes under one `_Budget`: timeout, VM callbacks and source-validation rows
+are not reset. The existing defaults/hard maxima remain unchanged.
+Compatibility checks cover catalog/digest, metric/unit, population/grain,
+filters, time basis/timezone, complete checked coverage, bound role ranges and
+the common snapshot. No user-editable compatibility rules are introduced.
+
+Only `difference` and `relative_change` are implemented derivations. Grouped
+facts, subtotal/share, Overview/Breakdown, optional slots, rendering, model
+instantiation and live recipe evidence remain future work. P2.1 does not
+complete the P2 exit or establish model quality, backend parity or generalization.
 
 ## 1. Admission and evidence
 
@@ -114,7 +193,8 @@ the fixed `as_of` supplies no missing year.
 
 ## 3. Minimum contracts, not a serialized plan
 
-These are a **sketch**, not new Python classes, JSON schemas or runtime APIs.
+These are the broader accepted **sketch**, not a generic runtime API.
+The narrow P2.1 types above implement only Compare and identified scalar outputs.
 Parameters express WHAT; a reviewed server template supplies HOW. No caller
 provides tasks, dependency graphs, operators, SQL, arbitrary filters or expressions.
 
@@ -141,8 +221,8 @@ SQL/parameters and snapshot provenance. Do not duplicate them as editable
 recipe parameters. A checked fact with `value=null` and `empty_population=true`
 is not a measured zero.
 
-Current P1 `Fact` has no individual `fact_id`; adding such identities and grouped
-coverage would be future contract work, not an existing delivered facility.
+P2.1 adds individual `fact_id` values to the existing `Fact` rather than
+duplicating all of its evidence fields. Grouped coverage remains future work.
 The snapshot UUID is an ephemeral read-transaction identity. A schema hash or
 source filename is **not** a database-data version.
 
@@ -199,10 +279,10 @@ observe a different snapshot.
 
 Current `execute_facts()` opens and closes a transaction for **one FactRequest
 scope**, and all its metrics are required. Calling it twice is not a same-snapshot
-Compare implementation. The next scalar step needs controlled multi-scope
-batching that reuses the existing compiler, admission, authorizer and execution
-path. It must not expose raw connections/SQL to the model or create a second
-executor.
+Compare implementation. P2.1 instead runs the two named scopes using shared
+private transaction/scalar helpers, reusing the existing compiler, admission,
+authorizer and execution path. No raw connection/SQL or generic multi-scope
+planner is exposed to callers or models.
 
 For later optional execution, a query failure must not invalidate previously
 materialized independent required facts. If the transaction/snapshot is lost,
@@ -351,11 +431,11 @@ causal claims, silent requirement removal or evaluator/gold context.
 
 ## 9. Smallest next implementation issue
 
-**Propose P2.1: offline scalar Compare on one controlled analysis snapshot.**
+**P2.1 scope (#16): offline scalar Compare on one controlled analysis snapshot.**
 Compare can come first: it needs no grouping, new metric or relational operator.
 It cannot be a wrapper making two unrelated `execute_facts()` calls.
 
-Bound its delivery to E02 + Q01/Q09: reuse the scalar compiler/executor in a
+Its delivery is bounded to E02 + Q01/Q09: reuse the scalar compiler/executor in a
 multi-scope batch, add opaque fact IDs, validate compatibility, and implement the
 two fixed Compare derivations plus required coverage. Prove 158000/50000,
 108000 and 54/25; zero vs missing baseline; incompatible unit/population/time/

@@ -464,7 +464,7 @@ class KernelTests(KernelAssertions):
             "metric_id", "catalog_id", "catalog_sha256", "value", "unit", "grain",
             "population", "time_basis", "start_utc", "end_utc", "business_timezone",
             "filters", "population_rows", "empty_population", "excluded_anonymous_rows",
-            "disclosures", "sql", "parameters", "snapshot_id", "checks", "completeness",
+            "disclosures", "sql", "parameters", "snapshot_id", "checks", "completeness", "fact_id",
         }
         for fact in document["facts"]:
             self.assertEqual(set(fact), required_fact_fields)

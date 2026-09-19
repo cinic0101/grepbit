@@ -43,8 +43,10 @@ Its detailed diagnostics are for synthetic data only, not a live logging policy.
 ## Product evaluation contract across P1-P3
 
 P1 implements the bounded scalar/model path and its four-family smoke. The
-[P2.0 recipe admission](p2-recipes.md) names future composition witnesses,
-not newly passed cases or permission to update frozen asset/review statuses.
+[P2.0 recipe admission](p2-recipes.md) names composition witnesses.
+P2.1 separately exercises E02's deterministic Compare behavior offline; it
+does not add a model recipe path or change fixture-checker scenario statuses.
+Neither admission nor implementation permits rewriting frozen asset/review labels.
 P3 still owns formal quality/stability measurement.
 
 Evaluate four dimensions separately: interpretation/binding; fact correctness;
