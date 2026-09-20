@@ -33,7 +33,9 @@ from grepbit import (
 from grepbit.contracts import KernelError, utc_text
 from grepbit.gateway import GatewayClient, GatewayConfig, ModelError
 from grepbit.model import canonical_json, normalized_request, strict_json
-from grepbit.recipe_model import RecipeInterpretation, context_identity, interpret_recipe_and_execute
+from grepbit.recipe_model import (
+    RecipeInterpretation, context_identity, interpret_recipe_and_execute, structured_output_identity,
+)
 from tools import smoke
 
 PANEL_ASSET = "evals/panels/p2-recipe-smoke-v1.json"
@@ -173,6 +175,7 @@ def _source_identity() -> dict:
     except (OSError, subprocess.SubprocessError):
         raise RecipeSmokeError("source_identity_failure") from None
     identity["context"] = context_identity()
+    identity["structured_output"] = structured_output_identity()
     return identity
 
 
@@ -533,6 +536,7 @@ async def run_panel(
                 result = RecipeInterpretation(None, None, legacy.error, {
                     **{key: value for key, value in legacy.evidence.items() if key not in ("request", "fact_pack")},
                     "context_identity": manifest["identities"]["context"], "model_outcome": None,
+                    "structured_output_identity": manifest["identities"]["structured_output"],
                     "proposal": None, "analysis_pack": None, "pack_status": None,
                 })
             evidence = client.safe_export(result.evidence)

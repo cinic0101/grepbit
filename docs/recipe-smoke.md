@@ -147,6 +147,15 @@ stop-policy hashes, and all nine question hashes/references. Evaluator oracle
 data is kept separate from model evidence. Raw question text is not duplicated
 into the manifest or report.
 
+P2.11 also pins `identities.structured_output`: `recipe-structured-output-v1`,
+JSON-schema mode, the fixed schema name, canonical schema SHA-256 and complete
+response-format wrapper SHA-256. Current gateway/adapter source hashes remain
+included. The semantic context, fixed panel, grader and stop policy do not
+change. No new panel/manifest version is needed: exact manifest comparison
+rejects old source/policy identities, including a missing generation identity.
+Historical manifests must not be edited or repinned. This identifies the
+requested generation constraint, not deployed schema compatibility or enforcement.
+
 Preparation checks source identity again after construction. Execution compares
 the prepared manifest exactly and rechecks source/database before and after
 possible sends. No symlink, unstable sidecar, existing output directory or

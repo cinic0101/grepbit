@@ -7,7 +7,7 @@ unchanged [P1 scalar contract](model-integration.md).
 
 ```text
 question + one shared English instruction and all three recipe meanings
-  -> one GatewayClient.complete call
+  -> one GatewayClient.complete call with the same schema as a generation constraint
   -> existing provider-envelope normalization
   -> strict JSON and selected native request validator
   -> exactly one existing public deterministic recipe API
@@ -106,6 +106,74 @@ The adapter hashes the context it actually submits, not a question-specific
 expected contract. P1's system instruction, context, output contract, hashes,
 partial constraints and stopping classifications remain unchanged.
 
+## JSON-schema generation constraint (P2.11)
+
+Issue #34 adds one controlled wire change: P2 requests **prompt + JSON-schema
+constrained generation + strict verification**, while P1 remains prompt-only
+generation followed by strict verification. The schema remains embedded in the
+P2 prompt; `SYSTEM_INSTRUCTION`, `runtime_context()`, `output_schema()` and all
+existing semantic identities are unchanged.
+
+`GatewayClient.complete(..., json_schema_constraint=None)` preserves the exact
+historical five-field request when omitted or null. Its only additional argument
+accepts exactly `{"name": ..., "schema": ...}`. The gateway constructs:
+
+```python
+{
+    "response_format": {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "grepbit_recipe_request",
+            "schema": output_schema(),
+        },
+    },
+}
+```
+
+This shows the additional request field, not a duplicated schema definition.
+The recipe adapter uses the same schema object supplied by `runtime_context()`
+from `output_schema()`. No arbitrary `response_format`, provider kwargs,
+`extra_body`, additional output mode or capability negotiation is admitted.
+
+Schema names use 1-64 ASCII letters, digits, underscores or hyphens; the recipe
+name above is fixed. The schema must be a nonempty JSON object with finite,
+UTF-8-encodable JSON values. Non-serializable/cyclic/excessively deep data,
+non-string object keys and tuple-to-array coercions reject with fixed
+`invalid_input`, without exporting the schema or exception text. Incremental
+encoding bounds accumulated schema bytes by the existing 32768-byte request
+cap. The full serialized request, including the wrapper, must also fit that
+unchanged cap or fails `input_too_large` before HTTP. Configured credentials,
+gateway addresses and hostnames are rejected in schema values **and keys**.
+This is not a general secret detector; only the reviewed code-defined schema,
+not user/model-authored schemas or configuration, belongs in the recipe route.
+
+`structured_output_identity()` and adapter `evidence.structured_output_identity`
+identify the constructed generation contract separately from semantic context:
+`recipe-structured-output-v1`, `mode=json_schema`, the fixed schema name,
+canonical schema SHA-256 and canonical complete response-format wrapper
+SHA-256. These identify the requested policy, not proof that a server honored it.
+The [recipe manifest](recipe-smoke.md) pins that identity and current source.
+
+The accepted envelope parser, `strict_json`, RecipeProposal/native validators,
+deterministic APIs, invalid-JSON fingerprint and intent-first grader remain
+necessary. Constrained generation does not establish correct recipe choice,
+user intent, semantics or source truth. A provider ignoring the constraint and
+returning fenced/think-wrapped/trailing-prose content still gets strict rejection;
+valid JSON with a wrong native schema remains `invalid_request`.
+
+A route rejecting the parameter retains the existing HTTP/configuration error
+and stops without a second request. There is no fallback to prompt-only mode,
+deprecated `guided_json`, stripping, extraction, repair or retry.
+
+Stage A uses fake HTTP only. The inspected application/PATH environments did
+not expose installed LiteLLM, vLLM or an eligible schema compiler or trusted
+proxy configuration. Deployed versions, passthrough/`drop_params`, backend
+configuration and exact support for root `oneOf`, `const` arrays, nested scopes
+and other schema keywords remain **UNKNOWN**. Upstream API documentation is not
+deployment evidence. No model was loaded and no endpoint was contacted. A
+future separately owner-authorized compatibility call must fail closed rather
+than substitute another API or silently relax the schema.
+
 ## API, native results and failure evidence
 
 ```python
@@ -140,8 +208,9 @@ copy those privacy-sensitive parsers or refactor P1 into a general orchestration
 framework. R1 logging protection, ignored separate reasoning, provider extension
 compatibility, redirect/proxy/TLS controls and byte caps stay in the same code.
 The request still uses `gemma-4-31b`, temperature 0, stream false, 2048 output
-tokens and zero client retries. No SDK, response_format, tool or reasoning flag
-is added. Upstream inference work is not inferred from client attempts.
+tokens and zero client retries. Only the bounded P2 `response_format` above is
+added; no SDK, tool or reasoning flag is used. Upstream inference work is not
+inferred from client attempts.
 
 Evidence records P1-style stages, model/usage/finish metadata, attempts, elapsed
 time, identities, validated proposal, sanitized native serialization, pack
@@ -224,7 +293,7 @@ tagged request branches plus decline, and embeds the full schema. Compare nests
 two amount-only FactRequests under `current`/`baseline`. Counting the response
 root as depth one, P1 has two object levels; P2 Overview/Breakdown have two and
 Compare has three (four container levels including its constant metrics array).
-Both use the same
+At that historical baseline, both used the same
 gateway payload (`model`, `messages`, `temperature`, `max_tokens`, `stream`) and
 strict parser, with no guided-JSON, response-format, reasoning or stop override.
 These size differences do **not** establish the cause of #30's nine
@@ -251,7 +320,7 @@ A numerically checked answer to the wrong question remains wrong.
 Run the focused network-free suite using the verified pinned interpreter:
 
 ```bash
-PYTHONPATH=tests .venv/bin/python -m unittest test_recipe_model test_json_diagnostics -v
+PYTHONPATH=tests .venv/bin/python -m unittest test_recipe_model test_json_diagnostics test_structured_output -v
 ```
 
 Tests combine fake HTTP with real disposable synthetic SQLite, multilingual
