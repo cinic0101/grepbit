@@ -14,6 +14,7 @@ from .catalog import LEARNINGOPS, PROFILE_ID
 from .compare import CompareAnalysisPack, CompareRequest, execute_compare
 from .contracts import ExecutionLimits, KernelError
 from .gateway import CALL_TIMEOUT_SECONDS, MODEL, GatewayClient, ModelError
+from .json_diagnostics import invalid_json_fingerprint
 from .overview import OverviewAnalysisPack, OverviewRequest, execute_overview
 
 CONTEXT_VERSION = "learningops-recipe-context-v1"
@@ -249,7 +250,12 @@ async def interpret_recipe_and_execute(
         evidence["http_status"] = response.status_code
         content = protocol._content(response.body, evidence)
         stages["response_validation"] = "passed"
-        data = protocol.strict_json(content)
+        try:
+            data = protocol.strict_json(content)
+        except ModelError as exc:
+            if exc.code == "invalid_json":
+                evidence["invalid_json_fingerprint"] = invalid_json_fingerprint(content)
+            raise
         stages["json_parse"] = "passed"
         proposal = _proposal(data)
         stages["request_validation"] = "passed"

@@ -171,6 +171,74 @@ execution failures retain their native codes under `kernel_failure`. Unknown
 native error strings become `unknown`. Optional failures already handled by
 Overview remain native gaps, not adapter-level errors.
 
+## Invalid-JSON structural diagnostics (#31)
+
+Only when P2 content fails the unchanged `strict_json` acceptance function,
+`evidence.invalid_json_fingerprint` records `invalid-json-structure-v1`. Envelope
+failures do not enter this path. Valid JSON with an invalid recipe shape remains
+`invalid_request`, with no invalid-JSON fingerprint. Separate provider reasoning
+is still ignored; it cannot rescue invalid content.
+
+The fingerprint contains fixed keys, closed enum values, numbers, booleans and
+nulls only:
+
+| Fields | Meaning |
+| --- | --- |
+| `byte_length`, `char_length`, `has_ascii`, `has_non_ascii`, `newline_count` | UTF-8 bytes, Python string characters, ASCII/non-ASCII presence and LF count; byte length is null for a literal unencodable surrogate |
+| `leading_whitespace_bytes`, `trailing_whitespace_bytes` | Independent edge spans of JSON whitespace only: space, tab, CR and LF |
+| `first_non_whitespace_class`, `last_non_whitespace_class` | `object`, `array`, `backtick`, `angle`, `quote`, `alpha`, `other`, `empty` or `unavailable`; closing delimiters share the opening delimiter's class |
+| `starts_with_object`, `starts_with_array`, `starts_with_markdown_fence`, `contains_markdown_fence` | Structural observations; fences mean the exact three-backtick marker |
+| `starts_with_think_tag`, `contains_think_tag` | Exact lowercase `<think>` or `</think>` markers, including a closing-only marker |
+| `decoder_error_category`, `decoder_line`, `decoder_column`, `decoder_offset` | Closed diagnostic category, one-based line/column and zero-based character offset; no exception messages |
+| `raw_decode_one_value`, `parsed_root_type`, `trailing_non_whitespace_bytes` | Whether a diagnostic decoder read one value starting at the first non-JSON-whitespace character, its JSON type, and remaining UTF-8 bytes excluding all JSON whitespace |
+| `duplicate_key`, `nonfinite`, `invalid_unicode` | Observed duplicate keys, nonfinite constants/overflow and unencodable strings; observations are not certificates of absence after an incomplete decode |
+| `analysis_limited` | True when content exceeds the 131,072-character examination cap; unexamined metadata is null/unavailable, category is `size_limit`, and no value was decoded |
+
+Other diagnostic categories are `malformed_json`, `trailing_content`,
+`duplicate_key`, `nonfinite`, `invalid_unicode`, `depth_limit`, `decoder_limit`
+and `none`. JSON root types are `object`, `array`, `string`, `number`, `boolean`
+and `null`. Custom numeric/Unicode/duplicate rejections have no invented decoder
+location. Marker presence can also occur inside quoted strings: it is not proof
+of a markdown or reasoning wrapper.
+
+The separate diagnostic decoder never returns its parsed value, searches for a
+JSON substring, strips wrappers, repairs content or changes acceptance. Its
+observations cannot upgrade an outcome. No raw prefix/suffix, completion,
+reasoning, dictionary keys, token strings, content hash or provider body is
+recorded. Examination is bounded by the accepted response-byte ceiling in
+characters; normally the gateway's stricter wire-byte bound has already applied.
+The helper adds no dependency, configuration flag or request field.
+
+The #31 offline comparison at accepted source `5e39e391` measured:
+
+| Protocol component | P1 characters / UTF-8 bytes | P2 characters / UTF-8 bytes |
+| --- | --- | --- |
+| System instruction | 1,097 / 1,097 | 2,233 / 2,233 |
+| Canonical runtime context | 1,464 / 1,464 | 5,792 / 5,792 |
+| Embedded output schema | Absent | 2,889 / 2,889 |
+| Complete system message | 2,562 / 2,562 | 8,026 / 8,026 |
+
+P1 requests a flat `FactRequest` under `outcome`/`request`: metrics, start, end,
+timezone and optional center ID, or a decline. P2 adds recipe ID/version, three
+tagged request branches plus decline, and embeds the full schema. Compare nests
+two amount-only FactRequests under `current`/`baseline`. Counting the response
+root as depth one, P1 has two object levels; P2 Overview/Breakdown have two and
+Compare has three (four container levels including its constant metrics array).
+Both use the same
+gateway payload (`model`, `messages`, `temperature`, `max_tokens`, `stream`) and
+strict parser, with no guided-JSON, response-format, reasoning or stop override.
+These size differences do **not** establish the cause of #30's nine
+`invalid_json` failures. No authoritative tokenizer was available in the pinned
+environment; no token counts were estimated or dependencies added.
+
+Local repository/service inspection did not establish the server chat template,
+thinking mode, vLLM reasoning parser, LiteLLM reasoning routing, guided decoding
+or stop configuration. Preserved successful P1 #13 client identities match the
+unchanged P1 source/context, but contain no proof of those server settings.
+They remain unknown, not assumed unchanged. #30's original responses were not
+retained, so this diagnostic addition cannot retrospectively identify their
+structure or demonstrate a live fix.
+
 ## Interpretation limits and offline validation
 
 A wrong but well-typed recipe, swapped Compare roles, valid wrong center or k
@@ -183,7 +251,7 @@ A numerically checked answer to the wrong question remains wrong.
 Run the focused network-free suite using the verified pinned interpreter:
 
 ```bash
-PYTHONPATH=tests .venv/bin/python -m unittest test_recipe_model -v
+PYTHONPATH=tests .venv/bin/python -m unittest test_recipe_model test_json_diagnostics -v
 ```
 
 Tests combine fake HTTP with real disposable synthetic SQLite, multilingual
