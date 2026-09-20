@@ -208,6 +208,7 @@ class RecipeSmokeTests(unittest.IsolatedAsyncioTestCase):
         identity = self.manifest["identities"]
         self.assertEqual(identity["context"], recipe_model.context_identity())
         for path in ("tools/recipe_smoke.py", runner.PANEL_ASSET, "tools/smoke.py", "grepbit/recipe_model.py",
+                     "grepbit/json_diagnostics.py",
                      "requirements.in", "requirements.txt", *smoke.ASSETS):
             self.assertEqual(identity["files_sha256"][path], hashlib.sha256((runner.ROOT / path).read_bytes()).hexdigest())
         self.assertEqual(identity["runtime"]["dependencies"]["httpx"], "0.28.1")
@@ -220,14 +221,19 @@ class RecipeSmokeTests(unittest.IsolatedAsyncioTestCase):
         self.assertIs(runner.smoke, smoke)
         self.assertEqual(hashlib.sha256((runner.ROOT / "tools/smoke.py").read_bytes()).hexdigest(),
                          "91de6225de4f653b23310f29fcebdba5ce91d4e35c6ea413a5bbb73563070c42")
-        self.assertEqual(hashlib.sha256((runner.ROOT / "grepbit/recipe_model.py").read_bytes()).hexdigest(),
-                         "901d558795cf8aeeb44ddca06c954013e54b6f4de25deef3d5484b858df21d7b")
         self.assertEqual(model.context_identity()["context_sha256"],
                          "70545dbc5ed67b33b907301933a5556d7575d014bcc19472119d10ba11647fc6")
-        self.assertEqual(identity["context"]["context_sha256"],
-                         "7de6ed524fa5ddaeb530038c3a7b127461a7edb557749b61ef28558d359d6b87")
-        self.assertEqual(identity["context"]["system_message_sha256"],
-                         "5893fb44fbad47c3e5b2f970e0165d0caaf062e75ac9af88dc80e6dcd4a2ffab")
+        # Diagnostic-only adapter changes must preserve the complete P2.6 protocol.
+        self.assertEqual(identity["context"], {
+            "context_version": "learningops-recipe-context-v1",
+            "output_contract": "recipe-request-json-v1",
+            "instruction_version": "recipe-selection-instruction-v1",
+            "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5",
+            "context_sha256": "7de6ed524fa5ddaeb530038c3a7b127461a7edb557749b61ef28558d359d6b87",
+            "output_contract_sha256": "ac6ca4d71fbe6a69c978231458bc6d4be7fca3f5ebbee732d4cdedad0dec9a02",
+            "instruction_sha256": "cbf9e613e6b2a8e42ff758f9b0ceed1d2b4227be1a4d5d17cea1aee62b1cb270",
+            "system_message_sha256": "5893fb44fbad47c3e5b2f970e0165d0caaf062e75ac9af88dc80e6dcd4a2ffab",
+        })
         with patch.object(smoke, "_source_identity", wraps=smoke._source_identity) as delegated:
             runner._source_identity()
         delegated.assert_called_once()
