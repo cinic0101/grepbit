@@ -22,6 +22,12 @@ not implemented and is not a fallback. Formal measurement starts at P3.
 P2.0 is [design/admission only](p2-recipes.md), not recipe execution or live
 authorization.
 
+[P2.7 recipe-runner tooling](recipe-smoke.md) has two offline gates: candidate
+implementation/review, then a fresh final manifest on the clean accepted dev
+merge commit after owner merge. A feature-branch manifest is never eligible for
+live reuse. Neither gate permits a model call; explicit live authorization and
+fresh route-policy attestations remain separate.
+
 The coding agent used to edit this repository is distinct from the model being
 evaluated. Authorization to develop code is not authorization to send fixture or
 real-data context to a model endpoint or to consume API/GPU resources for an eval.

@@ -1,0 +1,81 @@
+{
+  "panel_id": "p2-recipe-smoke-v1",
+  "order": [
+    ["E01_overview", "zh-TW"],
+    ["E02_compare", "en"],
+    ["E03_share_denominator", "ja"],
+    ["E01_overview", "en"],
+    ["E02_compare", "ja"],
+    ["E03_share_denominator", "zh-TW"],
+    ["E01_overview", "ja"],
+    ["E02_compare", "zh-TW"],
+    ["E03_share_denominator", "en"]
+  ],
+  "families": {
+    "E01_overview": {
+      "recipe_id": "overview",
+      "recipe_version": "0.1",
+      "request": {
+        "center_code": "CTR-A01",
+        "start": "2026-03-01T00:00:00+08:00",
+        "end": "2026-04-01T00:00:00+08:00",
+        "timezone": "Asia/Taipei"
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {"amount": "required", "bookings": "required", "seats": "required", "daily_amount": "optional", "category_amounts": "optional"},
+        "states": ["checked"],
+        "binding_center_id": "CA"
+      },
+      "values": {"amount": 68000, "bookings": 4, "seats": 6}
+    },
+    "E02_compare": {
+      "recipe_id": "compare",
+      "recipe_version": "0.1",
+      "request": {
+        "current": {
+          "metrics": ["confirmed_booked_amount"],
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei",
+          "center_id": null
+        },
+        "baseline": {
+          "metrics": ["confirmed_booked_amount"],
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei",
+          "center_id": null
+        }
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {"current": "required", "baseline": "required", "delta": "required", "growth": "required"},
+        "states": ["checked", "undefined"]
+      },
+      "values": {"current": 158000, "baseline": 50000, "delta": 108000, "growth": {"numerator": 54, "denominator": 25}}
+    },
+    "E03_share_denominator": {
+      "recipe_id": "breakdown",
+      "recipe_version": "0.1",
+      "request": {
+        "start": "2026-03-01T00:00:00+08:00",
+        "end": "2026-04-01T00:00:00+08:00",
+        "timezone": "Asia/Taipei",
+        "top_k": 2
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {"top_courses": "required", "all_amount": "required", "top_subtotal": "required", "share": "required"},
+        "states": ["checked", "undefined"],
+        "group": {"dimension": "course", "coverage": "top_k", "top_k": 2}
+      },
+      "values": {
+        "rows": [{"key": "K1", "value": 68000}, {"key": "K3", "value": 60000}],
+        "all_amount": 158000,
+        "top_subtotal": 128000,
+        "share": {"numerator": 64, "denominator": 79}
+      }
+    }
+  }
+}

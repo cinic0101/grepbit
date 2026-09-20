@@ -39,12 +39,15 @@ strict explicit center-code/month inputs, exact binding in the same snapshot,
 and the reused five-slot composition. **P2.5** (#24 / PR #25) accepted
 [deterministic Breakdown](docs/p2-recipes.md#p25-public-deterministic-breakdown):
 course top-k, an independently executed whole-scope denominator, exact selected
-subtotal/share and required-slot evidence. **P2.6** (#26) adds
+subtotal/share and required-slot evidence. **P2.6** (#26 / PR #27) accepted
 [bounded model recipe selection](docs/recipe-model-integration.md):
 one shared versioned prompt/contract, one proposal and one unchanged native
 recipe execution, with strict parsing and wrong-interpretation visibility.
-Offline mocks are not live model evidence; owner acceptance and recipe live
-paths remain outstanding. This does not complete P2.
+**P2.7** (#28) adds a [fixed recipe integration runner](docs/recipe-smoke.md):
+intent-first grading, separate timeout/network stops and immutable evidence for
+nine paired inputs across three families. Gate A implementation/review is
+separate from Gate B's clean accepted-commit preparation after owner merge.
+No final live manifest or live authorization is implied. This does not complete P2.
 
 The seed has 10 tables and 88 rows. There are 30 authored case descriptions:
 18 reference-SQL checks and 12 behavioral scenarios. The fixture checker still
@@ -90,6 +93,7 @@ are ignored by Git; rebuild from the committed source instead of committing a DB
 | [P1.1 fact kernel](docs/fact-kernel.md) | Explicit request contract, installation, example and bounded execution guarantees |
 | [P1 model integration](docs/model-integration.md) | Accepted adapter boundaries, smoke history and separately authorized execution |
 | [P2 recipe model integration](docs/recipe-model-integration.md) | Shared one-shot recipe contract, native dispatch, safe evidence and offline-only scope |
+| [P2 recipe integration runner](docs/recipe-smoke.md) | Fixed evaluator panel, intent-first grading, explicit stops and two-gate manifest preparation |
 | [P2 recipes v0.1](docs/p2-recipes.md) | Accepted admission matrix, offline Compare/Overview/Breakdown APIs and shared execution |
 | [Grouped amount](docs/grouped-amount.md) | One bounded observed-group primitive, source-extension isolation and coverage |
 | [LearningOps](evals/fixtures/learningops/README.md) | Schema, reviewed-for-development semantics and limitations |
@@ -101,10 +105,11 @@ are ignored by Git; rebuild from the committed source instead of committing a DB
 
 Implement on `dev`, review before merging into `main`. GitHub Issues are the
 single active-work tracker. The roadmap is not a second chronological work log.
-Track roadmap #1 and current bounded recipe interpretation work in #26;
+Track roadmap #1 and current offline recipe-runner work in #28;
 P2.0 design, P2.1 Compare and P2.2 grouping were accepted through #14 / PR #15,
 #16 / PR #17 and #18 / PR #19; P2.3 through #20 / PR #21 and public Overview
-through #22 / PR #23; deterministic Breakdown through #24 / PR #25. Accepted P1 includes
+through #22 / PR #23; deterministic Breakdown through #24 / PR #25; recipe
+interpretation through #26 / PR #27. Accepted P1 includes
 #6 / PR #7, #8 / PR #9, #11 / PR #12 and the successful smoke #13;
 the first smoke's failed envelope results remain in #10.
 P0 history is in #2, #3, #4 and merged PR #5.

@@ -1,6 +1,6 @@
 # Roadmap and phase exits
 
-Phase baseline: 2026-09-18; current status follows #13/#26. Work is on `dev`;
+Phase baseline: 2026-09-18; current status follows #13/#28. Work is on `dev`;
 promotion to `main` requires owner review. P0 and P1 are accepted at
 `6d6be30bed321806e0a2ef90fec53a1fc1118373`. The first smoke (#10) failed
 envelope validation on all 12 inputs and remains unchanged. After P1.3a
@@ -13,9 +13,12 @@ P2.2 (#18 / PR #19) accepted one observed grouped-amount primitive. P2.3
 local-failure semantics. P2.4 (#22 / PR #23) accepted public deterministic
 Overview using that same composition. P2.5 (#24 / PR #25) accepted deterministic
 Breakdown with an independent denominator and exact selected subtotal/share.
-P2.6 (#26) adds bounded one-shot recipe selection/instantiation over those APIs,
-pending owner acceptance. Offline wiring is not live recipe quality; live
-recipe evidence and the remaining P2 requirements stay open.
+P2.6 (#26 / PR #27) accepted bounded one-shot recipe selection/instantiation.
+P2.7 (#28) adds a fixed evaluator runner with intent-first grading and separate
+timeout/network stops. Gate A implementation/review and Gate B accepted-commit
+preparation are distinct; the final manifest waits for owner merge.
+Offline wiring is not live recipe quality; live recipe evidence and the
+remaining P2 requirements stay open.
 All P3-P5 delivery remains open. P2 is not promoted to main.
 GitHub Issues own current status; this document owns phase meaning and exits.
 
@@ -57,9 +60,10 @@ course selection, an independently executed whole amount and two exact,
 input-linked derivations. P2.6 adds
 [one shared model recipe contract and adapter](recipe-model-integration.md):
 strict native validation, fixed dispatch, native evidence and no hidden repair.
-The proposed next nine-input/three-family panel is not frozen or authorized.
-Runner/manifest preparation and owner-authorized recipe live paths follow
-separately; E10 remains an injected operational control, not a model question.
+[P2.7](recipe-smoke.md) implements the fixed nine-input/three-family evaluator
+panel without changing the adapter. Candidate manifests are not live manifests;
+accepted-commit preparation and owner-authorized live execution follow separate
+gates. E10 remains an injected operational control, not a model question.
 These offline slices do not complete the P2 exit above.
 
 ## Historical P0 delivery scope

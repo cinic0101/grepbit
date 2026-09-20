@@ -1,9 +1,9 @@
 # P2.6: bounded recipe interpretation
 
-Issue #26 adds one model-facing route over the accepted native
-[Overview, Compare and Breakdown APIs](p2-recipes.md). Implementation and offline
-fake-transport checks are not owner acceptance, live model validation or the P2
-exit. This is separate from the unchanged [P1 scalar contract](model-integration.md).
+Issue #26 / PR #27 accepted one model-facing route over the native
+[Overview, Compare and Breakdown APIs](p2-recipes.md). Offline fake-transport
+checks are not live model validation or the P2 exit. This is separate from the
+unchanged [P1 scalar contract](model-integration.md).
 
 ```text
 question + one shared English instruction and all three recipe meanings
@@ -193,12 +193,12 @@ Protected P1 gateway/envelope/logging/runner tests remain separate unchanged
 regressions. Mock declines do not establish Gemma's refusal behavior; translated
 variants are not independent semantic families.
 
-## Proposed next panel only
+## Separately scoped runner and live gates
 
-After acceptance, a separately scoped follow-up may prepare runner reuse and a
-manifest for **E01 / E02 / E03 x zh-TW / en / ja: 9 inputs, 3 semantic families**,
-with one common prompt and independent one-shot attempts. This is a proposal,
-not a frozen, authorized or executed panel. E10 remains an injected operational
-control, never a model question. The historical P1 runner and manifest pins are
-unchanged. No live preparation, new authorization, scheduler, retry panel,
-synthesis, clarification/resume, broad quality bank or PostgreSQL work is added.
+[P2.7 (#28)](recipe-smoke.md) implements the fixed evaluator panel
+**E01 / E02 / E03 x zh-TW / en / ja: 9 inputs, 3 semantic families**, using this
+unchanged adapter/context and independent one-shot attempts. Its candidate
+manifests are test evidence only. Final accepted-commit preparation waits for
+owner merge, and live execution still needs separate authorization. E10 remains
+an injected operational control, never a model question. P1's historical runner
+and pins remain unchanged; no P3, synthesis or PostgreSQL capability is implied.
