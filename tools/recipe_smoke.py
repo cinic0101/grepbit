@@ -10,11 +10,14 @@ from __future__ import annotations
 import asyncio
 from collections import Counter
 from collections.abc import Callable, Mapping
+from copy import deepcopy
 from fractions import Fraction
 import math
+import os
 from pathlib import Path
 import re
 import sqlite3
+import stat
 import subprocess
 import sys
 import time
@@ -73,13 +76,16 @@ def settings() -> dict[str, object]:
 
 def stop_policy() -> dict[str, object]:
     return {
-        "version": "p2.7-stops-v1", "network_codes": sorted(NETWORK_CODES),
+        "version": "p2.7-stops-v2", "network_codes": sorted(NETWORK_CODES),
         "consecutive_network_limit": 2, "timeout_code": "timeout", "consecutive_timeout_limit": 2,
         "reset": "Each streak resets on a result outside its own code set.",
         "immediate_adapter_stops": ["configuration_failure", "envelope_incompatibility", "budget_exhausted"],
         "runner_stops": ["panel_budget", "attempt_budget", "manifest_drift", "database_drift",
                          "source_identity_failure", "artifact_conflict", "artifact_io", "leakage_risk"],
         "timeout_origin": "Unknown; timeout is not evidence of a network failure.",
+        "completion_commit": "Atomic report replacement after terminal payload fsync and final validity/deadline admission.",
+        "panel_deadline": "Cooperative limit through publication preparation, not publication return or CLI acknowledgement.",
+        "elapsed_sample": "Before final checkpoint/terminal preparation, not publication or acknowledgement time.",
     }
 
 
@@ -364,7 +370,7 @@ def _finish_pending(report: dict, reason: str) -> None:
     _summarize(report)
 
 
-def _persist(artifacts, report: dict, client: GatewayClient | None = None) -> None:
+def _safe_report(report: dict, client: GatewayClient | None) -> dict:
     _summarize(report)
     safe = client.safe_export(report) if client else report
     if safe != report:
@@ -381,7 +387,11 @@ def _persist(artifacts, report: dict, client: GatewayClient | None = None) -> No
         fields = {"field_names": names}
         if client.safe_export(fields) != fields:
             raise RecipeSmokeError("leakage_risk")
-    artifacts.persist(safe)
+    return safe
+
+
+def _persist(artifacts, report: dict, client: GatewayClient | None = None) -> None:
+    artifacts.persist(_safe_report(report, client))
 
 
 def prepare(database: Path, output_dir: Path, *, accepted_commit: str | None = None) -> dict:
@@ -409,6 +419,55 @@ def _unchanged(database: Path, manifest: dict) -> None:
         raise RecipeSmokeError("database_drift")
 
 
+def _complete_panel(
+    artifacts: smoke._Artifacts, report: dict, client: GatewayClient | None, *,
+    database: Path, manifest: dict, manifest_path: Path | None,
+    started: float, clock: Callable[[], float],
+) -> dict:
+    target = artifacts.directory / "report.json"
+    pending = artifacts.directory / "terminal.next.json"
+    try:
+        candidate = deepcopy(report)
+        candidate["status"] = "complete"
+        candidate = _safe_report(candidate, client)
+        smoke._no_symlinks(artifacts.directory)
+        snapshot = artifacts._write("terminal-candidate.json", candidate)
+        info = snapshot.lstat()
+        if not stat.S_ISREG(info.st_mode):
+            raise RecipeSmokeError("artifact_conflict")
+        candidate_inode = (info.st_dev, info.st_ino)
+        os.link(snapshot, pending)
+        smoke.validate_manifest(manifest_path, manifest)
+        _unchanged(database, manifest)
+        smoke._no_symlinks(artifacts.directory)
+        for path, expected_inode in ((target, artifacts.report_inode), (pending, candidate_inode)):
+            info = path.lstat()
+            if not stat.S_ISREG(info.st_mode) or (info.st_dev, info.st_ino) != expected_inode:
+                raise RecipeSmokeError("artifact_conflict")
+        if _remaining(started, clock) <= 0:
+            raise RecipeSmokeError("panel_budget")
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        report.update(status="incomplete", stop_reason="interrupted", error_code="interrupted")
+    except (RecipeSmokeError, smoke.SmokeError) as exc:
+        report.update(status="stopped", stop_reason=exc.code, error_code=exc.code)
+    except OSError as exc:
+        code = "artifact_conflict" if isinstance(exc, FileExistsError) else "artifact_io"
+        report.update(status="stopped", stop_reason=code, error_code=code)
+    except _INTERNAL_ERRORS:
+        report.update(status="incomplete", stop_reason="internal_failure", error_code="internal_failure")
+    else:
+        # Publication is the commit point; no revalidation or compensating write follows it.
+        try:
+            os.replace(pending, target)
+        except OSError:
+            raise smoke.SmokeError("artifact_io") from None
+        return candidate
+    elapsed = clock() - started
+    report["elapsed_seconds"] = round(elapsed, 6) if math.isfinite(elapsed) and elapsed >= 0 else None
+    _persist(artifacts, report, client)
+    return report
+
+
 async def run_panel(
     database: Path, output_dir: Path, *, manifest_path: Path | None,
     client: GatewayClient | None = None, origin: str = "mock",
@@ -426,6 +485,7 @@ async def run_panel(
     active = None
     attempts_before = 0
     send_started = False
+    panel_complete = False
     try:
         smoke.validate_manifest(manifest_path, manifest)
         if origin == "live":
@@ -507,7 +567,7 @@ async def run_panel(
                 raise RecipeSmokeError("consecutive_timeouts")
             if _remaining(started, clock) <= 0:
                 raise RecipeSmokeError("panel_budget")
-        report["status"] = "complete"
+        panel_complete = True
     except (KeyboardInterrupt, asyncio.CancelledError):
         report.update(status="incomplete", stop_reason="interrupted", error_code="interrupted")
     except (RecipeSmokeError, smoke.SmokeError, ModelError) as exc:
@@ -534,14 +594,9 @@ async def run_panel(
         report["elapsed_seconds"] = round(elapsed, 6) if math.isfinite(elapsed) and elapsed >= 0 else None
         _finish_pending(report, report["stop_reason"] or "panel_complete")
         _persist(artifacts, report, client)
-        if report["status"] == "complete":
-            elapsed = clock() - started
-            reason = ("invalid_configuration" if not math.isfinite(elapsed) or elapsed < 0
-                      else "panel_budget" if elapsed >= PANEL_SECONDS else None)
-            if reason:
-                report.update(status="stopped", stop_reason=reason, error_code=reason,
-                              elapsed_seconds=round(elapsed, 6) if math.isfinite(elapsed) and elapsed >= 0 else None)
-                _persist(artifacts, report, client)
+    if panel_complete and report["stop_reason"] is None:
+        return _complete_panel(artifacts, report, client, database=database, manifest=manifest,
+                               manifest_path=manifest_path, started=started, clock=clock)
     return report
 
 

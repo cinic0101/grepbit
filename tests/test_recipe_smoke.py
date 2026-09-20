@@ -1,13 +1,15 @@
 """Gate A runner regressions: disposable artifacts, fake HTTP, no live authorization."""
 import asyncio
-from contextlib import closing, redirect_stderr, redirect_stdout
+from contextlib import closing, contextmanager, ExitStack, redirect_stderr, redirect_stdout
 import copy
 from dataclasses import replace
 from datetime import timedelta, timezone
+import errno
 from fractions import Fraction
 import hashlib
 import io
 import json
+import os
 from pathlib import Path
 import sqlite3
 import stat
@@ -124,6 +126,35 @@ class RecipeSmokeTests(unittest.IsolatedAsyncioTestCase):
 
     def assert_private(self, value):
         self.assertFalse(any(fragment in str(value) for fragment in (BASE, KEY, CANARY, "recipe-smoke-private.invalid")))
+
+    def assert_terminal_evidence(self, report):
+        self.assert_private(report)
+        self.assertEqual((len(self.sent), len(report["results"]), report["client_http_attempts"],
+                          report["attempt_budget_used"], report["possible_in_flight_attempts"]), (9, 9, 9, 9, 0))
+        self.assertEqual(report["live_model_attempts"], 0)
+        for row in report["results"]:
+            self.assertEqual((row["status"], row["client_http_attempts"], row["attempt_may_be_in_flight"]),
+                             ("completed", 1, False))
+            self.assertEqual(set(row["grading"]), set(runner.GRADING_STAGES))
+            if row["outcome"] == "correct":
+                self.assertEqual(set(row["grading"].values()), {"passed"})
+        for path in self.output.glob("checkpoint-*.json"):
+            snapshot = json.loads(path.read_text())
+            self.assert_private(snapshot)
+            self.assertNotEqual(snapshot["status"], "complete",
+                                "An ordinary checkpoint must never publish terminal success")
+
+    def assert_mock_cli_exit(self, outcome, expected):
+        behavior = {"side_effect": outcome} if isinstance(outcome, BaseException) else {"return_value": outcome}
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with (patch.object(runner, "prepare", **behavior),
+              redirect_stdout(stdout), redirect_stderr(stderr)):
+            code = runner.main(["--db", str(self.database), "--output-dir", str(self.root / "unused-cli")])
+        self.assertEqual(code, expected)
+        self.assert_private(stdout.getvalue() + stderr.getvalue())
+        if not isinstance(outcome, BaseException):
+            self.assertEqual(json.loads(stdout.getvalue())["origin"], "mock")
+        self.loader.assert_not_called()
 
     def assert_tail(self, report, start, reason):
         self.assertEqual(len(report["results"]), 9)
@@ -285,7 +316,11 @@ class RecipeSmokeTests(unittest.IsolatedAsyncioTestCase):
             self.assertNotIn(forbidden, systems[0])
         snapshots = sorted(self.output.glob("checkpoint-*.json"))
         self.assertEqual(len(snapshots), 20)
-        self.assertEqual((self.output / "report.json").stat().st_ino, snapshots[-1].stat().st_ino)
+        self.assert_terminal_evidence(report)
+        self.assertEqual((self.output / "report.json").stat().st_ino,
+                         (self.output / "terminal-candidate.json").stat().st_ino)
+        self.assertNotEqual((self.output / "report.json").stat().st_ino, snapshots[-1].stat().st_ino)
+        self.assertFalse((self.output / "terminal.next.json").exists())
         self.assertEqual(self.read_report(), report)
         self.assertEqual(self.database.read_bytes(), before)
         for path in self.output.iterdir():
@@ -397,21 +432,10 @@ class RecipeSmokeTests(unittest.IsolatedAsyncioTestCase):
                          ["false_refusal", "invalid_output", "wrong_request"])
         self.assertEqual(report["summary"]["outcomes"], {"false_refusal": 1, "invalid_output": 1, "wrong_request": 1, "correct": 6})
         self.assertEqual(len(self.sent), 9)
-        stdout = io.StringIO()
-
-        def completed(coroutine):
-            coroutine.close()
-            return report
-
-        with patch.object(runner.asyncio, "run", side_effect=completed), redirect_stdout(stdout):
-            code = runner.main(["--db", str(self.database), "--output-dir", str(self.root / "unused"),
-                                "--live", "--manifest", str(self.manifest_path),
-                                "--env-file", str(self.root / "never-read.env"),
-                                "--gateway-retries", "disabled", "--gateway-fallback", "disabled",
-                                "--gateway-cache", "disabled"])
-        self.assertEqual(code, 0)
-        self.assertEqual(json.loads(stdout.getvalue())["origin"], "mock")
-        self.loader.assert_not_called()
+        self.assert_terminal_evidence(report)
+        self.assertEqual(self.read_report(), report)
+        self.assertEqual(json.loads((self.output / "terminal-candidate.json").read_text()), report)
+        self.assert_mock_cli_exit(report, 0)
 
     async def test_missing_pack_without_adapter_error_stops_internal_failure(self):
         original = runner.interpret_recipe_and_execute
@@ -555,39 +579,258 @@ class RecipeSmokeTests(unittest.IsolatedAsyncioTestCase):
                 if attempts:
                     self.assertEqual(report["results"][0]["error_code"], "timeout")
 
-    async def test_final_complete_checkpoint_crossing_deadline_is_stopped_and_cli_nonzero(self):
-        clock, complete_writes = Clock(), []
-        persist = smoke._Artifacts.persist
+    async def test_terminal_stage_faults_never_publish_complete(self):
+        # R1 replaces publish-then-correct: complete may exist only in an unpublished candidate.
+        write, fdopen, atomic = smoke._Artifacts._write, os.fdopen, os.replace
+        for fault, expires in (("write", None), ("flush", None), ("fsync", None),
+                               ("deadline", 720.0), ("deadline", 721.0)):
+            with self.subTest(fault=fault, expires=expires):
+                clock, stages, faults, prior = Clock(), [], [], []
 
-        def last_write(artifacts, report):
-            persist(artifacts, report)
-            if report["status"] == "complete":
-                complete_writes.append(clock.value)
-                clock.value = 720
+                def fail(*args, **kwargs):
+                    faults.append(fault)
+                    raise OSError(errno.ENOSPC, CANARY)
 
-        with patch.object(smoke._Artifacts, "persist", new=last_write):
-            report = await self.run_panel(clock=clock)
-        self.assertEqual(complete_writes, [0.0])
-        self.assertEqual((report["status"], report["stop_reason"], report["error_code"]),
-                         ("stopped", "panel_budget", "panel_budget"))
-        self.assertEqual((report["client_http_attempts"], len(self.sent), report["elapsed_seconds"]), (9, 9, 720))
-        self.assertEqual(report["summary"]["outcomes"], {"correct": 9})
-        self.assertEqual(self.read_report(), report)
-        snapshots = sorted(self.output.glob("checkpoint-*.json"))
-        self.assertEqual(json.loads(snapshots[-2].read_text())["status"], "complete")
-        self.assertEqual(json.loads(snapshots[-1].read_text())["stop_reason"], "panel_budget")
+                @contextmanager
+                def faulty_stream(*args, **kwargs):
+                    with fdopen(*args, **kwargs) as stream:
+                        proxy = Mock(wraps=stream)
+                        getattr(proxy, fault).side_effect = fail
+                        yield proxy
 
-        def completed(coroutine):
-            coroutine.close()
-            return report
+                def staged(artifacts, name, data):
+                    if name != "terminal-candidate.json":
+                        return write(artifacts, name, data)
+                    stages.append(name)
+                    saved = self.read_report()
+                    self.assert_terminal_evidence(saved)
+                    self.assertNotEqual(saved["status"], "complete")
+                    prior.append(copy.deepcopy(saved["results"]))
+                    with ExitStack() as injected:
+                        if fault in ("write", "flush"):
+                            injected.enter_context(patch.object(os, "fdopen", side_effect=faulty_stream))
+                        elif fault == "fsync":
+                            injected.enter_context(patch.object(os, "fsync", side_effect=fail))
+                        path = write(artifacts, name, data)
+                    clock.value = expires
+                    return path
 
-        stdout = io.StringIO()
-        with patch.object(runner.asyncio, "run", side_effect=completed), redirect_stdout(stdout):
-            code = runner.main(["--db", str(self.database), "--output-dir", str(self.root / "unused"),
-                                "--live"])
-        self.assertEqual(code, 1)
-        self.assertEqual(json.loads(stdout.getvalue())["status"], "stopped")
-        self.loader.assert_not_called()
+                def no_publication(source, target):
+                    self.assertNotEqual(Path(source).name, "terminal.next.json")
+                    return atomic(source, target)
+
+                with (patch.object(smoke._Artifacts, "_write", new=staged),
+                      patch.object(os, "replace", side_effect=no_publication)):
+                    report = await self.run_panel(clock=clock)
+                reason = "panel_budget" if fault == "deadline" else "artifact_io"
+                self.assertEqual((report["status"], report["stop_reason"]), ("stopped", reason))
+                self.assertEqual(stages, ["terminal-candidate.json"])
+                self.assertEqual(faults, [] if fault == "deadline" else [fault])
+                durable = self.read_report()
+                self.assert_terminal_evidence(durable)
+                self.assertNotEqual(durable["status"], "complete")
+                self.assertEqual(durable["results"], prior[0])
+                self.assertEqual(durable["summary"]["outcomes"], {"correct": 9})
+                self.assertEqual(durable, report)
+                if fault == "deadline":
+                    candidate = json.loads((self.output / "terminal-candidate.json").read_text())
+                    self.assertEqual(candidate["status"], "complete")
+                    self.assertEqual(candidate["elapsed_seconds"], 0.0)
+                self.assert_mock_cli_exit(report, 1)
+
+    async def test_terminal_deadline_with_persistent_enospc_keeps_prior_report_safe(self):
+        write, open_file, atomic = smoke._Artifacts._write, os.open, os.replace
+        clock, armed, rejected, prior = Clock(), [False], [], []
+
+        def staged(artifacts, name, data):
+            path = write(artifacts, name, data)
+            if name == "terminal-candidate.json":
+                prior.append((self.output / "report.json").read_bytes())
+                self.assertNotEqual(self.read_report()["status"], "complete")
+                clock.value = 720.0
+                armed[0] = True
+            return path
+
+        def disk_full(path, flags, *args, **kwargs):
+            if armed[0] and flags & os.O_CREAT:
+                rejected.append(Path(path).name)
+                raise OSError(errno.ENOSPC, CANARY)
+            return open_file(path, flags, *args, **kwargs)
+
+        def no_publication(source, target):
+            self.assertNotEqual(Path(source).name, "terminal.next.json")
+            return atomic(source, target)
+
+        with (patch.object(smoke._Artifacts, "_write", new=staged),
+              patch.object(os, "open", side_effect=disk_full),
+              patch.object(os, "replace", side_effect=no_publication)):
+            try:
+                outcome = await self.run_panel(clock=clock)
+            except (runner.RecipeSmokeError, smoke.SmokeError) as error:
+                self.assertEqual(error.code, "artifact_io")
+                outcome = error
+        self.assertTrue(armed[0])
+        self.assertEqual(len(rejected), 1, "Diagnostic writes are persistent failures, not retries until success")
+        self.assertTrue(rejected[0].startswith("checkpoint-"))
+        self.assertEqual((self.output / "report.json").read_bytes(), prior[0])
+        durable = self.read_report()
+        self.assert_terminal_evidence(durable)
+        self.assertEqual(durable["status"], "incomplete")
+        self.assertEqual(durable["summary"]["outcomes"], {"correct": 9})
+        self.assertEqual(json.loads((self.output / "terminal-candidate.json").read_text())["status"], "complete")
+        if isinstance(outcome, BaseException):
+            self.assert_mock_cli_exit(outcome, 2)
+        else:
+            self.assertNotEqual(outcome["status"], "complete")
+            self.assert_mock_cli_exit(outcome, 1)
+
+    async def test_terminal_publication_commit_and_interruption_boundaries(self):
+        write, link, atomic = smoke._Artifacts._write, os.link, os.replace
+        lstat, unlink = Path.lstat, os.unlink
+        for fault in ("none", "replace_failure", "before_interrupt", "late_return", "after_interrupt"):
+            with self.subTest(fault=fault):
+                clock, committed, publications, samples, prior, candidates = Clock(), [False], [], [], [], []
+
+                def now():
+                    self.assertFalse(committed[0], "No deadline check may follow atomic publication")
+                    samples.append(clock.value)
+                    return clock.value
+
+                def staged(artifacts, name, data):
+                    self.assertFalse(committed[0], "No compensating checkpoint may follow publication")
+                    path = write(artifacts, name, data)
+                    if name == "terminal-candidate.json":
+                        clock.value = 7.0
+                        candidates.append(path.read_bytes())
+                    return path
+
+                def linked(source, target):
+                    result = link(source, target)
+                    if Path(target).name == "terminal.next.json":
+                        clock.value = 10.0
+                    return result
+
+                def guarded_lstat(path, *args, **kwargs):
+                    self.assertFalse(committed[0], "No post-publication ownership recheck")
+                    return lstat(path, *args, **kwargs)
+
+                def guarded_unlink(path, *args, **kwargs):
+                    self.assertFalse(committed[0], "No mandatory post-publication cleanup")
+                    return unlink(path, *args, **kwargs)
+
+                def publish(source, target):
+                    if Path(source).name != "terminal.next.json":
+                        return atomic(source, target)
+                    publications.append((Path(source), Path(target)))
+                    prior.append((self.output / "report.json").read_bytes())
+                    self.assertNotEqual(self.read_report()["status"], "complete")
+                    self.assertEqual(samples[-1], 10.0, "Admission must follow staging and pending-link preparation")
+                    if fault == "replace_failure":
+                        raise OSError(errno.ENOSPC, CANARY)
+                    if fault == "before_interrupt":
+                        raise KeyboardInterrupt(CANARY)
+                    result = atomic(source, target)
+                    committed[0] = True
+                    if fault == "late_return":
+                        clock.value = 721.0
+                    if fault == "after_interrupt":
+                        raise KeyboardInterrupt(CANARY)
+                    return result
+
+                with (patch.object(smoke._Artifacts, "_write", new=staged),
+                      patch.object(os, "link", side_effect=linked),
+                      patch.object(os, "replace", side_effect=publish),
+                      patch.object(Path, "lstat", new=guarded_lstat),
+                      patch.object(os, "unlink", side_effect=guarded_unlink)):
+                    try:
+                        outcome = await self.run_panel(clock=now)
+                    except (runner.RecipeSmokeError, smoke.SmokeError, KeyboardInterrupt) as error:
+                        outcome = error
+                self.assertEqual(publications, [(self.output / "terminal.next.json", self.output / "report.json")])
+                durable = self.read_report()
+                self.assert_terminal_evidence(durable)
+                self.assertEqual(durable["summary"]["outcomes"], {"correct": 9})
+                self.assertEqual(durable["results"], json.loads(prior[0])["results"])
+                self.assertEqual((self.output / "terminal-candidate.json").read_bytes(), candidates[0])
+                if fault in ("replace_failure", "before_interrupt"):
+                    self.assertFalse(committed[0])
+                    self.assertNotEqual(durable["status"], "complete")
+                    self.assertEqual((self.output / "report.json").read_bytes(), prior[0])
+                    if fault == "replace_failure":
+                        self.assertIsInstance(outcome, (runner.RecipeSmokeError, smoke.SmokeError))
+                        self.assertEqual(outcome.code, "artifact_io")
+                        self.assert_mock_cli_exit(outcome, 2)
+                    else:
+                        self.assertIsInstance(outcome, KeyboardInterrupt)
+                        self.assert_mock_cli_exit(outcome, 130)
+                else:
+                    self.assertTrue(committed[0])
+                    self.assertEqual((durable["status"], durable["elapsed_seconds"]), ("complete", 0.0))
+                    self.assertEqual((self.output / "report.json").read_bytes(), candidates[0])
+                    self.assertEqual((self.output / "report.json").stat().st_ino,
+                                     (self.output / "terminal-candidate.json").stat().st_ino)
+                    self.assertFalse((self.output / "terminal.next.json").exists())
+                    if fault == "after_interrupt":
+                        self.assertIsInstance(outcome, KeyboardInterrupt)
+                        self.assert_mock_cli_exit(outcome, 130)
+                    else:
+                        self.assertEqual(outcome, durable)
+                        self.assert_mock_cli_exit(outcome, 0)
+                self.assertEqual(runner.stop_policy()["version"], "p2.7-stops-v2")
+
+    async def test_terminal_stage_names_and_owned_links_cannot_be_replaced(self):
+        write, link = smoke._Artifacts._write, os.link
+        for fault in ("candidate_exists", "pending_exists", "owned_report", "pending_identity"):
+            with self.subTest(fault=fault):
+                foreign = self.root / f"foreign-{fault}.json"
+                sentinel = b'{"sentinel":"untouched"}\n'
+                foreign.write_bytes(sentinel)
+
+                def respond(request):
+                    if len(self.sent) == 9 and fault in ("candidate_exists", "pending_exists"):
+                        name = "terminal-candidate.json" if fault == "candidate_exists" else "terminal.next.json"
+                        with (self.output / name).open("xb") as stream:
+                            stream.write(sentinel)
+                    return httpx.Response(200, json=envelope(self.wire(request)))
+
+                def staged(artifacts, name, data):
+                    path = write(artifacts, name, data)
+                    if name == "terminal-candidate.json" and fault == "owned_report":
+                        foreign.write_bytes((self.output / "report.json").read_bytes())
+                        (self.output / "report.json").unlink()
+                        link(foreign, self.output / "report.json")
+                    return path
+
+                def linked(source, target):
+                    result = link(source, target)
+                    if Path(target).name == "terminal.next.json" and fault == "pending_identity":
+                        Path(target).unlink()
+                        link(foreign, target)
+                    return result
+
+                with (patch.object(smoke._Artifacts, "_write", new=staged),
+                      patch.object(os, "link", side_effect=linked)):
+                    try:
+                        outcome = await self.run_panel(respond)
+                    except (runner.RecipeSmokeError, smoke.SmokeError) as error:
+                        self.assertEqual(error.code, "artifact_conflict")
+                        outcome = error
+                durable = self.read_report()
+                self.assert_terminal_evidence(durable)
+                self.assertNotEqual(durable["status"], "complete")
+                self.assertEqual(durable["summary"]["outcomes"], {"correct": 9})
+                if fault == "owned_report":
+                    self.assertEqual((self.output / "report.json").read_bytes(), foreign.read_bytes())
+                    self.assertEqual((self.output / "report.json").stat().st_ino, foreign.stat().st_ino)
+                else:
+                    name = "terminal-candidate.json" if fault == "candidate_exists" else "terminal.next.json"
+                    self.assertEqual((self.output / name).read_bytes(), sentinel)
+                    self.assertEqual(foreign.read_bytes(), sentinel)
+                if isinstance(outcome, BaseException):
+                    self.assert_mock_cli_exit(outcome, 2)
+                else:
+                    self.assertEqual(outcome["stop_reason"], "artifact_conflict")
+                    self.assert_mock_cli_exit(outcome, 1)
 
     async def test_second_question_resolution_must_match_pinned_text_metadata_and_count(self):
         original = runner.panel_inputs

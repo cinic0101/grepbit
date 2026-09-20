@@ -84,7 +84,7 @@ output tokens. Per-input total allowance is at most 60 seconds; panel allowance
 is 720 seconds. Accepted 4096/32768/131072-byte input/request/response bounds and
 the 16 MiB exact-synthetic-database bound remain in force.
 
-`p2.7-stops-v1` counts only `transport_error`, `gateway_error` and `rate_limited`
+`p2.7-stops-v2` counts only `transport_error`, `gateway_error` and `rate_limited`
 as network-like failures. Two consecutive such codes stop as
 `consecutive_network_failures`. Separately, two consecutive `timeout` codes stop
 as `consecutive_timeouts`. A result outside a streak's own code set resets that
@@ -95,8 +95,12 @@ Timeout origin remains unknown and may include local post-model work.
 Immediate adapter stops are configuration, envelope incompatibility and
 response/token/global-budget exhaustion. Manifest/source/database drift,
 panel/attempt limits and artifact/leakage safety failures also stop the runner.
-Final report persistence is included in the panel deadline check; a late
-completed report is finalized as stopped rather than operationally complete.
+The cooperative panel limit includes calls, native execution, grading, ordinary
+checkpoints and preparing/flushing the terminal payload. Final admission occurs
+after that preparation, immediately before atomic publication; the publication
+commits the eligible result. Its scheduling/syscall return latency and later CLI
+acknowledgement do not trigger a new deadline check or retract the committed
+report. This is not a larger timeout or a check only before the heavy write.
 Wrong intent, wrong coverage/value, false refusal and ordinary malformed
 model-content JSON/schema do not independently stop it.
 
@@ -179,6 +183,49 @@ Immutable exclusive checkpoints surround each possible send; report.json is the
 latest owned atomic link. Reservations retain `in_progress` and possible-in-flight
 state on interruption, rather than proving no request occurred. Do not resume
 an interrupted panel as another authorized run. Preserve all failed evidence.
+
+### Terminal publication and the R1 correction
+
+The authoritative report remains non-complete while all completed inputs,
+semantic grades and actual attempt counts are checkpointed. A P2-local helper
+then safe-exports a separate prospective complete report to
+`terminal-candidate.json` using the unchanged exclusive writer, flush and fsync.
+It prepares an exclusive `terminal.next.json` hard link in the same directory,
+rechecks manifest/source/database identity and owned regular-file link identity,
+and performs the final monotonic deadline admission check.
+
+Only then does one atomic replacement of `report.json` commit completion.
+There is no required checkpoint, cleanup, lstat or deadline revalidation after
+that replacement. P1's complete `persist()` path is deliberately not used for
+this commit: it performs additional filesystem work after updating the report
+link. `tools/smoke.py` remains unchanged.
+
+A staged candidate is **not an authoritative completion or checkpoint**, even
+when its prospective payload says complete. Before publication, failure or
+interruption leaves the previous non-complete report valid. A diagnostic
+stopped/error checkpoint is attempted when safe, but correctness does not depend
+on that write succeeding; persistent ENOSPC must not reveal an earlier complete
+report. Unpublished candidates and conflicting files remain as evidence, with
+no overwrite, deletion, retry or resend of completed inputs.
+
+After a valid atomic replacement, interruption or CLI notification failure does
+not invalidate the committed report. CLI acknowledgement and publication are
+different events. No hard filesystem/syscall deadline, general power-loss
+durability or arbitrary network-filesystem guarantee is claimed.
+
+For a complete report, `elapsed_seconds` is a sample taken before the final
+non-complete checkpoint and terminal preparation, not an exact publication,
+return or acknowledgement timestamp. The written candidate is not mutated to
+invent such a timestamp. Failure diagnostics sample elapsed time again when
+possible.
+
+This explicit commit boundary supersedes the unsafe publish/check/compensate
+sequence identified in PR #29 R1. The stop-policy identity changes from
+`p2.7-stops-v1` to `p2.7-stops-v2`; report/manifest field formats remain v1.
+Source and policy hashes require fresh candidate manifests; historical pins and
+the original reproducer remain unchanged. Regression tests replace the old
+penultimate-complete-checkpoint expectation with the non-complete-until-commit
+invariant, including deadline expiry plus persistently failing diagnostic writes.
 
 Per-input records retain question reference/hash, status, attempts, sanitized
 P2.6 evidence, proposal/native request, pack status, ordered grading, outcome,
