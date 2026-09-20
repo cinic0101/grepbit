@@ -204,7 +204,13 @@ class RecipeModelTests(unittest.IsolatedAsyncioTestCase):
                     observed = await self.invoke(question=question, content=json.dumps(proposal(recipe)))
                     self.assertIsNone(observed.result.error)
                     payload = json.loads(observed.calls[0].content)
-                    self.assertEqual(set(payload), {"model", "messages", "temperature", "max_tokens", "stream"})
+                    self.assertEqual(set(payload), {"model", "messages", "temperature", "max_tokens",
+                                                    "stream", "response_format"})
+                    self.assertEqual(payload["response_format"], {
+                        "type": "json_schema", "json_schema": {
+                            "name": "grepbit_recipe_request", "schema": recipe_model.output_schema(),
+                        },
+                    })
                     self.assertEqual((payload["model"], payload["temperature"], payload["max_tokens"], payload["stream"]),
                                      (MODEL, 0, 2048, False))
                     self.assertEqual(payload["messages"], recipe_model.messages_for(question))
@@ -251,11 +257,9 @@ class RecipeModelTests(unittest.IsolatedAsyncioTestCase):
         before = model.context_identity()
         for key, value in expected.items():
             self.assertEqual(before[key], value)
-        for path, digest in (
-            ("grepbit/model.py", "c0fad390d0fe3e685b342f9b5a99348b5c412f631a007c3caa03de02e1d5403c"),
-            ("grepbit/gateway.py", "99999c0afda0bbc308609becb8a31c02ad93f1a4d6e95b57b65fe2837d2daf98"),
-        ):
-            self.assertEqual(hashlib.sha256((ROOT / path).read_bytes()).hexdigest(), digest)
+        self.assertEqual(hashlib.sha256((ROOT / "grepbit/model.py").read_bytes()).hexdigest(),
+                         "c0fad390d0fe3e685b342f9b5a99348b5c412f631a007c3caa03de02e1d5403c")
+        # The optional gateway extension is guarded by exact P1 wire tests, not a source repin.
         document = envelope()
         document["choices"][0]["message"]["role"] = "user"
         with ExitStack() as stack:

@@ -13,13 +13,15 @@ from .breakdown import BreakdownAnalysisPack, BreakdownRequest, execute_breakdow
 from .catalog import LEARNINGOPS, PROFILE_ID
 from .compare import CompareAnalysisPack, CompareRequest, execute_compare
 from .contracts import ExecutionLimits, KernelError
-from .gateway import CALL_TIMEOUT_SECONDS, MODEL, GatewayClient, ModelError
+from .gateway import CALL_TIMEOUT_SECONDS, MODEL, GatewayClient, ModelError, json_schema_response_format
 from .json_diagnostics import invalid_json_fingerprint
 from .overview import OverviewAnalysisPack, OverviewRequest, execute_overview
 
 CONTEXT_VERSION = "learningops-recipe-context-v1"
 OUTPUT_CONTRACT = "recipe-request-json-v1"
 INSTRUCTION_VERSION = "recipe-selection-instruction-v1"
+STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v1"
+STRUCTURED_OUTPUT_SCHEMA_NAME = "grepbit_recipe_request"
 _NativeRequest = OverviewRequest | CompareRequest | BreakdownRequest
 _NativePack = OverviewAnalysisPack | CompareAnalysisPack | BreakdownAnalysisPack
 _KERNEL_ERRORS = {
@@ -168,6 +170,22 @@ def context_identity() -> dict[str, str]:
     return _identity(runtime_context())
 
 
+def _structured_output(schema: object) -> tuple[dict[str, object], dict[str, str]]:
+    constraint = {"name": STRUCTURED_OUTPUT_SCHEMA_NAME, "schema": schema}
+    wrapper = json_schema_response_format(constraint)
+    identity = {
+        "version": STRUCTURED_OUTPUT_VERSION, "mode": "json_schema",
+        "schema_name": STRUCTURED_OUTPUT_SCHEMA_NAME,
+        "schema_sha256": hashlib.sha256(protocol.canonical_json(schema).encode()).hexdigest(),
+        "response_format_sha256": hashlib.sha256(protocol.canonical_json(wrapper).encode()).hexdigest(),
+    }
+    return constraint, identity
+
+
+def structured_output_identity() -> dict[str, str]:
+    return _structured_output(output_schema())[1]
+
+
 def _messages(question: str, context: dict[str, object]) -> list[dict[str, str]]:
     if not isinstance(question, str):
         raise ModelError("invalid_input")
@@ -235,17 +253,20 @@ async def interpret_recipe_and_execute(
         "finish_reason": None, "usage": protocol._usage(None), "http_status": None,
         "transport_security": client.config.transport_security, "stages": stages,
         "kernel_error_code": None, "response_shape": None, "context_identity": _identity(context),
+        "structured_output_identity": None,
     }
     try:
         if (type(timeout_seconds) not in (int, float)
                 or not 0 < timeout_seconds <= CALL_TIMEOUT_SECONDS):
             raise ModelError("invalid_configuration")
         messages = _messages(question, context)
+        constraint, evidence["structured_output_identity"] = _structured_output(context["output_schema"])
         stages["configuration"] = "passed"
         remaining = timeout_seconds - (clock() - started)
         if remaining <= 0:
             raise ModelError("timeout")
-        response = await client.complete(messages, timeout_seconds=remaining)
+        response = await client.complete(messages, timeout_seconds=remaining,
+                                         json_schema_constraint=constraint)
         stages["transport"] = "passed"
         evidence["http_status"] = response.status_code
         content = protocol._content(response.body, evidence)

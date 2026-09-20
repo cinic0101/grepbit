@@ -36,6 +36,14 @@ grammar. Current metric definitions and SQLGlot remain unchanged. Unsupported
 or ambiguous requests can be declined; resumable clarification, general entity
 resolution, the twelve P0 behavioral scenarios, PostgreSQL and P2 are not added.
 
+P1 remains **prompt + strict verification**. It omits the gateway's optional
+JSON-schema generation constraint, retaining exactly the historical request
+fields: `model`, `messages`, `temperature`, `max_tokens`, `stream`; not even
+`response_format: null` is sent. Only the separate
+[P2 recipe route](recipe-model-integration.md#json-schema-generation-constraint-p211)
+requests constrained generation. The shared gateway extension does not change
+P1's prompt, parser, scalar semantics or historical evidence.
+
 ## Dependencies and local credentials
 
 Use Python 3.11+ and the pinned `requirements.txt` closure. The three direct

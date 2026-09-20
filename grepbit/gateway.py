@@ -7,6 +7,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 import io
+import json
 import logging
 import math
 import os
@@ -62,6 +63,29 @@ class ModelError(Exception):
         self.code = code
         self.http_status = http_status
         super().__init__(f"Model integration failed: {code}.")
+
+
+def json_schema_response_format(constraint: object) -> dict[str, object]:
+    """One closed JSON-schema wrapper, not a provider-parameter passthrough."""
+    if (not isinstance(constraint, dict) or set(constraint) != {"name", "schema"}
+            or not isinstance(constraint["name"], str)
+            or re.fullmatch(r"[A-Za-z0-9_-]{1,64}", constraint["name"]) is None
+            or not isinstance(constraint["schema"], dict) or not constraint["schema"]):
+        raise ModelError("invalid_input")
+    chunks, size = [], 0
+    try:
+        for chunk in json.JSONEncoder(ensure_ascii=False, allow_nan=False).iterencode(constraint["schema"]):
+            size += len(chunk.encode("utf-8"))
+            if size > MAX_REQUEST_BYTES:
+                raise ModelError("input_too_large")
+            chunks.append(chunk)
+        schema = json.loads("".join(chunks))
+        # Reject JSON coercions such as non-string keys or tuple-valued arrays.
+        if schema != constraint["schema"]:
+            raise ModelError("invalid_input")
+    except (TypeError, ValueError, UnicodeError, RecursionError):
+        raise ModelError("invalid_input") from None
+    return {"type": "json_schema", "json_schema": {"name": constraint["name"], "schema": schema}}
 
 
 @dataclass(frozen=True)
@@ -199,9 +223,8 @@ class GatewayClient:
         return {key: clean(value) for key, value in data.items()}
 
     async def complete(self, messages: list[dict[str, str]], *,
-                       timeout_seconds: float = CALL_TIMEOUT_SECONDS) -> GatewayResponse:
-        import json
-
+                       timeout_seconds: float = CALL_TIMEOUT_SECONDS,
+                       json_schema_constraint: dict[str, object] | None = None) -> GatewayResponse:
         if (type(timeout_seconds) not in (int, float) or not math.isfinite(timeout_seconds)
                 or not 0 < timeout_seconds <= CALL_TIMEOUT_SECONDS):
             raise ModelError("invalid_configuration")
@@ -210,14 +233,16 @@ class GatewayClient:
                        or not isinstance(m["content"], str) for m in messages)
                 or [m["role"] for m in messages] != ["system", "user"]):
             raise ModelError("invalid_input")
-        payload = {
+        payload: dict[str, object] = {
             "model": self.config.model, "messages": messages,
             "temperature": 0, "max_tokens": 2048, "stream": False,
         }
+        if json_schema_constraint is not None:
+            payload["response_format"] = json_schema_response_format(json_schema_constraint)
         try:
             question_size = len(messages[1]["content"].encode("utf-8"))
             body = json.dumps(payload, ensure_ascii=False, allow_nan=False).encode("utf-8")
-        except (ValueError, UnicodeError):
+        except (TypeError, ValueError, UnicodeError, RecursionError):
             raise ModelError("invalid_input") from None
         if not messages[1]["content"].strip():
             raise ModelError("invalid_input")
@@ -225,6 +250,21 @@ class GatewayClient:
             raise ModelError("input_too_large")
         if self.safe_export({"messages": messages})["messages"] != messages:
             raise ModelError("invalid_input")
+        if json_schema_constraint is not None:
+            pending, names = [payload["response_format"]], []
+            while pending:
+                value = pending.pop()
+                if isinstance(value, dict):
+                    names.extend(value)
+                    pending.extend(value.values())
+                elif isinstance(value, list):
+                    pending.extend(value)
+            private = {"response_format": payload["response_format"], "field_names": names}
+            try:
+                if self.safe_export(private) != private:
+                    raise ModelError("invalid_input")
+            except RecursionError:
+                raise ModelError("invalid_input") from None
         status = None
         try:
             async with asyncio.timeout(timeout_seconds):

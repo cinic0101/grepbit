@@ -208,7 +208,7 @@ class RecipeSmokeTests(unittest.IsolatedAsyncioTestCase):
         identity = self.manifest["identities"]
         self.assertEqual(identity["context"], recipe_model.context_identity())
         for path in ("tools/recipe_smoke.py", runner.PANEL_ASSET, "tools/smoke.py", "grepbit/recipe_model.py",
-                     "grepbit/json_diagnostics.py",
+                     "grepbit/json_diagnostics.py", "grepbit/gateway.py",
                      "requirements.in", "requirements.txt", *smoke.ASSETS):
             self.assertEqual(identity["files_sha256"][path], hashlib.sha256((runner.ROOT / path).read_bytes()).hexdigest())
         self.assertEqual(identity["runtime"]["dependencies"]["httpx"], "0.28.1")
@@ -223,7 +223,7 @@ class RecipeSmokeTests(unittest.IsolatedAsyncioTestCase):
                          "91de6225de4f653b23310f29fcebdba5ce91d4e35c6ea413a5bbb73563070c42")
         self.assertEqual(model.context_identity()["context_sha256"],
                          "70545dbc5ed67b33b907301933a5556d7575d014bcc19472119d10ba11647fc6")
-        # Diagnostic-only adapter changes must preserve the complete P2.6 protocol.
+        # Diagnostics and generation constraints preserve the complete P2.6 semantic protocol.
         self.assertEqual(identity["context"], {
             "context_version": "learningops-recipe-context-v1",
             "output_contract": "recipe-request-json-v1",
@@ -233,6 +233,12 @@ class RecipeSmokeTests(unittest.IsolatedAsyncioTestCase):
             "output_contract_sha256": "ac6ca4d71fbe6a69c978231458bc6d4be7fca3f5ebbee732d4cdedad0dec9a02",
             "instruction_sha256": "cbf9e613e6b2a8e42ff758f9b0ceed1d2b4227be1a4d5d17cea1aee62b1cb270",
             "system_message_sha256": "5893fb44fbad47c3e5b2f970e0165d0caaf062e75ac9af88dc80e6dcd4a2ffab",
+        })
+        self.assertEqual(identity["structured_output"], {
+            "version": "recipe-structured-output-v1", "mode": "json_schema",
+            "schema_name": "grepbit_recipe_request",
+            "schema_sha256": "ac6ca4d71fbe6a69c978231458bc6d4be7fca3f5ebbee732d4cdedad0dec9a02",
+            "response_format_sha256": "4333d65dede04246311681767015be7438503ff019b239d1d0c0194ab9a037ab",
         })
         with patch.object(smoke, "_source_identity", wraps=smoke._source_identity) as delegated:
             runner._source_identity()
