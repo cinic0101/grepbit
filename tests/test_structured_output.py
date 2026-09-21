@@ -20,7 +20,7 @@ import httpx
 from grepbit import gateway, json_diagnostics, model, recipe_model
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL, ModelError
 from tools import fixture, recipe_smoke as runner, smoke
-from test_json_diagnostics import P2_IDENTITY
+from test_json_diagnostics import RECIPE_IDENTITY
 from test_model import request_content
 from test_recipe_model import envelope, proposal
 
@@ -33,11 +33,17 @@ QUESTION = "March 2026 bookings; \u4e09\u6708\u9810\u8a02."
 MESSAGES = [{"role": "system", "content": "Return JSON."}, {"role": "user", "content": QUESTION}]
 RECIPES = ("overview", "compare", "breakdown")
 MOCK_HTTP_ATTEMPTS = 0
-GENERATION = {
+P2_GENERATION = {
     "version": "recipe-structured-output-v1", "mode": "json_schema",
     "schema_name": "grepbit_recipe_request",
     "schema_sha256": "ac6ca4d71fbe6a69c978231458bc6d4be7fca3f5ebbee732d4cdedad0dec9a02",
     "response_format_sha256": "4333d65dede04246311681767015be7438503ff019b239d1d0c0194ab9a037ab",
+}
+GENERATION = {
+    "version": "recipe-structured-output-v2", "mode": "json_schema",
+    "schema_name": "grepbit_recipe_request",
+    "schema_sha256": "a2b842fedc36b77c27d05df8858d6938f67545d9d46e0219a98b8a77ad653f00",
+    "response_format_sha256": "4f4e3ea6ec8ba6951d353d15c6388633f7c687ae0d19bb5925e80047dbc7fc86",
 }
 
 
@@ -231,7 +237,7 @@ class StructuredOutputTests(unittest.IsolatedAsyncioTestCase):
     async def test_all_native_recipes_use_exact_six_field_wire_and_matching_identities(self):
         fixture.build(self.database)
         schema = recipe_model.output_schema()
-        self.assertEqual(recipe_model.context_identity(), P2_IDENTITY)
+        self.assertEqual(recipe_model.context_identity(), RECIPE_IDENTITY)
         self.assertEqual(recipe_model.structured_output_identity(), GENERATION)
         self.assertTrue(recipe_model.runtime_context()["output_schema"] == schema, "Multiple recipe schemas")
         for name in RECIPES:
@@ -253,7 +259,7 @@ class StructuredOutputTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(identity, GENERATION)
                 self.assertEqual(identity["schema_sha256"], digest(actual["response_format"]["json_schema"]["schema"]))
                 self.assertEqual(identity["response_format_sha256"], digest(actual["response_format"]))
-                self.assertEqual(result.evidence["context_identity"], P2_IDENTITY)
+                self.assertEqual(result.evidence["context_identity"], RECIPE_IDENTITY)
                 self.assertNotIn("invalid_json_fingerprint", result.evidence)
 
     async def test_generation_identity_is_derived_from_actual_authoritative_context_schema(self):
@@ -268,7 +274,7 @@ class StructuredOutputTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(identity["schema_sha256"], digest(schema))
         self.assertEqual(identity["response_format_sha256"], digest(actual))
         self.assertNotEqual(identity["schema_sha256"], GENERATION["schema_sha256"])
-        self.assertEqual(recipe_model.context_identity(), P2_IDENTITY)
+        self.assertEqual(recipe_model.context_identity(), RECIPE_IDENTITY)
 
     async def test_malformed_constraints_are_fixed_errors_before_http(self):
         base = {"name": "valid", "schema": {"type": "object"}}
@@ -440,7 +446,7 @@ class StructuredOutputTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(manifest["preparation"], {"kind": "candidate", "accepted_commit": None})
         identity = manifest["identities"]
         self.assertEqual(identity["structured_output"], GENERATION)
-        self.assertEqual(identity["context"], P2_IDENTITY)
+        self.assertEqual(identity["context"], RECIPE_IDENTITY)
         for name in ("grepbit/gateway.py", "grepbit/recipe_model.py", "grepbit/json_diagnostics.py"):
             self.assertEqual(identity["files_sha256"][name], hashlib.sha256((runner.ROOT / name).read_bytes()).hexdigest())
         for name, expected in (

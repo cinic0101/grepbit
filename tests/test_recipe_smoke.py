@@ -26,6 +26,8 @@ from grepbit import (
 from grepbit import model, recipe_model
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL, ModelError
 from grepbit.recipe_model import RecipeInterpretation, RecipeProposal
+from test_json_diagnostics import RECIPE_IDENTITY
+from test_structured_output import GENERATION
 from tools import fixture, recipe_smoke as runner, smoke
 
 
@@ -223,23 +225,9 @@ class RecipeSmokeTests(unittest.IsolatedAsyncioTestCase):
                          "91de6225de4f653b23310f29fcebdba5ce91d4e35c6ea413a5bbb73563070c42")
         self.assertEqual(model.context_identity()["context_sha256"],
                          "70545dbc5ed67b33b907301933a5556d7575d014bcc19472119d10ba11647fc6")
-        # Diagnostics and generation constraints preserve the complete P2.6 semantic protocol.
-        self.assertEqual(identity["context"], {
-            "context_version": "learningops-recipe-context-v1",
-            "output_contract": "recipe-request-json-v1",
-            "instruction_version": "recipe-selection-instruction-v1",
-            "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5",
-            "context_sha256": "7de6ed524fa5ddaeb530038c3a7b127461a7edb557749b61ef28558d359d6b87",
-            "output_contract_sha256": "ac6ca4d71fbe6a69c978231458bc6d4be7fca3f5ebbee732d4cdedad0dec9a02",
-            "instruction_sha256": "cbf9e613e6b2a8e42ff758f9b0ceed1d2b4227be1a4d5d17cea1aee62b1cb270",
-            "system_message_sha256": "5893fb44fbad47c3e5b2f970e0165d0caaf062e75ac9af88dc80e6dcd4a2ffab",
-        })
-        self.assertEqual(identity["structured_output"], {
-            "version": "recipe-structured-output-v1", "mode": "json_schema",
-            "schema_name": "grepbit_recipe_request",
-            "schema_sha256": "ac6ca4d71fbe6a69c978231458bc6d4be7fca3f5ebbee732d4cdedad0dec9a02",
-            "response_format_sha256": "4333d65dede04246311681767015be7438503ff019b239d1d0c0194ab9a037ab",
-        })
+        # P3.1 deliberately versions the shared action protocol; native P2 meanings remain protected.
+        self.assertEqual(identity["context"], RECIPE_IDENTITY)
+        self.assertEqual(identity["structured_output"], GENERATION)
         with patch.object(smoke, "_source_identity", wraps=smoke._source_identity) as delegated:
             runner._source_identity()
         delegated.assert_called_once()
@@ -468,6 +456,32 @@ class RecipeSmokeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(row["grading"]["execution"], "failed")
         self.assertEqual(self.read_report(), report)
         self.assert_tail(report, 1, "internal_failure")
+
+    async def test_unnecessary_clarification_is_persisted_as_wrong_request_without_execution(self):
+        def respond(request):
+            candidate = self.wire(request)
+            if len(self.sent) == 1:
+                self.assertEqual(candidate["recipe_id"], "overview")
+                candidate = {"outcome": "clarify", "clarification": {
+                    "kind": "count_basis", "choices": [
+                        {"id": f"c{index}", "semantic_value": {
+                            "type": "count_basis", "scope": candidate["request"], "value": value}}
+                        for index, value in enumerate(("booked_seats", "known_booking_accounts"), 1)]}}
+            return httpx.Response(200, json=envelope(candidate))
+
+        report = await self.run_panel(respond)
+        self.assertEqual(report["status"], "complete")
+        self.assertEqual(report["summary"]["outcomes"], {"wrong_request": 1, "correct": 8})
+        row = report["results"][0]
+        self.assertEqual((row["outcome"], row["error_code"]), ("wrong_request", None))
+        self.assertEqual(row["grading"]["request"], "failed")
+        self.assertEqual(row["evidence"]["model_outcome"], "clarify")
+        self.assertEqual(row["evidence"]["stages"]["kernel_execution"], "not_run")
+        self.assertIsNone(row["evidence"]["analysis_pack"])
+        self.assertIsNotNone(row["evidence"]["clarification"])
+        self.assertIsNotNone(row["evidence"]["presentation"])
+        self.assert_terminal_evidence(report)
+        self.assertEqual(self.read_report(), report)
 
     async def test_auth_envelope_and_token_budget_stops_are_immediate(self):
         for status, document, stop in (

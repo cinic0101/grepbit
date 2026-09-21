@@ -1,4 +1,4 @@
-"""One strict recipe proposal -> one unchanged native recipe; no evaluator imports."""
+"""One strict request/clarify/decline action; no evaluator imports or hidden turns."""
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -11,16 +11,18 @@ from typing import Literal
 from . import model as protocol
 from .breakdown import BreakdownAnalysisPack, BreakdownRequest, execute_breakdown
 from .catalog import LEARNINGOPS, PROFILE_ID
+from .clarification import Clarification, clarification_schema
 from .compare import CompareAnalysisPack, CompareRequest, execute_compare
 from .contracts import ExecutionLimits, KernelError
 from .gateway import CALL_TIMEOUT_SECONDS, MODEL, GatewayClient, ModelError, json_schema_response_format
 from .json_diagnostics import invalid_json_fingerprint
 from .overview import OverviewAnalysisPack, OverviewRequest, execute_overview
+from .presentation import ClarificationPresentation, PRESENTATION_VERSION, render_clarification
 
-CONTEXT_VERSION = "learningops-recipe-context-v1"
-OUTPUT_CONTRACT = "recipe-request-json-v1"
-INSTRUCTION_VERSION = "recipe-selection-instruction-v1"
-STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v1"
+CONTEXT_VERSION = "learningops-recipe-context-v2"
+OUTPUT_CONTRACT = "recipe-request-json-v2"
+INSTRUCTION_VERSION = "recipe-selection-instruction-v2"
+STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v2"
 STRUCTURED_OUTPUT_SCHEMA_NAME = "grepbit_recipe_request"
 _NativeRequest = OverviewRequest | CompareRequest | BreakdownRequest
 _NativePack = OverviewAnalysisPack | CompareAnalysisPack | BreakdownAnalysisPack
@@ -35,15 +37,27 @@ _KERNEL_ERRORS = {
 }
 
 SYSTEM_INSTRUCTION = (
-    "Select exactly one recipe and instantiate its native request for the supplied question, "
+    "Select one request, clarify or declined action for the supplied question, "
     "using only the shared runtime meanings and closed output schema. "
     "Return one JSON object, no prose, markdown, reasoning, confidence, answers, rows, SQL or tasks. "
     'A request has exactly outcome:"request", recipe_id (one of "overview", "compare", "breakdown"), '
     'recipe_version:"0.1" and request (the selected native object). '
-    'If any requirement is incomplete, ambiguous or unsupported, return exactly {"outcome":"declined"}. '
+    'If a required meaning is unsupported or outside the admitted clarification kinds, return exactly '
+    '{"outcome":"declined"}. A decline on deferred ambiguity is not proof of necessary refusal. '
+    'For one admitted ambiguity return exactly outcome:"clarify" and clarification with kind and choices. '
+    "Each choice has a unique local id and typed semantic_value, not a label, recommendation or task. "
+    "Use 2-4 distinct mutually exclusive interpretations with the same already-bound scope. "
+    "count_basis and metric_meaning require a complete explicit Overview scope. "
+    "Count choices include booked_seats and reviewed alternative count meanings; amount choices include "
+    "confirmed_booked_amount and reviewed alternative amount meanings. Alternatives do not add executable metrics. "
+    "comparison_roles requires exactly two reversed assignments of the same two explicitly supplied full months. "
+    "center requires distinct explicitly supplied center codes and one unchanged explicit month. "
+    "Use only information in this question and reviewed meanings; do not invent candidate codes, years or periods. "
+    "If semantics are unambiguous and supported, answer with the existing request, not a clarification. "
+    "Do not return presentation text/blocks, resolve names, infer defaults, collect missing values or resume. "
     "Never drop a requirement, substitute a metric, narrow an annual question to one month, or select "
-    "a convenient subset of multiple unrelated questions. Decline profit, targets, causes, people "
-    "ambiguity, unsupported scope/granularity/dimensions and missing year, period, baseline or k. "
+    "a convenient subset of multiple unrelated questions. Decline explicit profit, targets, causes, "
+    "unsupported scope/granularity/dimensions and deferred missing year, period, baseline or k. "
     "Current confirmed bookings use booking creation time, not payment, refund, session or attendance "
     "time. Booked amount does not subtract refunds and is not profit. Seats, booking accounts and "
     "people are not interchangeable. "
@@ -51,7 +65,8 @@ SYSTEM_INSTRUCTION = (
     "exactly; do not trim, case-fold, resolve a name, invent a canonical center_id or provide a mapping. "
     "Compare requires current and baseline, each with metrics:[\"confirmed_booked_amount\"], "
     "start, end, timezone; center_id may only be omitted or null. Both distinct named months and "
-    "their comparison roles must be explicit. A year explicitly shared by two named months applies "
+    "their comparison roles must be explicit for a request; ambiguous orientation may use comparison_roles. "
+    "A year explicitly shared by two named months applies "
     "to both; never infer a missing year or baseline from a clock or AS_OF. "
     "Breakdown requires start, end, timezone and explicit integer top_k from 1 to 3; never infer k. "
     "Use half-open [start,end) full calendar months in Asia/Taipei: first-of-month midnight to "
@@ -106,7 +121,8 @@ def output_schema() -> dict[str, object]:
                             "recipe_version": {"const": "0.1"}, "request": shape}}
             for recipe, shape in shapes.items()
         ] + [{"type": "object", "additionalProperties": False, "required": ["outcome"],
-              "properties": {"outcome": {"const": "declined"}}}],
+              "properties": {"outcome": {"const": "declined"}}},
+             clarification_schema(shapes["overview"], shapes["compare"])],
     }
 
 
@@ -145,10 +161,22 @@ def runtime_context() -> dict[str, object]:
              "unsupported": ["other dimensions", "center filters", "denominator overrides", "inferred k",
                              "zero-filled/absent courses", "all boundary ties"]},
         ],
-        "unsupported": ["profit/cost/targets", "ambiguous people counts", "historical status",
+        "clarification": {
+            "count_basis": "One explicit Overview scope; booked_seats versus known_booking_accounts, "
+                           "attendance_visits or distinct_people. Seats are booked line quantities; "
+                           "accounts are distinct non-null booking-account IDs, excluding anonymous bookings; "
+                           "visits are attendance events, not distinct humans. Only booked_seats is available in this recipe.",
+            "comparison_roles": "Two explicit months without orientation; preserve both months and offer both roles.",
+            "center": "One explicit month and two to four supplied codes; offer a single center, never combine them.",
+            "metric_meaning": "One explicit Overview scope; confirmed_booked_amount versus cash_received, "
+                              "posted_refunds or profit. Only confirmed_booked_amount is available in this recipe.",
+            "boundary": "One semantic choice, no analytics before user binding; no resume or grounding. "
+                        "Known booking accounts remain a separate P1 capability, not a recipe fallback.",
+        },
+        "unsupported": ["profit/cost/targets", "historical status",
                         "missing periods/year", "multi-month or annual aggregation", "arbitrary formulas",
                         "currency/unit conversion", "unrelated multi-question decomposition",
-                        "causal explanations", "clarification/resume"],
+                        "causal explanations", "free-value clarification", "grounding/resume"],
         "output_contract": OUTPUT_CONTRACT, "output_schema": output_schema(),
     }
 
@@ -234,6 +262,8 @@ class RecipeInterpretation:
     analysis_pack: _NativePack | None
     error: ModelError | None
     evidence: dict[str, object]
+    clarification: Clarification | None = None
+    presentation: ClarificationPresentation | None = None
 
 
 async def interpret_recipe_and_execute(
@@ -241,11 +271,13 @@ async def interpret_recipe_and_execute(
     timeout_seconds: float = CALL_TIMEOUT_SECONDS,
     clock: Callable[[], float] = time.monotonic,
 ) -> RecipeInterpretation:
-    """One proposal and one native execution; no semantic grading, repair or fallback."""
+    """One action; only an admitted request executes a native recipe."""
     started, attempts = clock(), client.http_attempts
     proposal: RecipeProposal | None = None
     pack: _NativePack | None = None
     error: ModelError | None = None
+    clarification: Clarification | None = None
+    presentation: ClarificationPresentation | None = None
     stages = dict.fromkeys(protocol.STAGES, "not_run")
     context = runtime_context()
     evidence: dict[str, object] = {
@@ -278,31 +310,47 @@ async def interpret_recipe_and_execute(
                 evidence["invalid_json_fingerprint"] = invalid_json_fingerprint(content)
             raise
         stages["json_parse"] = "passed"
-        proposal = _proposal(data)
+        if isinstance(data, dict) and data.get("outcome") == "clarify":
+            try:
+                if set(data) != {"outcome", "clarification"}:
+                    raise ModelError("invalid_request")
+                clarification = Clarification.from_mapping(data["clarification"])
+                clarification.validate_question(question)
+                presentation = render_clarification(clarification)
+            except KernelError:
+                raise ModelError("invalid_request") from None
+            action = {"clarification": clarification.to_dict(), "presentation": presentation.to_dict()}
+            if client.safe_export(action) != action:
+                raise ModelError("invalid_request")
+        else:
+            proposal = _proposal(data)
         stages["request_validation"] = "passed"
         remaining = timeout_seconds - (clock() - started)
         if remaining <= 0:
             raise ModelError("timeout", http_status=response.status_code)
-        limits = ExecutionLimits(timeout_seconds=min(2.0, remaining))
-        try:
-            if isinstance(proposal.request, OverviewRequest):
-                pack = execute_overview(database, proposal.request, limits=limits)
-            elif isinstance(proposal.request, CompareRequest):
-                pack = execute_compare(database, proposal.request, limits=limits)
-            elif isinstance(proposal.request, BreakdownRequest):
-                pack = execute_breakdown(database, proposal.request, limits=limits)
-            else:
-                raise ModelError("invalid_request")
-        except KernelError as exc:
-            evidence["kernel_error_code"] = exc.code if exc.code in _KERNEL_ERRORS else "unknown"
-            raise ModelError(_KERNEL_ERRORS.get(exc.code, "kernel_failure")) from None
+        if proposal is not None:
+            limits = ExecutionLimits(timeout_seconds=min(2.0, remaining))
+            try:
+                if isinstance(proposal.request, OverviewRequest):
+                    pack = execute_overview(database, proposal.request, limits=limits)
+                elif isinstance(proposal.request, CompareRequest):
+                    pack = execute_compare(database, proposal.request, limits=limits)
+                elif isinstance(proposal.request, BreakdownRequest):
+                    pack = execute_breakdown(database, proposal.request, limits=limits)
+                else:
+                    raise ModelError("invalid_request")
+            except KernelError as exc:
+                evidence["kernel_error_code"] = exc.code if exc.code in _KERNEL_ERRORS else "unknown"
+                raise ModelError(_KERNEL_ERRORS.get(exc.code, "kernel_failure")) from None
         if clock() - started >= timeout_seconds:
             raise ModelError("timeout", http_status=response.status_code)
-        stages["kernel_execution"] = "passed"
+        if proposal is not None:
+            stages["kernel_execution"] = "passed"
     except ModelError as exc:
         if pack is not None:
             stages["kernel_execution"] = "failed"
         pack = None
+        clarification, presentation = None, None
         error = ModelError(exc.code, http_status=exc.http_status)
         stages[error.stage] = "failed"
         if error.stage == "response_validation" and evidence["response_shape"] is None:
@@ -315,24 +363,43 @@ async def interpret_recipe_and_execute(
         "client_http_attempts": client.http_attempts - attempts,
         "error_code": error.code if error else None, "stop_reason": error.stop_reason if error else None,
         "transport_failure": error.transport_failure if error else False,
-        "model_outcome": "request" if proposal else "declined" if error and error.code == "model_declined" else None,
+        "model_outcome": ("request" if proposal else "clarify" if clarification else
+                          "declined" if error and error.code == "model_declined" else None),
         "proposal": proposal.to_dict() if proposal else None,
         "analysis_pack": pack.to_dict() if pack else None, "pack_status": pack.status if pack else None,
+        "clarification": clarification.to_dict() if clarification else None,
+        "presentation": presentation.to_dict() if presentation else None,
+        "presentation_version": PRESENTATION_VERSION if presentation else None,
         "limitations": [
             "Typed proposal validation and checked calculation do not prove user-intent coverage or answer correctness.",
             "A decline is not automatically a necessary refusal; no semantic repair or evaluator lookup occurs.",
+            "Typed clarification does not prove grounding or intent; presentation labels are not semantic bindings.",
             "Client HTTP attempts and returned usage do not establish total upstream inference work.",
         ],
     })
     exported = client.safe_export(evidence)
+    if clarification is not None and (
+            exported["clarification"] != evidence["clarification"]
+            or exported["presentation"] != evidence["presentation"]):
+        clarification, presentation = None, None
+        error = ModelError("invalid_request")
+        exported.update({
+            "clarification": None, "presentation": None, "presentation_version": None, "model_outcome": None,
+            "error_code": error.code, "stop_reason": error.stop_reason,
+            "stages": {**stages, "request_validation": "failed"},
+        })
     elapsed = max(0.0, clock() - started)
     if error is None and elapsed >= timeout_seconds:
         pack = None
+        clarification, presentation = None, None
         error = ModelError("timeout", http_status=response.status_code)
         exported.update({
             "analysis_pack": None, "pack_status": None, "error_code": error.code,
+            "clarification": None, "presentation": None, "presentation_version": None,
+            "model_outcome": "request" if proposal else None,
             "stop_reason": error.stop_reason, "transport_failure": error.transport_failure,
-            "stages": {**stages, "transport": "failed", "kernel_execution": "failed"},
+            "stages": {**stages, "transport": "failed",
+                       "kernel_execution": "failed" if proposal else "not_run"},
         })
     exported["elapsed_seconds"] = round(elapsed, 6)
-    return RecipeInterpretation(proposal, pack, error, exported)
+    return RecipeInterpretation(proposal, pack, error, exported, clarification, presentation)

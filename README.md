@@ -51,10 +51,15 @@ P2.11 structured-output change (#34 / PR #35), the separately authorized #36
 panel passed **9/9**, satisfying the owner-reviewed P2 exit on dev at
 `f21c914915f34656c1e8c0069c28afadb5bbc7ae`. This is exposed three-family
 regression evidence, not fresh language-quality evidence or promotion to main.
-**P3.0** (#37) now proposes the [evaluation contract](docs/p3-evaluation-contract.md):
+**P3.0** (#37 / PR #38) accepted the [evaluation contract](docs/p3-evaluation-contract.md)
+at `a4bad1a8742a97021502e71208bd7162c6b37c44`:
 intent/action correctness, checked-fact coverage, explicit clarification/decline
-policy and separate stability scoring. Design only; no new live authorization,
-clarification/resume or synthesis implementation is implied.
+policy and separate stability scoring. **P3.1** (#39) implements an offline
+[bounded clarification candidate](docs/clarification-action.md) in the existing
+recipe entry: one typed action, no analytical execution on clarify, and
+deterministic single-select presentation. P1 and native recipes remain unchanged.
+Owner acceptance, live model quality, grounding, resume, synthesis and full P3
+exit remain separate; no new live authorization is implied.
 
 The seed has 10 tables and 88 rows. There are 30 authored case descriptions:
 18 reference-SQL checks and 12 behavioral scenarios. The fixture checker still
@@ -95,7 +100,8 @@ are ignored by Git; rebuild from the committed source instead of committing a DB
 | [Architecture](docs/architecture.md) | Responsibilities, boundaries, reuse policy |
 | [Roadmap](docs/roadmap.md) | P0-P5 exits and stopping rules |
 | [Evaluation](docs/evaluation.md) | Oracles, outcomes, issues and improvement loop |
-| [P3 evaluation contract](docs/p3-evaluation-contract.md) | Proposed intent matrix, provenance, branch policy, scoring and bounded panel costs |
+| [P3 evaluation contract](docs/p3-evaluation-contract.md) | Accepted intent matrix, provenance, branch policy, scoring and conditional panel costs |
+| [P3.1 clarification action](docs/clarification-action.md) | Closed semantic alternatives, deterministic choices, offline evidence and deferred capabilities |
 | [Portability](docs/portability.md) | SQLite-first and PostgreSQL P4 preparation |
 | [Local execution](docs/local-execution.md) | Owner-triggered work and copy/paste handoff |
 | [P1.1 fact kernel](docs/fact-kernel.md) | Explicit request contract, installation, example and bounded execution guarantees |
@@ -113,8 +119,8 @@ are ignored by Git; rebuild from the committed source instead of committing a DB
 
 Implement on `dev`, review before merging into `main`. GitHub Issues are the
 single active-work tracker. The roadmap is not a second chronological work log.
-Track roadmap #1 and current design-only P3.0 work in #37; P2 exit was accepted
-after #36. No future live run or main promotion is implied.
+Track roadmap #1 and current P3.1 implementation in #39; P3.0 was accepted through
+#37 / PR #38 and P2 exit after #36. No future live run or main promotion is implied.
 P2.0 design, P2.1 Compare and P2.2 grouping were accepted through #14 / PR #15,
 #16 / PR #17 and #18 / PR #19; P2.3 through #20 / PR #21 and public Overview
 through #22 / PR #23; deterministic Breakdown through #24 / PR #25; recipe

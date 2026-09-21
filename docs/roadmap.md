@@ -1,6 +1,6 @@
 # Roadmap and phase exits
 
-Phase baseline: 2026-09-18; current status follows #36/#37. Work is on `dev`;
+Phase baseline: 2026-09-18; current status follows #39. Work is on `dev`;
 promotion to `main` requires owner review. P0 and P1 are accepted at
 `6d6be30bed321806e0a2ef90fec53a1fc1118373`. The first smoke (#10) failed
 envelope validation on all 12 inputs and remains unchanged. After P1.3a
@@ -22,8 +22,10 @@ recipe families and three languages on accepted dev
 `f21c914915f34656c1e8c0069c28afadb5bbc7ae`. The owner accepted the P2 exit in
 [the roadmap handoff](https://github.com/cinic0101/grepbit/issues/1#issuecomment-5754274130).
 That is exposed regression evidence, not generalization or broad NL quality.
-P3.0 (#37) proposes the [evaluation contract](p3-evaluation-contract.md) before
-quality-driven implementation. P3-P5 delivery remains open. P2 is not promoted
+P3.0 (#37 / PR #38) accepted the [evaluation contract](p3-evaluation-contract.md)
+at `a4bad1a8742a97021502e71208bd7162c6b37c44`. P3.1 (#39) supplies an offline
+[clarification-action candidate](clarification-action.md), not grounding, resume,
+synthesis, new live evidence or phase acceptance. P3-P5 delivery remains open. P2 is not promoted
 to main; no further live execution follows from the phase handoff.
 GitHub Issues own current status; this document owns phase meaning and exits.
 
@@ -86,7 +88,7 @@ needs an issue + test + PR/commit, not a research report.
 
 ## Candidate P3 thresholds (ratify before a formal run)
 
-The [P3.0 contract proposal](p3-evaluation-contract.md) specifies the behavior
+The [accepted P3.0 contract](p3-evaluation-contract.md) specifies the behavior
 matrix, exposure/provenance, conditional panel allocation, family-weighted
 denominators, clarification policy and separate stability/resume/synthesis gates.
 R1 (#37 / #38) ratifies the small-PoC consequence of the thresholds below:

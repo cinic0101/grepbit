@@ -54,7 +54,7 @@ intent.
 | --- | --- |
 | correct | All five grading stages pass |
 | wrong_recipe | Valid proposal chose a different recipe/version |
-| wrong_request | Valid proposal chose different scope/roles/code/k |
+| wrong_request | Valid proposal chose different scope/roles/code/k, or P3.1 unnecessarily clarified an answer-only input |
 | wrong_coverage | Correct intent executed, but native status/slots/binding/group coverage do not match |
 | wrong_value | Intent, execution and coverage pass; representative values differ |
 | false_refusal | Model declined an answerable input in this fixed panel |
@@ -68,6 +68,13 @@ still require a stop. A native partial/failed-data pack without adapter error is
 a coverage failure for this frozen fixture, not automatically an operational
 error. A complete explicitly undefined ratio is resolved coverage but cannot
 match this panel's nonzero expected rational value.
+
+P3.1 keeps this historical panel answer-only. A successful `clarify` action is
+persisted with explicit semantic/presentation evidence and no adapter error,
+but fails request grading (`wrong_request`); recipe/execution/coverage/value
+grading stay `not_run`. It is not `false_refusal`, an operational failure or a
+correct answer. The panel continues under the unchanged stop policy. This
+compatibility handling is not the future P3 action taxonomy or evaluator.
 
 Overview requires all five slots checked and binding to CA; no duplicate full
 gold table for optional grouped rows is added. Compare preserves roles and all
@@ -147,11 +154,14 @@ stop-policy hashes, and all nine question hashes/references. Evaluator oracle
 data is kept separate from model evidence. Raw question text is not duplicated
 into the manifest or report.
 
-P2.11 also pins `identities.structured_output`: `recipe-structured-output-v1`,
+P2.11 added `identities.structured_output`: initially `recipe-structured-output-v1`,
 JSON-schema mode, the fixed schema name, canonical schema SHA-256 and complete
 response-format wrapper SHA-256. Current gateway/adapter source hashes remain
-included. The semantic context, fixed panel, grader and stop policy do not
-change. No new panel/manifest version is needed: exact manifest comparison
+included. That change left semantic context, panel, grading and stop policy
+unchanged. P3.1 separately versions the shared recipe action/generation identity
+to v2 and adds the clarification compatibility branch above; native meanings,
+frozen answers and stop policy remain intact. Both new runtime modules are
+covered by the existing source-file hashing. No new panel/manifest version is needed: exact manifest comparison
 rejects old source/policy identities, including a missing generation identity.
 Historical manifests must not be edited or repinned. This identifies the
 requested generation constraint, not deployed schema compatibility or enforcement.
