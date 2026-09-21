@@ -65,9 +65,12 @@ independent action/request/fact grading, family-weighted denominators and
 immutable evidence using the unchanged production entry. Its development
 fixtures are exposed regressions, not the future fresh/formal panel.
 **P3.3** (#43) prepares [independent authoring and formal admission](docs/p3-fresh-case-authoring.md)
-against that frozen behavior. Intake/freeze tooling and exposed draft controls
-are not an admitted 24/44 panel: independent fresh material and historical
-family-distinctness review remain required. No live probe/run or full P3 exit
+against that frozen behavior. The owner-approved
+[exposed projection](docs/p3-evaluator.md#exposed-material-and-unresolved-admission)
+retains 9 provisional families / 15 inputs; P10 is deferred, P11 remains an E02
+regression outside the panel, and P12 is not admitted. Historical assets are
+preserved. The unchanged 24/44 target is not satisfied; fresh fillability remains
+unknown and no complete formal panel is frozen. No live probe/run or full P3 exit
 follows from this preparation; grounding, resume and synthesis remain separate.
 
 The seed has 10 tables and 88 rows. There are 30 authored case descriptions:
@@ -137,8 +140,9 @@ are ignored by Git; rebuild from the committed source instead of committing a DB
 
 Implement on `dev`, review before merging into `main`. GitHub Issues are the
 single active-work tracker. The roadmap is not a second chronological work log.
-Track roadmap #1 and current P3.2 evaluator work in #41; P3.1 was accepted through
-#39 / PR #40, P3.0 through #37 / PR #38 and P2 exit after #36.
+Track roadmap #1 and current P3.3 admission work in #43; P3.3 preparation tooling
+was accepted through PR #44, P3.2 through #41 / PR #42, P3.1 through #39 / PR #40,
+P3.0 through #37 / PR #38 and P2 exit after #36.
 No future live run or main promotion is implied.
 P2.0 design, P2.1 Compare and P2.2 grouping were accepted through #14 / PR #15,
 #16 / PR #17 and #18 / PR #19; P2.3 through #20 / PR #21 and public Overview

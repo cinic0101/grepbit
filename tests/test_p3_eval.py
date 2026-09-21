@@ -172,6 +172,26 @@ class P3EvalTests(unittest.IsolatedAsyncioTestCase):
         with redirect_stdout(io.StringIO()):
             self.assertEqual(runner.main(["report", "--report", str(output / "report.json")]), 0)
 
+    def test_owner_exposed_projection_prepares_without_fake_script_or_execution(self):
+        panel_path = runner.ROOT / "evals/p3/exposed-projection-panel-v1.json"
+        panel = p3_assets.load_panel(panel_path)
+        output = self.path("owner-exposed-projection")
+        with patch.object(GatewayClient, "complete", side_effect=AssertionError("No model calls")) as complete:
+            report = runner.prepare(self.database, output, panel_path=panel_path)
+        complete.assert_not_called()
+        self.assertEqual((report["status"], report["client_http_attempts"], report["live_model_attempts"]),
+                         ("prepared", 0, 0))
+        self.assertEqual(len(report["results"]), 15)
+        self.assertEqual(len(report["summary"]["per_family"]), 9)
+        self.assertFalse(report["summary"]["promotion"]["passed"])
+        self.assert_tail(report, 0, "offline_preparation")
+        manifest = json.loads((output / "manifest.json").read_bytes())
+        self.assertEqual(manifest["panel_kind"], "development")
+        self.assertEqual(manifest["preparation"], {"kind": "candidate", "accepted_commit": None})
+        self.assertIsNone(manifest["fake_responses"])
+        self.assertEqual(manifest["inputs"], panel.inputs())
+        self.assertEqual(runner.read_report(output / "report.json"), report)
+
     def test_explicit_fake_run_cli_uses_script_and_report_inspection(self):
         prepared = self.path("cli-script-prepared")
         runner.prepare(self.database, prepared, responses_path=runner.DEFAULT_RESPONSES)
