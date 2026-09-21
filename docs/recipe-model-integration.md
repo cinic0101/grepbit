@@ -1,17 +1,21 @@
-# P2.6: bounded recipe interpretation
+# Bounded recipe interpretation (P2.6 / P3.1)
 
 Issue #26 / PR #27 accepted one model-facing route over the native
 [Overview, Compare and Breakdown APIs](p2-recipes.md). Offline fake-transport
 checks are not live model validation or the P2 exit. This is separate from the
 unchanged [P1 scalar contract](model-integration.md).
+Issue #39 extends this same route with [bounded clarification](clarification-action.md);
+it does not replace the accepted native recipes or add another planner.
 
 ```text
-question + one shared English instruction and all three recipe meanings
+question + one shared English instruction, recipe meanings and clarification admission
   -> one GatewayClient.complete call with the same schema as a generation constraint
   -> existing provider-envelope normalization
-  -> strict JSON and selected native request validator
-  -> exactly one existing public deterministic recipe API
-  -> original native pack + sanitized interpretation evidence
+  -> strict JSON and closed typed action validation
+  -> request: exactly one native recipe -> original native pack
+     clarify: no analytics -> typed choices + deterministic presentation
+     declined: no analytics -> existing model_declined result
+  -> sanitized interpretation evidence
 ```
 
 The explicit import is `grepbit.recipe_model`. Ordinary `import grepbit` and
@@ -20,7 +24,8 @@ network libraries. There is no new CLI, runner, discovery call or configuration.
 
 ## Closed output contract
 
-`recipe-request-json-v1` admits exactly these alternatives:
+`recipe-request-json-v2` preserves the v1 request/decline alternatives and adds
+one closed clarification alternative. The unchanged request shape is:
 
 ```json
 {
@@ -59,11 +64,17 @@ model-authored canonical IDs. Its public executor binds the code inside its
 existing transaction. Breakdown requires an actual JSON integer `top_k` in 1-3,
 not a boolean, decimal, string, inferred default or denominator override.
 
-The other complete branch is:
+The unchanged decline branch is:
 
 ```json
 {"outcome":"declined"}
 ```
+
+The new branch is `{"outcome":"clarify","clarification":{...}}`, with one of
+four explicitly typed kinds, 2-4 exclusive choices and no model-authored labels.
+The complete [semantic and presentation contract](clarification-action.md)
+defines native scope reuse, reversed comparison roles, supplied code checks and
+the closed alternative meanings. No resume or value lookup is implemented.
 
 No mixed branches, extra root/nested fields, explanations, answers, reasoning,
 SQL or task lists are admitted. Existing `strict_json` rejects duplicate keys at
@@ -83,8 +94,10 @@ router, evaluator constraint channel, recipe preselection or second model call.
 Meanings come from the reviewed runtime catalog and bounded recipe contracts:
 current confirmed bookings; booking creation time; amount before refunds; seats,
 accounts and people are different; server-owned roles, ordering, reconciliation,
-arithmetic and independent whole-scope denominator. The model must decline
-missing years, periods, baseline or k, ambiguity and unsupported requirements.
+arithmetic and independent whole-scope denominator. The model may clarify one
+admitted ambiguity. Missing years, periods, baseline or k remain deferred and
+currently decline without earning necessary-refusal credit; unsupported
+requirements are not silently rewritten.
 A stated year shared by two named Compare months can apply to both. No clock or
 `AS_OF` value supplies an absent year. Profit, targets, annual aggregation and
 unrelated multi-question requests must not be reduced to convenient subsets.
@@ -96,9 +109,9 @@ does not access SQLite. Documentation is not loaded as runtime context.
 
 `context_identity()` and each result's `evidence["context_identity"]` identify:
 
-- `learningops-recipe-context-v1`
-- `recipe-request-json-v1`
-- `recipe-selection-instruction-v1`
+- `learningops-recipe-context-v2`
+- `recipe-request-json-v2`
+- `recipe-selection-instruction-v2`
 - SHA-256 of the canonical context, canonical output schema, English instruction,
   complete submitted system message and reviewed catalog.
 
@@ -108,11 +121,13 @@ partial constraints and stopping classifications remain unchanged.
 
 ## JSON-schema generation constraint (P2.11)
 
-Issue #34 adds one controlled wire change: P2 requests **prompt + JSON-schema
+Issue #34 added one controlled wire change: P2 requests **prompt + JSON-schema
 constrained generation + strict verification**, while P1 remains prompt-only
 generation followed by strict verification. The schema remains embedded in the
-P2 prompt; `SYSTEM_INSTRUCTION`, `runtime_context()`, `output_schema()` and all
-existing semantic identities are unchanged.
+P2 prompt. That historical change preserved the v1 semantic protocol. P3.1
+deliberately versions the recipe action schema, context, instruction and
+generation identity to v2; [old/new identities and sizes](clarification-action.md#identity-and-size-impact)
+are recorded separately from unchanged native semantics and P1 wire.
 
 `GatewayClient.complete(..., json_schema_constraint=None)` preserves the exact
 historical five-field request when omitted or null. Its only additional argument
@@ -149,7 +164,7 @@ not user/model-authored schemas or configuration, belongs in the recipe route.
 
 `structured_output_identity()` and adapter `evidence.structured_output_identity`
 identify the constructed generation contract separately from semantic context:
-`recipe-structured-output-v1`, `mode=json_schema`, the fixed schema name,
+`recipe-structured-output-v2`, `mode=json_schema`, the fixed schema name,
 canonical schema SHA-256 and canonical complete response-format wrapper
 SHA-256. These identify the requested policy, not proof that a server honored it.
 The [recipe manifest](recipe-smoke.md) pins that identity and current source.
@@ -165,14 +180,16 @@ A route rejecting the parameter retains the existing HTTP/configuration error
 and stops without a second request. There is no fallback to prompt-only mode,
 deprecated `guided_json`, stripping, extraction, repair or retry.
 
-Stage A uses fake HTTP only. The inspected application/PATH environments did
+The original P2.11 Stage A used fake HTTP only. Its inspected application/PATH environments did
 not expose installed LiteLLM, vLLM or an eligible schema compiler or trusted
 proxy configuration. Deployed versions, passthrough/`drop_params`, backend
 configuration and exact support for root `oneOf`, `const` arrays, nested scopes
 and other schema keywords remain **UNKNOWN**. Upstream API documentation is not
 deployment evidence. No model was loaded and no endpoint was contacted. A
-future separately owner-authorized compatibility call must fail closed rather
-than substitute another API or silently relax the schema.
+separately authorized P2.11 compatibility call and P2.12 panel subsequently
+succeeded on the v1 contract. They do not validate P3.1's expanded v2 schema,
+whose deployed compatibility and model quality remain untested. Any future
+authorized call must fail closed rather than relax the schema.
 
 ## API, native results and failure evidence
 
@@ -187,12 +204,16 @@ Live construction/execution requires separate owner authorization under
 [local execution policy](local-execution.md); this signature is not authorization.
 No actual credentials are needed or read by the offline suite.
 
-`RecipeInterpretation` holds `proposal`, `analysis_pack`, `error`, `evidence`.
+`RecipeInterpretation` holds `proposal`, `analysis_pack`, `error`, `evidence`,
+plus optional `clarification` and `presentation`.
 `RecipeProposal` holds the validated recipe ID/version and original typed request.
 Both wrappers are frozen and repr-safe. `analysis_pack` is the actual
 `OverviewAnalysisPack`, `CompareAnalysisPack` or `BreakdownAnalysisPack`, not a new
 editable universal pack. Its request object, IDs, scope, snapshot, slots,
 provenance, limitations and Fraction serialization are preserved.
+A successful clarify has no proposal, pack or error, and returns immutable
+semantic choices plus server-rendered English presentation. Request validation
+passes while `kernel_execution` stays `not_run`. It is not a decline or answer.
 
 Only native typed requests reach a fixed three-way dispatch. No database
 connection, profiling, admission or lookup occurs before completion and typed
@@ -201,6 +222,9 @@ is positive and at most 60 seconds. Prompt preparation reduces the completion
 allowance; the native database timeout is `min(2 seconds, remaining total time)`.
 Time is checked before and after execution and after evidence export. A late
 result is discarded, not returned as a successful pack.
+Clarify skips dispatch entirely: no SQLite connection, scalar/grouped executor,
+snapshot or partial pack. Deadline failures clear clarification/presentation,
+including evidence copies, and never report a fictitious analytical execution.
 
 The adapter reuses P1's envelope normalization, usage parsing, bounded failure
 fingerprints, strict JSON and the existing GatewayClient/safe_export. It does not
@@ -214,7 +238,11 @@ inferred from client attempts.
 
 Evidence records P1-style stages, model/usage/finish metadata, attempts, elapsed
 time, identities, validated proposal, sanitized native serialization, pack
-status and fixed errors. Missing model/usage stays unknown. An unapproved model
+status and fixed errors. Clarify records its semantic values and presentation
+separately, with `model_outcome=clarify` and `clarification-presentation-v1`.
+If safe export would redact either actionable object, the adapter rejects it
+with fixed `invalid_request` and returns neither object. Missing model/usage
+stays unknown. An unapproved model
 is rejected; the new route does not export its arbitrary alias, retaining null
 `returned_model`, `unexpected_model` and the bounded envelope fingerprint.
 Returned error objects contain fixed codes without retained payload tracebacks.
@@ -225,6 +253,7 @@ general detector of private data. This route remains synthetic-data-only.
 | Outcome | Evidence meaning |
 | --- | --- |
 | Declined | One attempt, `model_declined`, no native execution; necessary refusal is not established |
+| Clarify | One attempt, validated bounded choices and deterministic single-select presentation; zero analytics; intent/grounding not proved |
 | Malformed envelope/JSON/request | Fixed stage error, no native execution or repair |
 | Valid typed proposal | Retained unchanged, not certified as the intended interpretation |
 | Partial Overview | Native partial pack and explicit optional gaps |
@@ -320,7 +349,9 @@ A numerically checked answer to the wrong question remains wrong.
 Run the focused network-free suite using the verified pinned interpreter:
 
 ```bash
-PYTHONPATH=tests .venv/bin/python -m unittest test_recipe_model test_json_diagnostics test_structured_output -v
+PYTHONPATH=tests .venv/bin/python -m unittest \
+  test_clarification test_presentation test_recipe_clarification \
+  test_recipe_model test_json_diagnostics test_structured_output test_recipe_smoke -v
 ```
 
 Tests combine fake HTTP with real disposable synthetic SQLite, multilingual
@@ -334,8 +365,10 @@ variants are not independent semantic families.
 
 [P2.7 (#28)](recipe-smoke.md) implements the fixed evaluator panel
 **E01 / E02 / E03 x zh-TW / en / ja: 9 inputs, 3 semantic families**, using this
-unchanged adapter/context and independent one-shot attempts. Its candidate
+recipe adapter and independent one-shot attempts. P3.1 changes the shared action
+protocol as described above, not the panel or native expectations. Its candidate
 manifests are test evidence only. Final accepted-commit preparation waits for
 owner merge, and live execution still needs separate authorization. E10 remains
 an injected operational control, never a model question. P1's historical runner
-and pins remain unchanged; no P3, synthesis or PostgreSQL capability is implied.
+and pins remain unchanged; the runner does not claim P3 evaluation, resume,
+synthesis or PostgreSQL capability.

@@ -1,12 +1,14 @@
 # P3.0: natural-language quality and stability contract
 
-**Status: proposed for owner review under #37, not accepted or executable.**
+**Status: owner-accepted design under #37 / PR #38; not runtime implementation.**
 Contract revision: `p3-evaluation-contract-v0.1-r1`.
 Design baseline: `dev@f21c914915f34656c1e8c0069c28afadb5bbc7ae`.
-This document admits no product change, live request, case freeze or P3 exit.
-R1 follows the owner direction in #37 / Draft PR #38: implementation inability
+Acceptance baseline: `dev@a4bad1a8742a97021502e71208bd7162c6b37c44`.
+This document alone authorizes no live request, case freeze or P3 exit.
+R1 follows the owner direction in #37 / PR #38: implementation inability
 to clarify must not become desired decline gold. The small-N answer gate below
-is ratified for this first-slice proposal; the R1 contract still awaits review.
+is ratified for this first slice. P3.1 implementation has its own bounded
+[admission](clarification-action.md) under #39; the contract below is unchanged.
 
 ## 1. Thesis, evidence and route boundary
 

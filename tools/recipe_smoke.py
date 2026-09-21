@@ -307,6 +307,9 @@ def grade(result: RecipeInterpretation, oracle: dict) -> tuple[str, dict[str, st
             return "invalid_output", grading
         grading["execution"] = "failed"
         return "operational_failure", grading
+    if result.clarification is not None:
+        grading["request"] = "failed"
+        return "wrong_request", grading
     pack = result.analysis_pack
     if (result.proposal is None or pack is None or (pack.recipe_id, pack.recipe_version) != (
             oracle["recipe_id"], oracle["recipe_version"])
