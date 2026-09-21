@@ -7,12 +7,11 @@ from fractions import Fraction
 from grepbit import (
     BreakdownAnalysisPack, CompareAnalysisPack, Fact, OverviewAnalysisPack,
 )
-from grepbit import grouped, kernel
 from grepbit.contracts import FactRequest, KernelError, utc_text
 from grepbit.model import canonical_json, normalized_request
 from grepbit.presentation import ClarificationPresentation
 from grepbit.recipe_model import RecipeInterpretation
-from tools import recipe_smoke
+from tools import p3_expectations, recipe_smoke
 from tools.p3_assets import (
     AnswerOracle, ClarifyOracle, DeclineOracle, Oracle, ROLES, digest, semantic_choices,
 )
@@ -150,14 +149,15 @@ def _available_coverage(pack, oracle: AnswerOracle, expected: dict) -> bool:
                 or (fact.start_utc, fact.end_utc) != (utc_text(scope.start), utc_text(scope.end))
                 or fact.business_timezone != scope.timezone or fact.filters != filters):
             return False
-        checks = kernel._CHECKS if isinstance(fact, Fact) else grouped._GROUP_CHECKS
+        checks = (p3_expectations.SCALAR_REQUIRED_CHECKS if isinstance(fact, Fact)
+                  else p3_expectations.GROUPED_REQUIRED_CHECKS)
         if not isinstance(fact.checks, tuple) or not set(checks) <= set(fact.checks):
             return False
         if isinstance(fact, Fact):
             if fact.completeness != "complete" or fact.excluded_anonymous_rows is not None:
                 return False
-        elif (fact.snapshot != pack.snapshot or fact.dimension_profile_id != grouped._DIMENSION_PROFILE
-              or fact.ordering != grouped._ORDERING[_DIMENSIONS[role]]):
+        elif (fact.snapshot != pack.snapshot or fact.dimension_profile_id != p3_expectations.DIMENSION_PROFILE_ID
+              or fact.ordering != p3_expectations.ORDERING[_DIMENSIONS[role]]):
             return False
     return True
 

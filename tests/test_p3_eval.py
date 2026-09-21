@@ -18,7 +18,7 @@ import httpx
 
 from grepbit import recipe_model
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL, ModelError
-from tools import fixture, p3_assets, p3_eval as runner, smoke
+from tools import fixture, p3_assets, p3_eval as runner, p3_expectations, smoke
 
 
 BASE = "https://p3-test-private.invalid/v1"
@@ -116,12 +116,14 @@ class P3EvalTests(unittest.IsolatedAsyncioTestCase):
         for case, item in zip(self.panel.cases, manifest["inputs"]):
             self.assertNotIn("question", item)
             self.assertEqual(item["question_sha256"], hashlib.sha256(case.question.encode()).hexdigest())
-        for name in ("p3_eval", "p3_assets", "p3_grading", "p3_scoring", "evaluation_evidence", "recipe_smoke"):
+        for name in ("p3_eval", "p3_assets", "p3_grading", "p3_scoring", "p3_expectations",
+                     "evaluation_evidence", "recipe_smoke"):
             path = f"tools/{name}.py"
             self.assertEqual(manifest["identities"]["files_sha256"][path],
                              hashlib.sha256((runner.ROOT / path).read_bytes()).hexdigest())
         self.assertEqual(manifest["identities"]["context"], recipe_model.context_identity())
         self.assertEqual(manifest["identities"]["structured_output"], recipe_model.structured_output_identity())
+        self.assertEqual(manifest["identities"]["evidence_expectations"], p3_expectations.identity())
         self.assertEqual(manifest["assets"]["responses"]["sha256"],
                          hashlib.sha256(runner.DEFAULT_RESPONSES.read_bytes()).hexdigest())
         for oracle, pin in zip(self.panel.oracles, manifest["oracles"]):
@@ -306,6 +308,9 @@ class P3EvalTests(unittest.IsolatedAsyncioTestCase):
         for request, row in zip(runtime_requests, report["results"]):
             self.assertNotIn(canary, request.content.decode())
             self.assertNotIn(canary, str(row["evidence"]))
+            for identity_part in p3_expectations.identity().values():
+                self.assertNotIn(identity_part, request.content.decode())
+                self.assertNotIn(identity_part, str(row["evidence"]))
             self.assertEqual(set(json.loads(request.content)), {
                 "model", "messages", "temperature", "max_tokens", "stream", "response_format"})
         self.sent = []
@@ -517,6 +522,13 @@ class P3EvalTests(unittest.IsolatedAsyncioTestCase):
         report = await runner.run_panel(self.database, self.output, manifest_path=prepared / "manifest.json",
                                         responses_path=script)
         self.assertEqual(report["stop_reason"], "manifest_drift")
+        self.assert_tail(report, 0, "manifest_drift")
+
+    async def test_expectation_identity_drift_stops_before_runtime(self):
+        with patch.object(p3_expectations, "DIMENSION_PROFILE_ID", "unreviewed_profile"):
+            report = await self.run_panel()
+        self.assertEqual((report["stop_reason"], len(self.sent), report["attempt_budget_used"]),
+                         ("manifest_drift", 0, 0))
         self.assert_tail(report, 0, "manifest_drift")
 
     async def test_script_loaded_after_manifest_and_rechecked_before_send(self):

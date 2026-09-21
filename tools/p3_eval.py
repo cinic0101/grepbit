@@ -22,7 +22,7 @@ import httpx
 from grepbit.gateway import GatewayClient, GatewayConfig, ModelError
 from grepbit.model import canonical_json, strict_json
 from grepbit.recipe_model import RecipeInterpretation, interpret_recipe_and_execute
-from tools import p3_assets, p3_grading, p3_scoring, recipe_smoke, smoke
+from tools import p3_assets, p3_expectations, p3_grading, p3_scoring, recipe_smoke, smoke
 from tools.evaluation_evidence import commit_terminal, stage_terminal
 from tools.p3_assets import P3Error, Panel
 
@@ -160,6 +160,7 @@ def _asset_paths(panel: Panel, responses_path: Path | None) -> dict[str, Path]:
 
 def _source_identity(panel: Panel, responses_path: Path | None) -> dict:
     identity = recipe_smoke._source_identity()
+    identity["evidence_expectations"] = p3_expectations.identity()
     for path in sorted((ROOT / "tools").glob("p3_*.py")):
         identity["files_sha256"][path.relative_to(ROOT).as_posix()] = _pin(path)["sha256"]
     for name, path in _asset_paths(panel, responses_path).items():

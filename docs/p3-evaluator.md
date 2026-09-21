@@ -108,6 +108,37 @@ distinction between absent and measured-zero populations.
 Runtime objects are observed, not rewritten to make an existing checker pass.
 Reused P2 checks retain their historical classification and behavior.
 
+### R1: independent semantic-evidence expectations
+
+`tools/p3_expectations.py` owns `p3-evidence-expectations-v1`: the scalar and
+grouped required check IDs, accepted grouped dimension profile ID, and ordering
+for booking day, category and course. These are explicit immutable values, not
+aliases, copies or import-time snapshots of candidate runtime constants.
+Per-expectation provenance cites accepted `e8c3a455` source/test contracts;
+ordering also cites the accepted grouped-amount documentation.
+
+The deterministic SHA-256 covers the version, expectations and provenance.
+P3 manifest `identities.evidence_expectations` records that identity, and the
+existing source inventory also hashes the module. Changing the expectation
+contract requires a separately reviewed identity; historical manifests/reports
+are not repinned. This does not change runtime schema/context identities.
+
+Required checks remain a subset of actual checks; additional compatible checks
+are allowed. Reused `recipe_smoke` helpers retain independent responsibilities:
+`canonical_request` normalizes native requests, `_values` extracts output,
+`coverage_shape` compares supplied expectations, and `selection_shape` checks
+evaluator-owned fixed slot/link structure. None derives expected truth from
+runtime-private semantic constants.
+
+Import/reload controls corrupt product constants first. Paired controls require
+unchanged valid output to pass and co-mutated invalid output to remain
+`wrong_coverage` with `checked_wrong=true`, including explicitly mutated
+dataclass profile fields. This fixes evaluator independence, not a demonstrated
+runtime defect or product improvement. Check IDs are evidence obligations, not
+proof that the implementation actually performed each check. The deliberate
+duplication is limited to semantic evidence: no physical schema, FK inventory,
+SQL, SourceProfile, planner or generic oracle language is copied or introduced.
+
 `checked_wrong` is an independent veto whenever a claimed complete normal
 answer has wrong action, recipe, request, coverage, selection or values.
 Decline/clarify/explicit partial is not a checked-normal answer, but still fails

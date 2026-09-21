@@ -3,6 +3,7 @@ from contextlib import closing
 import copy
 from dataclasses import replace
 from datetime import timezone
+import importlib
 from pathlib import Path
 import shutil
 import sqlite3
@@ -10,16 +11,20 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from grepbit import recipe_model
+from grepbit import grouped, kernel, recipe_model
 from grepbit.clarification import Clarification, CountBasis, SemanticChoice
 from grepbit.gateway import ModelError
 from grepbit.presentation import ClarificationPresentation, render_clarification
 from grepbit.recipe_model import RecipeInterpretation, RecipeProposal
-from tools import fixture, p3_grading
+from tools import fixture, p3_expectations, p3_grading
 from tools.p3_assets import AnswerOracle, ClarifyOracle, DeclineOracle, load_panel, parse_oracle
 
 
 ROOT = Path(__file__).resolve().parents[1]
+EXPECTATION_IDENTITY = {
+    "version": "p3-evidence-expectations-v1",
+    "sha256": "70354f181c66dad53acb5b163af128ba78a11d4eeecaa800f234c6058183934a",
+}
 
 
 class P3GradingTests(unittest.TestCase):
@@ -78,6 +83,100 @@ class P3GradingTests(unittest.TestCase):
                 self.assertEqual({grade["layers"][key] for key in (
                     "action", "recipe", "request", "execution", "coverage", "fact_selection", "values")}, {"passed"})
                 self.assertEqual(len(grade["actual_signature"]), 64)
+
+    def test_evidence_expectations_have_a_pinned_independent_identity(self):
+                self.assertEqual(p3_expectations.identity(), EXPECTATION_IDENTITY)
+                self.assertEqual(set(p3_expectations.PROVENANCE), {
+                    "scalar_required_checks", "grouped_required_checks", "dimension_profile_id", "ordering"})
+                for references in p3_expectations.PROVENANCE.values():
+                    self.assertTrue(references)
+                    self.assertTrue(all(ref.startswith("e8c3a455bd4e09a266a772be599fe851d405df78:")
+                                        for ref in references))
+                with self.assertRaises(TypeError):
+                    p3_expectations.ORDERING["course"] = ("value_asc",)
+
+    def test_import_time_expectations_ignore_corrupted_product_constants(self):
+                mutations = (
+                    ("scalar_checks", kernel, "_CHECKS", ("corrupted_scalar_check",)),
+                    ("grouped_checks", grouped, "_GROUP_CHECKS", ("corrupted_grouped_check",)),
+                    ("category_ordering", grouped, "_ORDERING",
+                     {**grouped._ORDERING, "category": ("key_desc",)}),
+                    ("course_ordering", grouped, "_ORDERING",
+                     {**grouped._ORDERING, "course": ("value_asc", "key_asc")}),
+                    ("dimension_profile", grouped, "_DIMENSION_PROFILE", "corrupted_dimension_profile"),
+                )
+                for name, owner, attribute, corrupted in mutations:
+                    with self.subTest(mutation=name):
+                        try:
+                            with patch.object(owner, attribute, corrupted):
+                                importlib.reload(p3_expectations)
+                                self.assertEqual(p3_expectations.identity(), EXPECTATION_IDENTITY)
+                        finally:
+                            importlib.reload(p3_expectations)
+
+    def assert_co_drift_rejected(self, recipe, owner, attribute, corrupted, pack):
+                original = self.native[recipe]
+                mutant = replace(original, analysis_pack=pack)
+                self.assess(mutant, self.answers[recipe], "wrong_coverage", checked_wrong=True)
+                with patch.object(owner, attribute, corrupted):
+                    self.assess(original, self.answers[recipe], "complete_correct")
+                    self.assess(mutant, self.answers[recipe], "wrong_coverage", checked_wrong=True)
+
+    def test_scalar_required_check_cannot_co_drift_with_runtime(self):
+                missing = "read_only_single_transaction"
+                self.assertIn(missing, kernel._CHECKS)
+                corrupted = tuple(check for check in kernel._CHECKS if check != missing)
+                pack = self.native["compare"].analysis_pack
+                facts = tuple(replace(fact, checks=tuple(check for check in fact.checks if check != missing))
+                              for fact in pack.facts)
+                for fact in facts:
+                    self.assertNotIn(missing, fact.checks)
+                self.assert_co_drift_rejected("compare", kernel, "_CHECKS", corrupted, replace(pack, facts=facts))
+
+    def test_grouped_required_check_cannot_co_drift_with_runtime(self):
+                missing = "reviewed_dimension_binding"
+                self.assertIn(missing, grouped._GROUP_CHECKS)
+                corrupted = tuple(check for check in grouped._GROUP_CHECKS if check != missing)
+                pack = self.native["overview"].analysis_pack
+                groups = tuple(replace(fact, checks=tuple(check for check in fact.checks if check != missing))
+                               for fact in pack.grouped_facts)
+                for fact in groups:
+                    self.assertNotIn(missing, fact.checks)
+                self.assert_co_drift_rejected(
+                    "overview", grouped, "_GROUP_CHECKS", corrupted, replace(pack, grouped_facts=groups))
+
+    def assert_ordering_co_drift_rejected(self, recipe, dimension, ordering):
+                self.assertNotEqual(grouped._ORDERING[dimension], ordering)
+                corrupted = {**grouped._ORDERING, dimension: ordering}
+                pack = self.native[recipe].analysis_pack
+                groups = tuple(replace(fact, ordering=ordering) if fact.dimension == dimension else fact
+                               for fact in pack.grouped_facts)
+                self.assertEqual([fact.ordering for fact in groups if fact.dimension == dimension], [ordering])
+                self.assert_co_drift_rejected(
+                    recipe, grouped, "_ORDERING", corrupted, replace(pack, grouped_facts=groups))
+
+    def test_category_ordering_cannot_co_drift_with_runtime(self):
+                self.assert_ordering_co_drift_rejected("overview", "category", ("key_desc",))
+
+    def test_course_ordering_cannot_co_drift_with_runtime(self):
+                self.assert_ordering_co_drift_rejected("breakdown", "course", ("value_asc", "key_asc"))
+
+    def test_dimension_profile_cannot_co_drift_with_runtime(self):
+                corrupted = "corrupted_dimension_profile"
+                self.assertNotEqual(grouped._DIMENSION_PROFILE, corrupted)
+                pack = copy.deepcopy(self.native["overview"].analysis_pack)
+                for fact in pack.grouped_facts:
+                    object.__setattr__(fact, "dimension_profile_id", corrupted)
+                    self.assertEqual(fact.dimension_profile_id, corrupted)
+                self.assert_co_drift_rejected("overview", grouped, "_DIMENSION_PROFILE", corrupted, pack)
+
+    def test_additional_compatible_checks_remain_allowed(self):
+                pack = self.native["overview"].analysis_pack
+                extra = ("additional_compatible_check",)
+                facts = tuple(replace(fact, checks=(*fact.checks, *extra)) for fact in pack.facts)
+                groups = tuple(replace(fact, checks=(*fact.checks, *extra)) for fact in pack.grouped_facts)
+                self.assess(replace(self.native["overview"], analysis_pack=replace(
+                    pack, facts=facts, grouped_facts=groups)), self.answers["overview"], "complete_correct")
 
     def test_wrong_recipe_remains_primary_while_later_execution_is_observed(self):
         grade = self.assess(self.native["overview"], self.answers["compare"], "wrong_recipe", checked_wrong=True)
