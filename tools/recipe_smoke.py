@@ -37,6 +37,7 @@ from grepbit.recipe_model import (
     RecipeInterpretation, context_identity, interpret_recipe_and_execute, structured_output_identity,
 )
 from tools import smoke
+from tools.evaluation_evidence import commit_terminal, stage_terminal
 
 PANEL_ASSET = "evals/panels/p2-recipe-smoke-v1.json"
 PANEL_ID = "p2-recipe-smoke-v1"
@@ -165,7 +166,7 @@ def panel_inputs() -> tuple[list[dict], dict]:
 def _source_identity() -> dict:
     identity = smoke._source_identity()
     try:
-        for name in ("tools/recipe_smoke.py", PANEL_ASSET):
+        for name in ("tools/recipe_smoke.py", "tools/evaluation_evidence.py", PANEL_ASSET):
             smoke._no_symlinks(ROOT / name)
             identity["files_sha256"][name] = smoke._digest((ROOT / name).read_bytes())
         identity["branch"] = subprocess.run(
@@ -240,20 +241,40 @@ def live_preflight(manifest_path: Path | None, current: dict, *, gateway_policie
     return GatewayConfig.from_env(environ=environ, env_file=env_file)
 
 
-def _coverage(pack: _Pack, expected: dict) -> bool:
+def coverage_shape(pack: _Pack, expected: dict) -> bool:
     roles = {slot.slot_id: "required" if isinstance(pack, CompareAnalysisPack) else slot.role for slot in pack.slots}
+    if (pack.status != expected["status"] or roles != expected["slots"] or len(roles) != len(pack.slots)
+            or any(slot.state not in expected["states"] for slot in pack.slots)):
+        return False
+    if isinstance(pack, OverviewAnalysisPack):
+        return pack.binding.center_id == expected["binding_center_id"]
+    if isinstance(pack, BreakdownAnalysisPack):
+        if len(pack.grouped_facts) != 1:
+            return False
+        group = pack.grouped_facts[0]
+        return {"dimension": group.dimension, "coverage": group.coverage,
+                "top_k": group.top_k} == expected["group"]
+    return True
+
+
+def selection_shape(pack: _Pack, *, allow_optional_gaps: bool = False) -> bool:
     facts = list(pack.facts)
     groups = list(pack.grouped_facts) if isinstance(pack, (OverviewAnalysisPack, BreakdownAnalysisPack)) else []
     derived = list(pack.derived_facts) if isinstance(pack, (CompareAnalysisPack, BreakdownAnalysisPack)) else []
     facts += groups + derived
     sizes = ((3, 2, 0) if isinstance(pack, OverviewAnalysisPack) else
              (2, 0, 2) if isinstance(pack, CompareAnalysisPack) else (1, 1, 2))
+    slots = pack.slots
+    if allow_optional_gaps and isinstance(pack, OverviewAnalysisPack) and pack.status == "partial":
+        if any(slot.state == "unavailable" and (
+                slot.role != "optional" or slot.fact_id is not None) for slot in slots):
+            return False
+        slots = tuple(slot for slot in slots if slot.state != "unavailable")
+        sizes = (3, len(slots) - 3, 0)
     if ((len(pack.facts), len(groups), len(derived)) != sizes
             or len({fact.fact_id for fact in facts}) != len(facts)
-            or len({slot.fact_id for slot in pack.slots}) != len(pack.slots)
-            or pack.status != expected["status"] or roles != expected["slots"] or len(roles) != len(pack.slots)
-            or any(slot.state not in expected["states"] or slot.fact_id not in {fact.fact_id for fact in facts}
-                   for slot in pack.slots)):
+            or len({slot.fact_id for slot in slots}) != len(slots)
+            or any(slot.fact_id not in {fact.fact_id for fact in facts} for slot in slots)):
         return False
     native_roles = (
         ("amount", "bookings", "seats", "daily_amount", "category_amounts")
@@ -262,17 +283,16 @@ def _coverage(pack: _Pack, expected: dict) -> bool:
         ("all_amount", "top_courses", "top_subtotal", "share")
     )
     # Membership alone would accept a slot pointing to another role's checked fact.
-    if {slot.slot_id: slot.fact_id for slot in pack.slots} != dict(
+    if allow_optional_gaps and isinstance(pack, OverviewAnalysisPack) and pack.status == "partial":
+        native_roles = tuple(role for role in native_roles if role in {slot.slot_id for slot in slots})
+    if {slot.slot_id: slot.fact_id for slot in slots} != dict(
             zip(native_roles, (fact.fact_id for fact in facts))):
         return False
-    if isinstance(pack, OverviewAnalysisPack):
-        return pack.binding.center_id == expected["binding_center_id"]
-    if isinstance(pack, BreakdownAnalysisPack):
-        group = pack.grouped_facts[0]
-        return len(pack.grouped_facts) == 1 and {
-            "dimension": group.dimension, "coverage": group.coverage, "top_k": group.top_k,
-        } == expected["group"]
     return True
+
+
+def _coverage(pack: _Pack, expected: dict) -> bool:
+    return selection_shape(pack) and coverage_shape(pack, expected)
 
 
 def _values(pack: _Pack) -> dict:
@@ -430,28 +450,16 @@ def _complete_panel(
     database: Path, manifest: dict, manifest_path: Path | None,
     started: float, clock: Callable[[], float],
 ) -> dict:
-    target = artifacts.directory / "report.json"
-    pending = artifacts.directory / "terminal.next.json"
+    def validate() -> None:
+        smoke.validate_manifest(manifest_path, manifest)
+        _unchanged(database, manifest)
+
     try:
         candidate = deepcopy(report)
         candidate["status"] = "complete"
         candidate = _safe_report(candidate, client)
-        smoke._no_symlinks(artifacts.directory)
-        snapshot = artifacts._write("terminal-candidate.json", candidate)
-        info = snapshot.lstat()
-        if not stat.S_ISREG(info.st_mode):
-            raise RecipeSmokeError("artifact_conflict")
-        candidate_inode = (info.st_dev, info.st_ino)
-        os.link(snapshot, pending)
-        smoke.validate_manifest(manifest_path, manifest)
-        _unchanged(database, manifest)
-        smoke._no_symlinks(artifacts.directory)
-        for path, expected_inode in ((target, artifacts.report_inode), (pending, candidate_inode)):
-            info = path.lstat()
-            if not stat.S_ISREG(info.st_mode) or (info.st_dev, info.st_ino) != expected_inode:
-                raise RecipeSmokeError("artifact_conflict")
-        if _remaining(started, clock) <= 0:
-            raise RecipeSmokeError("panel_budget")
+        pending, target = stage_terminal(
+            artifacts, candidate, validate=validate, remaining=lambda: _remaining(started, clock))
     except (KeyboardInterrupt, asyncio.CancelledError):
         report.update(status="incomplete", stop_reason="interrupted", error_code="interrupted")
     except (RecipeSmokeError, smoke.SmokeError) as exc:
@@ -463,10 +471,7 @@ def _complete_panel(
         report.update(status="incomplete", stop_reason="internal_failure", error_code="internal_failure")
     else:
         # Publication is the commit point; no revalidation or compensating write follows it.
-        try:
-            os.replace(pending, target)
-        except OSError:
-            raise smoke.SmokeError("artifact_io") from None
+        commit_terminal(pending, target)
         return candidate
     elapsed = clock() - started
     report["elapsed_seconds"] = round(elapsed, 6) if math.isfinite(elapsed) and elapsed >= 0 else None
