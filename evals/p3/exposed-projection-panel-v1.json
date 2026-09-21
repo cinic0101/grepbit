@@ -1,0 +1,24 @@
+{
+  "version": "p3-panel-v1",
+  "panel_id": "p3-exposed-projection-v1",
+  "kind": "development",
+  "cases": "exposed-projection-cases-v1.json",
+  "oracles": "exposed-projection-oracles-v1.json",
+  "order": [
+    "E01_overview.zh-TW",
+    "E02_compare.en",
+    "E03_share_denominator.ja",
+    "E01_overview.en",
+    "E02_compare.ja",
+    "E03_share_denominator.zh-TW",
+    "E01_overview.ja",
+    "E02_compare.zh-TW",
+    "E03_share_denominator.en",
+    "P09_empty_overview.ja",
+    "P15_center.en",
+    "P16_metric_meaning.zh-TW",
+    "P19_profit.ja",
+    "P20_cash_received.en",
+    "P22_center_compare.ja"
+  ]
+}

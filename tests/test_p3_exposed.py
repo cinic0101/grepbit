@@ -11,12 +11,13 @@ from unittest.mock import patch
 
 from grepbit.compare import CompareRequest
 from grepbit.contracts import KernelError
-from tools import p3_assets, recipe_smoke
+from tools import p3_assets, p3_scoring, recipe_smoke
 
 
 ROOT = Path(__file__).resolve().parent.parent
 ASSETS = ROOT / "evals/p3"
 PANEL = ASSETS / "exposed-panel-v1.json"
+PROJECTION = ASSETS / "exposed-projection-panel-v1.json"
 BASELINE = "20abb5592262c77c98f9cabeaf7cf4854edb6fbe"
 REFERENCE = (
     ".artifacts/p33-offline-5r2c8z2c/exposed-reference-qiDblo/reference-results-v1.json"
@@ -33,6 +34,9 @@ CONTROL_ALLOCATION = {
     "P22_center_compare.ja": ("ja", "decline"),
 }
 SOURCE_SHA256 = {
+    "evals/p3/exposed-panel-v1.json": "5fdc59af24c96e58ebeec00e2cf274e040e3522d8343982648360ffacef39944",
+    "evals/p3/exposed-cases-v1.json": "c2c4a54bc4a7fb7fc808ef95bd351b206bbe00b18d7549320ac6606609fb7ed5",
+    "evals/p3/exposed-oracles-v1.json": "a1685b8183d37199406c59a68aa32319e6b51e13cbe7548978f348fb0371af77",
     "evals/fixtures/learningops/schema.sql": "ffe372eb37db2ad4d2d3b8407e6eb4cc414f3bfc640b34fc5af42c320df395dc",
     "evals/fixtures/learningops/seed.json": "423473d98ed6d2ad4c2ecbb4fc2a57a625d7bc4cc9a5ed681d21cd93126fcc36",
     "evals/cases/learningops.json": "b287a9de51ef65137b36b2c88a0cba5fb309e7e5a2c54e36f91ddaa6d768cddf",
@@ -92,6 +96,49 @@ class P3ExposedTests(unittest.TestCase):
         self.references = {
             oracle["id"]: oracle for oracle in read_json("evals/oracles/learningops.json")
         }
+
+    def test_owner_projection_preserves_exact_retained_objects_and_historical_exclusions(self):
+        projection = p3_assets.load_panel(PROJECTION)
+        excluded = {"P10_required_views.en", "P11_nonchronological_roles.zh-TW",
+                    "P12_ranked_courses.ja"}
+        retained = [case for case in self.panel.cases if case.case_id not in excluded]
+        self.assertEqual((projection.panel_id, projection.kind),
+                         ("p3-exposed-projection-v1", "development"))
+        self.assertEqual(list(projection.cases), retained)
+        self.assertEqual(set(self.cases) - {case.case_id for case in projection.cases}, excluded)
+        original_cases = read_json("evals/p3/exposed-cases-v1.json")["cases"]
+        self.assertEqual(read_json("evals/p3/exposed-projection-cases-v1.json")["cases"],
+                         [case for case in original_cases if case["case_id"] not in excluded])
+        oracle_ids = {case.oracle_id for case in retained}
+        self.assertEqual(read_json("evals/p3/exposed-projection-oracles-v1.json")["oracles"],
+                         [oracle for oracle in self.oracles.values()
+                          if oracle["oracle_id"] in oracle_ids])
+        self.assertEqual({case.family_id for case in projection.cases}, {
+            "E01_overview", "E02_compare", "E03_share_denominator", "P09_empty_overview",
+            "P15_center", "P16_metric_meaning", "P19_profit", "P20_cash_received",
+            "P22_center_compare",
+        })
+        self.assertEqual(sum(case.family_id == "E02_compare" for case in projection.cases), 3)
+        self.assertTrue(all(case.exposure == "exposed_regression" for case in projection.cases))
+
+    def test_owner_projection_accounting_is_nine_families_fifteen_inputs_not_admission(self):
+        inputs = p3_assets.load_panel(PROJECTION).inputs()
+        results = [{"case_id": row["case_id"], "status": "pending", "outcome": None,
+                    "actual_signature": None, "checked_wrong": False} for row in inputs]
+        summary = p3_scoring.summarize(inputs, results, panel_kind="development", run_status="pending")
+        self.assertEqual((len(summary["per_family"]), len(inputs)), (9, 15))
+        self.assertEqual({cohort: (group["family_count"], group["input_count"])
+                          for cohort, group in summary["by_cohort"].items()},
+                         {"answer": (1, 1), "clarify": (2, 2), "decline": (3, 3), "anchor": (3, 9)})
+        self.assertEqual({language: group["input_count"]
+                          for language, group in summary["per_language"].items()},
+                         {"zh-TW": 4, "en": 5, "ja": 6})
+        self.assertFalse(summary["promotion"]["passed"])
+
+    def test_owner_projection_does_not_relax_fixed_formal_allocation(self):
+        for path in (PANEL, PROJECTION):
+            with self.subTest(path=path.name), self.assertRaisesRegex(p3_assets.P3Error, "invalid_panel"):
+                p3_scoring.validate_formal_allocation(p3_assets.load_panel(path).inputs())
 
     def test_development_shape_counts_are_proposed_labels_not_novelty(self):
         self.assertEqual(

@@ -30,10 +30,13 @@ the independent evidence-expectation correction, is accepted at
 `20abb5592262c77c98f9cabeaf7cf4854edb6fbe`. Its [offline evaluator](p3-evaluator.md)
 provides ordered grading and family-weighted evidence, not fresh quality results.
 P3.3 (#43) prepares [independent authoring and formal admission](p3-fresh-case-authoring.md)
-with product/grader behavior frozen at that SHA. The 24/44 target is conditional:
-independent fresh submissions and exposed-control distinctness/coverage review
-are still prerequisites, not inferred from preparation tests. No actual formal
-panel or live run is admitted by the tooling candidate. P3-P5 remain open; it
+with product/grader behavior frozen at that SHA. The owner-approved
+[exposed projection](p3-evaluator.md#exposed-material-and-unresolved-admission)
+is 9 provisional families / 15 inputs: P10 deferred, P11 preserved outside the
+panel as an E02 regression, P12 not admitted. Original assets remain intact.
+The unchanged 24/44 target cannot be met by this projection plus the original
+fresh reservations; fresh fillability and full admission remain unresolved.
+No complete formal panel is frozen and no live run is authorized. P3-P5 remain open; it
 does not complete grounding/resume/synthesis. P2 is not promoted
 to main; no further live execution follows from the phase handoff.
 GitHub Issues own current status; this document owns phase meaning and exits.

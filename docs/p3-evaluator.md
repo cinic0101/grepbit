@@ -350,23 +350,80 @@ loader or automatic prepare/probe/formal chain. The later probe is one attempt,
 
 ### Exposed material and unresolved admission
 
-`exposed-panel-v1.json` is a development-only draft with 18 exposed inputs and
-12 **provisional** family labels: the original nine anchors plus historical
-controls. Its wording/gold/source checks do not establish 12 distinct admitted
-families. P10 versus E01 and P11/P12 versus anchors need independent requirement
-review. P12 reuses the historical ranking-only Q13 request; the unmodified
-fixture has no course-amount ties, and top-three includes all observed courses.
-It therefore does not demonstrate a tied cutoff or a new cutoff-discrimination
-obligation. Do not count that obligation as covered or claim P12 is distinct
-merely because k changed.
+The active exposed-side projection for future formal admission is
+[`exposed-projection-panel-v1.json`](../evals/p3/exposed-projection-panel-v1.json),
+panel ID `p3-exposed-projection-v1`. It remains **development-only**, not an
+admitted or frozen formal panel. The original `exposed-panel-v1.json` remains an
+unchanged historical development snapshot: 18 inputs / 12 provisional labels,
+including all P10/P11/P12 questions, oracles and provenance. Existing historical
+checks still inspect that snapshot; the default development evaluator is unchanged.
 
-No fresh question/gold or actual formal panel is authored here. The target is
-not currently admitted. Missing independent submissions leave fresh fillability
-unknown; known historical overlap/coverage concerns require owner resolution.
-If P12 cannot be admitted, removing that one reservation would provisionally
-yield 23 families / 43 inputs (exposed answers 3, Japanese inputs 14), subject
-to further dedup and independent authoring. This is a proposal for review, not
-a changed validator, threshold or accepted allocation. Never pad back to 24/44.
+#### Owner decisions and projection ancestry
+
+On 2026-09-21 the owner approved the following disposition for [#43](https://github.com/cinic0101/grepbit/issues/43)
+after exposed requirement review and a family/oracle compatibility preflight:
+
+| Historical candidate | Current formal-panel treatment | Preserved meaning and evidence |
+| --- | --- | --- |
+| P10_required_views | Deferred; excluded from the projection | Explicitly required views are meaningful user obligations, but the current action/fact evaluator does not sufficiently discriminate the broader synthesis obligation: missing views collapse into partial-result behavior. Revisit at the appropriate synthesis gate, not by adding fact-level machinery or a replacement here. |
+| P11_nonchronological_roles | Excluded from the projection; retained as an exposed `E02_compare` semantic regression | Role binding remains useful regression evidence. Semantic taxonomy relationship is not formal family membership: P11's reversed request/values differ from E02's oracle meaning. Its historical family ID and oracle remain unchanged outside this panel. |
+| P12_ranked_courses | Not admitted; excluded from the projection | Ranking is exercised, but the three unequal observed totals and `k=3` select all three courses. Neither a top-k truncation boundary nor a tied cutoff is exercised. Ranking-only may be meaningful apart from E03's share obligations, but this case is insufficient evidence. A future separately reviewed exposed cutoff witness may be considered; no replacement, fixture change or tie-coverage requirement is added here. |
+
+The owner disposition is recorded in [PR #45](https://github.com/cinic0101/grepbit/pull/45)
+under the active P3.3 decision context of [Issue #43](https://github.com/cinic0101/grepbit/issues/43).
+A local transition review informed the decision but is not committed repository evidence.
+The owner subsequently chose this 9/15 projection explicitly; the earlier
+23/43 illustration was not adopted. No new novelty judgment is made here.
+
+The derivation is only exclusion of `P10_required_views.en`,
+`P11_nonchronological_roles.zh-TW` and `P12_ranked_courses.ja` from the historical
+order, cases and referenced oracle set. Retained case/oracle objects, including
+questions, gold, family IDs, signatures, exposure and provenance, are **exactly
+unchanged**. New paths/panel ID distinguish this projection from its ancestors.
+All files below are under `evals/p3/`; SHA-256 binds the exact raw bytes:
+
+| Asset | Historical source at accepted tooling `7ad3fece7f94fe5effa94fefeac902db4cea5249` | Derived projection |
+| --- | --- | --- |
+| Cases | `exposed-cases-v1.json`: `c2c4a54bc4a7fb7fc808ef95bd351b206bbe00b18d7549320ac6606609fb7ed5` | `exposed-projection-cases-v1.json`: `fb424442495c0440a544c71a8d32d57341cc1ad3ef42f669ea024310c941c7f8` |
+| Oracles | `exposed-oracles-v1.json`: `a1685b8183d37199406c59a68aa32319e6b51e13cbe7548978f348fb0371af77` | `exposed-projection-oracles-v1.json`: `0d2cb0a782cd349ceb1b716e8df182c78ee637f9c0c26b3482a5a320de4de1a4` |
+| Panel | `exposed-panel-v1.json`: `5fdc59af24c96e58ebeec00e2cf274e040e3522d8343982648360ffacef39944` | `exposed-projection-panel-v1.json`: `b613fefea35b5cb106a4a0567eeab915aa7d686d32eb08a59b76e75170e44584` |
+
+Existing schemas suffice. The panel loader requires exact case/order/oracle
+membership, so separate subset assets are necessary; a shortened order pointing
+at the original complete assets would be invalid. No new intake review claims,
+owner-status fields or state machine are introduced. Both `p3_assets` and
+`p3_admission` still require consistent oracle meaning within one formal family.
+In particular P11 is not relabeled or assigned E02's gold to evade that rule.
+
+#### Mechanical allocation, not admission
+
+| Inventory | Families / inputs | Answer | Clarify | Decline | P2 anchor | Languages zh-TW / en / ja |
+| --- | --- | --- | --- | --- | --- | --- |
+| Preserved historical exposed snapshot | 12 / 18 | 4 / 4 | 2 / 2 | 3 / 3 | 3 / 9 | 5 / 6 / 7 |
+| Active exposed projection | 9 / 15 | 1 / 1 | 2 / 2 | 3 / 3 | 3 / 9 | 4 / 5 / 6 |
+
+Composition cells are families / inputs. Retained labels are `E01_overview`,
+`E02_compare`, `E03_share_denominator`, `P09_empty_overview`, `P15_center`,
+`P16_metric_meaning`, `P19_profit`, `P20_cash_received` and `P22_center_compare`.
+Their retention is not certification that all nine independently satisfy every
+formal admission requirement. No additional family is admitted by this change;
+the nine remain provisional for this formal-panel admission, without undoing
+the three P2 anchors' historical acceptance.
+
+The accepted **24 families / 44 inputs target and its validator are unchanged**.
+Both exposed-only inventories fail that validator. With the originally planned
+12 fresh families / 26 inputs (language reservations 9/9/8), the projection would
+total only 21 families / 41 inputs: answer families/inputs 9/15 instead of 12/18,
+exposed families/inputs 9/15 instead of 12/18, and languages 13/14/14 instead of
+14/15/15. Clarify, decline and anchor totals would retain their target counts.
+This arithmetic is not a new panel allocation or evidence of supplied fresh
+material. The current projection plus original reservations cannot satisfy the
+fixed target; fresh supply/fillability remains unknown. Never pad back to 24/44.
+
+No fresh question/gold is authored or inspected here, and no complete formal
+panel has been frozen. Independent material/review, owner allocation/admission,
+formal freeze and accepted-commit preparation remain outstanding. Compatibility
+probe and formal scoring each still need their separate owner authorization.
 
 The accepted representative v2 request remains 25,250 bytes under 32,768.
 Evaluator metadata must leave bytes/content identical for the same question.

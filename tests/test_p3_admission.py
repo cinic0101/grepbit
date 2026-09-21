@@ -559,6 +559,20 @@ class P3IntakeTests(AdmissionAssertions):
         self.assertNotIn("novelty_rationale", result)
         self.assertNotIn("oracles", result)
 
+    def test_owner_exposed_projection_supports_draft_intake_not_formal_admission(self):
+        cases = json.loads((DEVELOPMENT / "exposed-projection-cases-v1.json").read_bytes())
+        oracles = json.loads((DEVELOPMENT / "exposed-projection-oracles-v1.json").read_bytes())
+        # Review assertions are synthetic test metadata, not actual independent reviews.
+        path, _ = self.write_bundle(cases=cases, oracles=oracles)
+        before = {source.name: source.read_bytes() for source in path.parent.iterdir()}
+        result = admission.audit_intake(path)
+        self.assertEqual((result["state"], result["family_count"], result["input_count"]),
+                         ("draft", 9, 15))
+        self.assertEqual((result["proposed_fresh_families"], result["live_model_attempts"]), (0, 0))
+        self.assertFalse(result["review_assertions_complete"])
+        self.assertEqual(result["semantic_novelty"], "requires_independent_reviewer_and_owner_acceptance")
+        self.assertEqual({source.name: source.read_bytes() for source in path.parent.iterdir()}, before)
+
     def test_intake_fields_are_exact_and_freeze_sha_cannot_be_omitted(self):
         _, original = self.write_bundle()
         for field in original:

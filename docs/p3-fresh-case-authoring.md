@@ -165,6 +165,14 @@ The accepted target is 24 semantic families / 44 inputs, not a quota to fill:
 language totals are zh-TW 14, en 15, ja 15. No design-seen scored slots.
 Use the existing P3.2 allocation validator, not a new scoring engine.
 
+The [owner-approved exposed projection](p3-evaluator.md#exposed-material-and-unresolved-admission)
+now retains 9 provisional families / 15 inputs (zh-TW 4 / en 5 / ja 6).
+P10 is deferred, P11 is an E02 semantic regression outside the formal panel,
+and P12 is not admitted; all historical assets remain intact. This projection
+does not certify the retained labels or relax same-family oracle consistency.
+Together with the original fresh reservations it would yield only 21/41, not
+24/44. Fresh fillability remains unknown; no formal panel has been frozen.
+
 Merge or reject duplicate families rather than padding. If independent audit
 cannot honestly fill the target, stop and propose a smaller allocation for
 owner review before changing the accepted validator. Missing external material
