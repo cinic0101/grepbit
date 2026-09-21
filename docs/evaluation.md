@@ -49,6 +49,13 @@ does not add a model recipe path or change fixture-checker scenario statuses.
 Neither admission nor implementation permits rewriting frozen asset/review labels.
 P3 still owns formal quality/stability measurement.
 
+The [P3.0 contract proposal](p3-evaluation-contract.md) refines these dimensions
+into ordered action/request/fact layers, explicit exposure labels, a mutually
+exclusive primary taxonomy and frozen family-weighted denominators. It does not
+rename historical P0/P1/P2 outcomes or change their oracles. Its initial
+action/fact panel defers resume and synthesis to separate P3 gates; owner
+acceptance, actual fresh-case admission and live authorization remain distinct.
+
 Evaluate four dimensions separately: interpretation/binding; fact correctness;
 request coverage/response faithfulness; operational/maintenance cost. Compare
 results, not SQL strings. Preserve duplicates, required order/ties, NULL and

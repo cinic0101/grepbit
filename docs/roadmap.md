@@ -1,6 +1,6 @@
 # Roadmap and phase exits
 
-Phase baseline: 2026-09-18; current status follows #13/#28. Work is on `dev`;
+Phase baseline: 2026-09-18; current status follows #36/#37. Work is on `dev`;
 promotion to `main` requires owner review. P0 and P1 are accepted at
 `6d6be30bed321806e0a2ef90fec53a1fc1118373`. The first smoke (#10) failed
 envelope validation on all 12 inputs and remains unchanged. After P1.3a
@@ -14,12 +14,17 @@ local-failure semantics. P2.4 (#22 / PR #23) accepted public deterministic
 Overview using that same composition. P2.5 (#24 / PR #25) accepted deterministic
 Breakdown with an independent denominator and exact selected subtotal/share.
 P2.6 (#26 / PR #27) accepted bounded one-shot recipe selection/instantiation.
-P2.7 (#28) adds a fixed evaluator runner with intent-first grading and separate
-timeout/network stops. Gate A implementation/review and Gate B accepted-commit
-preparation are distinct; the final manifest waits for owner merge.
-Offline wiring is not live recipe quality; live recipe evidence and the
-remaining P2 requirements stay open.
-All P3-P5 delivery remains open. P2 is not promoted to main.
+P2.7 (#28 / PR #29) accepted the fixed evaluator runner and its separate
+accepted-commit preparation gate. Historical #30 failed strict JSON on all nine
+inputs. After diagnostics and P2.11 structured-output wiring (#34 / PR #35),
+the separately authorized #36 panel passed 9/9 inputs across the three frozen
+recipe families and three languages on accepted dev
+`f21c914915f34656c1e8c0069c28afadb5bbc7ae`. The owner accepted the P2 exit in
+[the roadmap handoff](https://github.com/cinic0101/grepbit/issues/1#issuecomment-5754274130).
+That is exposed regression evidence, not generalization or broad NL quality.
+P3.0 (#37) proposes the [evaluation contract](p3-evaluation-contract.md) before
+quality-driven implementation. P3-P5 delivery remains open. P2 is not promoted
+to main; no further live execution follows from the phase handoff.
 GitHub Issues own current status; this document owns phase meaning and exits.
 
 | Phase | Deliverable | Question being tested | Exit |
@@ -64,7 +69,8 @@ strict native validation, fixed dispatch, native evidence and no hidden repair.
 panel without changing the adapter. Candidate manifests are not live manifests;
 accepted-commit preparation and owner-authorized live execution follow separate
 gates. E10 remains an injected operational control, not a model question.
-These offline slices do not complete the P2 exit above.
+Those offline slices alone do not establish the live part of P2 exit; the later
+accepted #36 evidence supplies that part without extending the recipe boundary.
 
 ## Historical P0 delivery scope
 
@@ -79,6 +85,14 @@ do not create one ticket for every speculative feature. Normal implementation
 needs an issue + test + PR/commit, not a research report.
 
 ## Candidate P3 thresholds (ratify before a formal run)
+
+The [P3.0 contract proposal](p3-evaluation-contract.md) specifies the behavior
+matrix, exposure/provenance, conditional panel allocation, family-weighted
+denominators, clarification policy and separate stability/resume/synthesis gates.
+It preserves the thresholds below; its small-N rounding and mandatory controls
+are explicit. Acceptance of that design is separate from product implementation,
+case freeze and authorization of any live run. The first action/fact panel alone
+does not complete P3's clarification/resume and synthesis promises.
 
 For the declared answerable panel: at least 90% complete-correct, and zero known
 wrong answers presented as checked normal answers in that observed panel.
@@ -103,6 +117,10 @@ is not automatically an open product bug.
 Track production files/lines touched, new operators/repairs, semantic/recipe
 branches, human review effort, live attempts/costs and displaced behavior. Moving
 exceptions from Python to config does not lower complexity by itself.
+Future P3 fixes must include the contract's
+[system-level impact review](p3-evaluation-contract.md#e-mandatory-system-level-impact-review-for-future-p3-prs)
+in the PR: protected P1/P2 behavior, privacy/leakage, sizes/costs/latency,
+complexity, P4/P5 implications and any changed product promise.
 
 P0 fixture tests and P1 unit tests do not measure language understanding. A
 synthetic fix is not source confirmation. A correct answer under one backend
