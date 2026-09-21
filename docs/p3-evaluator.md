@@ -5,6 +5,11 @@ Issue #41; implementation baseline:
 This evaluator admission follows the accepted [P3.0 contract](p3-evaluation-contract.md).
 It does not change product semantics, authorize live traffic or freeze fresh cases.
 
+P3.2, including R1, was accepted through #41 / PR #42 at
+`20abb5592262c77c98f9cabeaf7cf4854edb6fbe`. The original 755-test candidate and
+764-test R1 evidence retain their own source identities. The P3.3 preparation
+extension below does not change the accepted grader, scoring or expectations.
+
 ## Boundary and modules
 
 The dependency direction is evaluator -> product, never product -> evaluator.
@@ -285,6 +290,77 @@ and development-oracle correction, not product improvement; independent
 review/owner acceptance remains required.
 
 ## Limits and deferred review
+
+### P3.3 intake, freeze and preparation
+
+`tools/p3_admission.py` adds a thin `p3-intake-v1` wrapper over the unchanged
+case/oracle formats, `p3-formal-freeze-v1` snapshots and
+`p3-compatibility-preparation-v1` offline probe plans. The
+[independent-author handoff](p3-fresh-case-authoring.md) defines the metadata and
+human review boundary. Required reviewer assertions are not machine-certified
+novelty, authorship, truth or technical blindness.
+
+The candidate is frozen at `20abb559`; its runtime/dependency sources and
+accepted grading/scoring/expectation/shared-helper sources must match that Git
+snapshot. The later accepted **tooling** commit is separately pinned and must
+be exact, clean and on dev for formal freeze/preparation. A feature-branch
+candidate cannot manufacture that acceptance.
+
+Examples below are future owner-side operations, not a claim that independent
+fresh inputs or an accepted formal freeze already exist:
+
+```bash
+.venv/bin/python tools/p3_admission.py audit --intake "$BUNDLE/intake.json"
+.venv/bin/python tools/p3_admission.py freeze --intake "$BUNDLE/intake.json" \
+  --panel "$BUNDLE/panel-v1.json" --db "$DB" --output-dir "$FROZEN" \
+  --accepted-commit "$ACCEPTED_TOOLING_SHA"
+.venv/bin/python tools/p3_eval.py prepare --panel "$FROZEN/panel-v1.json" \
+  --formal-freeze "$FROZEN/report.json" --db "$DB" --output-dir "$PREPARED" \
+  --accepted-commit "$ACCEPTED_TOOLING_SHA"
+.venv/bin/python tools/p3_admission.py probe-prepare --db "$DB" \
+  --output-dir "$PROBE_PLAN" --accepted-commit "$ACCEPTED_TOOLING_SHA"
+```
+
+Each output directory is fresh. Actual submitted basenames must be used.
+Intake may be incomplete/draft; freeze requires independently reviewed complete
+material, an owner reference, exact formal allocation and clean accepted
+tooling. The freeze keeps byte-identical submitted case/oracle/panel/intake
+snapshots under existing exclusive artifact-directory ownership. One bounded
+raw-byte snapshot helper avoids changing their hashes through JSON formatting.
+Existing staging/fsync/atomic publication mechanics publish the terminal
+freeze only after asset, DB and source revalidation. Partial publication remains
+incomplete; drift or any changes need a new reviewed identity.
+
+Formal preparation additionally pins the freeze as an asset in the existing
+manifest. Formal execution, including fake execution, remains rejected.
+Archived formal reports may describe preparation only; historical development
+reports remain readable without requiring the current checkout.
+
+Probe preparation selects the already exposed English E01 input, pins source,
+DB and the unchanged v2 route, and performs zero model calls. A feature branch
+can produce only a candidate probe plan. There is no live command, credentials
+loader or automatic prepare/probe/formal chain. The later probe is one attempt,
+60 seconds, 2,048 tokens, no retries/repairs/fallbacks and no quality score.
+
+### Exposed material and unresolved admission
+
+`exposed-panel-v1.json` is a development-only draft with 18 exposed inputs and
+12 **provisional** family labels: the original nine anchors plus historical
+controls. Its wording/gold/source checks do not establish 12 distinct admitted
+families. P10 versus E01 and P11/P12 versus anchors need independent requirement
+review. P12 reuses the historical ranking-only Q13 request; the unmodified
+fixture has no course-amount ties, and top-three includes all observed courses.
+It therefore does not demonstrate a tied cutoff or a new cutoff-discrimination
+obligation. Do not count that obligation as covered or claim P12 is distinct
+merely because k changed.
+
+No fresh question/gold or actual formal panel is authored here. The target is
+not currently admitted. Missing independent submissions leave fresh fillability
+unknown; known historical overlap/coverage concerns require owner resolution.
+If P12 cannot be admitted, removing that one reservation would provisionally
+yield 23 families / 43 inputs (exposed answers 3, Japanese inputs 14), subject
+to further dedup and independent authoring. This is a proposal for review, not
+a changed validator, threshold or accepted allocation. Never pad back to 24/44.
 
 The accepted representative v2 request remains 25,250 bytes under 32,768.
 Evaluator metadata must leave bytes/content identical for the same question.

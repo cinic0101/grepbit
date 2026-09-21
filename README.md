@@ -59,12 +59,16 @@ policy and separate stability scoring. **P3.1** (#39 / PR #40) accepted
 `e8c3a455bd4e09a266a772be599fe851d405df78`, in the existing
 recipe entry: one typed action, no analytical execution on clarify, and
 deterministic single-select presentation. P1 and native recipes remain unchanged.
-**P3.2** (#41) adds an [offline evaluator candidate](docs/p3-evaluator.md):
+**P3.2** (#41 / PR #42) accepted the [offline evaluator](docs/p3-evaluator.md)
+at `20abb5592262c77c98f9cabeaf7cf4854edb6fbe`:
 independent action/request/fact grading, family-weighted denominators and
 immutable evidence using the unchanged production entry. Its development
 fixtures are exposed regressions, not the future fresh/formal panel.
-Evaluator acceptance, live model quality, grounding, resume, synthesis and full
-P3 exit remain separate; no new live authorization is implied.
+**P3.3** (#43) prepares [independent authoring and formal admission](docs/p3-fresh-case-authoring.md)
+against that frozen behavior. Intake/freeze tooling and exposed draft controls
+are not an admitted 24/44 panel: independent fresh material and historical
+family-distinctness review remain required. No live probe/run or full P3 exit
+follows from this preparation; grounding, resume and synthesis remain separate.
 
 The seed has 10 tables and 88 rows. There are 30 authored case descriptions:
 18 reference-SQL checks and 12 behavioral scenarios. The fixture checker still
@@ -108,6 +112,7 @@ are ignored by Git; rebuild from the committed source instead of committing a DB
 | [P3 evaluation contract](docs/p3-evaluation-contract.md) | Accepted intent matrix, provenance, branch policy, scoring and conditional panel costs |
 | [P3.1 clarification action](docs/clarification-action.md) | Closed semantic alternatives, deterministic choices, offline evidence and deferred capabilities |
 | [P3.2 offline evaluator](docs/p3-evaluator.md) | Evaluator-only assets, ordered grading, family scoring, immutable evidence and development-only execution |
+| [P3.3 independent authoring](docs/p3-fresh-case-authoring.md) | Fresh-author separation, bounded intake/review/freeze, conditional allocation and future probe gates |
 | [Portability](docs/portability.md) | SQLite-first and PostgreSQL P4 preparation |
 | [Local execution](docs/local-execution.md) | Owner-triggered work and copy/paste handoff |
 | [P1.1 fact kernel](docs/fact-kernel.md) | Explicit request contract, installation, example and bounded execution guarantees |

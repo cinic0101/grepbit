@@ -158,23 +158,31 @@ def _asset_paths(panel: Panel, responses_path: Path | None) -> dict[str, Path]:
     return paths
 
 
-def _source_identity(panel: Panel, responses_path: Path | None) -> dict:
+def _source_identity(panel: Panel, responses_path: Path | None, formal_freeze: Path | None = None) -> dict:
     identity = recipe_smoke._source_identity()
     identity["evidence_expectations"] = p3_expectations.identity()
     for path in sorted((ROOT / "tools").glob("p3_*.py")):
         identity["files_sha256"][path.relative_to(ROOT).as_posix()] = _pin(path)["sha256"]
     for name, path in _asset_paths(panel, responses_path).items():
         identity["files_sha256"][f"p3_asset:{name}"] = _pin(path)["sha256"]
+    if formal_freeze is not None:
+        identity["files_sha256"]["p3_asset:formal_freeze"] = _pin(formal_freeze)["sha256"]
     return identity
 
 
 def build_manifest(
     database: Path, *, panel_path: Path = DEFAULT_PANEL, responses_path: Path | None = None,
-    accepted_commit: str | None = None,
+    accepted_commit: str | None = None, formal_freeze: Path | None = None,
 ) -> dict:
     panel = p3_assets.load_panel(panel_path)
-    _admitted(panel)
-    identity = _source_identity(panel, responses_path)
+    if formal_freeze is None:
+        _admitted(panel)
+    else:
+        if panel.kind != "formal" or accepted_commit is None or responses_path is not None:
+            raise P3Error("formal_not_admitted")
+        from tools.p3_admission import validate_freeze
+        validate_freeze(formal_freeze, database, panel_path, accepted_commit=accepted_commit)
+    identity = _source_identity(panel, responses_path, formal_freeze)
     if accepted_commit is not None:
         recipe_smoke._accepted(identity, accepted_commit)
     if responses_path is not None:
@@ -197,7 +205,10 @@ def build_manifest(
                     for oracle in panel.oracles],
         "upstream_inference_attempts": None,
     }
-    if (_source_identity(panel, responses_path) != identity
+    if formal_freeze is not None:
+        manifest["assets"]["formal_freeze"] = _pin(formal_freeze)
+        validate_freeze(formal_freeze, database, panel_path, accepted_commit=accepted_commit)
+    if (_source_identity(panel, responses_path, formal_freeze) != identity
             or p3_assets.load_panel(panel_path) != panel):
         raise P3Error("manifest_drift")
     return manifest
@@ -224,7 +235,9 @@ def _new_report(manifest: dict, origin: str) -> dict:
                      "runtime_invoked": False, "attempt_evidence_status": "not_started",
                      "attempt_may_be_in_flight": False, "evidence": None, "error_code": None,
                      "runner_error_code": None} for item in manifest["inputs"]],
-        "scope": "Offline development regression evidence, not live quality or formal promotion.",
+        "scope": ("Offline formal preparation only; no execution, live authorization or quality result."
+                  if manifest["panel_kind"] == "formal" else
+                  "Offline development regression evidence, not live quality or formal promotion."),
     }
 
 
@@ -260,8 +273,9 @@ def _finish_pending(report: dict, panel: Panel, reason: str) -> None:
             row.update(status="not_run", not_run_reason=reason)
 
 
-def _unchanged(database: Path, manifest: dict, panel: Panel, responses_path: Path | None) -> None:
-    if _source_identity(panel, responses_path) != manifest["identities"]:
+def _unchanged(database: Path, manifest: dict, panel: Panel, responses_path: Path | None,
+               formal_freeze: Path | None = None) -> None:
+    if _source_identity(panel, responses_path, formal_freeze) != manifest["identities"]:
         raise P3Error("manifest_drift")
     if smoke._stable_database(database) != manifest["database_sha256"]:
         raise P3Error("database_drift")
@@ -270,14 +284,18 @@ def _unchanged(database: Path, manifest: dict, panel: Panel, responses_path: Pat
 def prepare(
     database: Path, output_dir: Path, *, panel_path: Path = DEFAULT_PANEL,
     responses_path: Path | None = None, accepted_commit: str | None = None,
+    formal_freeze: Path | None = None,
 ) -> dict:
     manifest = build_manifest(database, panel_path=panel_path, responses_path=responses_path,
-                              accepted_commit=accepted_commit)
+                              accepted_commit=accepted_commit, formal_freeze=formal_freeze)
     panel = p3_assets.load_panel(panel_path)
     artifacts = smoke._Artifacts(output_dir, manifest)
     report = _new_report(manifest, "preparation")
     _persist(artifacts, report, None)
-    _unchanged(database, manifest, panel, responses_path)
+    _unchanged(database, manifest, panel, responses_path, formal_freeze)
+    if formal_freeze is not None:
+        from tools.p3_admission import validate_freeze
+        validate_freeze(formal_freeze, database, panel_path, accepted_commit=accepted_commit)
     smoke.validate_manifest(artifacts.directory / "manifest.json", manifest)
     report["status"] = "prepared"
     _finish_pending(report, panel, "offline_preparation")
@@ -493,7 +511,7 @@ def read_report(path: Path, *, manifest_path: Path | None = None) -> dict:
     try:
         if (set(manifest) != _MANIFEST_FIELDS or manifest["manifest_version"] != MANIFEST_VERSION
                 or manifest["evaluator_version"] != p3_grading.VERSION
-                or manifest["panel_kind"] != "development"
+                or manifest["panel_kind"] not in ("development", "formal")
                 or manifest["upstream_inference_attempts"] is not None
                 or manifest["settings"] != settings(len(manifest["inputs"]))
                 or manifest["settings_sha256"] != p3_assets.digest(manifest["settings"])
@@ -507,6 +525,13 @@ def read_report(path: Path, *, manifest_path: Path | None = None) -> dict:
             raise P3Error("invalid_manifest")
         if preparation["kind"] == "accepted":
             recipe_smoke._accepted(manifest["identities"], preparation["accepted_commit"])
+        if manifest["panel_kind"] == "formal" and (
+                preparation["kind"] != "accepted" or manifest["fake_responses"] is not None
+                or report["status"] not in ("incomplete", "prepared") or report["origin"] != "preparation"
+                or report["client_http_attempts"] != 0 or report["attempt_budget_used"] != 0
+                or report["possible_in_flight_attempts"] != 0
+                or any(row["runtime_invoked"] or row["attempt_may_be_in_flight"] for row in report["results"])):
+            raise P3Error("formal_not_admitted")
         for item in manifest["inputs"]:
             if (set(item) != _INPUT_FIELDS or not isinstance(item["question_sha256"], str)
                     or re.fullmatch(r"[0-9a-f]{64}", item["question_sha256"]) is None
@@ -526,6 +551,8 @@ def read_report(path: Path, *, manifest_path: Path | None = None) -> dict:
         if oracle_ids != {item["oracle_id"] for item in manifest["inputs"]}:
             raise P3Error("invalid_manifest")
         asset_names = {"panel", "cases", "oracles"}
+        if manifest["panel_kind"] == "formal":
+            asset_names.add("formal_freeze")
         if manifest["fake_responses"] is not None:
             if manifest["fake_responses"] != SCRIPT_VERSION:
                 raise P3Error("invalid_manifest")
@@ -619,23 +646,25 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--report", type=Path)
     parser.add_argument("--accepted-commit")
+    parser.add_argument("--formal-freeze", type=Path)
     try:
         args = parser.parse_args(argv)
         if args.mode == "report":
-            if args.report is None or args.db or args.output_dir or args.accepted_commit or args.panel or args.responses:
+            if (args.report is None or args.db or args.output_dir or args.accepted_commit
+                    or args.panel or args.responses or args.formal_freeze):
                 raise P3Error("invalid_arguments")
             report = read_report(args.report, manifest_path=args.manifest)
         else:
             if args.db is None or args.output_dir is None or args.report is not None:
                 raise P3Error("invalid_arguments")
             if args.mode == "prepare":
-                if args.manifest is not None:
+                if args.manifest is not None or args.formal_freeze is not None and args.responses is not None:
                     raise P3Error("invalid_arguments")
                 report = prepare(args.db, args.output_dir, panel_path=args.panel or DEFAULT_PANEL,
-                                 responses_path=args.responses or DEFAULT_RESPONSES,
-                                 accepted_commit=args.accepted_commit)
+                                 responses_path=None if args.formal_freeze else args.responses or DEFAULT_RESPONSES,
+                                 accepted_commit=args.accepted_commit, formal_freeze=args.formal_freeze)
             else:
-                if args.manifest is None or args.accepted_commit is not None:
+                if args.manifest is None or args.accepted_commit is not None or args.formal_freeze is not None:
                     raise P3Error("invalid_arguments")
                 report = asyncio.run(run_panel(args.db, args.output_dir, manifest_path=args.manifest,
                                               panel_path=args.panel or DEFAULT_PANEL,

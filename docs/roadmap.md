@@ -1,6 +1,6 @@
 # Roadmap and phase exits
 
-Phase baseline: 2026-09-18; current status follows #41. Work is on `dev`;
+Phase baseline: 2026-09-18; current status follows #43. Work is on `dev`;
 promotion to `main` requires owner review. P0 and P1 are accepted at
 `6d6be30bed321806e0a2ef90fec53a1fc1118373`. The first smoke (#10) failed
 envelope validation on all 12 inputs and remains unchanged. After P1.3a
@@ -25,11 +25,16 @@ That is exposed regression evidence, not generalization or broad NL quality.
 P3.0 (#37 / PR #38) accepted the [evaluation contract](p3-evaluation-contract.md)
 at `a4bad1a8742a97021502e71208bd7162c6b37c44`. P3.1 (#39 / PR #40) accepted
 [bounded clarification](clarification-action.md) at
-`e8c3a455bd4e09a266a772be599fe851d405df78`. P3.2 (#41) builds the
-[offline evaluator candidate](p3-evaluator.md), with exposed development fixtures,
-ordered action/intent/fact grading and family-weighted evidence. It does not
-change runtime semantics, freeze fresh cases, run live inference or complete
-grounding/resume/synthesis. P3-P5 delivery remains open. P2 is not promoted
+`e8c3a455bd4e09a266a772be599fe851d405df78`. P3.2 (#41 / PR #42), including
+the independent evidence-expectation correction, is accepted at
+`20abb5592262c77c98f9cabeaf7cf4854edb6fbe`. Its [offline evaluator](p3-evaluator.md)
+provides ordered grading and family-weighted evidence, not fresh quality results.
+P3.3 (#43) prepares [independent authoring and formal admission](p3-fresh-case-authoring.md)
+with product/grader behavior frozen at that SHA. The 24/44 target is conditional:
+independent fresh submissions and exposed-control distinctness/coverage review
+are still prerequisites, not inferred from preparation tests. No actual formal
+panel or live run is admitted by the tooling candidate. P3-P5 remain open; it
+does not complete grounding/resume/synthesis. P2 is not promoted
 to main; no further live execution follows from the phase handoff.
 GitHub Issues own current status; this document owns phase meaning and exits.
 
