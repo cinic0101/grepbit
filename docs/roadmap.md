@@ -89,10 +89,16 @@ needs an issue + test + PR/commit, not a research report.
 The [P3.0 contract proposal](p3-evaluation-contract.md) specifies the behavior
 matrix, exposure/provenance, conditional panel allocation, family-weighted
 denominators, clarification policy and separate stability/resume/synthesis gates.
-It preserves the thresholds below; its small-N rounding and mandatory controls
-are explicit. Acceptance of that design is separate from product implementation,
-case freeze and authorization of any live run. The first action/fact panel alone
-does not complete P3's clarification/resume and synthesis promises.
+R1 (#37 / #38) ratifies the small-PoC consequence of the thresholds below:
+8/8 fresh answer families and all four exposed answer controls, hence 12/12
+answer families, without padding the panel to allow a failure. Missing-year/
+baseline/k clarification without grounded alternatives is deferred, not desired
+decline gold; E06 remains unchanged. Acceptance of the R1 design is separate
+from product implementation, case freeze and authorization of any live run.
+The first recipe-only action/fact panel does not complete P3's clarification/
+resume and synthesis promises. Full P3 exit also requires the explicit later
+product-entry grounding/routing decision among scalar P1, recipe, clarify and
+decline; a recipe refusal cannot erase an accepted P1 capability.
 
 For the declared answerable panel: at least 90% complete-correct, and zero known
 wrong answers presented as checked normal answers in that observed panel.

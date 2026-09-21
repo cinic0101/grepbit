@@ -55,6 +55,11 @@ exclusive primary taxonomy and frozen family-weighted denominators. It does not
 rename historical P0/P1/P2 outcomes or change their oracles. Its initial
 action/fact panel defers resume and synthesis to separate P3 gates; owner
 acceptance, actual fresh-case admission and live authorization remain distinct.
+R1 keeps missing-input clarification as deferred coverage, not correct-decline
+gold, and separates authoritative typed semantic choices from presentation.
+Clarification and decline controls cannot inflate answer quality. Full P3 exit
+also needs an explicit P1/recipe product-entry grounding/routing decision;
+recipe-entry refusal is not evidence of global product incapability.
 
 Evaluate four dimensions separately: interpretation/binding; fact correctness;
 request coverage/response faithfulness; operational/maintenance cost. Compare

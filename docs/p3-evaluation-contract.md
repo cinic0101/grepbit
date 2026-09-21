@@ -1,9 +1,12 @@
 # P3.0: natural-language quality and stability contract
 
 **Status: proposed for owner review under #37, not accepted or executable.**
-Contract revision: `p3-evaluation-contract-v0.1`.
+Contract revision: `p3-evaluation-contract-v0.1-r1`.
 Design baseline: `dev@f21c914915f34656c1e8c0069c28afadb5bbc7ae`.
 This document admits no product change, live request, case freeze or P3 exit.
+R1 follows the owner direction in #37 / Draft PR #38: implementation inability
+to clarify must not become desired decline gold. The small-N answer gate below
+is ratified for this first-slice proposal; the R1 contract still awaits review.
 
 ## 1. Thesis, evidence and route boundary
 
@@ -22,6 +25,14 @@ The first P3 panel targets the **recipe entry only**, not a new universal front
 door. P1 stays available and protected separately. Do not silently route an
 unsupported recipe question through P1, a fixture reference query or another
 executor. In particular, a fixture definition is not a product capability.
+
+Before full P3 exit, require a separate **product-entry grounding/routing
+decision**: question -> accepted scalar P1 path, recipe path, clarify or decline.
+For example, `known_booking_accounts` exists in P1 even though the recipe entry
+cannot offer it. A recipe-entry decline is not evidence that Grepbit as a whole
+cannot answer. That later P3 gate must define route eligibility, preserved
+intent/context and cross-route ambiguity handling; it does not authorize a
+universal router or broaden this first recipe-only panel.
 
 | Existing recipe | Admitted meaning and required evidence |
 | --- | --- |
@@ -60,7 +71,7 @@ amount/seats and distinct booking-ID count. Any deviation must be explicit.
 
 Oracle abbreviations: **N** exact accepted native-semantic set; **F** independent
 facts, units, required coverage and provenance; **A** exact action;
-**C** accepted clarification field/closed choice set; **D** unsupported category;
+**C** accepted ambiguity kind/typed interpretation set; **D** unsupported category;
 **H** human semantic/translation review, never a substitute for N/F.
 **M** means a proposed scored/control slot; **O** means observational design
 coverage only, no first-panel score. Answer slots use the threshold in section 7;
@@ -91,12 +102,12 @@ No real private problem/source confirmation is claimed.
 | D02 | Cash, refunds or historical booking-state analysis | Explicit semantic decline | Correct number for wrong population/time basis | decline | Posting-time/refund/history rather than S | single | HIST Q06-Q08/Q15-Q16; native history boundary | M: P20 posting-time cash only; others O | A/D/H | Decline representable | No accounting or temporal ledger expansion |
 | D03 | Annual, multi-month or partial-month aggregation | Explicit period decline | One convenient month silently substituted | decline | Requested period cannot be a native full month | all | HIST P2 boundary; NEW conditional composite bundle | M: P17 multi-month only; others O | A/D/H | Decline representable | No aggregation DSL; explicit two-month Compare is different |
 | D04 | Related answerable request plus an unrelated requirement | Explicit whole-request decline | Answerable subset hides unmet requirement | decline | No single admitted recipe covers the full requirement list | all | HIST P2 decomposition boundary; NEW conditional | M: P18 | A/D/H | Decline representable | No arbitrary multi-question planner |
-| D05 | Missing year, month, baseline or k | Explicit incomplete-request decline | Invented defaults or unnecessary state expansion | decline | S cannot be instantiated; finite alternatives not supplied | single | HIST E06 and P2 incomplete-input policy | M: P21 missing year only; others O | A/D/H | Current conservative decline policy | E06's broader clarification aspiration deferred within P3 |
+| D05 | Missing year, month, baseline or k without grounded alternatives | Deferred semantic clarification | Invented defaults; implementation limitation mistaken for desired refusal | clarify target; deferred | Supported meaning may be bindable, but no bounded interpretation set is grounded yet | none | HIST E06; unchanged clarification target | O: P21 deferred, no scored slot | A/C/H | Current decline earns no correct_decline credit | Later P3 grounding/free-value clarification; no new default |
 | D06 | Unsupported filter, population, grain or dimension | Explicit capability decline | Silently remove center filter or replace grouping/metric | decline | E.g. center-filtered Compare, non-confirmed population, account-ranked Breakdown | single | HIST native scope/metric guards; SYN composites | M: P22 center-filtered Compare only; others O | A/D/H | Decline representable | No generic filters/relational DSL |
 | D07 | Arbitrary formula or conversion | Explicit capability decline | Alias changes units without calculation | decline | Outside fixed delta/growth/share or original units | none | HIST E09; SYN currency/formula boundaries | O | A/D/H | Decline representable | New semantics require separate admission; not P3.0 |
 | D08 | Explicit account/people/attendance count through recipe entry | Explicit capability decline | Seats substituted for requested unit | decline | Count not provided by these recipes; P1 accounts stay separate | none | HIST Q02-Q04/E05 | O | A/D/H | Decline representable | No silent narrowing of global P1 capability |
 | D09 | Empty-member enumeration or arbitrary details | Explicit capability decline | Observed groups called whole catalog; source rows leaked | decline | Catalog completion/anti-join/detail grain outside S | none | HIST Q10/Q14/E12 | O | A/D/H | Not admitted | Bounded drill-down P4; arbitrary details non-goal |
-| C05 | Bare ambiguous entity name, free missing year or several ambiguities | Deferred clarification/resume design | Invented choices, unsafe lookup or multiple hidden repairs | clarify target; first-slice decline | No closed choice can be built from current supplied semantics | none | HIST E04/E05/E06, original expectations retained | O | A/C/H | Not implemented | Later P3 entity/year policy; not evidence of successful original cases |
+| C05 | Bare ambiguous entity name or several material ambiguities | Deferred clarification/grounding design | Invented choices, unsafe lookup or multiple hidden repairs | clarify target; deferred | Requires grounded candidates or successive semantic choices not admitted in the first slice | none | HIST E04/E05/E06, original expectations retained | O | A/C/H | Not implemented; decline is not target success | Later P3 grounding/ambiguity chains; no field-priority rules |
 | X01 | Partial native pack under injected optional failure | Offline operational control | Omitted required fact called complete | not a model action | E10, fixed required/optional native roles | none | HIST E10, exposed_regression | O, offline only | F | Accepted offline injection | Real cancel/deadline and PG lifecycle remain P4 |
 
 Required wrong-valid traps are covered by A01-A06, C01/C04 and D01-D06:
@@ -104,66 +115,180 @@ metric, count unit, population, scope, grain, comparison roles, month/year,
 center, k, denominator and booked/cash/refund/profit distinctions. They are
 **not all live-measured by the first allocation**. The subcategory labels above
 explicitly delimit the sample; a pass of one D06 filter control is not evidence
-for all populations/dimensions. No new fixture or gold is authored in P3.0.
+for all populations/dimensions. D05 retains its historical category ID, not a
+decline classification: it is deferred clarification coverage. No new fixture
+or gold is authored in P3.0.
 
 ## 3. Answer, clarify or decline
 
-Apply capability/requirement coverage first, then ambiguity. A request with a
-definite unsupported requirement declines as a whole; do not ask a cosmetic
-clarification about a different field. Otherwise clarify only when one material
-semantic choice has two to four grounded interpretations and at least one
-leads to an admitted request. Answer only when all required meanings are bound.
+Grepbit should be **assumption-light, clarification-smart**. Prefer explicit
+information in the current request, then already explicit bounded context from
+the conversation/UI/session, then clarification of material semantic uncertainty.
+Inherited bindings must be applicable and compatible with the current request;
+unresolved material conflicts require clarification, not silent overwriting.
+Decline when the requested capability itself is unsupported by the evaluated
+entry, not merely because the current implementation cannot ask a needed question.
+Do not ask a cosmetic clarification to hide a definite unsupported requirement.
+
+Metric, population, time, scope, entity, grain and comparison roles must not be
+silently guessed. Do not grow a default table such as missing year -> current
+year, baseline -> previous month, k -> 3, entity -> all or metric -> booked amount.
+A clock, fixture cutoff, UI default or plausible candidate is not an explicit
+user binding. No runtime default or new context input is introduced by R1.
+The first formal panel remains stateless/question-only; inherited context and
+dynamic grounding are future extension points, not hidden evaluator hints.
 
 | Situation | Proposed first-slice policy | Why |
 | --- | --- | --- |
 | All requirements fit one recipe; explicit parameters or unambiguous shared stated year | answer | Natural phrasing is not a capability restriction |
 | Several requested outputs already in one fixed recipe | answer | Preserve all requirements; do not invent arbitrary decomposition |
 | People/count ambiguity in an otherwise complete Overview | clarify | Do not equate seats, accounts, visits and humans; some choices end in decline |
-| Bare all-center people question without a recipe-compatible scope | decline in first slice | Choosing a count alone cannot make it a supported recipe request |
+| Bare all-center people question without a resolved count meaning/entry | deferred P3 clarification/product-entry coverage | A P1-compatible interpretation may exist; the recipe limitation is not global refusal gold |
 | Two explicit comparison months with no role assignment | clarify | Exactly two grounded role assignments; no baseline invented |
-| Missing baseline month/year, missing month/year, or missing k without closed alternatives | decline in first slice | Filling a field is not the same as choosing among grounded meanings |
+| Missing baseline month/year, missing month/year, or missing k without grounded alternatives | deferred clarification; not scored as correct_decline | Lack of candidate grounding is an implementation gap, not unsupported user intent |
 | Ambiguous period assignment with two complete alternatives explicitly in text | clarify | One bounded semantic choice; no date from clock or fixture |
 | Explicit code plus unique unambiguous period | answer | Preserve code bytes; trusted executor binds it |
 | Two supplied candidate codes for one otherwise supported Overview | clarify | Select a code, never guess or combine centers |
-| Name-only/novel alias requiring name lookup | decline in first slice; later P3 decision | Current model has no mapping; first slice admits no resolver or code hints |
+| Name-only/novel alias requiring candidate lookup | deferred P3 grounding/clarification | First slice admits no resolver or code hints; this is not successful decline gold |
 | Ambiguous financial term in otherwise complete Overview | clarify if closed supported/unsupported meanings can be stated | Clarification must not imply that profit/cash become available |
 | Explicit profit, cash/refunds, targets, people metric, formula or conversion | decline | Meaning is clear but unsupported by the recipe route |
 | Unsupported dimension/filter/grain, annual or multi-month total | decline | No convenient narrowing; two explicit Compare months are not aggregation |
 | Unrelated requirements, or supported plus unsupported requirement | decline | No partial convenient answer to a compound unsupported request |
-| More than one independent missing/ambiguous field | decline in first slice | One clarification cannot complete it; no workflow engine |
+| Several material ambiguities | deferred successive clarification | Eventually surface one useful ambiguity at a time; no priority-rule code or multi-turn chain is admitted here |
 
-These are **explicit initial P3 scope decisions**, not changes to historical
-oracles. E04/E05/E06 remain authored clarification aspirations in their original
-assets. In particular E06 says ask for a year; this first slice defers free-form
-year collection rather than marking that original case passed by a decline.
-Original E04's name lookup and E05's broader count question are also not solved
-by C03/C01. Owner ratification must acknowledge these deferred capabilities.
-The first slice does not establish full P3 clarification/resume completion.
+**Product intent and implementation admission are separate.** E04/E05/E06 keep
+their original clarification expectations. E06 explicitly says: "No year default
+in this profile; ask year. Fixed as_of is not permission to invent it." R1 removes
+P21's mandatory missing-year decline from the scored proposal. D05/P21 remain
+observational/deferred, outside all first-panel numerators, denominators and
+attempts; no current decline may be certified as their intended success.
+No replacement slot is added. This pre-freeze design correction is not deletion
+of a failed scored result; no formal P3 execution has occurred.
 
-### Minimal clarification contract, design only
+When later context/grounding provides a bounded set of year/period interpretations,
+the system may present those candidates under a separately admitted contract.
+Free-value clarification without such a set remains deferred, not redefined as
+desired decline. C03/C01 also do not solve original E04's name resolution or
+E05's broader count ambiguity. None of these gaps proves full P3 completion.
 
-Recommend a new closed action alternative alongside the unchanged native
-request alternatives and decline. The exact serialization/version belongs to
-a later separately accepted P3.1 design; no schema below is a runtime API.
+### Semantic binding: static grammar, dynamic values
 
-Minimum semantic content: action `clarify`, one allowlisted ambiguity field,
-two to four typed interpretation choices, and the already bound scope. Candidate
-field meanings are count basis, comparison-role assignment, explicit center-code
-choice and booked-versus-other amount meaning. A choice contains semantic IDs
-or supplied values, never SQL, formulas, executable tasks or a new metric.
-Reject irrelevant/redundant/duplicate choices and fields not ambiguous in the
-question. An unsupported interpretation may be a choice only if explicitly
-labeled unavailable and resolving to decline, not to a substitute metric.
+Conceptual flow: question -> grounding/context -> candidate interpretations ->
+clarification -> user selects an interpretation -> typed semantic binding ->
+normal deterministic execution. This is not "field X is null; ask for X."
+A single choice may bind a start/end scope, current plus baseline roles, a
+grounded entity, or a count population/unit together.
 
-Prefer server-rendered, reviewed question/choice templates over model-authored
-free text. This bounds misleading promises, instructions and private-data
-echoing. Text fluency is not the oracle; accepted field/choice meaning is.
-The server must validate typed choices, not look up evaluator gold. Semantic
-choice correctness still needs evaluation; schema validation cannot prove it.
+Recommend one closed semantic action alternative alongside answer and decline.
+Its conceptual content is an ambiguity kind, two to four mutually exclusive
+typed interpretations with choice IDs, and the already bound scope. Potential
+kinds include `time_scope`, `entity`, `count_basis`, `comparison_roles` and
+`metric_meaning`; this list and exact serialization are **not a frozen runtime
+API**. P3.1 must separately admit/version the actual types and validation grammar.
 
-Surface one ambiguity per turn. Do not answer an assumed interpretation while
-asking for confirmation. No analytical execution before choice binding, no
-model-generated entity map, and no automatic second call.
+Types/validation grammar are bounded and static; grounded values may be dynamic.
+A `semantic_value` must belong to an admitted typed family, never arbitrary JSON,
+SQL, formulas, tasks or a QueryPlan. It need not be a scalar: role assignments
+and period scopes are semantic bundles. Dynamic years, months, codes or count
+bases are values, not new operators or a configurable semantic language.
+Representability is not capability admission: a multi-month range such as
+2025-12 through 2026-03 does not authorize multi-month aggregation in the existing
+full-month recipes. Server capability/native validation remains authoritative.
+
+Reject irrelevant, duplicate or ungrounded choices. Preserve already resolved
+requirements; selection must not rewrite unrelated scope. An interpretation
+outside the recipe entry must be labeled as such and must not substitute a
+metric on selection. This does not declare a P1-supported meaning globally
+unavailable. No analytical execution before user binding, model-generated entity
+map, hidden reinterpretation or automatic second call is admitted.
+
+### Grounding discovers candidates; ranking does not bind
+
+Future grounding may supply candidate values and provenance from explicit user
+text, existing conversation bindings, explicit UI filters, reviewed catalog
+exact matches/aliases or other admitted grounded candidates. These are examples,
+not a frozen provenance enum. Preserve an extension point for candidate source
+and evidence; implement no grounding service, catalog lookup, entity resolver,
+candidate search or ranking service in P3.0.
+
+The intended extension is candidate values + provenance -> interpretation
+composition/ranking -> server validation -> user selection. Validate source
+authorization, scope, typed values and binding consistency without evaluator
+gold. Discovery establishes plausibility, **not the user's semantic decision**.
+If alternatives materially change the answer, the user still selects even when
+the model ranks one as most likely. Ranking is optional presentation guidance;
+`recommended: true` or display position must never trigger automatic execution.
+
+If several ambiguities remain, eventually surface one bounded clarification
+at a time, preferably the one that reduces semantic uncertainty most. The model
+may help rank them; the server validates the ambiguity and choices. Do not
+encode a population-first/year-second missing-field priority chain. Multi-turn
+clarification chains and free-value collection are deferred.
+
+### Semantic actions and presentation are separate
+
+The semantic layer owns answer/clarify/decline and authoritative meanings.
+For clarify, it owns ambiguity kind, typed interpretations, IDs and bindings.
+The presentation layer owns text and interaction/rendering and references those
+IDs. Business meaning must **never exist only in a label or presentation block**.
+UI localization or option reordering must not alter execution semantics.
+
+Illustrative wiring only, not an accepted schema, case or gold:
+
+```json
+{
+  "outcome": "clarify",
+  "clarification": {
+    "kind": "comparison_roles",
+    "choices": [
+      {"id": "c1", "semantic_value": {"type": "comparison_roles", "current": "2026-03", "baseline": "2026-02"}},
+      {"id": "c2", "semantic_value": {"type": "comparison_roles", "current": "2026-02", "baseline": "2026-03"}}
+    ]
+  }
+}
+```
+
+An associated presentation, not a second authoritative copy of that meaning:
+
+```json
+{
+  "text": "Choose the comparison direction.",
+  "blocks": [
+    {
+      "type": "choices",
+      "selection": "single",
+      "options": [
+        {"choice_id": "c1", "label": "March 2026 compared with February 2026"},
+        {"choice_id": "c2", "label": "February 2026 compared with March 2026"}
+      ]
+    }
+  ]
+}
+```
+
+The future common presentation direction is `text` plus `blocks[]`: text alone
+can use no blocks; clarification can add choices. This outward envelope does
+not replace the closed model/native semantic contract with UI blocks.
+Only **choices(single)** is proposed for the initial slice.
+The user selects one mutually exclusive semantic
+interpretation, not a collection of query requirements. Selecting both centers,
+for example, changes analytical composition; **multi-select is deferred** to
+independent admission, not interpreted as ordinary clarification.
+
+Future table, chart, multi-select or other blocks each need separate admission
+and versioning. Define no table/chart schema or presentation builder now.
+No arbitrary nested UI AST, unconstrained `data` payload, executable expression,
+embedded formula, provider/UI-specific directive or renderer business logic.
+Rendering should use validated semantics and permitted fact/choice references,
+never recover business meaning by parsing a display label.
+
+Good clarification optimizes friction, not the number of questions avoided.
+When grounded alternatives exist, asking which of two years or count meanings
+the user intends is preferable to a generic "provide year" or "count basis
+missing" validation error. Prefer reviewed server-rendered/localized templates
+over free model text to limit misleading promises, instructions and data echoes.
+Grade semantic interpretation/choice correctness, not prose elegance; no
+renderer or localization implementation is authorized by this design.
 
 ### Resume: compare A and B, recommend A first
 
@@ -179,7 +304,8 @@ before claiming the roadmap's clarification/resume deliverable.
 
 Later resume needs an opaque server-issued binding token (or equivalent
 server-held reference), bound to immutable normalized scope, ambiguity/choices,
-contract/catalog/source identities, expiry and a single accepted choice.
+contract/catalog/source identities, expiry and a single accepted choice ID bound
+to its typed semantic value, never its display label or ranking.
 No cross-session persistence is required for the first one-turn local gate;
 cross-process persistence is a separate decision, not a conversational store.
 Revalidate entity binding and applicable source semantics on resume; do not
@@ -261,14 +387,14 @@ Publish first-run and later regression results separately.
 
 ## 6. Bounded first formal panel proposal
 
-Propose **25 family slots / 45 inputs**, conditional on the novelty/admission
-audit: 22 quality/control slots plus the three original P2 anchor families.
-Target **12 frozen-fresh** slots (8 answer, 2 clarify, 2 decline), **13 exposed
-regression** slots (4 answer, 2 clarify, 4 decline, 3 P2 anchors), and **0
+Propose **24 family slots / 44 inputs**, conditional on the novelty/admission
+audit: 21 quality/control slots plus the three original P2 anchor families.
+Target **12 frozen-fresh** slots (8 answer, 2 clarify, 2 decline), **12 exposed
+regression** slots (4 answer, 2 clarify, 3 decline, 3 P2 anchors), and **0
 design-seen** scored slots. Design-seen development examples remain outside
 this first-run score. None of the 12 reserved slots is already certified fresh.
 
-This is a capacity target, not a claim of 25 independent semantic discoveries.
+This is a capacity target, not a claim of 24 independent semantic discoveries.
 The three-recipe boundary may not support that many genuinely distinct bundles.
 If deduplication/novelty review cannot fill the target, **stop before freezing
 the run and return a smaller, explicitly revised contract for owner review**.
@@ -302,15 +428,17 @@ under that family and revise counts before approval; never count it twice.
 | P18 | D04 | decline | zh-TW,en,ja | frozen_fresh reservation | NEW composite unsupported requirement, not rearranged old questions |
 | P19 | D01 | decline | ja | exposed_regression | HIST E07 profit substitution |
 | P20 | D02 | decline | en | exposed_regression | HIST Q06 posting-time cash vs current-confirmed creation-time amount |
-| P21 | D05 | decline | zh-TW | exposed_regression | HIST missing-year trap; first-slice policy, not regrading E06 |
 | P22 | D06 | decline | ja | exposed_regression | HIST native rejection of center-filtered Compare |
 | R01 | A01 | answer | zh-TW,en,ja | exposed_regression | Unchanged E01_overview |
 | R02 | A03 | answer | zh-TW,en,ja | exposed_regression | Unchanged E02_compare |
 | R03 | A06 | answer | zh-TW,en,ja | exposed_regression | Unchanged E03_share_denominator |
 
-Counts: answer 12 families / 18 inputs, clarify 4 / 8, decline 6 / 10,
-P2 anchors 3 / 9. Fresh reservation: 12 / 26; exposed: 13 / 19.
-Overall language inputs: **zh-TW 15, en 15, ja 15**. False-refusal controls are
+P21 is retained only as a deferred D05 coverage reference, not a scored slot or
+an additional input. Do not reuse its ID for a replacement to restore symmetry.
+
+Counts: answer 12 families / 18 inputs, clarify 4 / 8, decline 5 / 9,
+P2 anchors 3 / 9. Fresh reservation: 12 / 26; exposed: 12 / 18.
+Overall language inputs: **zh-TW 14, en 15, ja 15**. False-refusal controls are
 P02/P05/P10 (3 families / 5 inputs), a subset of answerable cases, not extra
 denominators. All have explicit supported meanings, not synonym-only changes.
 
@@ -339,7 +467,7 @@ Use these mutually exclusive primary labels with this precedence:
 | 1 | `not_run`: no attempt made. In-progress/possible-in-flight remains an execution status until resolved, not a completed not-run result. |
 | 2 | `invalid_output`: observed malformed envelope/content/native action shape; retain whether the error is provider-envelope or model-content. Otherwise `operational_failure` if no usable action because transport/config/source/budget/internal execution failed. |
 | 3 | Valid action differs: answer expected + decline -> `false_refusal`; answer or decline expected + clarify -> `false_clarification`; clarify expected + answer -> `missed_clarification`; remaining mismatches -> `wrong_action` (including clarify expected + decline, decline expected + answer). |
-| 4 | Expected clarify, correct field and complete accepted choice set -> `correct_clarification`; wrong/irrelevant choices -> `wrong_action`. Expected decline -> `correct_decline` only if it declines the whole request without a substituted answer or false capability promise. |
+| 4 | Expected clarify, correct ambiguity kind and complete accepted typed interpretation set -> `correct_clarification`; wrong/irrelevant choices or bindings -> `wrong_action`. Expected decline -> `correct_decline` only if it declines the whole request without a substituted answer or false capability promise. |
 | 5 | Expected answer + admitted request: `wrong_recipe`, then `wrong_request` for any semantic mismatch. These take precedence over a later native error; preserve that error separately. |
 | 6 | Correct request but operational execution failure -> `operational_failure`. Native disclosed optional gaps/partial pack -> `partial` only if all available facts pass applicable coverage, selection and value checks; otherwise retain their semantic error. Missing/incorrect status, slot, grain or membership -> `wrong_coverage`. |
 | 7 | `wrong_fact_selection` for incorrect fact roles, references, irrelevant/invented selected facts after intent/coverage pass; `wrong_value` for incorrect units/values/rationals/state after those pass. |
@@ -356,7 +484,9 @@ its evidence/reason; never remove that input.
 
 Current decline has no reason payload. In the first slice D is an oracle-side
 unsupported category, not a requirement to invent/read a model explanation.
-A genuine accepted decline branch can earn correct_decline without reason text.
+A genuine accepted decline branch can earn correct_decline without reason text
+only on a designated decline control. D05 is a retained historical category ID,
+not such a control; P21 is deferred and cannot earn this credit.
 If a later contract adds a typed reason, freeze its accepted categories first.
 
 ### Exact score rules
@@ -369,19 +499,28 @@ For each answerable family f with predeclared language variants L(f), define
 | --- | --- | --- |
 | Primary fresh answer score | Passing P01-P08 families | 8 fresh answerable families |
 | Declared non-anchor answerable score, exposure strata also shown | Passing P01-P12 families | 12 answerable families |
-| Fresh branch-control score, not added to answer score | Fully correct P13/P14/P17/P18 families | 4; all mandatory |
-| All branch-control score | Fully correct P13-P22 families | 10; all mandatory |
+| Fresh clarification controls, not added to answer score | Fully correct P13/P14 families | 2; all mandatory |
+| All clarification controls | Fully correct P13-P16 families | 4; all mandatory |
+| Fresh decline controls, not added to answer score | Fully correct P17/P18 families | 2; all mandatory |
+| All decline controls | Fully correct P17/P18/P19/P20/P22 families | 5; all mandatory; P21 excluded before freeze |
 | Exposed answer controls | Passing P09-P12 families | 4; all mandatory regression controls |
 | Original P2 anchors | Passing R01-R03 families | 3; all mandatory regression controls, excluded from fresh/quality numerator |
 
-Preserve **>=90% complete-correct** on the declared answerable panel and require
-the same threshold for the fresh answer stratum; exposed passes cannot mask
-fresh failure. This means at least **11/12** non-anchor answer families and
-**8/8** fresh answer families because ceil(0.90 * 8)=8. Combined with mandatory
-exposed controls the proposal effectively needs 12/12; disclose this small-N
-consequence rather than falsely advertise tolerance for one failure. The owner
-may choose a different size before freezing; do not lower thresholds after
-seeing scores. These are PoC gates, not statistical deployment guarantees.
+**Ratified first-slice small-PoC consequence (#37 / #38 R1):** preserve
+**>=90% complete-correct** on the declared answerable panel and the fresh answer
+stratum. The aggregate threshold alone is ceil(0.90 * 12)=11, but the fresh
+stratum requires **8/8** because ceil(0.90 * 8)=8. With all four exposed answer
+controls mandatory, the combined first-slice gate intentionally requires
+**12/12 answer families**, with every assigned language variant passing.
+Exposed success cannot mask fresh failure. Do not add cases merely to allow a
+failure, lower the threshold or disguise its rounding. A semantic/novelty-driven
+allocation revision still needs explicit pre-run owner review; none is made to
+the answer allocation in R1. This is not a statistical deployment guarantee.
+
+Clarification and decline controls have separate denominators (4 and 5 families,
+9 combined for reporting only); neither increases the answer-quality numerator.
+The exposed decline stratum is now 3 families, not 4. P21 is deferred before case
+freeze and contributes no scored attempt, success or failure to this proposal.
 
 **Zero known wrong answers presented as checked normal answers** is an additional
 veto across all formal/control inputs and the stability panel. A complete native
@@ -429,7 +568,7 @@ disposition before the stability run. Upstream retries/attempts remain separatel
 attested/unknown; deterministic settings do not guarantee deterministic output.
 
 Invariants: action; recipe and full native-semantic signature; clarification
-field and accepted semantic choices; decline action (and category only if a
+kind and accepted typed semantic bundles; decline action (and category only if a
 future contract exports one). Equivalent timestamps, fact UUIDs, key order and
 approved rendering differences are not flips. No exact prose-match requirement.
 
@@ -439,7 +578,7 @@ different valid semantic signatures / comparable valid pairs; report the
 comparable count out of 18. Invalid/operational/not-run trials are not invented
 semantic flips or agreements; report them and mark stability incomplete.
 False-refusal flip counts answer/decline disagreements for answerable inputs;
-clarification flip counts disagreements in clarify action/field/choice meaning;
+clarification flip counts disagreements in clarify action/kind/choice binding;
 recipe/request instability compares valid answer signatures. Report overlapping
 diagnostic counts, not another mutually exclusive taxonomy.
 
@@ -475,8 +614,10 @@ integers and rationals; no universal float tolerance. Numeric collisions cannot
 rescue an incorrect semantic signature or top-k denominator provenance.
 
 Use accepted semantic sets where more than one representation is legitimate.
-Clarification compares the required field and all materially necessary choices,
-not arbitrary question wording. Human review covers ambiguity, supported
+Clarification compares the ambiguity kind and all materially necessary typed
+interpretations/bindings, not display labels, arbitrary question wording or
+ephemeral choice-ID text. IDs must reference their own semantic bindings.
+Human review covers ambiguity, supported
 paraphrases and translation equivalence; unresolved disagreement prevents
 case admission. Never let a fluent LLM judge override deterministic disagreement.
 
@@ -500,15 +641,19 @@ exception internals; generated synthetic questions/gold stay evaluator-only.
 
 | Scenario class / gap | Disposition and reason |
 | --- | --- |
-| Bare duplicate/novel names, aliases, free missing-year collection | Deferred P3; supplied-code choice is not name resolution or original E04/E06 completion |
-| Broad people/account ambiguity across P1/recipes | Deferred P3 product-entry decision; C01 is deliberately narrower than original E05 |
-| Cross-recipe ambiguity or several unresolved fields | Deferred P3; first slice handles one bounded ambiguity, not clarification chains |
+| Bare duplicate/novel names, aliases, dynamically grounded values | Deferred P3 grounding; supplied-code choice is not a resolver or evidence that candidates capture intent |
+| Missing year/month/baseline/k without bounded grounded alternatives, free-value clarification | Deferred P3 clarification, including D05/P21; E06 unchanged; current decline earns no correct_decline credit |
+| Cross-route scalar P1/recipe product entry, including known_booking_accounts | Required later P3 grounding/routing decision before full exit; recipe refusal is not global incapability |
+| Broad people/account ambiguity across P1/recipes | Deferred P3 clarification under that entry policy; C01 is deliberately narrower than original E05 |
+| Cross-recipe ambiguity or several material ambiguities | Deferred P3 successive clarification; no missing-field priority rules or multi-turn chains in the first slice |
+| Multi-select query composition | Future independently admitted interaction capability; selecting several interpretations is not single-select clarification |
+| Table/chart and other presentation blocks | Future independently admitted/versioned presentation; no block schemas, renderer or UI DSL in P3.0 |
 | One-turn resume, expired/stale/invalid choices | Deferred P3 gate, necessary before claiming resume |
 | Synthesis factuality, omissions, disclosures and style | Deferred P3 gate; first panel returns checked packs/actions, not prose |
 | Broad paraphrase robustness and code switching | Deferred P3; three false-refusal controls and selected translations are not distribution coverage |
 | Unselected language counterparts and language-specific terminology | Deferred P3; monolingual slots make no trilingual claim |
 | False clarification for every unambiguous near-boundary form | Partly measured by answer/decline controls, broader class deferred P3 |
-| Unsupported-but-near-supported inputs outside selected D rows | Intentionally unsupported; decline quality unmeasured for targets/causes, other financial/time meanings, missing baseline/k, other dimensions/populations, formulas/conversions |
+| Unsupported-but-near-supported inputs outside selected D rows | Intentionally unsupported by this entry; decline quality unmeasured for targets/causes, other financial/time meanings, other dimensions/populations, formulas/conversions; D05 incomplete-input clarification is separately deferred, not in this class |
 | Arbitrary formulas, open-ended analytics, arbitrary multi-question decomposition | Intentionally unsupported, not incentive to grow a DSL |
 | Catalog completion/absence analysis, arbitrary source details | Not admitted; one bounded drill-down is P4, arbitrary details remain non-goal |
 | Operational outage, injected optional gaps, full negative parser matrix | Existing offline P1/P2 controls, not expanded into new semantic model questions |
@@ -534,6 +679,10 @@ and subset/whole confusion. A02/A03/A05 false-refusal controls penalize brittle
 wording routes; C01-C04 penalize answering an unresolved interpretation.
 Every numeric comparison follows these gates; no legal SQL certificate is an
 intent certificate. Unselected D subcategories remain explicit missing evidence.
+Clarification preserves user agency over material semantic alternatives.
+Grounding/ranking must not silently guess or bind an interpretation; temporary
+inability to clarify cannot justify a desired decline oracle. D05/P21 is deferred
+coverage, not rewarded refusal.
 
 ### B. Architecture consistency
 
@@ -545,6 +694,10 @@ Legitimate pressure is limited to typed action/choice validation, later bounded
 resume and later synthesis. Name lookup, broader metric routing and mixed
 requests need explicit admission, not a "small fix." A case quota is never
 authorization to expand the product.
+Also prevent rule-default explosion, clarification-as-QueryPlan, arbitrary
+presentation DSLs and business logic in display schemas. Use bounded typed
+semantic bundles, dynamic grounded values and explicit single selection.
+Presentation references meaning; it does not define a second semantic language.
 
 ### C. Missing cases
 
@@ -552,6 +705,9 @@ Section 10 is mandatory in run reports; compare measured behavior classes, not
 test counts. First-panel passing still leaves important cross-recipe/entity,
 resume, synthesis, paraphrase, language and source/data uncertainties. Stability
 adds repeated-measure evidence, not semantic breadth or new fresh families.
+Explicit gaps include dynamically grounded/free-value choices, multi-select
+composition, multi-ambiguity chains, table/chart presentation and the later
+P1-versus-recipe product-entry decision. None is filled by a passing choices UI.
 
 ### D. Protected strategic assumptions
 
@@ -570,6 +726,10 @@ local refactor:
 10. Evaluator gold/reference SQL never enters runtime/model context.
 11. Clarification is explicit typed behavior, not hidden repair.
 12. No silent narrowing of supported product scope, including the separate P1 route.
+13. Implementation inability to clarify must not become desired decline gold.
+14. Presentation shape never redefines the semantic contract; business meaning must not exist only in a block or label.
+15. Ranking/recommendation is not user binding and cannot trigger execution.
+16. Material semantics are explicit or explicitly inherited, not a growing system of silent defaults.
 
 ### E. Mandatory system-level impact review for future P3 PRs
 
@@ -584,6 +744,10 @@ measurement is not zero cost. No need to rerun unrelated suites for a docs-only 
 | P2 regressions | Native semantics, required/optional behavior, strict parser, structured output, stop/publication and fixed-family protections |
 | Security/privacy | Approved data, typed bounds, no new payload/exception logging, code/SQL bypass, secret or endpoint exposure |
 | Evaluator leakage | Import/context/input separation, canary checks; gold/acceptance reviewer independent of repair |
+| Grounding candidate provenance | Approved source/context, candidate evidence and applicability; plausibility/ranking never silently supplies user intent |
+| Choice binding/replay | Typed bundle and ID consistency, preserved scope, explicit user selection, expiry/staleness and invalid/replayed choices; no label-based binding |
+| UI/presentation compatibility | Localization/reordering preserves semantic bindings; individually admitted/versioned block types; no arbitrary payloads or renderer business logic |
+| Product-entry routing | Later P3 scalar P1 vs recipe vs clarify/decline policy; no global refusal claim from a route limitation or hidden fallback |
 | Prompt/context size | Exact before/after bytes/hashes, unchanged caps or separately approved change |
 | Token and live-attempt cost | All actual/possible attempts, first failures, usage and unknowns; no free hidden probes/retries |
 | Latency | Actual comparable timing with boundary definition; no inference from test counts |
@@ -601,23 +765,28 @@ or 1,831.33 + 119.33 = 1,950.67 per input on average. Its elapsed sample was
 
 | Proposed phase | Families | Inputs / maximum client attempts | P2-like prompt / completion / total estimate |
 | --- | --- | --- | --- |
-| First formal panel | 25 slots (12 fresh reserved, 13 exposed) | 45 | 82,410 / 5,370 / 87,780 |
-| Separate stability | 6 reused families, three trials each | 18 | 32,964 / 2,148 / 35,112 |
-| Combined proposed budget | Still at most 25 distinct families | 63 | 115,374 / 7,518 / 122,892 |
+| First formal panel | 24 slots (12 fresh reserved, 12 exposed) | 44 | 80,578.67 / 5,250.67 / 85,829.33 |
+| Separate stability | 6 reused families, three trials each | 18 | 32,964.00 / 2,148.00 / 35,112.00 |
+| Combined proposed budget | Still at most 24 distinct families | 62 | 113,542.67 / 7,398.67 / 120,941.33 |
 
-Combined work is about **7 times** P2 #36's input count and P2-like token total,
+Estimates use exact P2 totals multiplied by attempts / 9, rounded independently
+to two decimals; displayed components may differ from displayed totals by 0.01.
+Combined work is about **6.89 times** P2 #36's input count and P2-like token total,
 not a pricing estimate. New clarification schema/context may increase tokens.
 For planning only, allow 25% above the P2-like prompt estimate plus 2,048
-completion tokens per attempt: roughly 273,242 total tokens for 63 attempts.
+completion tokens per attempt: ceil((16,482 * 62 / 9) * 1.25 + 62 * 2,048)
+= **268,905 total tokens** for 62 attempts.
 This is not a hard token guarantee or an accepted raised cap; re-estimate using
 the final offline request identities before authorization. Actual prompt usage
 is unknown until observed; record missing usage as unknown, not zero.
 
 Propose unchanged 60-second per-call maximum, with separately reviewed panel
-budgets of 2,820 seconds for 45 calls and 1,200 seconds for 18 calls (120 seconds
+budgets of 2,760 seconds for 44 calls and 1,200 seconds for 18 calls (120 seconds
 each for non-call work within final-publication admission). These are ceilings,
 not expected latency/SLOs; existing P2's 720-second limit is not silently reused
-for a larger panel. The future P3 runner must pin its own policy.
+for a larger panel. The two separate ceilings sum to 3,960 seconds, not one
+62-call panel with a single publication allowance. The future P3 runner must
+pin its own policy.
 
 One invocation per separately authorized panel, concurrency 1, client retries 0.
 Reuse P2's reviewed network/timeout/immediate safety-stop distinctions and
@@ -626,20 +795,21 @@ merely to change case counts. Preserve unrun entries when stopped; no recovery
 resend, top-up or "finish the remaining cases" under consumed authority.
 Gateway retries/fallback/cache are separately attested; upstream inference work
 may exceed client attempts and remains unknown without evidence. No health,
-warm-up, discovery, judge or synthesis calls are included in the 63-call proposal.
+warm-up, discovery, judge or synthesis calls are included in the 62-call proposal.
 
 Estimated human effort: 4-8 hours independent family/oracle/translation admission,
 2-4 hours first-result review and 1-2 hours stability/disagreement review.
+Removing one scored input does not justify reducing these coarse human estimates.
 These are planning estimates, not measured effort or RSI evidence; record actual
 active review effort, elapsed time, interventions and failed attempts later.
 
 | Area | Forecast, not authorization |
 | --- | --- |
-| Necessary product capability before first panel | One bounded typed clarification alternative, validation and safe rendering; versioned shared contract change, no new recipe/operator |
-| Later P3 product gates | One-turn binding/revalidation and evidence-linked synthesis, each separately designed/reviewed; no conversation engine |
+| Necessary product capability before first panel | One bounded typed semantic clarification alternative and single-select choices presentation referencing its bindings; separate validation/versioning, no new recipe/operator |
+| Later P3 product gates | Product-entry grounding/routing policy, one-turn binding/revalidation and evidence-linked synthesis, each separately designed/reviewed; no universal router or conversation engine admitted here |
 | Evaluation-only work | Distinct question/gold records, provenance/novelty audit, accepted semantic sets, layer grades, fixed denominator summaries and pinning |
 | Runner work | Adapt/reuse accepted neutral safety/evidence helpers; preserve P1/P2 identities and terminal-publication regressions, no second runtime execution path |
-| Hazards, not admitted | Name resolver creep, dynamic metric routing, state machine, planner retries, growing DSL/config, prompt exceptions, evaluator-derived hints |
+| Hazards, not admitted | Name resolver creep, implicit metric routing/defaults, state machine, planner retries, growing semantic/presentation DSL/config, renderer business logic, prompt exceptions, evaluator-derived hints |
 
 Before each later repair state hypothesis, source/oracle identity, cost bound
 and stop condition. Default to at most two candidate fixes per investigation,
@@ -650,12 +820,15 @@ shows transfer; extra test counts or written lessons do not establish RSI.
 
 ## 13. Recommended independently reviewable sequence
 
-1. **P3.0:** owner reviews this contract, especially conservative incomplete-input
-   policy, conditional novelty quota, effective small-N threshold, no initial
-   resume/synthesis, and protected assumptions. No runtime changes.
+1. **P3.0:** owner reviews R1: deferred missing-input clarification (not decline
+   gold), semantic/presentation separation, conditional novelty quota, ratified
+   8/8 fresh and 12/12 total answer gate, and no initial resume/synthesis.
+   No runtime changes.
 2. **P3.1:** separately admit and implement minimal action/clarification contract,
-   version identities, strict validation and fake-transport regressions. Keep
-   existing native recipes/P1 path; use design-seen development cases only.
+   typed semantic bundles and single-select choices presentation, version
+   identities, strict validation and fake-transport regressions. Keep existing
+   native recipes/P1 path; no grounding service or generic UI DSL is admitted
+   by this design. Use design-seen development cases only.
 3. **P3.2:** offline evaluator records/grader/reporting and isolation checks,
    frozen denominators, budgets and failure/publication witnesses. No live calls.
 4. **Candidate and case freeze:** owner accepts a candidate; independent authors
@@ -670,11 +843,16 @@ shows transfer; extra test counts or written lessons do not establish RSI.
 7. **Stability gate:** separately freeze and authorize the 18-call panel on one
    accepted candidate. A post-fix pass is exposed stability evidence, not an
    upgraded first-run generalization result.
-8. **Later bounded P3 gates:** one-turn resume and separately graded synthesis,
-   each with accepted contracts/oracles and its own authorization/budget.
+8. **Later bounded P3 gates:** explicitly decide product-entry grounding/routing
+   among scalar P1, recipe, clarify and decline, preserving capabilities such as
+   known booking accounts. This decision is required before full P3 exit, not
+   supplied by recipe-only refusal results. Separately gate one-turn resume and
+   synthesis, each with accepted contracts/oracles and its own authorization/
+   budget; any dynamic grounding capability needs its own admission.
 9. **P3 exit review:** owner considers all promised P3 layers, quality, mandatory
    controls, stability, costs and remaining gaps. Passing the first panel alone
-   is not full P3 completion; do not pull PG/service or real-data work forward.
+   is not full P3 completion: the cross-route entry decision, resume and synthesis
+   prerequisites remain. Do not pull PG/service or real-data work forward.
 
 ## 14. P3.0 verification and acceptance boundary
 

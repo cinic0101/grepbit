@@ -14,6 +14,9 @@ and blocker/optional disposition for:
 
 - P1/P2 regressions and displaced behavior
 - Security/privacy and evaluator/gold isolation
+- Grounding candidate provenance and typed choice binding/replay
+- Semantic/presentation separation, UI compatibility and block versioning
+- Later P1/recipe product-entry routing and route-specific refusal limits
 - Prompt/context bytes, tokens, latency and all live/possible attempts
 - Production files/lines, operators/repairs, configuration/dependency complexity,
   maintenance and human effort
