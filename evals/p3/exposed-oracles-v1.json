@@ -1,0 +1,403 @@
+{
+  "version": "p3-oracles-v1",
+  "oracles": [
+    {
+      "oracle_id": "E01_overview.v1",
+      "revision": 1,
+      "branch": "answer",
+      "provenance": [
+        "Accepted baseline e8c3a455bd4e09a266a772be599fe851d405df78; exposed development gold, not fresh semantics.",
+        "evals/panels/p2-recipe-smoke-v1.json#E01_overview: unchanged native request, coverage and core values.",
+        "evals/oracles/learningops.json#Q05_center_amount: 68000; Q02_booking_count/Q03_booked_seats with b.center_id='CA': 4/6.",
+        "evals/oracles/learningops.json#Q11_category_breakdown and #Q12_daily_trend: unchanged reference SQL plus b.center_id=:center_id (CA), fresh synthetic fixture, read-only sqlite3.",
+        ".artifacts/p32-offline-3rxs9px8/oracle-reference/reference-results-v1.json: exact SQL, parameters, rows, baseline/source/DB hashes; no candidate native execution.",
+        "evals/fixtures/learningops/README.md: confirmed booking creation-time population; line amount after discount before refunds; TWD minor units; Taipei half-open March interval.",
+        "tests/test_overview.py#assert_pack and #test_e01_complete_evidence_serialization_and_original_fact_identity: core required, daily/category optional and all checked; CA categories arts=30000, technology=38000.",
+        "grepbit/catalog.py#LEARNINGOPS: TWD_minor/bookings/seats; reviewed catalog identity unchanged.",
+        "Q11 category ascending and Q12 local date ascending, observed groups only: no absent-day fill or NULL-to-zero substitution. Reference evidence is independent of candidate output, not independent human acceptance."
+      ],
+      "recipe_id": "overview",
+      "recipe_version": "0.1",
+      "request": {
+        "center_code": "CTR-A01",
+        "start": "2026-03-01T00:00:00+08:00",
+        "end": "2026-04-01T00:00:00+08:00",
+        "timezone": "Asia/Taipei"
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {"amount": "required", "bookings": "required", "seats": "required", "daily_amount": "optional", "category_amounts": "optional"},
+        "states": ["checked"],
+        "binding_center_id": "CA"
+      },
+      "values": {"amount": 68000, "bookings": 4, "seats": 6},
+      "required_slots": ["amount", "bookings", "seats"],
+      "auxiliary_slots": ["daily_amount", "category_amounts"],
+      "auxiliary_values": {
+        "daily_amount": [
+          {"key": "2026-03-01", "value": 35000},
+          {"key": "2026-03-05", "value": 8000},
+          {"key": "2026-03-07", "value": 10000},
+          {"key": "2026-03-10", "value": 15000}
+        ],
+        "category_amounts": [
+          {"key": "arts", "value": 30000},
+          {"key": "technology", "value": 38000}
+        ]
+      },
+      "slot_states": {"amount": "checked", "bookings": "checked", "seats": "checked", "daily_amount": "checked", "category_amounts": "checked"},
+      "units": {"amount": "TWD_minor", "bookings": "bookings", "seats": "seats", "daily_amount": "TWD_minor", "category_amounts": "TWD_minor"},
+      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5"
+    },
+    {
+      "oracle_id": "E02_compare.v1",
+      "revision": 1,
+      "branch": "answer",
+      "provenance": [
+        "Accepted baseline e8c3a455bd4e09a266a772be599fe851d405df78; exposed development gold.",
+        "evals/panels/p2-recipe-smoke-v1.json#E02_compare: unchanged native request, coverage and values.",
+        "evals/oracles/learningops.json#Q01_booked_amount and #Q09_previous_amount: independent P0 sums 158000 and 50000.",
+        ".artifacts/p32-offline-3rxs9px8/oracle-reference/reference-results-v1.json: unchanged read-only Q01/Q09 reference SQL and source hashes.",
+        "evals/fixtures/learningops/README.md: all-center confirmed booking creation-time population, discounted line amounts before refunds, explicit March/February 2026 Taipei full months.",
+        "tests/test_compare.py#test_e02_exact_amounts_difference_growth_and_required_coverage and grepbit/catalog.py#LEARNINGOPS: TWD_minor inputs/delta and dimensionless growth; 108000/50000 reduced exactly to 54/25, not a float or percent-valued number.",
+        "Populated nonzero baseline: all four required slots checked; accepted coverage states include undefined but this fixture does not expect NULL/undefined."
+      ],
+      "recipe_id": "compare",
+      "recipe_version": "0.1",
+      "request": {
+        "current": {
+          "metrics": ["confirmed_booked_amount"],
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei",
+          "center_id": null
+        },
+        "baseline": {
+          "metrics": ["confirmed_booked_amount"],
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei",
+          "center_id": null
+        }
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {"current": "required", "baseline": "required", "delta": "required", "growth": "required"},
+        "states": ["checked", "undefined"]
+      },
+      "values": {"current": 158000, "baseline": 50000, "delta": 108000, "growth": {"numerator": 54, "denominator": 25}},
+      "required_slots": ["current", "baseline", "delta", "growth"],
+      "auxiliary_slots": [],
+      "auxiliary_values": {},
+      "slot_states": {"current": "checked", "baseline": "checked", "delta": "checked", "growth": "checked"},
+      "units": {"current": "TWD_minor", "baseline": "TWD_minor", "delta": "TWD_minor", "growth": "dimensionless"},
+      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5"
+    },
+    {
+      "oracle_id": "E03_share_denominator.v1",
+      "revision": 1,
+      "branch": "answer",
+      "provenance": [
+        "Accepted baseline e8c3a455bd4e09a266a772be599fe851d405df78; exposed development gold.",
+        "evals/panels/p2-recipe-smoke-v1.json#E03_share_denominator: unchanged native request, coverage and values.",
+        "evals/oracles/learningops.json#Q13_top_courses: first two ordered rows K1=68000 and K3=60000; #Q01_booked_amount independently covers the whole scope, 158000.",
+        ".artifacts/p32-offline-3rxs9px8/oracle-reference/reference-results-v1.json: unchanged read-only Q13/Q01 SQL, rows and source hashes.",
+        "tests/test_breakdown.py#assert_pack and grepbit/catalog.py#LEARNINGOPS: all slots required/checked; TWD_minor amount rows/total/subtotal, dimensionless share.",
+        "Course amounts descending, course IDs ascending for ties, exactly k=2; no tied row beyond k or absent-course fill. Whole-scope denominator is not selected subtotal.",
+        "128000=68000+60000; exact 128000/158000 reduces to 64/79. Nonempty, nonzero seed data has no NULL/undefined slots."
+      ],
+      "recipe_id": "breakdown",
+      "recipe_version": "0.1",
+      "request": {
+        "start": "2026-03-01T00:00:00+08:00",
+        "end": "2026-04-01T00:00:00+08:00",
+        "timezone": "Asia/Taipei",
+        "top_k": 2
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {"top_courses": "required", "all_amount": "required", "top_subtotal": "required", "share": "required"},
+        "states": ["checked", "undefined"],
+        "group": {"dimension": "course", "coverage": "top_k", "top_k": 2}
+      },
+      "values": {
+        "rows": [{"key": "K1", "value": 68000}, {"key": "K3", "value": 60000}],
+        "all_amount": 158000,
+        "top_subtotal": 128000,
+        "share": {"numerator": 64, "denominator": 79}
+      },
+      "required_slots": ["top_courses", "all_amount", "top_subtotal", "share"],
+      "auxiliary_slots": [],
+      "auxiliary_values": {},
+      "slot_states": {"top_courses": "checked", "all_amount": "checked", "top_subtotal": "checked", "share": "checked"},
+      "units": {"top_courses": "TWD_minor", "all_amount": "TWD_minor", "top_subtotal": "TWD_minor", "share": "dimensionless"},
+      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5"
+    },
+    {
+      "oracle_id": "P09_empty_overview.v1",
+      "revision": 1,
+      "branch": "answer",
+      "provenance": [
+        "Accepted source baseline 20abb5592262c77c98f9cabeaf7cf4854edb6fbe, Issue #43; exposed development control only.",
+        "tests/test_p3_grading.py#test_empty_overview_gold_keeps_null_distinct_from_measured_zero: unit-empty-overview-v2, revision 2, CTR-A01 March 2030; not the superseded mistaken v1.",
+        "evals/p3/development-oracles-v1.json#E01_overview.v1: unchanged request shape, native coverage, units, catalog and slot states; only the accepted empty period and values differ.",
+        "evals/oracles/learningops.json#Q01_booked_amount/#Q02_booking_count/#Q03_booked_seats/#Q11_category_breakdown/#Q12_daily_trend: explicit CA and March 2030 parameters, no coalescing.",
+        ".artifacts/p33-offline-5r2c8z2c/exposed-reference-qiDblo/reference-results-v1.json: exact P0 SQL/parameters/rows and baseline/source/DB hashes; independent read-only reference computation, zero candidate executions.",
+        "Empty SUM=null, COUNT=0, grouped rows=[]; checked empty is not measured zero. TWD_minor/bookings/seats and Asia/Taipei booking-creation month remain unchanged.",
+        "Independent human family-distinctness, translation and gold review pending; neither owner approval nor novelty certification."
+      ],
+      "recipe_id": "overview",
+      "recipe_version": "0.1",
+      "request": {
+        "center_code": "CTR-A01",
+        "start": "2030-03-01T00:00:00+08:00",
+        "end": "2030-04-01T00:00:00+08:00",
+        "timezone": "Asia/Taipei"
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {"amount": "required", "bookings": "required", "seats": "required", "daily_amount": "optional", "category_amounts": "optional"},
+        "states": ["checked"],
+        "binding_center_id": "CA"
+      },
+      "values": {"amount": null, "bookings": 0, "seats": null},
+      "required_slots": ["amount", "bookings", "seats"],
+      "auxiliary_slots": ["daily_amount", "category_amounts"],
+      "auxiliary_values": {"daily_amount": [], "category_amounts": []},
+      "slot_states": {"amount": "checked", "bookings": "checked", "seats": "checked", "daily_amount": "checked", "category_amounts": "checked"},
+      "units": {"amount": "TWD_minor", "bookings": "bookings", "seats": "seats", "daily_amount": "TWD_minor", "category_amounts": "TWD_minor"},
+      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5"
+    },
+    {
+      "oracle_id": "P10_required_views.v1",
+      "revision": 1,
+      "branch": "answer",
+      "provenance": [
+        "Accepted source baseline 20abb5592262c77c98f9cabeaf7cf4854edb6fbe, Issue #43; exposed development control only.",
+        "evals/p3/development-oracles-v1.json#E01_overview.v1: identical native request, coverage, values, auxiliary values, units, states and catalog.",
+        "tests/test_p3_grading.py#test_user_required_optional_slot_missing_stays_explicit_partial: promote both observed daily/category views to user required_slots; native coverage remains optional.",
+        "evals/oracles/learningops.json#Q11_category_breakdown/#Q12_daily_trend plus b.center_id=:center_id (CA); Q01/Q02/Q03 with the same center and March 2026 bounds.",
+        ".artifacts/p33-offline-5r2c8z2c/exposed-reference-qiDblo/reference-results-v1.json: independently recomputed E01 values and observed groups, exact SQL and source hashes; zero candidate executions.",
+        "No missing-day fill, payment/refund substitution, extra count meaning or invented user obligation. All five existing slots are explicitly requested.",
+        "Provisional P10 versus E01 family-distinctness requires independent human review; different required_slots and passing tests do not establish novelty or owner approval."
+      ],
+      "recipe_id": "overview",
+      "recipe_version": "0.1",
+      "request": {
+        "center_code": "CTR-A01",
+        "start": "2026-03-01T00:00:00+08:00",
+        "end": "2026-04-01T00:00:00+08:00",
+        "timezone": "Asia/Taipei"
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {"amount": "required", "bookings": "required", "seats": "required", "daily_amount": "optional", "category_amounts": "optional"},
+        "states": ["checked"],
+        "binding_center_id": "CA"
+      },
+      "values": {"amount": 68000, "bookings": 4, "seats": 6},
+      "required_slots": ["amount", "bookings", "seats", "daily_amount", "category_amounts"],
+      "auxiliary_slots": [],
+      "auxiliary_values": {
+        "daily_amount": [
+          {"key": "2026-03-01", "value": 35000},
+          {"key": "2026-03-05", "value": 8000},
+          {"key": "2026-03-07", "value": 10000},
+          {"key": "2026-03-10", "value": 15000}
+        ],
+        "category_amounts": [
+          {"key": "arts", "value": 30000},
+          {"key": "technology", "value": 38000}
+        ]
+      },
+      "slot_states": {"amount": "checked", "bookings": "checked", "seats": "checked", "daily_amount": "checked", "category_amounts": "checked"},
+      "units": {"amount": "TWD_minor", "bookings": "bookings", "seats": "seats", "daily_amount": "TWD_minor", "category_amounts": "TWD_minor"},
+      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5"
+    },
+    {
+      "oracle_id": "P11_nonchronological_roles.v1",
+      "revision": 1,
+      "branch": "answer",
+      "provenance": [
+        "Accepted source baseline 20abb5592262c77c98f9cabeaf7cf4854edb6fbe, Issue #43; exposed development control only.",
+        "evals/p3/development-oracles-v1.json#C02_comparison_roles.v1: exact accepted February-current/March-baseline request alternative; no inferred role assignment.",
+        "evals/p3/development-oracles-v1.json#E02_compare.v1 and tests/test_compare.py#test_swapped_fact_roles_are_rejected_before_difference: preserve role linkage, required slots, units and native coverage.",
+        "evals/oracles/learningops.json#Q09_previous_amount: current=50000; #Q01_booked_amount: baseline=158000. Delta=50000-158000=-108000; growth=-108000/158000=-54/79.",
+        ".artifacts/p33-offline-5r2c8z2c/exposed-reference-qiDblo/reference-results-v1.json: unchanged Q09/Q01 reference SQL and exact Fraction calculation, source/DB hashes; zero candidate executions.",
+        "Current is earlier, not later. All centers, confirmed booking creation-time amount after discounts before refunds, TWD_minor and dimensionless relative change.",
+        "Provisional P11 versus E02 family-distinctness and translation require independent human review; changed orientation is exposed regression, not certified novelty or owner approval."
+      ],
+      "recipe_id": "compare",
+      "recipe_version": "0.1",
+      "request": {
+        "current": {
+          "metrics": ["confirmed_booked_amount"],
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei",
+          "center_id": null
+        },
+        "baseline": {
+          "metrics": ["confirmed_booked_amount"],
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei",
+          "center_id": null
+        }
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {"current": "required", "baseline": "required", "delta": "required", "growth": "required"},
+        "states": ["checked", "undefined"]
+      },
+      "values": {"current": 50000, "baseline": 158000, "delta": -108000, "growth": {"numerator": -54, "denominator": 79}},
+      "required_slots": ["current", "baseline", "delta", "growth"],
+      "auxiliary_slots": [],
+      "auxiliary_values": {},
+      "slot_states": {"current": "checked", "baseline": "checked", "delta": "checked", "growth": "checked"},
+      "units": {"current": "TWD_minor", "baseline": "TWD_minor", "delta": "TWD_minor", "growth": "dimensionless"},
+      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5"
+    },
+    {
+      "oracle_id": "P12_ranked_courses.v1",
+      "revision": 1,
+      "branch": "answer",
+      "provenance": [
+        "Accepted source baseline 20abb5592262c77c98f9cabeaf7cf4854edb6fbe, Issue #43; exposed development control only.",
+        "evals/cases/learningops-languages.json#Q13_top_courses.ja: exact historical wording, k=3, amount descending then course ID ascending. No added share requirement.",
+        "evals/oracles/learningops.json#Q13_top_courses: unchanged ordered rows K1=68000,K3=60000,K2=30000; #Q01_booked_amount independent whole=158000.",
+        "tests/test_breakdown.py#test_each_k_keeps_independent_whole_and_fewer_observed_courses_are_valid: accepted k=3 subtotal=158000 and share=1; native four-slot required coverage remains unchanged.",
+        "User requires top_courses; existing fixed all_amount/top_subtotal/share are declared auxiliary and still checked, not fabricated extra user obligations.",
+        ".artifacts/p33-offline-5r2c8z2c/exposed-reference-qiDblo/reference-results-v1.json: exact P0 rows, independent whole, Fraction(158000,158000)=1/1, source/DB hashes and full monthly tie audit.",
+        "Unmodified fixture has no tied observed course amounts. March k=3 includes all three observed courses, excludes absent K4/K5, and does not exercise a tied cutoff. No native executor or fixture mutation authored gold.",
+        "tests/test_breakdown.py#test_cutoff_ties_and_late_multirow_course_use_full_population_before_limit is historical mutated-fixture unit evidence only; its tie scenario is NOT this panel input.",
+        "Provisional P12 versus E03 family-distinctness and A05 coverage require independent human review; tie-cutoff demonstration is blocked on this fixed fixture, not certified by shape tests or owner approval."
+      ],
+      "recipe_id": "breakdown",
+      "recipe_version": "0.1",
+      "request": {
+        "start": "2026-03-01T00:00:00+08:00",
+        "end": "2026-04-01T00:00:00+08:00",
+        "timezone": "Asia/Taipei",
+        "top_k": 3
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {"top_courses": "required", "all_amount": "required", "top_subtotal": "required", "share": "required"},
+        "states": ["checked", "undefined"],
+        "group": {"dimension": "course", "coverage": "top_k", "top_k": 3}
+      },
+      "values": {
+        "rows": [{"key": "K1", "value": 68000}, {"key": "K3", "value": 60000}, {"key": "K2", "value": 30000}],
+        "all_amount": 158000,
+        "top_subtotal": 158000,
+        "share": {"numerator": 1, "denominator": 1}
+      },
+      "required_slots": ["top_courses"],
+      "auxiliary_slots": ["all_amount", "top_subtotal", "share"],
+      "auxiliary_values": {},
+      "slot_states": {"top_courses": "checked", "all_amount": "checked", "top_subtotal": "checked", "share": "checked"},
+      "units": {"top_courses": "TWD_minor", "all_amount": "TWD_minor", "top_subtotal": "TWD_minor", "share": "dimensionless"},
+      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5"
+    },
+    {
+      "oracle_id": "C03_center.v1",
+      "revision": 1,
+      "branch": "clarify",
+      "provenance": [
+        "Accepted P3.1 baseline e8c3a455bd4e09a266a772be599fe851d405df78; hand-authored exposed development semantic set.",
+        "tests/test_recipe_clarification.py#clarify(center); docs/clarification-action.md#semantic-admission; historical E04 ambiguity adapted to supplied codes, not name grounding.",
+        "Exactly one of literal CTR-A01/CTR-B01, same March 2026 Taipei Overview scope; no code lookup or combined-center alternative."
+      ],
+      "clarification": {
+        "kind": "center",
+        "choices": [
+          {
+            "id": "expected_center_a",
+            "semantic_value": {
+              "type": "center",
+              "request": {"center_code": "CTR-A01", "start": "2026-03-01T00:00:00+08:00", "end": "2026-04-01T00:00:00+08:00", "timezone": "Asia/Taipei"}
+            }
+          },
+          {
+            "id": "expected_center_b",
+            "semantic_value": {
+              "type": "center",
+              "request": {"center_code": "CTR-B01", "start": "2026-03-01T00:00:00+08:00", "end": "2026-04-01T00:00:00+08:00", "timezone": "Asia/Taipei"}
+            }
+          }
+        ]
+      }
+    },
+    {
+      "oracle_id": "C04_metric_meaning.v1",
+      "revision": 1,
+      "branch": "clarify",
+      "provenance": [
+        "Accepted P3.1 baseline e8c3a455bd4e09a266a772be599fe851d405df78; hand-authored exposed development semantic set.",
+        "tests/test_recipe_clarification.py#clarify(metric_meaning); docs/clarification-action.md#semantic-admission; evals/oracles/learningops.json Q01 versus Q06 population/time-basis distinction.",
+        "Exactly confirmed_booked_amount versus cash_received, explicit CTR-A01/March 2026 scope; cash choice is unavailable through the recipe entry, not an executable new metric."
+      ],
+      "clarification": {
+        "kind": "metric_meaning",
+        "choices": [
+          {
+            "id": "expected_booked_amount",
+            "semantic_value": {
+              "type": "metric_meaning",
+              "scope": {"center_code": "CTR-A01", "start": "2026-03-01T00:00:00+08:00", "end": "2026-04-01T00:00:00+08:00", "timezone": "Asia/Taipei"},
+              "value": "confirmed_booked_amount"
+            }
+          },
+          {
+            "id": "expected_cash",
+            "semantic_value": {
+              "type": "metric_meaning",
+              "scope": {"center_code": "CTR-A01", "start": "2026-03-01T00:00:00+08:00", "end": "2026-04-01T00:00:00+08:00", "timezone": "Asia/Taipei"},
+              "value": "cash_received"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "oracle_id": "D01_profit.v1",
+      "revision": 1,
+      "branch": "decline",
+      "provenance": [
+        "Accepted baseline e8c3a455bd4e09a266a772be599fe851d405df78; historical exposed E07_missing_profit.",
+        "evals/cases/learningops.json#E07_missing_profit and docs/p3-evaluation-contract.md D01/P19: no reviewed profit definition or cost data; booked amount is not profit.",
+        "Designated explicit profit control, not deferred ambiguity; no model reason wording is required."
+      ],
+      "designated_control": true,
+      "capability_category": "D01"
+    },
+    {
+      "oracle_id": "D02_cash_received.v1",
+      "revision": 1,
+      "branch": "decline",
+      "provenance": [
+        "Accepted baseline e8c3a455bd4e09a266a772be599fe851d405df78; historical exposed Q06_cash_received.",
+        "evals/cases/learningops.json#Q06_cash_received; evals/fixtures/learningops/README.md; docs/p3-evaluation-contract.md D02/P20.",
+        "Successful payments by posting time regardless of booking status are outside the admitted recipe metrics/population; the P0 cash query is not recipe capability.",
+        "Designated explicit cash control, not deferred ambiguity; no model reason wording is required."
+      ],
+      "designated_control": true,
+      "capability_category": "D02"
+    },
+    {
+      "oracle_id": "P22_center_compare.v1",
+      "revision": 1,
+      "branch": "decline",
+      "provenance": [
+        "Accepted source baseline 20abb5592262c77c98f9cabeaf7cf4854edb6fbe, Issue #43; exposed development control only.",
+        "docs/p3-evaluation-contract.md#D06/#P22 and tests/test_compare.py#test_center_filter_is_not_admitted_but_explicit_null_is: Compare rejects a non-null center in either role.",
+        "Explicit CTR-A01 for both March-current and February-baseline must not be silently dropped or answered with all-center E02 facts.",
+        "No candidate output or numeric oracle execution is needed for this accepted capability boundary; no new decline category or reason payload.",
+        "Independent human family-distinctness and Japanese wording review pending; not owner approval or novelty certification."
+      ],
+      "designated_control": true,
+      "capability_category": "D06"
+    }
+  ]
+}

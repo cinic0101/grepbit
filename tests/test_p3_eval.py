@@ -121,6 +121,9 @@ class P3EvalTests(unittest.IsolatedAsyncioTestCase):
             path = f"tools/{name}.py"
             self.assertEqual(manifest["identities"]["files_sha256"][path],
                              hashlib.sha256((runner.ROOT / path).read_bytes()).hexdigest())
+        for path in ("pyproject.toml", "uv.lock"):
+            self.assertEqual(manifest["identities"]["files_sha256"][path],
+                             hashlib.sha256((runner.ROOT / path).read_bytes()).hexdigest())
         self.assertEqual(manifest["identities"]["context"], recipe_model.context_identity())
         self.assertEqual(manifest["identities"]["structured_output"], recipe_model.structured_output_identity())
         self.assertEqual(manifest["identities"]["evidence_expectations"], p3_expectations.identity())

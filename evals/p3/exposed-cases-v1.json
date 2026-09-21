@@ -1,0 +1,419 @@
+{
+  "version": "p3-cases-v1",
+  "cases": [
+    {
+      "case_id": "E01_overview.zh-TW",
+      "family_id": "E01_overview",
+      "question": "CTR-A01 2026年3月的報名狀況如何？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "anchor",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": ["evals/cases/learningops.json#E01_overview", "evals/panels/p2-recipe-smoke-v1.json#order"],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "overview|confirmed_booked_amount,confirmed_booking_count,booked_seats|CTR-A01=CA|2026-03|Asia/Taipei|auxiliary=observed_booking_day,category",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "E01_overview.v1"
+    },
+    {
+      "case_id": "E02_compare.en",
+      "family_id": "E02_compare",
+      "question": "How did the overall confirmed booking amount in March 2026 compare with February?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "anchor",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": ["evals/cases/learningops-languages.json#E02_compare.en", "evals/panels/p2-recipe-smoke-v1.json#order"],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "compare|confirmed_booked_amount|all_centers|current=2026-03|baseline=2026-02|Asia/Taipei|delta,growth",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "E02_compare.v1"
+    },
+    {
+      "case_id": "E03_share_denominator.ja",
+      "family_id": "E03_share_denominator",
+      "question": "2026年3月の申込金額上位2講座は、全体の申込金額のどれくらいの割合を占めますか？",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "anchor",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": ["evals/cases/learningops-languages.json#E03_share_denominator.ja", "evals/panels/p2-recipe-smoke-v1.json#order"],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "breakdown|confirmed_booked_amount|all_centers|2026-03|Asia/Taipei|course_top_k=2|amount_desc,course_id_asc|denominator=whole_scope",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "E03_share_denominator.v1"
+    },
+    {
+      "case_id": "E01_overview.en",
+      "family_id": "E01_overview",
+      "question": "How were bookings at CTR-A01 in March 2026?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "anchor",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": ["evals/cases/learningops-languages.json#E01_overview.en", "evals/panels/p2-recipe-smoke-v1.json#order"],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "overview|confirmed_booked_amount,confirmed_booking_count,booked_seats|CTR-A01=CA|2026-03|Asia/Taipei|auxiliary=observed_booking_day,category",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "E01_overview.v1"
+    },
+    {
+      "case_id": "E02_compare.ja",
+      "family_id": "E02_compare",
+      "question": "2026年3月の全体の確定済み申込金額は、2月と比べてどうでしたか？",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "anchor",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": ["evals/cases/learningops-languages.json#E02_compare.ja", "evals/panels/p2-recipe-smoke-v1.json#order"],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "compare|confirmed_booked_amount|all_centers|current=2026-03|baseline=2026-02|Asia/Taipei|delta,growth",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "E02_compare.v1"
+    },
+    {
+      "case_id": "E03_share_denominator.zh-TW",
+      "family_id": "E03_share_denominator",
+      "question": "2026年3月報名金額前兩名課程合占全部金額多少？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "anchor",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": ["evals/cases/learningops.json#E03_share_denominator", "evals/panels/p2-recipe-smoke-v1.json#order"],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "breakdown|confirmed_booked_amount|all_centers|2026-03|Asia/Taipei|course_top_k=2|amount_desc,course_id_asc|denominator=whole_scope",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "E03_share_denominator.v1"
+    },
+    {
+      "case_id": "E01_overview.ja",
+      "family_id": "E01_overview",
+      "question": "CTR-A01の2026年3月の申込状況はどうでしたか？",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "anchor",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": ["evals/cases/learningops-languages.json#E01_overview.ja", "evals/panels/p2-recipe-smoke-v1.json#order"],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "overview|confirmed_booked_amount,confirmed_booking_count,booked_seats|CTR-A01=CA|2026-03|Asia/Taipei|auxiliary=observed_booking_day,category",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "E01_overview.v1"
+    },
+    {
+      "case_id": "E02_compare.zh-TW",
+      "family_id": "E02_compare",
+      "question": "2026年3月全體已確認報名金額比2月如何？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "anchor",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": ["evals/cases/learningops.json#E02_compare", "evals/panels/p2-recipe-smoke-v1.json#order"],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "compare|confirmed_booked_amount|all_centers|current=2026-03|baseline=2026-02|Asia/Taipei|delta,growth",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "E02_compare.v1"
+    },
+    {
+      "case_id": "E03_share_denominator.en",
+      "family_id": "E03_share_denominator",
+      "question": "What share of the total booking amount in March 2026 came from the top two courses by booking amount?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "anchor",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": ["evals/cases/learningops-languages.json#E03_share_denominator.en", "evals/panels/p2-recipe-smoke-v1.json#order"],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "breakdown|confirmed_booked_amount|all_centers|2026-03|Asia/Taipei|course_top_k=2|amount_desc,course_id_asc|denominator=whole_scope",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "E03_share_denominator.v1"
+    },
+    {
+      "case_id": "P09_empty_overview.ja",
+      "family_id": "P09_empty_overview",
+      "question": "CTR-A01の2030年3月の申込状況はどうでしたか？",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": [
+          "docs/p3-evaluation-contract.md#P09",
+          "evals/cases/learningops-languages.json#E01_overview.ja",
+          "tests/test_p3_grading.py#test_empty_overview_gold_keeps_null_distinct_from_measured_zero",
+          "tests/test_overview.py#test_empty_and_zero_retain_checked_null_versus_measured_zero",
+          "New exposed rendering: E01 Japanese question with the accepted unit-empty-overview-v2 March 2030 scope; empty SUM=null, COUNT=0.",
+          "Provisional allocation only; independent human family-distinctness and language review pending, not owner approval or novelty certification."
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "overview|confirmed_booked_amount,confirmed_booking_count,booked_seats|CTR-A01=CA|2030-03|Asia/Taipei|empty_SUM=null,COUNT=0|auxiliary=observed_booking_day,category",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "P09_empty_overview.v1"
+    },
+    {
+      "case_id": "P10_required_views.en",
+      "family_id": "P10_required_views",
+      "question": "Give me the March 2026 booking overview for CTR-A01: confirmed booked amount after discounts and before refunds, number of confirmed bookings, and booked seats. Both the daily amount by Taipei booking date (only dates with data) and the amount by course category are required.",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": [
+          "docs/p3-evaluation-contract.md#P10",
+          "evals/p3/development-cases-v1.json#E01_overview.en",
+          "evals/cases/learningops-languages.json#Q01_booked_amount.en",
+          "evals/cases/learningops-languages.json#Q02_booking_count.en",
+          "evals/cases/learningops-languages.json#Q03_booked_seats.en",
+          "evals/cases/learningops-languages.json#Q11_category_breakdown.en",
+          "evals/cases/learningops-languages.json#Q12_daily_trend.en",
+          "tests/test_p3_grading.py#test_user_required_optional_slot_missing_stays_explicit_partial",
+          "New exposed rendering of accepted E01/Q11/Q12 and user-required optional-slot behavior; native optional states are unchanged.",
+          "Provisional allocation only; independent human family-distinctness review versus E01 pending, not owner approval or novelty certification."
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "overview|confirmed_booked_amount,confirmed_booking_count,booked_seats|CTR-A01=CA|2026-03|Asia/Taipei|user_required=amount,bookings,seats,observed_booking_day,category|no_auxiliary_slots",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "P10_required_views.v1"
+    },
+    {
+      "case_id": "P11_nonchronological_roles.zh-TW",
+      "family_id": "P11_nonchronological_roles",
+      "question": "請比較全體已確認報名金額，以2026年2月為本期、2026年3月為基期，列出兩期金額、差額與相對於基期的變動率。",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": [
+          "docs/p3-evaluation-contract.md#P11",
+          "evals/cases/learningops.json#E02_compare",
+          "evals/p3/development-oracles-v1.json#C02_comparison_roles.v1",
+          "tests/test_compare.py#test_swapped_fact_roles_are_rejected_before_difference",
+          "New exposed rendering selecting the already accepted February-current/March-baseline orientation; no chronology-based role inference.",
+          "Provisional allocation only; independent human family-distinctness review versus E02 and language review pending, not owner approval or novelty certification."
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "compare|confirmed_booked_amount|all_centers|current=2026-02|baseline=2026-03|Asia/Taipei|delta,growth|explicit_nonchronological_roles",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "P11_nonchronological_roles.v1"
+    },
+    {
+      "case_id": "P12_ranked_courses.ja",
+      "family_id": "P12_ranked_courses",
+      "question": "2026年3月の確定済み申込金額が最も高い講座を上位3件示してください。同額の場合は講座IDの昇順にしてください。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": [
+          "docs/p3-evaluation-contract.md#P12",
+          "evals/cases/learningops-languages.json#Q13_top_courses.ja",
+          "evals/oracles/learningops.json#Q13_top_courses",
+          "tests/test_breakdown.py#test_each_k_keeps_independent_whole_and_fewer_observed_courses_are_valid",
+          "tests/test_breakdown.py#test_course_coverage_keys_order_and_empty_evidence_are_checked",
+          "tests/test_breakdown.py#test_cutoff_ties_and_late_multirow_course_use_full_population_before_limit",
+          "Exact historical Q13 Japanese question. Fixed March data has three unequal observed course totals; no absent-course fill, no genuine tied-cutoff witness.",
+          "Historical tie tests mutate their own fixtures; those mutations are not imported here. Tie-cutoff demonstration is blocked on the fixed fixture.",
+          "Provisional allocation only; independent human family-distinctness and A05 coverage review versus E03 pending, not owner approval or novelty certification."
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "breakdown|confirmed_booked_amount|all_centers|2026-03|Asia/Taipei|course_top_k=3|amount_desc,course_id_asc|user_required=top_courses|auxiliary=all_amount,top_subtotal,share|no_observed_ties",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "P12_ranked_courses.v1"
+    },
+    {
+      "case_id": "P15_center.en",
+      "family_id": "P15_center",
+      "question": "Give me the March 2026 booking overview for one center, either CTR-A01 or CTR-B01; I have not chosen which of those two centers.",
+      "language": "en",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": [
+          "docs/p3-evaluation-contract.md#P15",
+          "evals/p3/development-cases-v1.json#C03_center.en",
+          "evals/p3/development-oracles-v1.json#C03_center.v1",
+          "evals/cases/learningops.json#E04_ambiguous_entity",
+          "tests/test_recipe_clarification.py#clarify(center)",
+          "Exact development C03 wording and oracle; E04 adapted to supplied codes, not original name grounding or a new requirement.",
+          "Provisional allocation only; independent human family-distinctness review pending, not owner approval or novelty certification."
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "clarify|center|CTR-A01,CTR-B01|2026-03|Asia/Taipei|single_center",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "C03_center.v1"
+    },
+    {
+      "case_id": "P16_metric_meaning.zh-TW",
+      "family_id": "P16_metric_meaning",
+      "question": "請提供 CTR-A01 2026年3月的報名概況及金額；我尚未指定金額是指已確認報名的折扣後、未扣退款金額，還是成功入帳的收款金額。",
+      "language": "zh-TW",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": [
+          "docs/p3-evaluation-contract.md#P16",
+          "evals/p3/development-cases-v1.json#C04_metric_meaning.en",
+          "evals/p3/development-oracles-v1.json#C04_metric_meaning.v1",
+          "evals/cases/learningops.json#Q01_booked_amount",
+          "evals/cases/learningops.json#Q06_cash_received",
+          "evals/fixtures/learningops/README.md#development-semantic-baseline",
+          "tests/test_recipe_clarification.py#clarify(metric_meaning)",
+          "New exposed zh-TW rendering of development C04; booked-before-refunds versus posting-time cash only, not an added refund alternative or capability.",
+          "Provisional allocation only; independent human family-distinctness and language review pending, not owner approval or novelty certification."
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "clarify|metric_meaning|CTR-A01|2026-03|Asia/Taipei|confirmed_booked_amount,cash_received",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "C04_metric_meaning.v1"
+    },
+    {
+      "case_id": "P19_profit.ja",
+      "family_id": "P19_profit",
+      "question": "2026年3月の利益はいくらですか？",
+      "language": "ja",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": [
+          "docs/p3-evaluation-contract.md#P19",
+          "evals/cases/learningops-languages.json#E07_missing_profit.ja",
+          "evals/p3/development-oracles-v1.json#D01_profit.v1",
+          "Exact historical E07 Japanese question and accepted D01 oracle; no booked-amount substitution.",
+          "Provisional allocation only; independent human family-distinctness review pending, not owner approval or novelty certification."
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "decline|D01|profit|2026-03|no_reviewed_cost_or_profit_definition",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "D01_profit.v1"
+    },
+    {
+      "case_id": "P20_cash_received.en",
+      "family_id": "P20_cash_received",
+      "question": "What was the total amount of successful payments posted in March 2026, without excluding any based on booking status?",
+      "language": "en",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": [
+          "docs/p3-evaluation-contract.md#P20",
+          "evals/cases/learningops-languages.json#Q06_cash_received.en",
+          "evals/p3/development-cases-v1.json#D02_cash_received.en",
+          "evals/p3/development-oracles-v1.json#D02_cash_received.v1",
+          "Exact historical Q06/development D02 wording and oracle; P0 cash reference is not admitted recipe capability.",
+          "Provisional allocation only; independent human family-distinctness review pending, not owner approval or novelty certification."
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "decline|D02|cash_received|2026-03|posting_time|all_booking_statuses",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "D02_cash_received.v1"
+    },
+    {
+      "case_id": "P22_center_compare.ja",
+      "family_id": "P22_center_compare",
+      "question": "CTR-A01の2026年3月の確定済み申込金額は、同じセンターの2026年2月と比べてどうでしたか？",
+      "language": "ja",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": [
+          "docs/p3-evaluation-contract.md#P22",
+          "evals/cases/learningops-languages.json#E02_compare.ja",
+          "tests/test_compare.py#test_center_filter_is_not_admitted_but_explicit_null_is",
+          "New exposed Japanese rendering of accepted center-filter rejection: both explicit month roles retain CTR-A01; never silently widen to all centers.",
+          "Provisional allocation only; independent human family-distinctness and language review pending, not owner approval or novelty certification."
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": ["exposed_regression"]
+      },
+      "semantic_signature": "decline|D06|compare|confirmed_booked_amount|CTR-A01_both_roles|current=2026-03|baseline=2026-02|Asia/Taipei|unsupported_center_filter",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "P22_center_compare.v1"
+    }
+  ]
+}

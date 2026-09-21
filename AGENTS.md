@@ -45,13 +45,15 @@ implementation or new live requests. See `docs/p2-recipes.md`.
 Use English for documentation, comments, issues and PRs. Multilingual test inputs
 are intentional. Keep `AGENTS.md` short; `CLAUDE.md` imports it instead of copying it.
 Use Python 3.11+ and SQLite 3.37+. P0 tooling is stdlib-only; runtime tests require
-the pinned `requirements.txt` dependencies. See `docs/fact-kernel.md` for setup,
+`uv sync --locked --python 3.11` from `pyproject.toml` and `uv.lock`.
+Legacy requirements files are frozen verification witnesses, not install inputs.
+See `docs/fact-kernel.md` for setup,
 the strict request contract, resource limits and an offline example.
 See `docs/model-integration.md` for the P1.2 fake-transport suite, safe local
 configuration and pinned smoke preparation; live mode needs separate approval.
 
 ```bash
-.venv/bin/python -m unittest discover -s tests -v
+uv run --locked --offline python -m unittest discover -s tests -v
 .venv/bin/python tools/fixture.py build --db .artifacts/p0-local/learningops.sqlite
 .venv/bin/python tools/fixture.py check --db .artifacts/p0-local/learningops.sqlite --report .artifacts/p0-local/report.json
 ```
