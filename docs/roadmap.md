@@ -1,6 +1,6 @@
 # Roadmap and phase exits
 
-Phase baseline: 2026-09-18; current status follows #39. Work is on `dev`;
+Phase baseline: 2026-09-18; current status follows #41. Work is on `dev`;
 promotion to `main` requires owner review. P0 and P1 are accepted at
 `6d6be30bed321806e0a2ef90fec53a1fc1118373`. The first smoke (#10) failed
 envelope validation on all 12 inputs and remains unchanged. After P1.3a
@@ -23,9 +23,13 @@ recipe families and three languages on accepted dev
 [the roadmap handoff](https://github.com/cinic0101/grepbit/issues/1#issuecomment-5754274130).
 That is exposed regression evidence, not generalization or broad NL quality.
 P3.0 (#37 / PR #38) accepted the [evaluation contract](p3-evaluation-contract.md)
-at `a4bad1a8742a97021502e71208bd7162c6b37c44`. P3.1 (#39) supplies an offline
-[clarification-action candidate](clarification-action.md), not grounding, resume,
-synthesis, new live evidence or phase acceptance. P3-P5 delivery remains open. P2 is not promoted
+at `a4bad1a8742a97021502e71208bd7162c6b37c44`. P3.1 (#39 / PR #40) accepted
+[bounded clarification](clarification-action.md) at
+`e8c3a455bd4e09a266a772be599fe851d405df78`. P3.2 (#41) builds the
+[offline evaluator candidate](p3-evaluator.md), with exposed development fixtures,
+ordered action/intent/fact grading and family-weighted evidence. It does not
+change runtime semantics, freeze fresh cases, run live inference or complete
+grounding/resume/synthesis. P3-P5 delivery remains open. P2 is not promoted
 to main; no further live execution follows from the phase handoff.
 GitHub Issues own current status; this document owns phase meaning and exits.
 

@@ -1,0 +1,268 @@
+# P3.2 offline evaluator
+
+Issue #41; implementation baseline:
+`dev@e8c3a455bd4e09a266a772be599fe851d405df78` (accepted P3.1 #39 / PR #40).
+This evaluator admission follows the accepted [P3.0 contract](p3-evaluation-contract.md).
+It does not change product semantics, authorize live traffic or freeze fresh cases.
+
+## Boundary and modules
+
+The dependency direction is evaluator -> product, never product -> evaluator.
+`tools/p3_assets.py` owns strict evaluator-only records/oracles;
+`tools/p3_grading.py` owns deterministic action/layer observations;
+`tools/p3_scoring.py` owns family/exposure/language accounting; and
+`tools/p3_eval.py` owns preparation, fake execution and immutable reporting.
+Any shared terminal-publication extraction remains evaluator tooling.
+
+The runner extracts **only the question string** and calls the accepted
+`interpret_recipe_and_execute(question, database, client, ...)`. Expectations,
+exposure, family metadata and oracle values never enter messages, generation
+schema, runtime context, presentation or pre-grading runtime evidence.
+Fake completions are separate evaluator fixtures, not a second interpreter.
+There is no repair, fallback, extra execution path, LLM judge or rerun policy.
+All `grepbit/` sources and P1/P3.1 wire/context identities remain protected.
+
+## Versioned assets
+
+JSON assets live under `evals/p3/`, never the runtime package.
+Case, oracle and panel formats use `p3-cases-v1`, `p3-oracles-v1` and
+`p3-panel-v1`. Unknown fields,
+invalid UTF-8/JSON, duplicate keys, excessive sizes and invalid native semantics
+reject with fixed evaluator errors; no raw exception/payload logging.
+
+A case records `case_id`, `family_id`, `question`, `language`, `expected_branch`,
+`cohort`, `exposure`, `provenance`, `semantic_signature`, `must_pass`,
+`observational` and `oracle_id`. Branches are answer/clarify/decline; cohorts
+are answer/clarify/decline/anchor. An anchor is an answer regression, not a
+quality-answer family. Family identity and required variants are explicit:
+translations and paraphrases are not automatically new semantic families.
+Variants must agree on oracle meaning, signature, exposure, cohort and status.
+
+Provenance identifies historical/development/independent origin, source
+references, implementer visibility and exposure history. Exactly three exposure
+labels are recognized: `exposed_regression`, `design_seen`, `frozen_fresh`.
+Historical descendants cannot be relabeled fresh; prior exposed/design-seen
+history cannot be laundered away. An unchanged original run keeps its recorded
+exposure; subsequent use needs a new case/panel identity and appropriate label.
+These checks cannot independently certify human authorship, novelty or blindness.
+
+Panels pin explicit input order and relative case/oracle asset references.
+Development preparation/execution accepts only exposed/design-seen material.
+Formal allocation validation is infrastructure, not a formal panel asset or
+permission to run it. No actual frozen-fresh questions/oracles are authored here.
+Scoring tests may use abstract allocation metadata without questions or gold.
+
+## Closed oracle types
+
+Answer oracles retain the reviewed P2 native request, recipe/version,
+coverage and exact value shapes; they also identify user-required versus
+permitted auxiliary slots and any additional expected auxiliary values/states.
+Native request canonicalization is reused, not reimplemented: equivalent
+admitted instant offsets agree, role orientation/code bytes/top-k remain exact.
+No SQL-string comparison or generic formula/grading language is admitted.
+Gold comes from reviewed prior oracle sources or independently hand-authored
+contract expectations, never captured candidate output.
+
+Clarification oracles use the accepted typed clarification union. Grading
+compares kind and the complete canonical semantic set. Oracle/model choice IDs
+need not match; display ordering and labels are not semantic gold. Presentation
+must expose every actual semantic ID exactly once through choices(single).
+
+Decline oracles identify designated control eligibility and a bounded
+capability category, without requiring model-authored reason text. Deferred
+missing-year/baseline/k ambiguity is not eligible decline gold; D05/P21 cannot
+become a scored decline control. An ineligible decline oracle cannot earn
+`correct_decline`, including in negative unit controls.
+
+## Ordered grading and diagnostics
+
+Primary outcomes use `p3-evaluator-v1` vocabulary:
+`complete_correct`, `false_refusal`, `false_clarification`,
+`missed_clarification`, `wrong_action`, `correct_clarification`,
+`correct_decline`, `wrong_recipe`, `wrong_request`, `wrong_coverage`,
+`wrong_fact_selection`, `wrong_value`, `partial`, `invalid_output`,
+`operational_failure`, `not_run`. `synthesis_error` is reserved and not emitted.
+Historical P1/P2 taxonomy and result records are not relabeled.
+
+Expected answers grade action -> recipe -> complete request -> execution ->
+coverage -> fact selection -> values. Expected clarification grades action ->
+kind -> semantic alternatives/bindings -> presentation references/completeness.
+Expected decline grades action -> control eligibility -> absence of a
+substituted answer. Matching values never rescue an earlier semantic failure.
+
+Each layer retains passed/failed/not_assessed independently. Later observable
+evidence is not erased just because an earlier layer determines the primary
+outcome. Wrong recipe/request takes precedence over a subsequent native error;
+the operational error remains separate. A partial pack is `partial` only when
+its available fact semantics, selection and values are otherwise correct.
+Wrong available facts cannot hide behind optional gaps.
+
+Coverage observes status/slots/grain/population/time/filter obligations.
+Fact selection checks fixed native roles, IDs, derived-source links and
+irrelevant/invented selections; numeric collision cannot rescue a wrong role.
+Values include exact integer/rational/null/undefined/unit/order distinctions.
+Empty SUM remains null; empty booking COUNT remains integer zero. Population
+metadata must remain consistent with emptiness, not merely numeric equality.
+This preserves the accepted [scalar contract](fact-kernel.md), including the
+distinction between absent and measured-zero populations.
+Runtime objects are observed, not rewritten to make an existing checker pass.
+Reused P2 checks retain their historical classification and behavior.
+
+`checked_wrong` is an independent veto whenever a claimed complete normal
+answer has wrong action, recipe, request, coverage, selection or values.
+Decline/clarify/explicit partial is not a checked-normal answer, but still fails
+its applicable denominator when inappropriate.
+`not_run` means no attempt, not malformed output, timeout or a started call.
+
+## Family scoring
+
+Every required variant must pass its branch oracle for family correctness.
+Each family counts once. Report `family_all_variants_correct` separately from
+`family_all_variants_agree`; agreement uses canonical actual meaning/results,
+not just outcome names, and can mean every variant is wrong.
+Actual signatures retain bound scope, fact semantics, exclusions and slot/source
+roles, excluding ephemeral snapshot/fact IDs. Unresolved references cannot
+establish agreement. Unassessed agreement is null, not vacuous success.
+
+Preserve every frozen input in per-input/language reporting. Invalid output,
+operational failure, not-run, partial and inappropriate non-answer branches
+contribute zero successes without leaving their fixed denominators.
+Observational families remain explicit and cannot inflate promotion scores.
+Incomplete/prepared runs cannot pass a promotion gate.
+
+The accepted formal allocation validator requires 24 families / 44 inputs:
+8 fresh answer families, 4 exposed answer controls, 4 clarification controls,
+5 decline controls and 3 P2 anchors. Exposure is 12 fresh / 12 exposed families;
+language totals are zh-TW 14, en 15, ja 15. Design-seen and deferred P21 are
+not formal scored slots. The underlying >=90% rule uses exact ceiling:
+ceil(0.90 * 8)=8; all four exposed controls are mandatory, hence 12/12 answers.
+Clarification (4), decline (5) and anchors (3) have separate all-mandatory
+denominators. No control boosts answer score; any checked-wrong answer vetoes
+promotion. A development panel never establishes a formal promotion result.
+
+## Evidence and execution admission
+
+P3 has distinct manifest/report/stop-policy identities. Source/runtime,
+DB, cases, oracles, panel order, settings and stop policy are pinned.
+Candidate preparation remains distinct from an owner-supplied accepted clean
+dev commit. Neither preparation kind is live authorization.
+
+Default CLI preparation is zero-network. P3.2 fake execution requires an
+explicit mock transport and uses the same production entry. No environment
+loader, real transport or live mode is activated. Future live execution and a
+minimal v2 compatibility probe require separate admission and owner approval.
+
+Reuse existing fixture/source identity checks and exclusive artifact writing.
+Durable per-input reservations precede sending; actual client HTTP attempts,
+possible in-flight reservations and live input attempts remain separate.
+Upstream inference attempts remain unknown. Timeout and network streaks are
+independent; configuration/provider incompatibility, budgets, source/DB/manifest
+drift, leakage and artifact/publication failures stop explicitly.
+
+Terminal success is staged, flushed and admitted before atomic publication;
+incomplete or failed publication never becomes success. Existing output paths
+reject; no accepted evidence is overwritten. No post-commit revalidation or
+compensating write retracts a successfully published terminal report.
+Reports retain sanitized runtime evidence and grading metadata, not raw
+completion/reasoning/provider bodies.
+
+## Offline development workflow
+
+The committed `development-*-v1.json` assets contain 15 inputs in 9 families:
+the original nine P2 anchor inputs in their original order, four P3.1
+clarification kinds, and historical D01/D02 decline controls. All are
+`exposed_regression`, including explicitly synthetic development extensions.
+They are neither a fresh evaluation nor the formal 44-input panel.
+
+Answer gold reuses reviewed P2 requests/values and P0 reference SQL. Overview
+daily/category auxiliary gold is independently calculated from that reference
+source. The separate response script contains explicit fake actions; execution
+never generates responses by copying the oracle. Script format is
+`p3-fake-responses-v1`, with ordered `case_id` and typed `action` entries.
+
+After the normal dependency setup, use a fresh directory each time:
+
+```bash
+run_dir=$(mktemp -d .artifacts/p3-offline-XXXXXX)
+.venv/bin/python tools/fixture.py build --db "$run_dir/learningops.sqlite"
+.venv/bin/python tools/fixture.py check --db "$run_dir/learningops.sqlite" \
+  --report "$run_dir/fixture-report.json"
+.venv/bin/python tools/p3_eval.py prepare --db "$run_dir/learningops.sqlite" \
+  --output-dir "$run_dir/prepared" \
+  --responses evals/p3/development-responses-v1.json
+.venv/bin/python tools/p3_eval.py fake-run --db "$run_dir/learningops.sqlite" \
+  --output-dir "$run_dir/panel" --manifest "$run_dir/prepared/manifest.json" \
+  --responses evals/p3/development-responses-v1.json
+.venv/bin/python tools/p3_eval.py report --report "$run_dir/panel/report.json" \
+  --manifest "$run_dir/prepared/manifest.json"
+```
+
+The default panel is `evals/p3/development-panel-v1.json`; `--panel` admits
+another strictly validated development panel, not a formal run. Preparation is
+the default subcommand. `--accepted-commit` is an identity check for clean dev,
+not permission to use live transport. Direct injected-mock tests may omit a
+response script; script-backed CLI preparation/execution pins its bytes.
+
+Bounds are explicit: at most 64 inputs, one attempt per input, concurrency one,
+zero retries, 60 seconds per call and a panel budget of `60 * inputs + 120`
+seconds. Assets are at most 1 MiB. Existing request and fixture/DB bounds remain
+unchanged. No new environment variables, dependencies or live flags are added.
+
+## Manifest and report
+
+Preparation emits an exclusive manifest with source/runtime/action/context
+identities, DB/asset/script hashes, input order, settings, stop-policy identity
+and candidate/accepted status. Source, DB and manifest are checked during a
+run; a preparation from an earlier candidate is not silently repinned.
+
+The report identifies its manifest digest, panel, origin and preparation.
+It records run status, stop/error codes, elapsed time, client HTTP attempts,
+live-model attempts, possible-in-flight reservations, budget use and independent
+network/timeout streaks. Upstream inference attempts remain unknown.
+Per-input records link question hash/reference, family/language/exposure and
+oracle metadata to native observations, usage/latency, action, primary outcome,
+all layer states, operational error and checked-wrong flag.
+
+The summary contains per-input, per-family, per-language, cohort and exposure
+views; separate answer/fresh-answer scores; checked-wrong counts/case IDs; and
+promotion eligibility plus reasons. Prepared/incomplete/aborted and development
+runs cannot claim formal promotion.
+
+`tools/evaluation_evidence.py` extracts the existing P2 staging/ownership and
+atomic-commit mechanism. P1's artifact writer remains unchanged. P2 continues
+using its historical grading policy; extracted coverage and selection helpers
+allow P3 to observe them separately without relabeling old results.
+
+## Development corrections and review boundary
+
+Failed attempts remain under the local evidence root, not rewritten as passes.
+Parser controls exposed backward exposure-history transitions, non-integer
+top-k values and NUL paths; these reject explicitly. Mutation fixtures were
+corrected to retain semantic fact links when `dataclasses.replace` generated a
+new derived-fact ID. Runner comparisons ignore independently generated
+snapshot IDs while still requiring identical model request bytes.
+
+A new empty-Overview unit oracle initially misstated empty COUNT as null, and
+the new grader shared that mistaken assumption. The accepted contract at
+`docs/fact-kernel.md:103-106` and existing
+`tests/test_overview.py:308-314` already require `(null, 0, null)`.
+Only the newly authored unit oracle was revised to
+`unit-empty-overview-v2`, revision 2, with explicit provenance. The evaluator
+now distinguishes COUNT and SUM and rejects null-count/zero-sum mutations.
+Historical gold and runtime outputs were not changed. This is an evaluator
+and development-oracle correction, not product improvement; independent
+review/owner acceptance remains required.
+
+## Limits and deferred review
+
+The accepted representative v2 request remains 25,250 bytes under 32,768.
+Evaluator metadata must leave bytes/content identical for the same question.
+No prompt/schema optimization is part of this evaluator task. Fake success
+does not prove provider compatibility, grounding or language quality.
+
+Fresh formal cases, the 44-input panel, grounding/free values, resume/replay,
+synthesis, multi-select/table/chart, product-entry routing, the live v2 probe,
+stability and P4/P5 source/backend confirmation remain unimplemented/unassessed.
+Evaluator correctness is not product improvement or demonstrated RSI.
+Final handoff must include source/commands/results/complexity and separate
+A-E review under the accepted contract.
