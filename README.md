@@ -81,21 +81,26 @@ No legacy data, question text, business mapping or production code was imported.
 
 ## Offline quick start
 
-Requires Python 3.11+ with SQLite 3.37+ (STRICT tables). P0 fixture tooling remains
-stdlib-only; the kernel and adapter tests use the pinned dependencies.
-After installation, the checks and example need no credentials or network.
+Requires `uv` and Python 3.11+ with SQLite 3.37+ (STRICT tables). P0 fixture
+tooling remains stdlib-only; `pyproject.toml` declares the runtime dependencies
+and `uv.lock` pins their complete closure. After `uv sync`, the checks and
+example need no credentials or network.
 
 ```bash
-python3.11 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python -m unittest discover -s tests -v
+uv sync --locked --python 3.11
+uv run --locked --offline python -m unittest discover -s tests -v
 mkdir -p .artifacts
 run_dir=$(mktemp -d .artifacts/learningops-local-XXXXXX)
-.venv/bin/python tools/fixture.py build --db "$run_dir/learningops.sqlite"
-.venv/bin/python tools/fixture.py check --db "$run_dir/learningops.sqlite" --report "$run_dir/report.json"
-.venv/bin/python -m grepbit --db "$run_dir/learningops.sqlite" \
+uv run --locked --offline python tools/fixture.py build --db "$run_dir/learningops.sqlite"
+uv run --locked --offline python tools/fixture.py check --db "$run_dir/learningops.sqlite" --report "$run_dir/report.json"
+uv run --locked --offline python -m grepbit --db "$run_dir/learningops.sqlite" \
   --request examples/march-facts.json --output "$run_dir/facts.json"
 ```
+
+`uv sync` creates `.venv`; existing `.venv/bin/python` examples still use that
+environment. The legacy requirements files remain byte-identical frozen
+verification witnesses, not installation inputs. See the
+[dependency-management boundary](docs/fact-kernel.md#dependency-management).
 
 Use a new output directory on each rerun: existing DBs/reports are never replaced.
 An interrupted/unreadable report is not success. Generated databases and reports
@@ -124,7 +129,9 @@ are ignored by Git; rebuild from the committed source instead of committing a DB
 | [LearningOps](evals/fixtures/learningops/README.md) | Schema, reviewed-for-development semantics and limitations |
 | `evals/cases/`, `evals/oracles/` | Evaluator-only material; never model context |
 | `tools/fixture.py`, `tools/smoke.py`, `tests/` | Evaluator-only checks, smoke preparation/grading and offline regressions |
-| `grepbit/`, `requirements.in`, `requirements.txt` | Checked scalar/grouped runtime, deterministic recipes, thin model adapter and pinned dependencies |
+| `grepbit/` | Checked scalar/grouped runtime, deterministic recipes and thin model adapter |
+| `pyproject.toml`, `uv.lock` | Active dependency declarations and reproducible uv environment |
+| `requirements.in`, `requirements.txt` | Historical frozen dependency witnesses; not installation inputs |
 
 ## Development and execution
 

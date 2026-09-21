@@ -46,20 +46,21 @@ P1's prompt, parser, scalar semantics or historical evidence.
 
 ## Dependencies and local credentials
 
-Use Python 3.11+ and the pinned `requirements.txt` closure. The three direct
+Use Python 3.11+ and the pinned `uv.lock` closure. The three direct
 dependencies are `sqlglot==30.18.0`, `httpx==0.28.1` and `python-dotenv==1.2.3`.
-`requirements.in` declares them; the lock includes their tested required
+`pyproject.toml` declares them; the lock includes their tested required
 transitive dependencies, without optional extras. No LiteLLM/OpenAI SDK or
 in-process proxy is installed. The existing fact CLI still works offline.
 
 ```bash
-python3.11 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
+uv sync --locked --python 3.11
 ```
 
-For a relocated Python unable to bootstrap `venv`, an existing `uv` can create
-the environment as documented in [the kernel guide](fact-kernel.md).
-Installing declared dependencies is not an evaluation-model call.
+The commands below use `.venv/bin/python` from this uv-managed environment;
+`uv run --locked --offline python` is equivalent after synchronization.
+The [kernel guide](fact-kernel.md#dependency-management) explains why the old
+requirements files remain frozen verification witnesses. Installing declared
+dependencies is not an evaluation-model call.
 
 The owner may copy `.env.example` to an ignored local `.env` and fill values
 locally, without displaying them in a transcript. Keep that plaintext file

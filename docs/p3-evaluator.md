@@ -251,6 +251,12 @@ identities, DB/asset/script hashes, input order, settings, stop-policy identity
 and candidate/accepted status. Source, DB and manifest are checked during a
 run; a preparation from an earlier candidate is not silently repinned.
 
+New manifests also hash `pyproject.toml` and `uv.lock`. The uv migration changes
+environment management, not installed dependency versions or frozen shared
+helpers: legacy requirements files remain byte-identical verification witnesses.
+See [dependency management](fact-kernel.md#dependency-management). Historical
+manifests/reports keep their original identities.
+
 The report identifies its manifest digest, panel, origin and preparation.
 It records run status, stop/error codes, elapsed time, client HTTP attempts,
 live-model attempts, possible-in-flight reservations, budget use and independent

@@ -15,31 +15,30 @@ budget and native query construction without broadening scalar admission.
 
 ## Install and run
 
-From the repository root, use Python 3.11+ and SQLite 3.37+. The kernel itself
-requires only `sqlglot==30.18.0`; repository `requirements.txt` also pins the
-separate P1.2 adapter's dependencies. No optional SQLGlot extras are needed.
-Using the kernel or its existing CLI does not construct a model client.
+From the repository root, use `uv`, Python 3.11+ and SQLite 3.37+. The kernel
+itself requires only `sqlglot==30.18.0`; `pyproject.toml` also declares the
+separate P1.2 adapter's dependencies and `uv.lock` pins the complete closure.
+No optional SQLGlot extras are needed. Using the kernel or its existing CLI
+does not construct a model client.
 
 ```bash
-python3.11 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
+uv sync --locked --python 3.11
 
 mkdir -p .artifacts
 run_dir=$(mktemp -d .artifacts/p11-local-XXXXXX)
-.venv/bin/python tools/fixture.py build --db "$run_dir/learningops.sqlite"
-.venv/bin/python -m grepbit \
+uv run --locked --offline python tools/fixture.py build --db "$run_dir/learningops.sqlite"
+uv run --locked --offline python -m grepbit \
   --db "$run_dir/learningops.sqlite" \
   --request examples/march-facts.json \
   --output "$run_dir/facts.json"
 ```
 
-If a relocated Python distribution cannot bootstrap `venv`, an already-installed
-`uv` can create it instead:
-
-```bash
-uv venv --python python3.11 .venv
-uv pip install --python .venv/bin/python -r requirements.txt
-```
+`uv sync` creates `.venv` without relying on Python's `ensurepip`. Existing
+`.venv/bin/python` commands below use the same uv-managed environment.
+Installation may download locked packages; subsequent `uv run --locked --offline`
+commands need no network-backed dependency resolution or lockfile updates.
+`--offline` controls uv, not application network access; it is not a sandbox or
+authorization for live model calls.
 
 Use a new output directory for each attempt. CLI outputs are exclusive-create:
 success writes a Fact Pack; a handled failure writes `status: failed` with an
@@ -58,6 +57,25 @@ PYTHONPATH=tests .venv/bin/python -m unittest \
 
 These commands access only synthetic local SQLite files. Dependency installation
 is not a live evaluation. No credentials or evaluated-model endpoint is used.
+
+### Dependency management
+
+Edit `pyproject.toml` for direct dependencies and regenerate `uv.lock` with
+`uv lock`; commit both together. Use `uv lock --check` to detect a stale lock
+and `uv sync --locked` to install it without silently changing resolution.
+This is a source-only project (`tool.uv.package = false`), not a new distributable
+package or build backend.
+
+The migration preserves all nine previously installed dependency versions.
+`requirements.in` and `requirements.txt` are retained unchanged only because
+accepted P1/P2 evidence helpers and the P3 candidate-freeze guard pin them.
+They are historical verification witnesses, not parallel editable dependency
+declarations or installation inputs. The unchanged helper still verifies the
+installed frozen closure; regression tests compare the uv declarations/lock
+against those witnesses. A future dependency upgrade requires an explicitly
+reviewed candidate/freeze change, not rewriting historical files to pass a gate.
+P3 preparation additionally hashes both active uv files into new manifests.
+Historical manifests and reports are not repinned.
 
 ## Request and bindings
 
