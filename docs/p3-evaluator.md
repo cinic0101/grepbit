@@ -369,9 +369,9 @@ after exposed requirement review and a family/oracle compatibility preflight:
 | P11_nonchronological_roles | Excluded from the projection; retained as an exposed `E02_compare` semantic regression | Role binding remains useful regression evidence. Semantic taxonomy relationship is not formal family membership: P11's reversed request/values differ from E02's oracle meaning. Its historical family ID and oracle remain unchanged outside this panel. |
 | P12_ranked_courses | Not admitted; excluded from the projection | Ranking is exercised, but the three unequal observed totals and `k=3` select all three courses. Neither a top-k truncation boundary nor a tied cutoff is exercised. Ranking-only may be meaningful apart from E03's share obligations, but this case is insufficient evidence. A future separately reviewed exposed cutoff witness may be considered; no replacement, fixture change or tie-coverage requirement is added here. |
 
-Local review provenance (transition evidence, not machine admission):
-`.artifacts/p33-exposed-review-h7L5Ay/semantic-review.md`, SHA-256
-`35df94ce64c4f64f30718fd34c8910cbf1fe3e594cf0da358078d7b431520330`.
+The owner disposition is recorded in [PR #45](https://github.com/cinic0101/grepbit/pull/45)
+under the active P3.3 decision context of [Issue #43](https://github.com/cinic0101/grepbit/issues/43).
+A local transition review informed the decision but is not committed repository evidence.
 The owner subsequently chose this 9/15 projection explicitly; the earlier
 23/43 illustration was not adopted. No new novelty judgment is made here.
 
