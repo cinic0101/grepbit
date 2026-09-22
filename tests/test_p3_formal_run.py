@@ -563,6 +563,9 @@ class FormalTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_archive_independent_and_cannot_masquerade_as_legacy(self):
         report = await self.run_formal()
+        from tools import p3_stability_run
+        with self.assertRaises(p3_assets.P3Error):
+            p3_stability_run.read_report(self.current_output / "report.json")
         with patch.object(formal, "validate_packet", side_effect=AssertionError("No current identity read")), \
                 patch.object(p3_admission, "validate_freeze", side_effect=AssertionError("No current freeze read")), \
                 patch.object(smoke, "_fixture_identity", side_effect=AssertionError("No DB read")):

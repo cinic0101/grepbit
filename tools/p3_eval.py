@@ -6,6 +6,7 @@ import argparse
 import asyncio
 from collections.abc import Callable
 from copy import deepcopy
+from dataclasses import dataclass
 import math
 from pathlib import Path
 import re
@@ -284,15 +285,33 @@ def _safe(value: dict, client: GatewayClient | None) -> dict:
     return value
 
 
-def _persist(artifacts: smoke._Artifacts, report: dict, client: GatewayClient | None) -> None:
-    _summarize(report)
+def _persist(artifacts: smoke._Artifacts, report: dict, client: GatewayClient | None,
+             *, summarize=_summarize) -> None:
+    summarize(report)
     artifacts.persist(_safe(report, client))
 
 
+@dataclass(frozen=True)
+class _ExecutionEntry:
+    """Private execution identity, separate from an unchanged semantic Case/Oracle."""
+    case: p3_assets.Case
+    oracle: p3_assets.Oracle
+    metadata: dict
+
+
+def _panel_entries(panel: Panel) -> tuple[_ExecutionEntry, ...]:
+    return tuple(_ExecutionEntry(case, panel.oracle_for(case), metadata)
+                 for case, metadata in zip(panel.cases, panel.inputs()))
+
+
 def _finish_pending(report: dict, panel: Panel, reason: str) -> None:
-    for row, case in zip(report["results"], panel.cases):
+    _finish_entries(report, _panel_entries(panel), reason)
+
+
+def _finish_entries(report: dict, entries: tuple[_ExecutionEntry, ...], reason: str) -> None:
+    for row, entry in zip(report["results"], entries):
         if row["status"] == "pending":
-            row.update(p3_grading.grade(None, panel.oracle_for(case), attempted=False))
+            row.update(p3_grading.grade(None, entry.oracle, attempted=False))
             row.update(status="not_run", not_run_reason=reason)
 
 
@@ -356,11 +375,12 @@ def _stop(report: dict, code: str) -> None:
     report.update(status="incomplete", stop_reason=code, error_code=code)
 
 
-def _complete_panel(artifacts, report, client, *, validate, remaining, check_report=lambda report: None) -> dict:
+def _complete_panel(artifacts, report, client, *, validate, remaining, check_report=lambda report: None,
+                    summarize=_summarize) -> dict:
     try:
         candidate = deepcopy(report)
         candidate["status"] = "complete"
-        _summarize(candidate)
+        summarize(candidate)
         check_report(candidate)
         _safe(candidate, client)
         pending, target = stage_terminal(artifacts, candidate, validate=validate, remaining=remaining)
@@ -377,13 +397,14 @@ def _complete_panel(artifacts, report, client, *, validate, remaining, check_rep
         commit_terminal(pending, target)
         return candidate
     check_report(report)
-    _persist(artifacts, report, client)
+    _persist(artifacts, report, client, summarize=summarize)
     return report
 
 
 class _DevelopmentEvidence:
     """Caller-owned evidence policy, not a public live/formal admission switch."""
     origin = "mock"
+    summarize = staticmethod(_summarize)
 
     def project(self, evidence, client):
         return _safe(evidence, client)
@@ -432,7 +453,7 @@ async def run_panel(
 
 
 async def _execute_panel(database, panel, manifest, artifacts, report, client, *,
-                         validate, policy, started, clock) -> dict:
+                         validate, policy, started, clock, entries=None) -> dict:
     """One loop after caller admission. Never loads configuration or admits a panel.
 
     Public callers own disjoint development/mock and authorized formal contracts.
@@ -443,26 +464,31 @@ async def _execute_panel(database, panel, manifest, artifacts, report, client, *
     before = 0
     invoked = False
     completed = False
+    entries = _panel_entries(panel) if entries is None else entries
 
     def persist():
         if policy.origin == "live":
             report["live_model_attempts"] = report["client_http_attempts"]
             report["runtime_invocations"] = sum(row["runtime_invoked"] for row in report["results"])
         policy.check_report(report)
-        _persist(artifacts, report, client)
+        _persist(artifacts, report, client, summarize=policy.summarize)
 
     def remaining() -> float:
         return manifest["settings"]["panel_timeout_seconds"] - _elapsed(started, clock)
 
     try:
         validate()
-        if panel.inputs() != manifest["inputs"]:
+        if ([entry.metadata for entry in entries] != manifest["inputs"]
+                or len(report["results"]) != len(entries)
+                or manifest["settings"]["max_client_http_attempts"] != len(entries)
+                or any(entry.case not in panel.cases or entry.oracle != panel.oracle_for(entry.case)
+                       for entry in entries)):
             raise P3Error("manifest_drift")
-        for row, case in zip(report["results"], panel.cases):
+        for row, entry in zip(report["results"], entries):
             validate()
             invocation_client = policy.invocation_client(client)
             before, invoked = _attempts(client), False
-            if before != report["client_http_attempts"] or before >= len(panel.cases):
+            if before != report["client_http_attempts"] or before >= len(entries):
                 raise P3Error("attempt_budget")
             if remaining() <= 0:
                 raise P3Error("panel_budget")
@@ -492,7 +518,7 @@ async def _execute_panel(database, panel, manifest, artifacts, report, client, *
             try:
                 async with asyncio.timeout(timeout):
                     result = await interpret_recipe_and_execute(
-                        case.question, database, invocation_client, timeout_seconds=timeout, clock=clock)
+                        entry.case.question, database, invocation_client, timeout_seconds=timeout, clock=clock)
             except TimeoutError:
                 result = RecipeInterpretation(None, None, ModelError("timeout"), {
                     "client_http_attempts": _attempts(client) - before, "error_code": "timeout",
@@ -504,7 +530,7 @@ async def _execute_panel(database, panel, manifest, artifacts, report, client, *
                 report.update(client_http_attempts=_attempts(client), possible_in_flight_attempts=0,
                               attempt_budget_used=_attempts(client))
                 persist()
-            active.update(p3_grading.grade(result, panel.oracle_for(case)))
+            active.update(p3_grading.grade(result, entry.oracle))
             active.update(status="completed", attempt_may_be_in_flight=False)
             if policy.origin == "live":
                 active["phase"] = "graded"
@@ -519,7 +545,7 @@ async def _execute_panel(database, panel, manifest, artifacts, report, client, *
             if not isinstance(evidence, dict):
                 raise P3Error("internal_failure")
             active["evidence"] = evidence
-            if count - before not in (0, 1) or count > len(panel.cases):
+            if count - before not in (0, 1) or count > len(entries):
                 raise P3Error("attempt_budget")
             attempt = evidence.get("client_http_attempts")
             if "client_http_attempts" not in evidence:
@@ -578,11 +604,11 @@ async def _execute_panel(database, panel, manifest, artifacts, report, client, *
             report["elapsed_seconds"] = None
             if report["stop_reason"] is None:
                 _stop(report, "invalid_configuration")
-        _finish_pending(report, panel, report["stop_reason"] or "panel_complete")
+        _finish_entries(report, entries, report["stop_reason"] or "panel_complete")
         persist()
     if completed and report["stop_reason"] is None:
         return _complete_panel(artifacts, report, client, validate=validate, remaining=remaining,
-                               check_report=policy.check_report)
+                               check_report=policy.check_report, summarize=policy.summarize)
     return report
 
 

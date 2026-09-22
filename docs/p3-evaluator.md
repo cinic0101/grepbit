@@ -555,6 +555,81 @@ require compatibility reconsideration. Unchanged v2 scoring establishes only the
 retained admitted slice, not original 24/44 breadth or full P3 completion. There
 is no automatic transition to formal execution, stability or the next phase.
 
+### P3.7 frozen stability capability (#52)
+
+`tools/p3_stability_run.py` characterizes the unchanged, already observed slice.
+Implementation authority is recorded in [Issue #52](https://github.com/cinic0101/grepbit/issues/52#issuecomment-5774168624);
+it is **not live authorization**. P3.5 remains 25/28 correct with failed promotion,
+and P3.6 authorized no product change. Stability cannot repair that result or
+become fresh/generalization evidence.
+
+The existing `p3-stability-preselection-v2` identity remains
+`f7cb2076ea68cf5d675d9c12353c47eded88b8bfa85268aeb7c76e988387ec70`.
+Resolve exactly P02/zh-TW, P04/en, R03/ja, P14/zh-TW, P17/ja, P18/en from the
+accepted formal source membership. Repeat that order in three interleaved rounds.
+Six original Case/Oracle identities produce eighteen private execution entries,
+identified separately by `case_id`, `trial_number`, `round_number` and
+`execution_order`. Never rename cases or substitute the formal failures.
+
+The shared private `p3_eval` engine owns the single sequential reservation,
+runtime, grading, operational-stop and terminal-publication lifecycle.
+`p3_live_evidence` reuses the closed live whitelist, one-use client guard,
+authorization-before-config bootstrap and archived attempt validation. The
+development public entry remains mock/development-only; formal execution remains
+exactly 14 families / 28 inputs. Stability has no second grader/scorer: per-trial
+correctness comes from the frozen scorer's neutral per-input accounting, while
+pairwise aggregation uses frozen `actual_action` / `actual_signature` only.
+
+Three unordered pairs per case give eighteen possible pairs. Completed valid
+wrong semantics may be comparable; invalid/operational/not-run/unreturned or
+missing-signature results never manufacture agreement or flips. Hash equality
+compares clarification kind and typed bindings without retaining their content;
+hash inequality does not identify which kind/binding changed. Diagnostics for
+semantic, answerable answer/decline, clarification and answer-signature flips
+overlap. All eighteen trials must complete correctly, all eighteen pairs must be
+comparable, with zero flips and zero checked-wrong. Stable-but-wrong fails.
+The report separately pins the immutable P3.5 report hash and explicitly records
+`quality_promotion_remains_failed = true`.
+
+Artifacts use `p3-stability-packet-v1`, `p3-stability-authorization-v1`,
+`p3-stability-manifest-v1`, `p3-stability-report-v1` and `p3-stability-stops-v1`.
+Historical formal/preparation/probe readers keep their original meanings.
+After merge, `--prepare` requires a current accepted freeze/offline preparation,
+the unchanged semantic assets/DB and final clean `dev` commit. It produces an
+immutable **pre-authorization** packet without reading env or creating a client.
+The owner then accepts that exact packet SHA in a new Issue #52 comment;
+`--bind-authorization` writes a separate exclusive envelope. A feature-branch
+packet is not future accepted execution evidence.
+
+The separately authorized live command shape is:
+
+```bash
+.venv/bin/python tools/p3_stability_run.py --live \
+  --packet "<EXACT_ACCEPTED_STABILITY_PACKET>" \
+  --authorization "<EXACT_ISSUE_52_AUTHORIZATION>" \
+  --db "<EXACT_ACCEPTED_SYNTHETIC_DB>" \
+  --accepted-commit "<FINAL_ACCEPTED_DEV_SHA>" \
+  --env-file "<EXPLICIT_LOCAL_ENV_FILE>" \
+  --gateway-retries enabled --gateway-fallback disabled --gateway-cache disabled \
+  --output-dir "<FRESH_STABILITY_OUTPUT>"
+```
+
+`--live` alone never authorizes. Before env/config/client access, validate both
+envelopes, accepted clean dev, source/freeze/preparation/DB identities and route
+attestations. The fixed route is `gemma-4-31b`, retries enabled, fallback/cache
+disabled, `unencrypted_http`; cache enabled requires a separate owner disposition,
+not an execution override. Transport mismatch stops before send. Upstream
+inference attempts remain unknown despite observed client-send counts.
+
+Bounds: eighteen sends/invocations maximum, concurrency 1, 60 seconds per call,
+1,200-second panel budget, temperature 0, max_tokens 2048, stream false. Every
+trial is stateless and durably reserved before send. No retry, repair, fallback,
+resend, continuation, best-of, resume or quality-based early stop. Preserve the
+independent two-network/two-timeout streaks and immediate safety stops. Only safe
+grades/signature hashes and whitelisted counters/stages/usage are persisted; no
+raw completion, reasoning, proposal, request, facts, clarification content or
+provider bodies. `--report --report-path <report.json>` is offline and archive-only.
+
 ### Exposed material and unresolved admission
 
 The active exposed-side projection for future formal admission is
