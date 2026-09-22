@@ -356,11 +356,12 @@ def _stop(report: dict, code: str) -> None:
     report.update(status="incomplete", stop_reason=code, error_code=code)
 
 
-def _complete_panel(artifacts, report, client, *, validate, remaining) -> dict:
+def _complete_panel(artifacts, report, client, *, validate, remaining, check_report=lambda report: None) -> dict:
     try:
         candidate = deepcopy(report)
         candidate["status"] = "complete"
         _summarize(candidate)
+        check_report(candidate)
         _safe(candidate, client)
         pending, target = stage_terminal(artifacts, candidate, validate=validate, remaining=remaining)
     except (KeyboardInterrupt, asyncio.CancelledError):
@@ -375,8 +376,23 @@ def _complete_panel(artifacts, report, client, *, validate, remaining) -> dict:
         # Nothing after the publication commit may retract or revalidate the terminal report.
         commit_terminal(pending, target)
         return candidate
+    check_report(report)
     _persist(artifacts, report, client)
     return report
+
+
+class _DevelopmentEvidence:
+    """Caller-owned evidence policy, not a public live/formal admission switch."""
+    origin = "mock"
+
+    def project(self, evidence, client):
+        return _safe(evidence, client)
+
+    def check_report(self, report):
+        pass
+
+    def invocation_client(self, client):
+        return _mock_only(client)
 
 
 async def run_panel(
@@ -404,16 +420,36 @@ async def run_panel(
     artifacts = smoke._Artifacts(output_dir, manifest)
     report = _new_report(manifest, origin)
     _persist(artifacts, report, client)
-    active = None
-    before = 0
-    invoked = False
-    completed = False
-
     def validate() -> None:
         _mock_only(client)
         smoke.validate_manifest(manifest_path, manifest)
         smoke.validate_manifest(artifacts.directory / "manifest.json", manifest)
         _unchanged(database, manifest, panel, responses_path)
+
+    return await _execute_panel(
+        database, panel, manifest, artifacts, report, client, validate=validate,
+        policy=_DevelopmentEvidence(), started=started, clock=clock)
+
+
+async def _execute_panel(database, panel, manifest, artifacts, report, client, *,
+                         validate, policy, started, clock) -> dict:
+    """One loop after caller admission. Never loads configuration or admits a panel.
+
+    Public callers own disjoint development/mock and authorized formal contracts.
+    Policy projects persisted evidence; the frozen grader always sees the same
+    native result in memory. No caller-selected grader, scorer or stop rules.
+    """
+    active = None
+    before = 0
+    invoked = False
+    completed = False
+
+    def persist():
+        if policy.origin == "live":
+            report["live_model_attempts"] = report["client_http_attempts"]
+            report["runtime_invocations"] = sum(row["runtime_invoked"] for row in report["results"])
+        policy.check_report(report)
+        _persist(artifacts, report, client)
 
     def remaining() -> float:
         return manifest["settings"]["panel_timeout_seconds"] - _elapsed(started, clock)
@@ -424,7 +460,7 @@ async def run_panel(
             raise P3Error("manifest_drift")
         for row, case in zip(report["results"], panel.cases):
             validate()
-            _mock_only(client)
+            invocation_client = policy.invocation_client(client)
             before, invoked = _attempts(client), False
             if before != report["client_http_attempts"] or before >= len(panel.cases):
                 raise P3Error("attempt_budget")
@@ -432,28 +468,46 @@ async def run_panel(
                 raise P3Error("panel_budget")
             active = row
             active.update(status="in_progress", attempt_may_be_in_flight=True)
+            if policy.origin == "live":
+                active["phase"] = "reserved"
             report.update(possible_in_flight_attempts=1, attempt_budget_used=before + 1)
-            _persist(artifacts, report, client)
+            persist()
             validate()
-            _mock_only(client)
             if _attempts(client) != before:
                 raise P3Error("attempt_budget")
             timeout = min(60.0, remaining())
             if timeout <= 0:
                 raise P3Error("panel_budget")
-            invoked = True
             active.update(runtime_invoked=True, attempt_evidence_status="not_returned")
+            if policy.origin == "live":
+                active["phase"] = "invoked"
+                persist()
+                validate()
+                # Formal checkpoints and native admission checks consume panel
+                # time too. Do not send with a timeout sampled before that work.
+                timeout = min(60.0, remaining())
+                if timeout <= 0:
+                    raise P3Error("panel_budget")
+            invoked = True
             try:
                 async with asyncio.timeout(timeout):
                     result = await interpret_recipe_and_execute(
-                        case.question, database, client, timeout_seconds=timeout, clock=clock)
+                        case.question, database, invocation_client, timeout_seconds=timeout, clock=clock)
             except TimeoutError:
                 result = RecipeInterpretation(None, None, ModelError("timeout"), {
                     "client_http_attempts": _attempts(client) - before, "error_code": "timeout",
                     "elapsed_seconds": timeout,
                 })
+            if policy.origin == "live":
+                active.update(phase="returned", attempt_may_be_in_flight=False,
+                              client_http_attempts=_attempts(client) - before)
+                report.update(client_http_attempts=_attempts(client), possible_in_flight_attempts=0,
+                              attempt_budget_used=_attempts(client))
+                persist()
             active.update(p3_grading.grade(result, panel.oracle_for(case)))
             active.update(status="completed", attempt_may_be_in_flight=False)
+            if policy.origin == "live":
+                active["phase"] = "graded"
             report["possible_in_flight_attempts"] = 0
             count = _attempts(client)
             active["client_http_attempts"] = count - before
@@ -461,7 +515,7 @@ async def run_panel(
             if result is None:
                 raise P3Error("internal_failure")
             active["error_code"] = result.error.code if result.error else None
-            evidence = _safe(result.evidence, client)
+            evidence = policy.project(result.evidence, client)
             if not isinstance(evidence, dict):
                 raise P3Error("internal_failure")
             active["evidence"] = evidence
@@ -482,7 +536,7 @@ async def run_panel(
             code = active["error_code"]
             report["network_failure_streak"] = report["network_failure_streak"] + 1 if code in NETWORK_CODES else 0
             report["timeout_streak"] = report["timeout_streak"] + 1 if code == "timeout" else 0
-            _persist(artifacts, report, client)
+            persist()
             active = None
             if result.error is not None and result.error.stop_reason:
                 raise P3Error(result.error.stop_reason)
@@ -506,6 +560,9 @@ async def run_panel(
             active["runner_error_code"] = report["stop_reason"]
             if not invoked:
                 active.update(status="pending", attempt_may_be_in_flight=False)
+                if policy.origin == "live":
+                    active.update(phase="not_started", runtime_invoked=False,
+                                  attempt_evidence_status="not_started")
                 report["possible_in_flight_attempts"] = 0
             try:
                 count = _attempts(client)
@@ -522,9 +579,10 @@ async def run_panel(
             if report["stop_reason"] is None:
                 _stop(report, "invalid_configuration")
         _finish_pending(report, panel, report["stop_reason"] or "panel_complete")
-        _persist(artifacts, report, client)
+        persist()
     if completed and report["stop_reason"] is None:
-        return _complete_panel(artifacts, report, client, validate=validate, remaining=remaining)
+        return _complete_panel(artifacts, report, client, validate=validate, remaining=remaining,
+                               check_report=policy.check_report)
     return report
 
 
