@@ -442,7 +442,8 @@ def load_frozen_panel(path: Path, database: Path, panel_path: Path, *, accepted_
     return panel, pin
 
 
-def prepare_probe(database: Path, output_dir: Path, *, accepted_commit: str | None = None) -> dict:
+def build_probe_plan(database: Path, *, accepted_commit: str | None = None) -> dict:
+    """Reconstruct the closed probe identity without artifacts, credentials or calls."""
     panel = assets.load_panel(p3_eval.DEFAULT_PANEL)
     source = p3_eval._source_identity(panel, None)
     if accepted_commit is not None:
@@ -475,12 +476,13 @@ def prepare_probe(database: Path, output_dir: Path, *, accepted_commit: str | No
         "scored_run_authorization": "Separate gate after compatibility-probe review.",
         "client_http_attempts": 0, "live_model_attempts": 0,
     }
+    return payload
+
+
+def prepare_probe(database: Path, output_dir: Path, *, accepted_commit: str | None = None) -> dict:
+    payload = build_probe_plan(database, accepted_commit=accepted_commit)
     artifacts = smoke._Artifacts(output_dir, payload)
-    if (p3_eval._source_identity(panel, None) != source
-            or candidate_identity() != payload["candidate"]
-            or assets.load_panel(p3_eval.DEFAULT_PANEL) != panel
-            or p3_eval._pin(PROTOCOL) != payload["authoring_protocol"]
-            or smoke._fixture_identity(database) != payload["database_sha256"]):
+    if build_probe_plan(database, accepted_commit=accepted_commit) != payload:
         raise assets.P3Error("manifest_drift")
     artifacts._write("report.json", {"version": PROBE_VERSION, "state": "prepared",
                                    "manifest_sha256": assets.digest(payload),

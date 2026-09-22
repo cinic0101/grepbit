@@ -390,9 +390,67 @@ reports remain readable without requiring the current checkout.
 
 Probe preparation selects the already exposed English E01 input, pins source,
 DB and the unchanged v2 route, and performs zero model calls. A feature branch
-can produce only a candidate probe plan. There is no live command, credentials
-loader or automatic prepare/probe/formal chain. The later probe is one attempt,
-60 seconds, 2,048 tokens, no retries/repairs/fallbacks and no quality score.
+can produce only a candidate probe plan. Preparation is not live authorization.
+
+### P3.4 one-shot compatibility runner (#47)
+
+Stage A established that the fixed nine-input P2 live runner is not a one-input
+probe path. Stage B adds only `tools/p3_probe.py` (`p3-compatibility-probe-v1`),
+with offline verification. It does not authorize a provider request. There is
+no automatic preparation/probe/formal-scoring chain.
+
+After this tooling is reviewed and merged, create a **new** `probe-prepare`
+artifact on the exact accepted clean dev commit. Old pre-merge Stage A plans
+cannot be reused: explicit `--accepted-commit`, current checkout/source hashes,
+and the plan's accepted commit must all match, including the new runner source.
+The runner reconstructs the native preparation without writes and compares the
+complete plan. It accepts no arbitrary question, case, model, prompt or schema.
+
+Only after a separate owner authorization for the exact packet and current
+selected-route policies, the command shape is:
+
+```bash
+.venv/bin/python tools/p3_probe.py --live \
+  --plan "$NEW_ACCEPTED_PROBE_PLAN/manifest.json" --db "$ACCEPTED_DB" \
+  --accepted-commit "$NEW_ACCEPTED_DEV_SHA" --env-file "$EXPLICIT_LOCAL_ENV_FILE" \
+  --gateway-retries "$RETRIES_ATTESTATION" \
+  --gateway-fallback "$FALLBACK_ATTESTATION" --gateway-cache "$CACHE_ATTESTATION" \
+  --output-dir "$FRESH_PROBE_OUTPUT"
+```
+
+Attestations must each be `enabled` or `disabled`, describing the current route;
+they do not configure the gateway or imply owner approval. The inherited loader
+uses only the named `GREPBIT_LITELLM_BASE_URL`, `GREPBIT_LITELLM_API_KEY` and
+`GREPBIT_LITELLM_MODEL` variables; named process values override the explicit env
+file. No `.env` search. Never print these values. `--live` is necessary but is
+not owner authorization. Default invocation cannot send. Offline inspection:
+
+```bash
+.venv/bin/python tools/p3_probe.py --report "$PROBE_OUTPUT/report.json"
+```
+
+The closed probe sends only the exposed English E01 question and unchanged recipe
+context/structured-output schema, through `interpret_recipe_and_execute`.
+Evaluator metadata, gold, translations, fresh/formal material and SQL never enter
+the request. No oracle comparison or P3 grading/promotion runs.
+
+Maximum one client attempt, concurrency one, 60-second call timeout, temperature
+zero, 2,048 output tokens, no streaming, client retry, repair, fallback, resend,
+continuation or best-of. A one-use client guard prevents a second send. A durable
+reservation precedes runtime invocation. Cancellation/interruption preserves
+possible-in-flight evidence even if no observed client count is available.
+Every success or failure is terminal. Config/source/DB drift and privacy risks
+fail closed; publication failures preserve incomplete checkpoints, not a clean
+success. Exclusive artifact ownership and terminal staging are shared helpers.
+
+Reports contain only identities, current operator attestations, safe transport
+classification, attempts/reservation, bounded usage/latency, closed error codes
+and interface stages. No raw completion, reasoning, HTTP body/header, endpoint,
+credential, proposal or fact values. Upstream attempts remain unknown. HTTP 200
+can demonstrate route acceptance of the schema-bearing request, not proof that
+the provider enforced that schema. Valid JSON and valid typed action are separate
+stages; a semantically wrong valid action can pass interface compatibility.
+Compatibility success is never a quality score or permission for formal scoring.
 
 ### Exposed material and unresolved admission
 
