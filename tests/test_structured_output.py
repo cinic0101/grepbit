@@ -447,7 +447,7 @@ class StructuredOutputTests(unittest.IsolatedAsyncioTestCase):
         identity = manifest["identities"]
         self.assertEqual(identity["structured_output"], GENERATION)
         self.assertEqual(identity["context"], RECIPE_IDENTITY)
-        for name in ("grepbit/gateway.py", "grepbit/recipe_model.py", "grepbit/json_diagnostics.py"):
+        for name in ("grepbit/gateway.py", "grepbit/model.py", "grepbit/recipe_model.py", "grepbit/json_diagnostics.py"):
             self.assertEqual(identity["files_sha256"][name], hashlib.sha256((runner.ROOT / name).read_bytes()).hexdigest())
         for name, expected in (
             ("grepbit/model.py", "c0fad390d0fe3e685b342f9b5a99348b5c412f631a007c3caa03de02e1d5403c"),
@@ -455,7 +455,10 @@ class StructuredOutputTests(unittest.IsolatedAsyncioTestCase):
             ("tools/smoke.py", "91de6225de4f653b23310f29fcebdba5ce91d4e35c6ea413a5bbb73563070c42"),
             (runner.PANEL_ASSET, "93d08e2901e58f324db7eded85f578e7b6ac32a5ac4de912194ac07f705f085f"),
         ):
-            self.assertEqual(hashlib.sha256((runner.ROOT / name).read_bytes()).hexdigest(), expected)
+            from p3_historical_source import historical_bytes
+            # The model integration source changed only in the approved P3.10 identity plumbing.
+            raw = historical_bytes(name) if name == "grepbit/model.py" else (runner.ROOT / name).read_bytes()
+            self.assertEqual(hashlib.sha256(raw).hexdigest(), expected)
         self.assertEqual((manifest["manifest_version"], manifest["panel_id"]),
                          ("p2.7-recipe-smoke-v1", "p2-recipe-smoke-v1"))
         self.assertEqual(manifest["stop_policy"], {

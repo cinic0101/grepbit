@@ -12,7 +12,7 @@ import time
 
 from .catalog import LEARNINGOPS, PROFILE_ID
 from .contracts import ExecutionLimits, FactPack, FactRequest, KernelError, utc_text
-from .gateway import CALL_TIMEOUT_SECONDS, MODEL, GatewayClient, ModelError
+from .gateway import CALL_TIMEOUT_SECONDS, MODEL, ExpectedModel, GatewayClient, ModelError, _expected_alias
 from .kernel import execute_facts
 
 CONTEXT_VERSION = "learningops-model-context-v1"
@@ -229,18 +229,20 @@ def _response_shape(data: object, *, parsed: bool, error: ModelError) -> dict[st
     }
 
 
-def _content(body: bytes, evidence: dict[str, object]) -> str:
+def _content(body: bytes, evidence: dict[str, object], *, expected_model: ExpectedModel | None = None) -> str:
     data, parsed = None, False
     try:
         data = strict_json(body, code="invalid_response")
         parsed = True
-        return _normalized_content(data, evidence)
+        return _normalized_content(data, evidence, expected_model=expected_model)
     except ModelError as exc:
         evidence["response_shape"] = _response_shape(data, parsed=parsed, error=exc)
         raise
 
 
-def _normalized_content(data: object, evidence: dict[str, object]) -> str:
+def _normalized_content(data: object, evidence: dict[str, object], *,
+                        expected_model: ExpectedModel | None = None) -> str:
+    expected_alias = _expected_alias(expected_model)
     if not isinstance(data, dict):
         raise ModelError("invalid_response")
     for key in ("id", "object", "system_fingerprint", "service_tier"):
@@ -268,7 +270,7 @@ def _normalized_content(data: object, evidence: dict[str, object]) -> str:
         if not isinstance(model, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]{0,127}", model):
             raise ModelError("unexpected_model")
         evidence["returned_model"] = model
-        if model != MODEL:
+        if model != expected_alias:
             raise ModelError("unexpected_model")
     if usage["completion_tokens"] is not None and usage["completion_tokens"] > 2048:
         raise ModelError("output_token_budget")
@@ -328,7 +330,7 @@ async def interpret_and_execute(
     request = pack = error = None
     stages = dict.fromkeys(STAGES, "not_run")
     evidence: dict[str, object] = {
-        "requested_model": MODEL, "returned_model": None, "response_mode": "json_content",
+        "requested_model": client.config.model, "returned_model": None, "response_mode": "json_content",
         "finish_reason": None, "usage": _usage(None), "http_status": None,
         "transport_security": client.config.transport_security, "stages": stages,
         "kernel_error_code": None, "response_shape": None,
@@ -339,7 +341,7 @@ async def interpret_and_execute(
         response = await client.complete(messages, timeout_seconds=timeout_seconds)
         stages["transport"] = "passed"
         evidence["http_status"] = response.status_code
-        content = _content(response.body, evidence)
+        content = _content(response.body, evidence, expected_model=client.config.expected_model)
         stages["response_validation"] = "passed"
         data = strict_json(content)
         stages["json_parse"] = "passed"

@@ -84,9 +84,10 @@ def live_client(env_file: Path | None) -> GatewayClient:
 
 class _SingleAttempt:
     """One-use delegation guard, not another transport/config/runtime implementation."""
-    def __init__(self, client: GatewayClient):
+    def __init__(self, client: GatewayClient, before_send=None):
         self.client = client
         self.used = False
+        self.before_send = before_send
 
     @property
     def config(self):
@@ -103,6 +104,8 @@ class _SingleAttempt:
         if self.used or self.http_attempts != 0:
             raise ProbeError("attempt_limit")
         self.used = True
+        if self.before_send is not None:
+            self.before_send()
         return await self.client.complete(*args, **kwargs)
 
 
@@ -129,7 +132,7 @@ def _safe(report: dict, client: GatewayClient | None) -> dict:
     return report
 
 
-def _result(report: dict, result, client: GatewayClient) -> None:
+def _result(report: dict, result, client: GatewayClient, *, expected_alias: str = MODEL) -> None:
     """Project only closed interface evidence. Never persist actions, packs or diagnostics."""
     evidence = result.evidence
     stages = evidence.get("stages")
@@ -147,7 +150,7 @@ def _result(report: dict, result, client: GatewayClient) -> None:
     report["runtime_stages"] = dict(stages)
     report["http_status"] = status
     report["http_class"] = "http_success" if status == 200 else "http_failure" if status else "no_response"
-    report["observed_model"] = MODEL if evidence.get("returned_model") == MODEL else None
+    report["observed_model"] = expected_alias if evidence.get("returned_model") == expected_alias else None
     usage = evidence.get("usage")
     if isinstance(usage, dict):
         for key in report["usage"]:
@@ -168,31 +171,73 @@ def _result(report: dict, result, client: GatewayClient) -> None:
     report["compatibility_passed"] = code is None and client.http_attempts == 1 and all(v == "passed" for v in compat.values())
 
 
-async def run_probe(database: Path, output_dir: Path, *, plan_path: Path, accepted_commit: str,
-                    origin: str = "mock", client: GatewayClient | None = None,
-                    gateway_policies: dict | None = None, env_file: Path | None = None,
-                    clock=time.monotonic) -> dict:
+class _LegacyProbe:
+    """Private caller policy; the new candidate caller supplies its own admission."""
+    def __init__(self, plan_path, accepted_commit):
+        self.path, self.accepted_commit = plan_path, accepted_commit
+
+    def manifest(self):
+        manifest = {"version": VERSION, "runner": runner_identity(), "plan_sha256": None,
+                    "accepted_commit": self.accepted_commit if isinstance(self.accepted_commit, str)
+                    and re.fullmatch(r"[0-9a-f]{40}", self.accepted_commit) else None}
+        try:
+            manifest["plan_sha256"] = p3_eval._pin(self.path)["sha256"]
+        except _SAFE_ERRORS + _INTERNAL:
+            pass
+        return manifest
+
+    def report(self, manifest, origin):
+        return _report(manifest, origin)
+
+    def validate(self, database):
+        return validate_plan(self.path, database, accepted_commit=self.accepted_commit)
+
+    def identity(self, plan):
+        return {
+            "candidate_freeze_sha": plan["candidate"]["candidate_freeze_sha"],
+            "source_identity": plan["source_identity"], "database_sha256": plan["database_sha256"],
+            "case_id": CASE_ID, "question_sha256": plan["question_sha256"],
+            "question_reference": plan["question_reference"], "runtime_entry": plan["runtime_entry"],
+            "settings_sha256": plan["settings_sha256"],
+        }
+
+    def snapshot(self, artifacts, plan):
+        pass
+
+    def client(self, env_file):
+        return live_client(env_file)
+
+    def check_client(self, client, policies):
+        if client.config.model != MODEL or client.config.expected_model is not None:
+            raise ProbeError("invalid_configuration")
+
+    def project(self, report, result, client):
+        _result(report, result, client)
+
+    def unchanged(self, manifest, plan, database):
+        current, _ = self.validate(database)
+        if current != plan or self.manifest() != manifest:
+            raise ProbeError("manifest_drift")
+
+
+async def _run_probe(database: Path, output_dir: Path, *, contract,
+                     origin: str, client: GatewayClient | None,
+                     gateway_policies: dict | None, env_file: Path | None, clock) -> dict:
+    """Private one-shot lifecycle shared by two closed admission callers, never a CLI."""
     if origin not in ("mock", "live"):
         raise ProbeError("invalid_configuration")
     started = clock()
     # Do not copy unvalidated plan/config values into evidence, including path strings.
-    manifest = {"version": VERSION, "runner": runner_identity(), "plan_sha256": None,
-                "accepted_commit": accepted_commit if isinstance(accepted_commit, str)
-                and re.fullmatch(r"[0-9a-f]{40}", accepted_commit) else None}
-    try:
-        manifest["plan_sha256"] = p3_eval._pin(plan_path)["sha256"]
-    except _SAFE_ERRORS + _INTERNAL:
-        pass
+    manifest = contract.manifest()
     artifacts = smoke._Artifacts(output_dir, manifest)
-    report = _report(manifest, origin)
+    report = contract.report(manifest, origin)
     artifacts.persist(report)
     active_client = None
 
     def unchanged():
-        current, _ = validate_plan(plan_path, database, accepted_commit=accepted_commit)
-        if (p3_eval._pin(plan_path)["sha256"] != manifest["plan_sha256"]
-                or current != plan or runner_identity() != manifest["runner"]):
+        if assets.read_asset(output_dir / "manifest.json") != manifest:
             raise ProbeError("manifest_drift")
+        contract.unchanged(manifest, plan, database)
 
     def elapsed():
         value = clock() - started
@@ -200,20 +245,22 @@ async def run_probe(database: Path, output_dir: Path, *, plan_path: Path, accept
             raise ProbeError("invalid_configuration")
         return value
 
+    def before_send():
+        unchanged()
+        if elapsed() >= PUBLICATION_SECONDS - CALL_SECONDS:
+            raise ProbeError("panel_budget")
+
     try:
-        plan, question = validate_plan(plan_path, database, accepted_commit=accepted_commit)
-        report["identity"] = {
-            "candidate_freeze_sha": plan["candidate"]["candidate_freeze_sha"],
-            "source_identity": plan["source_identity"], "database_sha256": plan["database_sha256"],
-            "case_id": CASE_ID, "question_sha256": plan["question_sha256"],
-            "question_reference": plan["question_reference"], "runtime_entry": plan["runtime_entry"],
-            "settings_sha256": plan["settings_sha256"],
-        }
+        plan, question = contract.validate(database)
+        unchanged()
+        contract.snapshot(artifacts, plan)
+        report["identity"] = contract.identity(plan)
         report["gateway_policy"] = smoke.policy_attestation(gateway_policies, required=True)
+        unchanged()  # Snapshot/identity drift must stop before any env/config access.
         if origin == "live":
             if client is not None:
                 raise ProbeError("invalid_configuration")
-            active_client = live_client(env_file)
+            active_client = contract.client(env_file)
         else:
             if (env_file is not None or not isinstance(client, GatewayClient)
                     or not isinstance(client._transport, httpx.MockTransport)):
@@ -223,6 +270,7 @@ async def run_probe(database: Path, output_dir: Path, *, plan_path: Path, accept
             active_client = client
         if active_client.http_attempts != 0:
             raise ProbeError("attempt_limit")
+        contract.check_client(active_client, report["gateway_policy"])
         report["transport_security"] = active_client.config.transport_security
         unchanged()
         if elapsed() >= PUBLICATION_SECONDS - CALL_SECONDS:
@@ -231,13 +279,16 @@ async def run_probe(database: Path, output_dir: Path, *, plan_path: Path, accept
                       attempt_budget_used=1)
         artifacts.persist(_safe(report, active_client))
         unchanged()
+        if elapsed() >= PUBLICATION_SECONDS - CALL_SECONDS:
+            raise ProbeError("panel_budget")
         report["runtime_invocations"] = 1
+        artifacts.persist(_safe(report, active_client))
         async with asyncio.timeout(CALL_SECONDS):
             result = await interpret_recipe_and_execute(
-                question, database, _SingleAttempt(active_client), timeout_seconds=CALL_SECONDS, clock=clock)
+                question, database, _SingleAttempt(active_client, before_send), timeout_seconds=CALL_SECONDS, clock=clock)
         if type(active_client.http_attempts) is not int or active_client.http_attempts not in (0, 1):
             raise ProbeError("attempt_limit")
-        _result(report, result, active_client)
+        contract.project(report, result, active_client)
         report.update(reservation="settled", possible_in_flight_attempts=0)
         unchanged()
     except (KeyboardInterrupt, asyncio.CancelledError):
@@ -279,6 +330,15 @@ async def run_probe(database: Path, output_dir: Path, *, plan_path: Path, accept
         return terminal
     artifacts.persist(_safe(report, active_client))
     return report
+
+
+async def run_probe(database: Path, output_dir: Path, *, plan_path: Path, accepted_commit: str,
+                    origin: str = "mock", client: GatewayClient | None = None,
+                    gateway_policies: dict | None = None, env_file: Path | None = None,
+                    clock=time.monotonic) -> dict:
+    return await _run_probe(database, output_dir, contract=_LegacyProbe(plan_path, accepted_commit),
+                            origin=origin, client=client, gateway_policies=gateway_policies,
+                            env_file=env_file, clock=clock)
 
 
 def read_report(path: Path) -> dict:
