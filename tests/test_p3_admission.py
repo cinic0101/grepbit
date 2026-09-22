@@ -1464,13 +1464,15 @@ class P3FormalPreparationPlumbingTests(MetadataPublicationAssertions):
         def validate(*args, **options):
             nonlocal calls
             calls += 1
-            if calls == 3:
+            if (self.prepared / "report.json").exists():
                 raise assets.P3Error("manifest_drift")
             return original(*args, **options)
 
         with patch.object(admission, "validate_freeze", side_effect=validate):
             self.rejects(self.prepare, code="manifest_drift")
-        self.assertEqual(calls, 3)
+        # Admission routing may add pre-publication reads; the protected boundary
+        # is revalidation after the incomplete report, not an incidental call count.
+        self.assertGreaterEqual(calls, 3)
         report = json.loads((self.prepared / "report.json").read_bytes())
         self.assertEqual(report["status"], "incomplete")
         self.assertTrue(all(row["status"] == "pending" for row in report["results"]))

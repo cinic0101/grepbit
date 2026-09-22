@@ -166,7 +166,7 @@ contribute zero successes without leaving their fixed denominators.
 Observational families remain explicit and cannot inflate promotion scores.
 Incomplete/prepared runs cannot pass a promotion gate.
 
-The accepted formal allocation validator requires 24 families / 44 inputs:
+The frozen historical v1 formal allocation validator requires 24 families / 44 inputs:
 8 fresh answer families, 4 exposed answer controls, 4 clarification controls,
 5 decline controls and 3 P2 anchors. Exposure is 12 fresh / 12 exposed families;
 language totals are zh-TW 14, en 15, ja 15. Design-seen and deferred P21 are
@@ -175,6 +175,50 @@ ceil(0.90 * 8)=8; all four exposed controls are mandatory, hence 12/12 answers.
 Clarification (4), decline (5) and anchors (3) have separate all-mandatory
 denominators. No control boosts answer score; any checked-wrong answer vetoes
 promotion. A development panel never establishes a formal promotion result.
+
+### Explicit allocation-policy routing
+
+`tools/p3_formal_policy.py` admits only two fixed policy identities, never an
+arbitrary allocation: `p3-formal-allocation-v1` (historical 24/44) and
+`p3-formal-allocation-v2` (owner-approved 14/28 retained slice). Each has a
+canonical definition SHA-256. V2 families by cohort are 3/3/5/3, inputs 5/5/9/9;
+fresh families/inputs 5/13, exposed including anchors 9/15; languages 8/10/10.
+The exact cross-strata and exclusions are checked in the policy, not inferred
+from row count. See the [current contract](p3-evaluation-contract.md#current-retained-slice-policy-allocation-v2).
+
+V1 directly uses the unchanged historical validator/scorer. V2 validates its
+allocation, calls that same scorer's neutral development accounting, and sets
+only the explicit formal eligibility metadata from the existing gates. Outcomes,
+fractions, denominators, mandatory-variant requirements and vetoes are unchanged;
+there is no second grading/accounting implementation. At v2 sizes the existing
+ceil(90%) rule requires 3/3 total and 2/2 fresh answers, with all exposed answers,
+clarify, decline and anchors mandatory. This is not the original breadth claim.
+
+`p3_scoring.py`, `p3_assets.py`, grader, expectations and product sources remain
+byte-identical and protected by the frozen candidate check. V2 formal material
+is assembled by the admission layer from **already native-validated intake**,
+with exact panel order/membership and asset pins. This retains the intake's
+family/oracle consistency without rewriting payloads as development or changing
+the frozen loader. Calling the old validator/loader directly still rejects v2.
+
+| Identity | Binding |
+| --- | --- |
+| Frozen behavior | `20abb5592262c77c98f9cabeaf7cf4854edb6fbe`, unchanged candidate source checks |
+| Grading/accounting | Existing evaluator/expectation versions and frozen source SHA-256 pins |
+| Formal allocation policy | Explicit `{version, sha256}` in versioned freeze, manifest, report and summary |
+| Accepted tooling | Exact clean dev commit plus source hashes, including `p3_formal_policy.py` |
+| Reviewed fresh material | Independent asset hashes/review references, not names or policy counts |
+| Formal freeze | Immutable reviewed snapshot identity, separately authorized and still absent |
+
+Explicit-policy snapshots use `p3-formal-freeze-v2`; preparation emits
+`p3-manifest-v2` / `p3-report-v2` carrying `allocation_policy`. Missing, changed,
+unknown or mismatched pins reject; a v1 envelope cannot silently become v2.
+Historical v1 envelopes and development reports retain their original parsing
+and accounting. Archived inspection does not read current payloads or depend on
+the current checkout. Formal reports remain preparation-only; no formal execution
+path is added. The selected stability slots are pinned separately by the fixed
+`p3-stability-preselection-v2` definition in the policy source; exact fresh case
+IDs are unresolved, so it is not a runnable stability manifest.
 
 ## Evidence and execution admission
 
@@ -300,7 +344,8 @@ review/owner acceptance remains required.
 ### P3.3 intake, freeze and preparation
 
 `tools/p3_admission.py` adds a thin `p3-intake-v1` wrapper over the unchanged
-case/oracle formats, `p3-formal-freeze-v1` snapshots and
+case/oracle formats, legacy `p3-formal-freeze-v1` and explicit-policy
+`p3-formal-freeze-v2` snapshots, and
 `p3-compatibility-preparation-v1` offline probe plans. The
 [independent-author handoff](p3-fresh-case-authoring.md) defines the metadata and
 human review boundary. Required reviewer assertions are not machine-certified
@@ -312,14 +357,15 @@ snapshot. The later accepted **tooling** commit is separately pinned and must
 be exact, clean and on dev for formal freeze/preparation. A feature-branch
 candidate cannot manufacture that acceptance.
 
-Examples below are future owner-side operations, not a claim that independent
-fresh inputs or an accepted formal freeze already exist:
+Examples below are future separately authorized owner-side operations, not
+permission to execute them now. Authoring/review is owner-declared complete,
+but exact sanitized fresh identity pins and an actual formal freeze are absent:
 
 ```bash
 .venv/bin/python tools/p3_admission.py audit --intake "$BUNDLE/intake.json"
 .venv/bin/python tools/p3_admission.py freeze --intake "$BUNDLE/intake.json" \
   --panel "$BUNDLE/panel-v1.json" --db "$DB" --output-dir "$FROZEN" \
-  --accepted-commit "$ACCEPTED_TOOLING_SHA"
+  --accepted-commit "$ACCEPTED_TOOLING_SHA" --allocation-policy p3-formal-allocation-v2
 .venv/bin/python tools/p3_eval.py prepare --panel "$FROZEN/panel-v1.json" \
   --formal-freeze "$FROZEN/report.json" --db "$DB" --output-dir "$PREPARED" \
   --accepted-commit "$ACCEPTED_TOOLING_SHA"
@@ -410,7 +456,7 @@ formal admission requirement. No additional family is admitted by this change;
 the nine remain provisional for this formal-panel admission, without undoing
 the three P2 anchors' historical acceptance.
 
-The accepted **24 families / 44 inputs target and its validator are unchanged**.
+The historical **24 families / 44 inputs validator remains unchanged as v1**.
 Both exposed-only inventories fail that validator. With the originally planned
 12 fresh families / 26 inputs (language reservations 9/9/8), the projection would
 total only 21 families / 41 inputs: answer families/inputs 9/15 instead of 12/18,
@@ -418,11 +464,13 @@ exposed families/inputs 9/15 instead of 12/18, and languages 13/14/14 instead of
 14/15/15. Clarify, decline and anchor totals would retain their target counts.
 This arithmetic is not a new panel allocation or evidence of supplied fresh
 material. The current projection plus original reservations cannot satisfy the
-fixed target; fresh supply/fillability remains unknown. Never pad back to 24/44.
+fixed target. Fresh authoring has since closed with five retained families;
+the owner-approved v2 policy totals 14/28 instead. Never pad back to 24/44.
 
 No fresh question/gold is authored or inspected here, and no complete formal
-panel has been frozen. Independent material/review, owner allocation/admission,
-formal freeze and accepted-commit preparation remain outstanding. Compatibility
+panel has been frozen. Independent authoring/review is owner-declared complete;
+exact sanitized identities (including FA09 r2), actual admission/freeze and
+accepted-commit preparation remain outstanding. Compatibility
 probe and formal scoring each still need their separate owner authorization.
 
 The accepted representative v2 request remains 25,250 bytes under 32,768.
@@ -430,7 +478,7 @@ Evaluator metadata must leave bytes/content identical for the same question.
 No prompt/schema optimization is part of this evaluator task. Fake success
 does not prove provider compatibility, grounding or language quality.
 
-Fresh formal cases, the 44-input panel, grounding/free values, resume/replay,
+The historical 44-input panel is not being filled. Formal execution, grounding/free values, resume/replay,
 synthesis, multi-select/table/chart, product-entry routing, the live v2 probe,
 stability and P4/P5 source/backend confirmation remain unimplemented/unassessed.
 Evaluator correctness is not product improvement or demonstrated RSI.

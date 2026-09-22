@@ -69,8 +69,11 @@ against that frozen behavior. The owner-approved
 [exposed projection](docs/p3-evaluator.md#exposed-material-and-unresolved-admission)
 retains 9 provisional families / 15 inputs; P10 is deferred, P11 remains an E02
 regression outside the panel, and P12 is not admitted. Historical assets are
-preserved. The unchanged 24/44 target is not satisfied; fresh fillability remains
-unknown and no complete formal panel is frozen. No live probe/run or full P3 exit
+preserved. Fresh authoring is closed; the owner-approved versioned allocation
+is 14 families / 28 inputs, with the historical 24/44 validator preserved as v1.
+The new admission policy reuses frozen grading/accounting and does not claim the
+original breadth. Exact sanitized fresh identities and formal freeze remain
+outstanding. No live probe/run or full P3 exit
 follows from this preparation; grounding, resume and synthesis remain separate.
 
 The seed has 10 tables and 88 rows. There are 30 authored case descriptions:

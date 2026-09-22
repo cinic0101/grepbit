@@ -22,12 +22,14 @@ import httpx
 from grepbit.gateway import GatewayClient, GatewayConfig, ModelError
 from grepbit.model import canonical_json, strict_json
 from grepbit.recipe_model import RecipeInterpretation, interpret_recipe_and_execute
-from tools import p3_assets, p3_expectations, p3_grading, p3_scoring, recipe_smoke, smoke
+from tools import p3_assets, p3_expectations, p3_formal_policy, p3_grading, p3_scoring, recipe_smoke, smoke
 from tools.evaluation_evidence import commit_terminal, stage_terminal
 from tools.p3_assets import P3Error, Panel
 
 MANIFEST_VERSION = "p3-manifest-v1"
 REPORT_VERSION = "p3-report-v1"
+POLICY_MANIFEST_VERSION = "p3-manifest-v2"
+POLICY_REPORT_VERSION = "p3-report-v2"
 SCRIPT_VERSION = "p3-fake-responses-v1"
 DEFAULT_PANEL = ROOT / "evals/p3/development-panel-v1.json"
 DEFAULT_RESPONSES = ROOT / "evals/p3/development-responses-v1.json"
@@ -172,11 +174,21 @@ def _source_identity(panel: Panel, responses_path: Path | None, formal_freeze: P
     return identity
 
 
+def _preparation_panel(database: Path, panel_path: Path, formal_freeze: Path | None,
+                       accepted_commit: str | None) -> tuple[Panel, dict | None]:
+    if formal_freeze is None:
+        return p3_assets.load_panel(panel_path), None
+    if accepted_commit is None:
+        raise P3Error("formal_not_admitted")
+    from tools.p3_admission import load_frozen_panel
+    return load_frozen_panel(formal_freeze, database, panel_path, accepted_commit=accepted_commit)
+
+
 def build_manifest(
     database: Path, *, panel_path: Path = DEFAULT_PANEL, responses_path: Path | None = None,
     accepted_commit: str | None = None, formal_freeze: Path | None = None,
 ) -> dict:
-    panel = p3_assets.load_panel(panel_path)
+    panel, allocation_policy = _preparation_panel(database, panel_path, formal_freeze, accepted_commit)
     if formal_freeze is None:
         _admitted(panel)
     else:
@@ -209,9 +221,12 @@ def build_manifest(
     }
     if formal_freeze is not None:
         manifest["assets"]["formal_freeze"] = _pin(formal_freeze)
+        if allocation_policy is not None:
+            manifest["manifest_version"] = POLICY_MANIFEST_VERSION
+            manifest["allocation_policy"] = allocation_policy
         validate_freeze(formal_freeze, database, panel_path, accepted_commit=accepted_commit)
     if (_source_identity(panel, responses_path, formal_freeze) != identity
-            or p3_assets.load_panel(panel_path) != panel):
+            or _preparation_panel(database, panel_path, formal_freeze, accepted_commit) != (panel, allocation_policy)):
         raise P3Error("manifest_drift")
     return manifest
 
@@ -224,7 +239,7 @@ def _empty_grade() -> dict:
 
 
 def _new_report(manifest: dict, origin: str) -> dict:
-    return {
+    report = {
         "report_version": REPORT_VERSION, "status": "incomplete", "origin": origin,
         "stop_reason": None, "error_code": None, "manifest_sha256": p3_assets.digest(manifest),
         "panel_id": manifest["panel_id"], "panel_kind": manifest["panel_kind"],
@@ -241,11 +256,17 @@ def _new_report(manifest: dict, origin: str) -> dict:
                   if manifest["panel_kind"] == "formal" else
                   "Offline development regression evidence, not live quality or formal promotion."),
     }
+    if "allocation_policy" in manifest:
+        p3_formal_policy.validate_identity(manifest["allocation_policy"])
+        report["report_version"] = POLICY_REPORT_VERSION
+        report["allocation_policy"] = deepcopy(manifest["allocation_policy"])
+    return report
 
 
 def _summarize(report: dict) -> None:
-    report["summary"] = p3_scoring.summarize(
-        report["results"], report["results"], panel_kind=report["panel_kind"], run_status=report["status"])
+    report["summary"] = p3_formal_policy.summarize(
+        report["results"], report["results"], panel_kind=report["panel_kind"], run_status=report["status"],
+        allocation_policy=report.get("allocation_policy"))
 
 
 def _safe(value: dict, client: GatewayClient | None) -> dict:
@@ -290,7 +311,9 @@ def prepare(
 ) -> dict:
     manifest = build_manifest(database, panel_path=panel_path, responses_path=responses_path,
                               accepted_commit=accepted_commit, formal_freeze=formal_freeze)
-    panel = p3_assets.load_panel(panel_path)
+    panel, allocation_policy = _preparation_panel(database, panel_path, formal_freeze, accepted_commit)
+    if allocation_policy != manifest.get("allocation_policy"):
+        raise P3Error("manifest_drift")
     artifacts = smoke._Artifacts(output_dir, manifest)
     report = _new_report(manifest, "preparation")
     _persist(artifacts, report, None)
@@ -511,7 +534,15 @@ def read_report(path: Path, *, manifest_path: Path | None = None) -> dict:
                          "invalid_manifest")
     report = _document(path, MAX_REPORT_BYTES, "invalid_asset")
     try:
-        if (set(manifest) != _MANIFEST_FIELDS or manifest["manifest_version"] != MANIFEST_VERSION
+        fields = _MANIFEST_FIELDS
+        if manifest.get("manifest_version") == POLICY_MANIFEST_VERSION:
+            fields = fields | {"allocation_policy"}
+            p3_formal_policy.validate_identity(manifest.get("allocation_policy"))
+            if manifest["panel_kind"] != "formal":
+                raise P3Error("invalid_manifest")
+        elif manifest.get("manifest_version") != MANIFEST_VERSION:
+            raise P3Error("invalid_manifest")
+        if (set(manifest) != fields
                 or manifest["evaluator_version"] != p3_grading.VERSION
                 or manifest["panel_kind"] not in ("development", "formal")
                 or manifest["upstream_inference_attempts"] is not None
@@ -568,7 +599,8 @@ def read_report(path: Path, *, manifest_path: Path | None = None) -> dict:
                     or manifest["identities"]["files_sha256"][f"p3_asset:{name}"] != pin["sha256"]):
                 raise P3Error("invalid_manifest")
         expected = _new_report(manifest, report["origin"])
-        if (set(report) != set(expected) | {"summary"} or report["report_version"] != REPORT_VERSION
+        if (set(report) != set(expected) | {"summary"} or report["report_version"] != expected["report_version"]
+                or report.get("allocation_policy") != manifest.get("allocation_policy")
                 or report["manifest_sha256"] != p3_assets.digest(manifest)
                 or report["status"] not in ("incomplete", "prepared", "complete")
                 or report["origin"] not in ("mock", "preparation")

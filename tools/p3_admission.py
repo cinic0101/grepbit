@@ -16,11 +16,12 @@ if str(ROOT) not in sys.path:
 
 from grepbit.model import canonical_json
 from grepbit.contracts import KernelError
-from tools import p3_assets as assets, p3_eval, p3_expectations, p3_scoring, recipe_smoke, smoke
+from tools import p3_assets as assets, p3_eval, p3_expectations, p3_formal_policy, p3_scoring, recipe_smoke, smoke
 from tools.evaluation_evidence import commit_terminal, stage_terminal
 
 INTAKE_VERSION = "p3-intake-v1"
 FREEZE_VERSION = "p3-formal-freeze-v1"
+POLICY_FREEZE_VERSION = "p3-formal-freeze-v2"
 PROBE_VERSION = "p3-compatibility-preparation-v1"
 FROZEN_CANDIDATE = "20abb5592262c77c98f9cabeaf7cf4854edb6fbe"
 FREEZE_DECLARED_AT = "2026-09-21T06:32:04Z"
@@ -260,9 +261,37 @@ def _formal_materials(intake_path: Path, panel_path: Path) -> tuple[assets.Panel
     return panel, data
 
 
+def _policy_materials(intake_path: Path, panel_path: Path, allocation_policy: str | None) -> tuple[assets.Panel, dict]:
+    if allocation_policy is None:
+        return _formal_materials(intake_path, panel_path)
+    p3_formal_policy.identity(allocation_policy)
+    if allocation_policy == p3_formal_policy.V1:
+        return _formal_materials(intake_path, panel_path)
+    # Native intake is the shared oracle/meaning/branch/review validator. Do not
+    # rewrite a formal payload as development or modify the frozen asset loader.
+    data, cases, oracles, summary = _intake(intake_path)
+    if data["state"] != "novelty_reviewed" or not summary["review_assertions_complete"]:
+        raise assets.P3Error("formal_not_admitted")
+    item = assets.object_fields(assets.read_asset(panel_path),
+                                {"version", "panel_id", "kind", "cases", "oracles", "order"}, "invalid_panel")
+    if item["version"] != assets.PANEL_VERSION or item["kind"] != "formal":
+        raise assets.P3Error("invalid_panel")
+    paths = [panel_path.parent / _reference(item[name]) for name in ("cases", "oracles")]
+    if any(p3_eval._pin(path) != data[name] for name, path in zip(("cases", "oracles"), paths)):
+        raise assets.P3Error("manifest_drift")
+    order = assets.strings(item["order"], maximum=assets.MAX_INPUTS)
+    by_id = {case.case_id: case for case in cases}
+    if len(order) != len(cases) or set(order) != set(by_id):
+        raise assets.P3Error("invalid_panel")
+    panel = assets.Panel(assets.text(item["panel_id"], identifier=True), "formal",
+                         tuple(by_id[name] for name in order), oracles, panel_path, *paths)
+    p3_formal_policy.validate_allocation(panel.inputs(), allocation_policy)
+    return panel, data
+
+
 def _freeze_payload(database: Path, intake_path: Path, panel_path: Path, *,
-                    accepted_commit: str, frozen_at: str) -> dict:
-    panel, intake = _formal_materials(intake_path, panel_path)
+                    accepted_commit: str, frozen_at: str, allocation_policy: str | None = None) -> dict:
+    panel, intake = _policy_materials(intake_path, panel_path, allocation_policy)
     frozen_time = _timestamp(frozen_at)
     if frozen_time > datetime.now(timezone.utc) or any(
             _timestamp(item["reviewed_at"]) > frozen_time for item in intake["families"]):
@@ -272,8 +301,9 @@ def _freeze_payload(database: Path, intake_path: Path, panel_path: Path, *,
     inputs = panel.inputs()
     representatives = {item["family_id"]: item for item in inputs}
     limits, policy = p3_eval.settings(len(inputs)), p3_eval.stop_policy()
-    return {
-        "version": FREEZE_VERSION, "state": "frozen", "frozen_at": frozen_at,
+    payload = {
+        "version": FREEZE_VERSION if allocation_policy is None else POLICY_FREEZE_VERSION,
+        "state": "frozen", "frozen_at": frozen_at,
         "candidate": candidate_identity(), "accepted_tooling_commit": accepted_commit,
         "panel_id": panel.panel_id, "panel_version": assets.PANEL_VERSION,
         "assets": {name: p3_eval._pin(path) for name, path in {
@@ -301,6 +331,9 @@ def _freeze_payload(database: Path, intake_path: Path, panel_path: Path, *,
         "stop_policy": policy, "stop_policy_sha256": assets.digest(policy),
         "execution": "not_admitted", "live_model_attempts": 0,
     }
+    if allocation_policy is not None:
+        payload["allocation_policy"] = p3_formal_policy.identity(allocation_policy)
+    return payload
 
 
 def _snapshot(artifacts, source: Path, expected: dict) -> None:
@@ -324,20 +357,21 @@ def _snapshot(artifacts, source: Path, expected: dict) -> None:
 
 
 def freeze_panel(database: Path, intake_path: Path, panel_path: Path, output_dir: Path, *,
-                 accepted_commit: str) -> dict:
+                 accepted_commit: str, allocation_policy: str | None = None) -> dict:
     started = time.monotonic()
     frozen_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     payload = _freeze_payload(database, intake_path, panel_path,
-                              accepted_commit=accepted_commit, frozen_at=frozen_at)
-    panel = assets.load_panel(panel_path)
+                              accepted_commit=accepted_commit, frozen_at=frozen_at, allocation_policy=allocation_policy)
+    panel = (_policy_materials(intake_path, panel_path, allocation_policy)[0]
+             if allocation_policy is not None else assets.load_panel(panel_path))
     sources = {"intake": intake_path, "panel": panel_path,
                "cases": panel.cases_path, "oracles": panel.oracles_path}
     if len({_reference(path.name) for path in sources.values()}) != len(sources):
         raise assets.P3Error("invalid_asset")
     artifacts = smoke._Artifacts(output_dir, {
-        "version": FREEZE_VERSION, "state": "incomplete", "planned_sha256": assets.digest(payload),
+        "version": payload["version"], "state": "incomplete", "planned_sha256": assets.digest(payload),
     })
-    artifacts.persist({"version": FREEZE_VERSION, "state": "incomplete",
+    artifacts.persist({"version": payload["version"], "state": "incomplete",
                        "planned_sha256": assets.digest(payload), "live_model_attempts": 0})
     for name, source in sources.items():
         _snapshot(artifacts, source, payload["assets"][name])
@@ -347,7 +381,7 @@ def freeze_panel(database: Path, intake_path: Path, panel_path: Path, output_dir
             if p3_eval._pin(output_dir / pin["reference"]) != pin:
                 raise assets.P3Error("manifest_drift")
         current = _freeze_payload(database, intake_path, panel_path,
-                                  accepted_commit=accepted_commit, frozen_at=frozen_at)
+                                  accepted_commit=accepted_commit, frozen_at=frozen_at, allocation_policy=allocation_policy)
         if current != payload:
             raise assets.P3Error("manifest_drift")
 
@@ -357,12 +391,21 @@ def freeze_panel(database: Path, intake_path: Path, panel_path: Path, output_dir
     return payload
 
 
+def _frozen_policy(payload: dict) -> str | None:
+    if payload.get("version") == FREEZE_VERSION and "allocation_policy" not in payload:
+        return None  # Historical envelope means v1, never inferred from its row count.
+    if payload.get("version") == POLICY_FREEZE_VERSION:
+        return p3_formal_policy.validate_identity(payload.get("allocation_policy"))
+    raise assets.P3Error("invalid_manifest")
+
+
 def validate_freeze(path: Path, database: Path, panel_path: Path, *, accepted_commit: str) -> dict:
     payload = assets.read_asset(path)
+    allocation_policy = _frozen_policy(payload)
     header = assets.object_fields(assets.read_asset(path.parent / "manifest.json"),
                                   {"version", "state", "planned_sha256"})
-    if (payload.get("version") != FREEZE_VERSION or payload.get("state") != "frozen"
-            or header != {"version": FREEZE_VERSION, "state": "incomplete",
+    if (payload.get("state") != "frozen"
+            or header != {"version": payload["version"], "state": "incomplete",
                           "planned_sha256": assets.digest(payload)}):
         raise assets.P3Error("invalid_manifest")
     try:
@@ -376,13 +419,27 @@ def validate_freeze(path: Path, database: Path, panel_path: Path, *, accepted_co
         expected = _freeze_payload(
             database, path.parent / pins["intake"]["reference"],
             path.parent / pins["panel"]["reference"], accepted_commit=accepted_commit,
-            frozen_at=payload["frozen_at"])
+            frozen_at=payload["frozen_at"], allocation_policy=allocation_policy)
         if expected != payload:
             raise assets.P3Error("manifest_drift")
-        return {"version": FREEZE_VERSION, "sha256": assets.digest(payload),
-                "candidate_freeze_sha": FROZEN_CANDIDATE}
+        result = {"version": payload["version"], "sha256": assets.digest(payload),
+                  "candidate_freeze_sha": FROZEN_CANDIDATE}
+        if allocation_policy is not None:
+            result["allocation_policy"] = p3_formal_policy.identity(allocation_policy)
+        return result
     except (LookupError, TypeError):
         raise assets.P3Error("invalid_manifest") from None
+
+
+def load_frozen_panel(path: Path, database: Path, panel_path: Path, *, accepted_commit: str) -> tuple[assets.Panel, dict | None]:
+    verified = validate_freeze(path, database, panel_path, accepted_commit=accepted_commit)
+    pin = verified.get("allocation_policy")
+    if pin is None:
+        return assets.load_panel(panel_path), None
+    payload = assets.read_asset(path)
+    panel, _ = _policy_materials(path.parent / _reference(payload["assets"]["intake"]["reference"]),
+                                 panel_path, p3_formal_policy.validate_identity(pin))
+    return panel, pin
 
 
 def prepare_probe(database: Path, output_dir: Path, *, accepted_commit: str | None = None) -> dict:
@@ -439,19 +496,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--db", type=Path)
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--accepted-commit")
+    parser.add_argument("--allocation-policy", choices=p3_formal_policy.VERSIONS)
     try:
         args = parser.parse_args(argv)
         if args.mode == "audit":
-            if args.intake is None or args.panel or args.db or args.output_dir or args.accepted_commit:
+            if args.intake is None or args.panel or args.db or args.output_dir or args.accepted_commit or args.allocation_policy:
                 raise assets.P3Error("invalid_arguments")
             result = audit_intake(args.intake)
         elif args.mode == "freeze":
             if any(value is None for value in (args.intake, args.panel, args.db, args.output_dir, args.accepted_commit)):
                 raise assets.P3Error("invalid_arguments")
             result = freeze_panel(args.db, args.intake, args.panel, args.output_dir,
-                                  accepted_commit=args.accepted_commit)
+                                  accepted_commit=args.accepted_commit,
+                                  allocation_policy=args.allocation_policy or p3_formal_policy.V1)
         else:
-            if args.db is None or args.output_dir is None or args.intake or args.panel:
+            if args.db is None or args.output_dir is None or args.intake or args.panel or args.allocation_policy:
                 raise assets.P3Error("invalid_arguments")
             result = prepare_probe(args.db, args.output_dir, accepted_commit=args.accepted_commit)
         print(canonical_json({key: result[key] for key in (

@@ -12,6 +12,11 @@ The frozen product/evaluator baseline is
 Product sources, prompts, action/presentation schemas, native semantics,
 grading, scoring and `p3-evidence-expectations-v1` must not change.
 
+Owner-approved allocation v2 is a separate admission/tooling identity, not a
+change to those frozen sources. `p3_formal_policy` routes explicit v1/v2 policy
+admission and reuses frozen accounting; the historical scorer and asset loader
+remain byte-identical and protected by `candidate_identity()`.
+
 Admission tooling is a different identity. It must first be reviewed and merged;
 accepted preparation then requires that exact clean **dev tooling commit**,
 while checking frozen behavior against `20abb559`. Do not pretend new admission
@@ -157,30 +162,45 @@ silently change. Drift must reject preparation. Preserve the submitted bundle
 and every previous intake/freeze artifact; edits require a new identity and
 explicit provenance, not deletion of an inconvenient failure.
 
-## Conditional allocation and remaining gates
+## Versioned allocation and remaining gates
 
-The accepted target is 24 semantic families / 44 inputs, not a quota to fill:
-12 fresh families (8 answer, 2 clarify, 2 decline) and 12 exposed families
-(4 answer, 2 clarify, 3 decline, 3 P2 anchors). Input cohorts are 18/8/9/9;
-language totals are zh-TW 14, en 15, ja 15. No design-seen scored slots.
-Use the existing P3.2 allocation validator, not a new scoring engine.
+The historical v1 target remains 24 families / 44 inputs in the unchanged P3.2
+validator. Fresh authoring is now closed; that breadth cannot honestly be filled.
+The owner-approved [v2 retained slice](p3-evaluation-contract.md#current-retained-slice-policy-allocation-v2)
+is 14 families / 28 inputs: fresh 5/13, exposed including anchors 9/15;
+cohort families 3/3/5/3, inputs 5/5/9/9, languages zh-TW 8 / en 10 / ja 10.
+No design-seen, observational, non-mandatory or P21 slots are admitted.
+Seven original fresh slots remain intentionally unfilled, not a request for more
+authoring. The same frozen accounting engine is reused; this is not a new scorer.
 
 The [owner-approved exposed projection](p3-evaluator.md#exposed-material-and-unresolved-admission)
 now retains 9 provisional families / 15 inputs (zh-TW 4 / en 5 / ja 6).
 P10 is deferred, P11 is an E02 semantic regression outside the formal panel,
 and P12 is not admitted; all historical assets remain intact. This projection
 does not certify the retained labels or relax same-family oracle consistency.
-Together with the original fresh reservations it would yield only 21/41, not
-24/44. Fresh fillability remains unknown; no formal panel has been frozen.
+The retained fresh set is FA01/P02, FA04/P04, FA09 r2/P14, FA10/P17 and FA11/P18.
+No formal panel has been frozen. Counts and owner declarations do not substitute
+for the exact independently reviewed asset hashes and review references.
 
-Merge or reject duplicate families rather than padding. If independent audit
-cannot honestly fill the target, stop and propose a smaller allocation for
-owner review before changing the accepted validator. Missing external material
-means fillability is unknown, not that novelty has failed.
+Before an actual freeze the owner must supply a **sanitized identity manifest**:
+exact fresh case IDs, family/slot and language mapping, case/oracle asset hashes,
+author/reviewer references and timestamps, exposure/review state, and the exact
+FA09 r2 reviewed asset hash plus review reference. Bind the native intake asset
+pins and specific owner review reference to that reviewed bundle; preserve any
+component ancestry identities. Never substitute a label/path, old revision or
+implementation-inspected payload hash. The implementation agent must not open
+fresh artifact directories to obtain these identities.
+
+Future owner-side freeze uses explicit `--allocation-policy p3-formal-allocation-v2`.
+The versioned freeze pins that policy; preparation inherits it from the verified
+freeze, never from row count. Legacy v1 artifacts remain distinguishable/readable.
+Native intake still reads payloads in the isolated owner/reviewer flow, not this
+implementation task. Metadata-only policy tests do not attest real fresh admission.
 
 Keep four gates distinct: panel freeze, clean accepted-commit preparation,
-provider compatibility probe, and formal scored run. This phase authorizes only
-the first two when their prerequisites actually exist. Preparation is not live
+provider compatibility probe, and formal scored run. This phase authorizes
+tooling support only; this allocation-policy task authorizes no actual freeze
+or real formal preparation. Preparation is not live
 authorization. Actual independent content, novelty/owner acceptance and clean
 accepted tooling are prerequisites, not outcomes of scaffold tests.
 
