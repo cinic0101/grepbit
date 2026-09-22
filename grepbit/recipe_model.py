@@ -281,7 +281,7 @@ async def interpret_recipe_and_execute(
     stages = dict.fromkeys(protocol.STAGES, "not_run")
     context = runtime_context()
     evidence: dict[str, object] = {
-        "requested_model": MODEL, "returned_model": None, "response_mode": "json_content",
+        "requested_model": client.config.model, "returned_model": None, "response_mode": "json_content",
         "finish_reason": None, "usage": protocol._usage(None), "http_status": None,
         "transport_security": client.config.transport_security, "stages": stages,
         "kernel_error_code": None, "response_shape": None, "context_identity": _identity(context),
@@ -301,7 +301,7 @@ async def interpret_recipe_and_execute(
                                          json_schema_constraint=constraint)
         stages["transport"] = "passed"
         evidence["http_status"] = response.status_code
-        content = protocol._content(response.body, evidence)
+        content = protocol._content(response.body, evidence, expected_model=client.config.expected_model)
         stages["response_validation"] = "passed"
         try:
             data = protocol.strict_json(content)
@@ -357,7 +357,7 @@ async def interpret_recipe_and_execute(
             evidence["response_shape"] = protocol._response_shape(None, parsed=False, error=error)
         if error.http_status is not None:
             evidence["http_status"] = error.http_status
-    if evidence["returned_model"] != MODEL:
+    if evidence["returned_model"] != client.config.model:
         evidence["returned_model"] = None
     evidence.update({
         "client_http_attempts": client.http_attempts - attempts,

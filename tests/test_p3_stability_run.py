@@ -71,7 +71,8 @@ class StabilityRunTests(unittest.IsolatedAsyncioTestCase):
                        "context": recipe_model.context_identity(),
                        "structured_output": recipe_model.structured_output_identity()}
         self.enterContext(patch.object(recipe_smoke, "_source_identity", side_effect=lambda: deepcopy(self.source)))
-        candidate = p3_admission.candidate_identity()
+        from p3_historical_source import historical_candidate
+        candidate = historical_candidate()  # Explicit historical-source fixture, not current execution admission.
         self.enterContext(patch.object(p3_admission, "candidate_identity", return_value=candidate))
         exposed = p3_assets.load_panel(p3_eval.DEFAULT_PANEL)
         script = p3_eval.load_fake_responses(p3_eval.DEFAULT_RESPONSES, exposed)

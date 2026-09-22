@@ -65,6 +65,44 @@ class ModelError(Exception):
         super().__init__(f"Model integration failed: {code}.")
 
 
+_ADMITTED_CANDIDATES = ((
+    "p39-gemma-4-12b-it-deployed-v1",
+    "2267efd409cae69270a3e72837218081256bf00ea7cdfe7c952f7b44e0cae802",
+    "gemma-4-12b-it",
+),)
+
+
+@dataclass(frozen=True, slots=True)
+class ExpectedModel:
+    """Closed deployment admission data, not permission to execute a live request."""
+    candidate_id: str
+    candidate_identity_sha256: str
+    model_alias: str
+
+    def __post_init__(self) -> None:
+        values = (self.candidate_id, self.candidate_identity_sha256, self.model_alias)
+        if any(type(value) is not str for value in values) or values not in _ADMITTED_CANDIDATES:
+            raise ModelError("invalid_configuration")
+
+    @classmethod
+    def from_candidate(cls, value: object) -> ExpectedModel:
+        if type(value) is not dict or set(value) != {"candidate_id", "candidate_identity_sha256", "model_alias"}:
+            raise ModelError("invalid_configuration")
+        return cls(**value)
+
+
+def _expected_alias(identity: ExpectedModel | None) -> str:
+    if identity is None:
+        return MODEL
+    if type(identity) is not ExpectedModel:
+        raise ModelError("invalid_configuration")
+    identity.__post_init__()
+    return identity.model_alias
+
+
+GEMMA_12B = ExpectedModel(*_ADMITTED_CANDIDATES[0])
+
+
 def json_schema_response_format(constraint: object) -> dict[str, object]:
     """One closed JSON-schema wrapper, not a provider-parameter passthrough."""
     if (not isinstance(constraint, dict) or set(constraint) != {"name", "schema"}
@@ -93,14 +131,16 @@ class GatewayConfig:
     base_url: str = field(repr=False)
     api_key: str = field(repr=False)
     model: str = MODEL
+    expected_model: ExpectedModel | None = field(default=None, kw_only=True, repr=False)
 
     def __post_init__(self) -> None:
+        expected = _expected_alias(self.expected_model)
         try:
             if (not isinstance(self.base_url, str) or not 1 <= len(self.base_url) <= 2048
                     or any(ord(c) <= 32 or ord(c) == 127 for c in self.base_url)
                     or not isinstance(self.api_key, str) or not 1 <= len(self.api_key) <= 4096
                     or any(not 33 <= ord(c) <= 126 for c in self.api_key)
-                    or self.model != MODEL):
+                    or self.model != expected):
                 raise ValueError
             url = urlsplit(self.base_url)
             if (url.scheme not in ("http", "https") or not url.hostname
@@ -124,7 +164,9 @@ class GatewayConfig:
 
     @classmethod
     def from_env(cls, *, environ: Mapping[str, str] | None = None,
-                 env_file: Path | None = None) -> GatewayConfig:
+                 env_file: Path | None = None,
+                 expected_model: ExpectedModel | None = None) -> GatewayConfig:
+        _expected_alias(expected_model)  # Reject invalid admission before reading credentials.
         values: dict[str, str] = {}
         if env_file is not None:
             try:
@@ -146,7 +188,7 @@ class GatewayConfig:
             if name in source:
                 values[name] = source[name]
         return cls(values.get(ENV_NAMES[0], ""), values.get(ENV_NAMES[1], ""),
-                   values.get(ENV_NAMES[2], MODEL))
+                   values.get(ENV_NAMES[2], MODEL), expected_model=expected_model)
 
 
 _PRIVATE_TRANSPORT: ContextVar[bool] = ContextVar("grepbit_private_transport", default=False)

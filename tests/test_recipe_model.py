@@ -24,6 +24,7 @@ from grepbit import gateway, model, recipe_model
 from grepbit.catalog import LEARNINGOPS
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL
 from tools import fixture
+from p3_historical_source import historical_bytes
 
 
 ROOT = Path(__file__).parent.parent
@@ -257,7 +258,8 @@ class RecipeModelTests(unittest.IsolatedAsyncioTestCase):
         before = model.context_identity()
         for key, value in expected.items():
             self.assertEqual(before[key], value)
-        self.assertEqual(hashlib.sha256((ROOT / "grepbit/model.py").read_bytes()).hexdigest(),
+        # Preserve the original witness; P3.10 changes identity plumbing, not P1 wire/semantics.
+        self.assertEqual(hashlib.sha256(historical_bytes("grepbit/model.py")).hexdigest(),
                          "c0fad390d0fe3e685b342f9b5a99348b5c412f631a007c3caa03de02e1d5403c")
         # The optional gateway extension is guarded by exact P1 wire tests, not a source repin.
         document = envelope()

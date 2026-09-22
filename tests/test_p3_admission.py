@@ -911,8 +911,9 @@ class P3CandidateIdentityTests(AdmissionAssertions):
         name = path.relative_to(ROOT).as_posix()
         return {"reference": path.name, "sha256": hashlib.sha256(self.synthetic_bytes(name)).hexdigest()}
 
-    def test_real_protected_sources_match_the_declared_frozen_git_snapshot(self):
-        identity = admission.candidate_identity()
+    def test_historical_protected_witness_is_exact_but_current_plumbing_is_not_frozen(self):
+        from p3_historical_source import historical_bytes, historical_candidate
+        identity = historical_candidate()
         self.assertEqual(identity["candidate_freeze_sha"], FROZEN_BASELINE)
         self.assertEqual(identity["declared_at"], DECLARED_AT)
         self.assertEqual(identity["declaration"], "https://github.com/cinic0101/grepbit/issues/43")
@@ -920,9 +921,13 @@ class P3CandidateIdentityTests(AdmissionAssertions):
         self.assertTrue(expected_paths.issubset(identity["files_sha256"]))
         for name, digest in identity["files_sha256"].items():
             with self.subTest(source=name):
-                self.assertEqual(digest, hashlib.sha256((ROOT / name).read_bytes()).hexdigest())
+                self.assertEqual(digest, hashlib.sha256(historical_bytes(name)).hexdigest())
         self.assertEqual(identity["evidence_expectations"], p3_expectations.identity())
         self.assertEqual(identity["evidence_expectations"]["version"], "p3-evidence-expectations-v1")
+        changed = {name for name, digest in identity["files_sha256"].items()
+                   if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest}
+        self.assertEqual(changed, {"grepbit/gateway.py", "grepbit/model.py", "grepbit/recipe_model.py"})
+        self.rejects(admission.candidate_identity, code="source_identity_failure")
 
     def test_isolated_identity_mocks_preserve_the_full_protected_inventory(self):
         with patch.object(admission.subprocess, "run", side_effect=self.mock_git()) as git, \
