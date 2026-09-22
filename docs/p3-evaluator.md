@@ -452,6 +452,109 @@ the provider enforced that schema. Valid JSON and valid typed action are separat
 stages; a semantically wrong valid action can pass interface compatibility.
 Compatibility success is never a quality score or permission for formal scoring.
 
+### P3.5 formal live capability (#49)
+
+Stage B implements and tests capability **offline only**. It does not authorize
+credentials, real re-freezing, provider traffic or stability. The separate
+`tools/p3_formal_run.py` caller establishes formal admission and authorization;
+it then shares one private panel engine with `p3_eval.py`. Development `fake-run`
+remains development-only and requires an explicit mock transport. Neither its
+historical reports nor `p3-manifest-v2` / `p3-report-v2` formal **preparation**
+artifacts acquire live meaning.
+
+After review and merge, Stage C must use the final accepted clean `dev` SHA:
+freeze the same reviewed semantic cases/oracles/panel and exact 28-input order,
+then create new native offline formal preparation. Old source-pinned freezes and
+feature-branch preparation are not current execution authority. No semantic
+re-review is implied unless semantic bytes change. Next prepare the immutable
+pre-authorization packet, without loading any env file or creating a client:
+
+```bash
+.venv/bin/python tools/p3_formal_run.py --prepare \
+  --freeze "$NEW_FREEZE/report.json" --preparation "$NEW_PREPARATION/manifest.json" \
+  --db "$ACCEPTED_DB" --accepted-commit "$FINAL_ACCEPTED_DEV_SHA" \
+  --gateway-retries enabled --gateway-fallback disabled --gateway-cache disabled \
+  --transport-security unencrypted_http --output-dir "$NEW_PACKET_DIR"
+```
+
+The packet is `$NEW_PACKET_DIR/manifest.json`, version
+`p3-formal-live-packet-v1`. It pins freeze/preparation/semantic assets, exact
+order, source/DB/runtime/schema identities, v2 allocation, bounds and operator
+route attestations, plus an argv command template with explicit artifact/env
+placeholders. It contains no credential, endpoint or owner comment.
+The owner then accepts **that exact file SHA-256** in a #49 comment. Bind it
+without changing the packet:
+
+```bash
+.venv/bin/python tools/p3_formal_run.py --bind-authorization \
+  --packet "$NEW_PACKET_DIR/manifest.json" \
+  --owner-authorization-reference "$OWNER_ISSUE_49_COMMENT" \
+  --output "$NEW_AUTHORIZATION_FILE"
+```
+
+`p3-formal-live-authorization-v1` contains only its version, the packet file hash
+and exact Issue #49 comment reference. This avoids a circular owner-comment /
+packet hash. Binding validates locally; it does not contact GitHub or authenticate
+ownership. The implementation-approval comment is **not** live authorization.
+Only after separate owner approval of the exact packet, the future command is:
+
+```bash
+.venv/bin/python tools/p3_formal_run.py --live \
+  --packet "$NEW_PACKET_DIR/manifest.json" --authorization "$NEW_AUTHORIZATION_FILE" \
+  --db "$ACCEPTED_DB" --accepted-commit "$FINAL_ACCEPTED_DEV_SHA" \
+  --env-file "$EXPLICIT_LOCAL_ENV_FILE" \
+  --gateway-retries enabled --gateway-fallback disabled --gateway-cache disabled \
+  --output-dir "$FRESH_FORMAL_RUN_OUTPUT"
+```
+
+`--live` alone cannot authorize. Envelope/hash/comment shape, exact native
+freeze/preparation, source/DB, current clean dev and CLI attestations are checked
+**before configuration or client construction**. The explicit env loader and
+named-variable precedence are unchanged from P3.4. Loaded transport classification
+must match the packet before send. Attestations do not reconfigure the gateway.
+The inherited `unencrypted_http` route is not confidential transport; owner review
+must acknowledge that property. No endpoint is persisted.
+
+Live artifacts use `p3-formal-live-manifest-v1`, `p3-formal-live-report-v1` and
+`p3-stops-v2`. Maximum 28 client sends / runtime invocations, exact frozen order,
+concurrency one, call timeout at most 60 seconds, panel deadline 1,800 seconds,
+temperature zero, 2,048 output tokens, streaming off. No retry, repair, fallback,
+resend, continuation, best-of, resume or automatic rerun. Semantic failures are
+graded by the unchanged P3 grader and do not trigger quality-based early stops.
+Immediate operational stops, separate two-network-error and two-timeout streaks,
+identity drift, budget, leakage and publication stops retain accepted semantics.
+
+Each input durably records reservation before possible send and an invocation
+marker before entering runtime, followed by returned and graded checkpoints.
+After interruption, the last marker is conservative evidence of possible work,
+not proof that no send occurred. Observed client attempts, runtime markers,
+possible in-flight reservations and attempt-budget use remain separate. Live
+model attempts count observed client sends, **not** upstream generations;
+`upstream_inference_attempts` stays unknown with gateway retries enabled.
+Terminal success appears only at atomic publication; failed publication preserves
+incomplete evidence and cannot grant a rerun.
+
+Only the current individual question and unchanged shared recipe context/schema
+reach the model. Grade native objects in memory, then persist a closed whitelist:
+attempts, bounded latency/usage, safe model/transport/status identities, runtime
+stage enums and error codes, existing grading layers/outcome/checked-wrong,
+pack-status enum, semantic-signature hash and known missing-slot identifiers.
+No raw completion/reasoning, proposal/request, clarification content, presentation,
+facts/rows/SQL, arbitrary provider text, headers, keys or endpoint is persisted.
+Offline archive inspection needs neither current sources nor credentials:
+
+```bash
+.venv/bin/python tools/p3_formal_run.py --report \
+  --report-path "$FRESH_FORMAL_RUN_OUTPUT/report.json"
+```
+
+The E01 request-byte parity regression protects reuse of P3.4 compatibility
+evidence: runner-only tooling does not change model-facing bytes. A route/model,
+prompt/context/schema, envelope or provider-visible request/timeout change would
+require compatibility reconsideration. Unchanged v2 scoring establishes only the
+retained admitted slice, not original 24/44 breadth or full P3 completion. There
+is no automatic transition to formal execution, stability or the next phase.
+
 ### Exposed material and unresolved admission
 
 The active exposed-side projection for future formal admission is
