@@ -34,8 +34,11 @@ with product/grader behavior frozen at that SHA. The owner-approved
 [exposed projection](p3-evaluator.md#exposed-material-and-unresolved-admission)
 is 9 provisional families / 15 inputs: P10 deferred, P11 preserved outside the
 panel as an E02 regression, P12 not admitted. Original assets remain intact.
-The unchanged 24/44 target cannot be met by this projection plus the original
-fresh reservations; fresh fillability and full admission remain unresolved.
+Fresh authoring is closed. The owner-approved allocation v2 is **14 families /
+28 inputs**, retaining five fresh families plus the nine exposed labels; the
+historical 24/44 validator remains protected as v1, not a quota to restore.
+Versioned tooling support is separate from actual admission: exact sanitized
+fresh identities (including FA09 r2) and formal freeze remain outstanding.
 No complete formal panel is frozen and no live run is authorized. P3-P5 remain open; it
 does not complete grounding/resume/synthesis. P2 is not promoted
 to main; no further live execution follows from the phase handoff.
@@ -103,9 +106,15 @@ needs an issue + test + PR/commit, not a research report.
 The [accepted P3.0 contract](p3-evaluation-contract.md) specifies the behavior
 matrix, exposure/provenance, conditional panel allocation, family-weighted
 denominators, clarification policy and separate stability/resume/synthesis gates.
-R1 (#37 / #38) ratifies the small-PoC consequence of the thresholds below:
+Historical R1 (#37 / #38) ratified the small-PoC consequence of the thresholds below:
 8/8 fresh answer families and all four exposed answer controls, hence 12/12
-answer families, without padding the panel to allow a failure. Missing-year/
+answer families, without padding the panel to allow a failure. Allocation v2
+under #43 instead requires all retained fresh answers 2/2, exposed answer 1/1,
+clarify 3/3, decline 5/5 and anchors 3/3, on every mandatory variant, with zero
+checked-wrong normal answers. It supports only the retained slice, not the old
+eight-fresh-answer breadth. Its stability preselection is P02/zh-TW, P04/en,
+R03/ja, P14/zh-TW, P17/ja and P18/en, three trials each; exact fresh input IDs
+remain unresolved and no execution follows from preselection. Missing-year/
 baseline/k clarification without grounded alternatives is deferred, not desired
 decline gold; E06 remains unchanged. Acceptance of the R1 design is separate
 from product implementation, case freeze and authorization of any live run.

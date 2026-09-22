@@ -1,14 +1,63 @@
 # P3.0: natural-language quality and stability contract
 
-**Status: owner-accepted design under #37 / PR #38; not runtime implementation.**
-Contract revision: `p3-evaluation-contract-v0.1-r1`.
+**Status: historical R1 under #37 / PR #38, with owner-approved allocation-policy v2 under #43; no live authority.**
+Contract revision: `p3-evaluation-contract-v0.1-r2` (allocation/stability only).
 Design baseline: `dev@f21c914915f34656c1e8c0069c28afadb5bbc7ae`.
 Acceptance baseline: `dev@a4bad1a8742a97021502e71208bd7162c6b37c44`.
 This document alone authorizes no live request, case freeze or P3 exit.
 R1 follows the owner direction in #37 / PR #38: implementation inability
 to clarify must not become desired decline gold. The small-N answer gate below
-is ratified for this first slice. P3.1 implementation has its own bounded
-[admission](clarification-action.md) under #39; the contract below is unchanged.
+was ratified for the historical v1 proposal. P3.1 implementation has its own bounded
+[admission](clarification-action.md) under #39. R2 changes no product, grader,
+oracle, expectation, weighting or exact-accounting semantics.
+
+## Current retained-slice policy: allocation v2
+
+The owner closed independent fresh authoring/review for the first panel and
+authorized `p3-formal-allocation-v2` under [Issue #43](https://github.com/cinic0101/grepbit/issues/43).
+`p3-formal-allocation-v1` preserves the historical 24/44 proposal and frozen
+validator. The original allocation, breadth thresholds and cost estimates below
+are historical v1, not claims or budgets for this reduced panel.
+
+| Cohort | Fresh families / inputs | Exposed families / inputs | Total families / inputs |
+| --- | --- | --- | --- |
+| Answer (excluding anchors) | 2 / 4 | 1 / 1 | 3 / 5 |
+| Clarify | 1 / 3 | 2 / 2 | 3 / 5 |
+| Decline | 2 / 6 | 3 / 3 | 5 / 9 |
+| P2 anchors | 0 / 0 | 3 / 9 | 3 / 9 |
+| Total | 5 / 13 | 9 / 15 | **14 / 28** |
+
+Languages: **zh-TW 8 / en 10 / ja 10** (fresh 4/5/4, exposed 4/5/6).
+Fresh identities supplied as sanitized owner decisions are FA01 -> P02,
+FA04 -> P04, FA09 r2 -> P14, FA10 -> P17 and FA11 -> P18. No payload is
+authored or inspected by the implementation agent. The exact independently
+reviewed FA09 r2 hash and review reference must be supplied before actual freeze;
+a name/path or an earlier revision is not an identity substitute.
+
+P01/P03/P05/P06/P07/P08/P13 remain intentionally unfilled:
+`NO DISTINCT CANDIDATE FOUND` is accepted. Do not reopen authoring to restore
+the quota. P10 is deferred from this action/fact panel; P11 remains an exposed
+E02_compare semantic regression outside formal membership; P12 is not admitted
+from its ranking-only witness. Their original evidence remains unchanged.
+
+Every required variant must pass: fresh answers **2/2**, exposed answer **1/1**,
+total non-anchor answers **3/3**, clarify **3/3**, decline **5/5**, anchors **3/3**.
+The frozen >=90% arithmetic naturally requires all answers at these denominators;
+all mandatory controls and the **zero known checked-wrong normal answers** veto
+remain. No changed outcome, precedence, oracle, weighting or rounding rule is
+introduced. A v2 pass establishes only the retained admitted semantic slice,
+**not the original eight-fresh-answer breadth and not full P3 completion**.
+
+Fixture `as_of` is scenario metadata, not a recipe runtime month-eligibility
+gate. An explicitly supplied full month may be later when supported by fixture
+data and frozen runtime semantics. Never infer a missing month/year from it.
+No runtime change follows from this ruling.
+
+The new policy/tooling identity is distinct from frozen behavior
+`20abb5592262c77c98f9cabeaf7cf4854edb6fbe`, fresh asset identity and formal freeze
+identity. Policy tests are not actual admission. The owner-supplied sanitized
+identity manifest, exact asset/review pins and a separately authorized real
+freeze remain outstanding. No probe, formal run or stability run is authorized.
 
 ## 1. Thesis, evidence and route boundary
 
@@ -553,8 +602,26 @@ Do not retroactively upgrade the run, remove the case, or reuse it as fresh.
 
 ## 8. Stability is separate from semantic breadth
 
-Preselect P01 (Overview, zh-TW), P03 (Compare, en), P06 (Breakdown, ja),
-P10 (false-refusal control, en), P13 (clarification, zh-TW) and P17 (decline, ja).
+The v1 P01/P03/P06/P10/P13/P17 preselection is obsolete and must not be reused.
+The owner preselects the following v2 slice before any formal results:
+
+| Slot / reviewed identity | Behavior | Language |
+| --- | --- | --- |
+| P02 / FA01 | Fresh Overview answer | zh-TW |
+| P04 / FA04 | Fresh Compare answer | en |
+| R03 / E03_share_denominator | Breakdown anchor | ja |
+| P14 / FA09 r2 | Fresh clarification | zh-TW |
+| P17 / FA10 | Fresh decline | ja |
+| P18 / FA11 | Fresh decline | en |
+
+This includes all five retained fresh families and one anchor, with two selected
+inputs per language. `p3_formal_policy.stability_preselection()` records the fixed
+`p3-stability-preselection-v2` identity/hash. Only R03's exact case ID is currently
+resolved (`E03_share_denominator.ja`); the five fresh IDs require sanitized owner
+metadata. The slot/language selection is fixed, but it is **not a runnable
+stability manifest**. Do not guess case IDs, read payloads to resolve them or
+execute this selection. The earlier all-exposed candidate was not accepted.
+
 Run **three trials per selected input: 18 additional client attempts**, in
 three preordered interleaved rounds. These are six existing families, not 18
 new families. The first formal calls are not counted as one of these trials.
