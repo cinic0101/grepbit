@@ -1,6 +1,6 @@
 # Roadmap and phase exits
 
-Phase baseline: 2026-09-18; current status follows #43. Work is on `dev`;
+Phase baseline: 2026-09-18; current status below includes P3.11. Work is on `dev`;
 promotion to `main` requires owner review. P0 and P1 are accepted at
 `6d6be30bed321806e0a2ef90fec53a1fc1118373`. The first smoke (#10) failed
 envelope validation on all 12 inputs and remains unchanged. After P1.3a
@@ -37,11 +37,26 @@ panel as an E02 regression, P12 not admitted. Original assets remain intact.
 Fresh authoring is closed. The owner-approved allocation v2 is **14 families /
 28 inputs**, retaining five fresh families plus the nine exposed labels; the
 historical 24/44 validator remains protected as v1, not a quota to restore.
-Versioned tooling support is separate from actual admission: exact sanitized
-fresh identities (including FA09 r2) and formal freeze remain outstanding.
-No complete formal panel is frozen and no live run is authorized. P3-P5 remain open; it
-does not complete grounding/resume/synthesis. P2 is not promoted
-to main; no further live execution follows from the phase handoff.
+Versioned tooling support was separate from actual admission at this preparation
+stage. The later P3.5 formal 31B run on the admitted 14-family / 28-input panel
+completed all 28 inputs: **25/28 correct and 12/14 families passed**, with zero
+checked-wrong normal answers, but failed promotion because mandatory decline and
+anchor families did not all pass. P3.7's separately authorized selected 31B
+stability run completed 18/18 correct trials and 18/18 comparable pairs with
+zero semantic flips; it did not repair the formal quality result. P3.8 (#54)
+kept 31B quality-blocked and directed candidate-first investigation, not P3 exit.
+P3.9 (#55) admitted the pinned 12B deployment identity. P3.10 (#56) observed one
+successful compatibility call; one call did not establish quality. P3.11's
+separately authorized 12B observed regression completed all 28 inputs:
+**20/28 correct and 8/14 families correct**. It recorded four new semantic
+regressions and four typed-output/request-contract validation failures: those
+four returned HTTP 200 and parsed JSON, then failed
+`request_validation` before native execution. The immutable comparison taxonomy
+calls them `UNASSESSED_OPERATIONAL`; their intended semantics are unassessed.
+P3.11 is not fresh quality or promotion evidence, and the 12B candidate was not
+advanced. These observed runs do not authorize further live execution. P3-P5
+remain open, including P3 grounding, resume and synthesis. P2 is not promoted
+to `main`.
 GitHub Issues own current status; this document owns phase meaning and exits.
 
 | Phase | Deliverable | Question being tested | Exit |
