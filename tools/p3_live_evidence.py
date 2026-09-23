@@ -8,7 +8,7 @@ import os
 import re
 
 from grepbit import model
-from grepbit.gateway import MODEL, _ERRORS
+from grepbit.gateway import _ERRORS, _expected_alias
 from tools import p3_assets as assets, p3_eval as evaluator, p3_grading, p3_admission as admission, smoke
 
 _TRANSPORT = ("unencrypted_http", "tls_verification_enabled")
@@ -51,7 +51,7 @@ def _number(value, *, integer=False, maximum=None, optional=True):
         raise assets.P3Error("invalid_asset")
 
 
-def _evidence(value: dict) -> dict:
+def _evidence(value: dict, *, expected_model=None) -> dict:
     """Closed projection only; no proposal, pack, text, choices, facts or bodies."""
     if not isinstance(value, dict):
         raise assets.P3Error("invalid_asset")
@@ -59,8 +59,9 @@ def _evidence(value: dict) -> dict:
     for key in ("error_code", "stop_reason"):
         if result.get(key) is not None and result[key] not in _CODES:
             raise assets.P3Error("invalid_asset")
+    alias = _expected_alias(expected_model)
     for key in ("requested_model", "returned_model"):
-        if result.get(key) not in (None, MODEL):
+        if result.get(key) not in (None, alias):
             raise assets.P3Error("invalid_asset")
     if result.get("transport_security") not in (None, *_TRANSPORT):
         raise assets.P3Error("invalid_asset")
@@ -130,8 +131,12 @@ class _LiveEvidence:
     maximum = 28
     summarize = staticmethod(evaluator._summarize)
 
+    def __init__(self, expected_model=None):
+        self.expected_model = expected_model
+        _expected_alias(expected_model)
+
     def project(self, evidence, client):
-        return evaluator._safe(_evidence(evidence), client)
+        return evaluator._safe(_evidence(evidence, expected_model=self.expected_model), client)
 
     def invocation_client(self, client):
         return _PerInputClient(client, self.maximum)
@@ -139,12 +144,13 @@ class _LiveEvidence:
     def check_report(self, report):
         for row in report["results"]:
             _check_grade(row)
-            if row["evidence"] is not None and not _same(_evidence(row["evidence"]), row["evidence"]):
+            if row["evidence"] is not None and not _same(
+                    _evidence(row["evidence"], expected_model=self.expected_model), row["evidence"]):
                 raise assets.P3Error("leakage_risk")
 
 
 def _validate_report(report, manifest, expected, inputs, *, maximum, transport_security,
-                     summarize=evaluator._summarize):
+                     summarize=evaluator._summarize, expected_model=None):
     """Shared safe lifecycle/accounting validation, never current source/config access."""
     if (set(report) != set(expected) | {"summary"} or report["report_version"] != expected["report_version"]
             or report["manifest_sha256"] != assets.digest(manifest)
@@ -184,7 +190,7 @@ def _validate_report(report, manifest, expected, inputs, *, maximum, transport_s
             raise assets.P3Error("invalid_asset")
         _number(row["client_http_attempts"], integer=True, maximum=1)
         _number(row["runtime_http_attempts"], integer=True, maximum=1)
-    _LiveEvidence().check_report(report)
+    _LiveEvidence(expected_model).check_report(report)
     counts = [row["client_http_attempts"] for row in report["results"]]
     total = None if None in counts else sum(counts)
     if (report["client_http_attempts"] != total or report["live_model_attempts"] != total
@@ -217,7 +223,7 @@ def _validate_report(report, manifest, expected, inputs, *, maximum, transport_s
 
 async def _run_live(database, output_dir, *, packet_path, authorization_path, accepted_commit,
                     env_file, gateway_policies, clock, contract):
-    """Private bootstrap shared by two strict public callers, never a CLI policy switch."""
+    """Private bootstrap for separately admitted callers, never a CLI policy switch."""
     started = clock()
     # Both envelopes and all source/DB/freeze gates precede any credential access.
     packet_pin = evaluator._pin(packet_path)
@@ -230,7 +236,8 @@ async def _run_live(database, output_dir, *, packet_path, authorization_path, ac
     manifest = contract._manifest(packet, packet_pin["sha256"], authorization, authorization_pin["sha256"])
     artifacts = smoke._Artifacts(output_dir, manifest)
     report = contract._report(manifest, packet)
-    policy = contract._LiveEvidence()
+    expected_model = contract._expected_model(packet)
+    policy = contract._LiveEvidence(expected_model)
     entries = contract._entries(panel, packet)
     evaluator._persist(artifacts, report, None, summarize=policy.summarize)
     client = None
@@ -252,7 +259,10 @@ async def _run_live(database, output_dir, *, packet_path, authorization_path, ac
                             {"reference": "authorization.json", "sha256": authorization_pin["sha256"]})
         validate()
         smoke._no_symlinks(env_file)
-        config = contract.GatewayConfig.from_env(env_file=env_file)
+        # Preserve the historical default call exactly; only a closed caller
+        # may supply a typed admitted candidate after packet validation.
+        config = (contract.GatewayConfig.from_env(env_file=env_file) if expected_model is None else
+                  contract.GatewayConfig.from_env(env_file=env_file, expected_model=expected_model))
         if config.transport_security != packet["transport_security"]:
             raise assets.P3Error("invalid_configuration")
         client = contract.GatewayClient(config)

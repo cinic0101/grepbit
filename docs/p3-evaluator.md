@@ -630,6 +630,43 @@ grades/signature hashes and whitelisted counters/stages/usage are persisted; no
 raw completion, reasoning, proposal, request, facts, clarification content or
 provider bodies. `--report --report-path <report.json>` is offline and archive-only.
 
+### P3.11 candidate observed-regression capability (#58)
+
+`tools/p3_candidate_regression.py` is a separate 12B-only caller of the private
+`p3_eval._execute_panel` lifecycle. It does not repurpose the 31B formal runner,
+re-freeze old semantics, add a grader/scorer, or change runtime prompts/schema.
+Its current-source packet builder verifies the byte-identical reviewed intake,
+cases, oracles, 28-input panel and v2 allocation, synthetic DB, admitted 12B
+deployment document, successful one-shot 12B compatibility archive, and immutable
+31B P3.5 comparison archive. The prior freeze is ancestry, not current execution
+authority after model-identity plumbing changed protected runtime files.
+
+The purpose-specific `p3-candidate-regression-{packet,authorization,manifest,report}-v1`
+and `p3-candidate-regression-stops-v1` retain `promotion_eligible = false` and
+`promotion_result = not_applicable` even if all 28 observed cases pass. Historical
+exposure labels are provenance only, not a renewed fresh denominator. Per-input
+correctness and family/language/cohort accounting come from the existing P3
+scorer; the separate offline comparison classifies fixed known failures (of 3),
+new regressions (of 25), unchanged results, other changed outcomes, and
+operational/not-run evidence. It cannot rank models or repair P3.5 promotion.
+
+After the implementation is merged, a new immutable packet must be prepared on
+the **final clean dev SHA**. Only an Issue #58 comment accepting that exact packet
+SHA can be bound into the separate authorization envelope. Both are checked,
+with candidate/source/asset/DB/route identities, before env loading. The closed
+`ExpectedModel` identity is passed to `GatewayConfig`; legacy formal/stability
+continue to use default 31B. The live evidence whitelist accepts only the exact
+admitted 12B alias, while archived readback needs no current DB, env or network.
+This feature-branch implementation creates no real packet or live authority.
+
+The future run is bounded to 28 sequential inputs and at most 28 client sends
+and invocations, 60 seconds per call, 1,800 seconds panel budget, temperature 0,
+max_tokens 2048 and stream false. Per-input durable reservations, no retry or
+resume, operational stops and terminal publication are inherited from the shared
+engine. Gateway retries are attested enabled; fallback/cache disabled, and the
+Grepbit-to-gateway transport is `unencrypted_http`. Therefore upstream inference
+attempts remain unknown, not equal to client sends.
+
 ### Exposed material and unresolved admission
 
 The active exposed-side projection for future formal admission is

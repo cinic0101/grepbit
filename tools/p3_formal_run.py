@@ -262,6 +262,12 @@ def _entries(panel, packet):
     return evaluator._panel_entries(panel)
 
 
+def _expected_model(packet):
+    """Historical formal traffic remains locked to the default 31B identity."""
+    _packet_contract(packet)
+    return None
+
+
 def read_report(path: Path) -> dict:
     """Offline archive verification; no current checkout, DB or configuration access."""
     packet = assets.read_asset(path.parent / "packet.json")
