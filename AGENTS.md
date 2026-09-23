@@ -45,8 +45,10 @@ subagent names and tool-specific orchestration in personal/tool configuration.
   For substantive PRs, request independent remote review of the actual GitHub
   diff before merge. Send a compact objective, invariants, test results, risks
   and review focus; the summary does not replace diff review. Small mechanical
-  changes may use owner review. Local QA and remote review do not grant merge
-  authority; follow the task's Git and execution permissions.
+  changes may use owner review. Tests, local QA and remote review do not authorize
+  merge. Merge requires explicit owner approval unless the owner explicitly
+  delegates it for the current task; follow task-specific Git and execution
+  permissions.
 - Preserve independent semantic/oracle acceptance required by the evaluation
   contract. A coding assistant's local review does not satisfy that requirement
   merely because it ran in a separate conversation.
