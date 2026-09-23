@@ -5,10 +5,11 @@
 Read `README.md`, then the current GitHub issue. Read only the relevant design
 section in `docs/`; do not reload the legacy research history for every task.
 This is V3: analytical intent -> checked facts, not another expanding Text2SQL
-language. P0 fixture tooling is separate from the accepted P1 scalar kernel and
-thin model adapter. P1's accepted smoke covers four frozen semantic families.
-P2.0 (#14) is design/admission only; it does not authorize recipe runtime
-implementation or new live requests. See `docs/p2-recipes.md`.
+language. Use the current task's accepted contracts and exact evidence pins to
+establish phase and scope; historical phase descriptions do not grant authority.
+See `docs/roadmap.md` for gates and the relevant P1/P2/P3 contract for the task.
+These agreements are shared across coding tools. Keep model choices, effort,
+subagent names and tool-specific orchestration in personal/tool configuration.
 
 ## Authority and branches
 
@@ -24,6 +25,29 @@ implementation or new live requests. See `docs/p2-recipes.md`.
   conditions. The owner authorizes that run separately. See `docs/local-execution.md`.
 - Never print or commit keys, connection strings, local endpoint addresses,
   environment dumps, real customer data or unreviewed live traces.
+
+## Collaboration and review
+
+- One task owner is accountable for requirements, planning, integration and
+  acceptance evidence, whether working alone or with assistants. Assign one writer
+  per shared contract surface and preserve other contributors' changes.
+- For a material new or changed compatibility-sensitive contract, establish the
+  contract and meaningful ruler/test evidence before production implementation.
+  Follow the current task's owner checkpoint and delegated-authority boundaries;
+  a repair to an already accepted contract does not itself create a new checkpoint.
+- High-risk changes need an additional review of the actual delta and evidence:
+  product behavior, public API/schema, security/permissions, persistence/transactions,
+  concurrency, cross-module refactors, backward compatibility, evaluation/evidence
+  contracts and protected/frozen sources. No specific coding tool or model is
+  required. If required review is unavailable, report it pending, not self-certified.
+- Local review is implementation QA. When the owner designates external review,
+  provide the authorized GitHub PR, contract and sanitized validation evidence to
+  that reviewer. They review the actual diff independently; local QA does not
+  replace their review or grant merge authority. Not every task requires a PR or
+  an external reviewer; follow the current task's explicit workflow.
+- Preserve independent semantic/oracle acceptance required by the evaluation
+  contract. A coding assistant's local review does not satisfy that requirement
+  merely because it ran in a separate conversation.
 
 ## Architecture boundaries
 
@@ -62,8 +86,12 @@ Build and report paths are exclusive-create. Use a fresh directory on reruns;
 do not delete/overwrite evidence to make a run appear clean. These commands are
 OFFLINE fixture/kernel checks, not model evaluations. Report P0, P1.1 kernel/CLI
 and P1.2 adapter/runner suites separately; protect the original 107 tests.
-Run targeted checks while editing and the complete small offline suite before
-handoff. Report failures honestly.
+Run targeted checks while editing. For runtime or evaluation changes, run the
+complete offline suite once at closeout, including relevant protected regressions.
+For documentation-only or personal-tool configuration changes, use proportionate
+syntax, link, configuration and diff checks. Explicit task-specific gates still
+apply. Do not duplicate a completed broad gate without a concrete evidence gap;
+report failures and checks not run honestly.
 
 ## Evidence and improvement
 
@@ -76,6 +104,9 @@ handoff. Report failures honestly.
 - Record code, fixture/case/oracle/config identities and attempt counts. Capture
   missing evidence as unknown. Synthetic reproduction is not original-source
   confirmation and regression data is not fresh generalization evidence.
+- Respect the task's protected/frozen source list and asset identities. Do not
+  silently repin old freezes or rewrite historical reports; authorized identity
+  changes need new evidence while preserving their historical ancestry.
 - Use GitHub Issues for active work. A normal fix needs an issue, regression and
   PR/commit, not a new specification and research program. Extra decision text
   is for changes to semantics, scope, security or architecture.
