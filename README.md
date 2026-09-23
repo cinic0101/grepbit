@@ -73,11 +73,12 @@ preserved. Fresh authoring is closed; the owner-approved versioned allocation
 is 14 families / 28 inputs, with the historical 24/44 validator preserved as v1.
 The new admission policy reuses frozen grading/accounting and does not claim the
 original breadth. Subsequent owner-authorized P3 work admitted and froze the
-14-family / 28-input panel: the 31B formal quality run completed at 25/28 inputs
-and 12/14 families but failed promotion. Its separate selected stability run
-passed 18/18 trials without repairing that quality result. A pinned 12B candidate
-passed one compatibility call, then completed an observed regression at 20/28
-inputs and 8/14 families, with four new semantic regressions and four typed
+14-family / 28-input panel: the 31B formal quality run completed all 28 inputs,
+with 25/28 correct and 12/14 families passed, but failed promotion. Its separate
+selected stability run passed 18/18 trials without repairing that quality result.
+P3.9 admitted a pinned 12B candidate; P3.10 observed one successful compatibility
+call. The P3.11 observed regression completed all 28 inputs: 20/28 correct and
+8/14 families correct. It recorded four new semantic regressions and four typed
 request-validation failures. That run is not fresh quality or promotion evidence;
 the 12B candidate was not advanced. No further live run is authorized by these
 results. Full P3 exit remains open; grounding, resume and synthesis are separate.
