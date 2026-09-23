@@ -301,6 +301,12 @@ def _entries(panel, packet):
                  for row in packet["schedule"])
 
 
+def _expected_model(packet):
+    """The accepted stability slice is a 31B-only historical contract."""
+    _packet_contract(packet)
+    return None
+
+
 class _LiveEvidence(live._LiveEvidence):
     maximum = 18
     summarize = staticmethod(_summarize)
