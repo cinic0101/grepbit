@@ -40,11 +40,15 @@ subagent names and tool-specific orchestration in personal/tool configuration.
   concurrency, cross-module refactors, backward compatibility, evaluation/evidence
   contracts and protected/frozen sources. No specific coding tool or model is
   required. If required review is unavailable, report it pending, not self-certified.
-- Local review is implementation QA. When the owner designates external review,
-  provide the authorized GitHub PR, contract and sanitized validation evidence to
-  that reviewer. They review the actual diff independently; local QA does not
-  replace their review or grant merge authority. Not every task requires a PR or
-  an external reviewer; follow the current task's explicit workflow.
+- Open a PR for one coherent tracked change after implementation, relevant checks
+  and self-review; read-only investigation and local evidence do not need a PR.
+  For substantive PRs, request independent remote review of the actual GitHub
+  diff before merge. Send a compact objective, invariants, test results, risks
+  and review focus; the summary does not replace diff review. Small mechanical
+  changes may use owner review. Tests, local QA and remote review do not authorize
+  merge. Merge requires explicit owner approval unless the owner explicitly
+  delegates it for the current task; follow task-specific Git and execution
+  permissions.
 - Preserve independent semantic/oracle acceptance required by the evaluation
   contract. A coding assistant's local review does not satisfy that requirement
   merely because it ran in a separate conversation.
