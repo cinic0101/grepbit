@@ -78,8 +78,8 @@ When the owner delegates a goal (see `AGENTS.md`, "Goal-scoped delegation"),
 one comment on the goal issue **typed by the owner** (not posted by an agent
 using the owner's credentials) is the standing grant; an agent-drafted goal
 issue or budget table is a proposal until that comment exists, and the comment
-must state or pin the budgets itself. The grant states, in one place:
-the goal, the allowed step sequence (for example compatibility call, observed
+must state or pin the budgets itself. The grant states, in one place: the
+goal, the allowed step sequence (for example compatibility call, observed
 panel, diagnostic), the provider and profile for each step, the maximum number
 of runs per step, per-call and per-run time bounds, output token caps, the
 data boundary (synthetic only unless stated), the gateway route
@@ -87,15 +87,16 @@ retry/fallback/cache attestation for each provider, the stop conditions and
 the reporting expectation. Each tool must bind every run to one authorization
 envelope and one exclusive output slot and execute from a merged `dev` commit
 whose digest the run record keeps, so the grant is consumed run by run and
-cannot be replayed; a tool that cannot do this is outside the grant. The
-agent records each run's factual result under the issue that owns that step. A run outside the listed steps or above the listed
-counts is not covered and needs a separate authorization. The owner may revoke
-the grant at any time by saying so; runs already recorded stay as evidence.
+cannot be replayed; a tool that cannot do this is outside the grant. The agent
+records each run's factual result under the issue that owns that step. A run
+outside the listed steps or above the listed counts is not covered and needs a
+separate authorization. The owner may revoke the grant at any time by saying
+so; runs already recorded stay as evidence.
 
 ## Live run authorization procedure
 
 Before the owner initiates each live run (or, under a standing grant, before
-the agent starts one), provide:
+the agent starts one, recorded under the step's issue), provide:
 
 | Field | Required information |
 | --- | --- |

@@ -16,14 +16,14 @@ subagent names and tool-specific orchestration in personal/tool configuration.
 - Work on `dev` (or a task branch based on `dev`). Never commit to, merge into,
   or force-push `main` without explicit owner approval. Preserve unrelated work.
 - A repository instruction is not permission to make external calls. Live runs
-  are owner-triggered, directly or through an owner-posted standing grant (see
+  are owner-triggered, directly or through an owner-typed standing grant (see
   Goal-scoped delegation), and executed by the owner's local coding agent only.
 - Do not invoke LiteLLM, Gemma, Bedrock, external databases, remote runners, or
   paid services merely because credentials or an issue are available. Do not
   add scheduled/live GitHub Actions or a remote-control bridge.
 - For a live run, prepare the exact command, code/source identity, case IDs,
   provider, allowed data, attempt/token/time bounds, output location and stop
-  conditions. The owner authorizes that run separately unless an owner-posted
+  conditions. The owner authorizes that run separately unless an owner-typed
   standing grant covers it (see Goal-scoped delegation). See `docs/local-execution.md`.
 - Never print or commit keys, connection strings, local endpoint addresses,
   environment dumps, real customer data or unreviewed live traces.
@@ -65,32 +65,33 @@ subagent names and tool-specific orchestration in personal/tool configuration.
   agent-drafted goal issue or table is a proposal until then. Inside the grant
   the agent proceeds without per-step chat approval and reports at milestones
   and stops. The `main` rule above is unchanged.
-- Inside the scope: a contract checkpoint is the contract document plus a
-  ruler committed failing before the implementation commit and passing after,
-  in the same PR. Code review is the high-risk delta review and satisfies the
+- Inside the scope: a contract checkpoint is the contract document plus a ruler
+  committed failing before the implementation commit and passing after, in the
+  same PR. Code review is the high-risk delta review and satisfies the
   independent review of the GitHub diff above: an independent fresh-context
-  agent session that receives only the PR reference, objective and review
-  focus, reads the actual GitHub diff and `dev` files through GitHub, has no
-  access to the implementing conversation, and discloses any other context it
-  was given; the PR names its high-risk category and records the review prompt
-  and verdict. The agent may
-  merge into `dev` after that review reports no blocker and the full offline
-  suite passes. A reviewer blocker is fixed and re-reviewed, or escalated to
-  the owner as a stop; it is not debated. Semantic, oracle and case acceptance
-  stay with an independent human or a reviewer the owner names; the
+  agent session that receives only the PR reference, objective and review focus,
+  reads the actual GitHub diff and `dev` files through GitHub, has no access to
+  the implementing conversation, and discloses any other context it was given;
+  the PR names its high-risk category and records the review prompt and verdict.
+  The agent may merge into `dev` after that review reports no blocker and the
+  full offline suite passes. A reviewer blocker is fixed and re-reviewed, or
+  escalated to the owner as a stop; it is not debated. Semantic, oracle and case
+  acceptance stay with an independent human or a reviewer the owner names; the
   implementing agent never decides them.
 - Live runs inside the scope bind one authorization envelope to the standing
-  grant comment and to one output slot each, and execute a tool from a merged `dev` commit whose digest
-  the run record keeps; a tool that cannot bind grant and slot is outside the
-  grant. A run outside the grant's steps or budgets needs separate authorization.
+  grant comment and to one output slot each, and execute a tool from a merged
+  `dev` commit whose digest the run record keeps; a tool that cannot bind grant
+  and slot is outside the grant. The grant's route attestation stays valid until
+  the owner revokes it or the route, provider or profile changes. A run outside
+  the grant's steps or budgets needs separate authorization.
 - Mandatory stops, taken before the change is made and reported with the
   evidence: a needed change to a protected/frozen source, an oracle, gold or
   case text, to a product promise or accepted product contract, or to
   `AGENTS.md`, `CLAUDE.md`, `docs/local-execution.md` or other authority text
   (owner review and owner merge only); a third candidate fix on one failure
-  family (the roadmap's two-fix default); budget exhaustion; any credential, route or privacy
-  anomaly; a blocker still open after one fix round; evidence that the goal is
-  unreachable as stated.
+  family, the roadmap's two-fix default; budget exhaustion; any credential,
+  route or privacy anomaly; a blocker still open after one fix round; evidence
+  that the goal is unreachable as stated.
 
 ## Architecture boundaries
 
