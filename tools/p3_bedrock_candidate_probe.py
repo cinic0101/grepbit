@@ -23,11 +23,13 @@ from tools import p3_candidate_probe as old_candidate, p3_eval, p3_live_evidence
 from tools import p3_probe as probe, recipe_smoke, smoke
 
 LEGACY_PACKET_VERSION = "p3-bedrock-candidate-packet-v1"
-PACKET_VERSION = "p3-bedrock-candidate-packet-v2"
+PRIVATE_PACKET_VERSION = "p3-bedrock-candidate-packet-v2"
+PACKET_VERSION = "p3-bedrock-candidate-packet-v3"
 AUTHORIZATION_VERSION = "p3-bedrock-candidate-authorization-v1"
 MANIFEST_VERSION = "p3-bedrock-candidate-manifest-v1"
 REPORT_VERSION = "p3-bedrock-candidate-report-v1"
-EFFECTIVE_RUNTIME_VERSION = "p3-bedrock-effective-runtime-v1"
+LEGACY_EFFECTIVE_RUNTIME_VERSION = "p3-bedrock-effective-runtime-v1"
+EFFECTIVE_RUNTIME_VERSION = "p3-bedrock-effective-runtime-v2"
 OWNER = re.compile(r"https://github\.com/cinic0101/grepbit/issues/64#issuecomment-[1-9][0-9]*")
 REGION = "ap-northeast-1"
 PROFILE = "jp.anthropic.claude-sonnet-4-6"
@@ -35,8 +37,10 @@ TRANSPORT = "tls_verification_enabled"
 CALL_SECONDS = BEDROCK_CALL_TIMEOUT_SECONDS
 PUBLICATION_SECONDS = 420.0
 CANONICAL_SCHEMA_SHA256 = "a2b842fedc36b77c27d05df8858d6938f67545d9d46e0219a98b8a77ad653f00"
-WIRE_SCHEMA_SHA256 = "d971f587cade56ed0096e102d5fdd12733f2fa52c038738a1da9e0f6517db21f"
-EFFECTIVE_RUNTIME_SHA256 = "7af570605c825a70acaae125181703c9d4204d4d74b89abd96aef35a2a9c2c7b"
+LEGACY_WIRE_SCHEMA_SHA256 = "d971f587cade56ed0096e102d5fdd12733f2fa52c038738a1da9e0f6517db21f"
+WIRE_SCHEMA_SHA256 = "93ab99c9162a43412d0588b3ded70cc41a25827582b4d11b8072e3348d201f68"
+LEGACY_EFFECTIVE_RUNTIME_SHA256 = "7af570605c825a70acaae125181703c9d4204d4d74b89abd96aef35a2a9c2c7b"
+EFFECTIVE_RUNTIME_SHA256 = "f56e90fe54662a2929797623a74508751b25424b666227fbd699ec4d4ebf4a3c"
 POLICIES = {"retries": "disabled", "fallback": "disabled", "cache": "disabled"}
 ENTRY = old_candidate.ENTRY
 ANCESTRY = old_candidate.ANCESTRY
@@ -72,9 +76,9 @@ def settings() -> dict:
             "resume": False, "stop": "after_first_reserved_attempt_regardless_of_result"}
 
 
-def effective_runtime_identity(baseline: dict) -> dict:
+def effective_runtime_identity(baseline: dict, *, historical: bool = False) -> dict:
     """Version the candidate's actual runtime envelope separately from 12B ancestry."""
-    return {"version": EFFECTIVE_RUNTIME_VERSION,
+    return {"version": LEGACY_EFFECTIVE_RUNTIME_VERSION if historical else EFFECTIVE_RUNTIME_VERSION,
             "baseline_semantic_identity_sha256": semantic.SEMANTICS_SHA256,
             "recipe_context": baseline["recipe_context"],
             "structured_output": baseline["structured_output"],
@@ -82,7 +86,7 @@ def effective_runtime_identity(baseline: dict) -> dict:
             "limits": {**baseline["limits"], "timeout": CALL_SECONDS},
             "provider": "bedrock_converse", "response_mode": "bedrock_converse_normalized",
             "model_profile_id": PROFILE, "calling_region": REGION,
-            "wire_schema_sha256": WIRE_SCHEMA_SHA256,
+            "wire_schema_sha256": LEGACY_WIRE_SCHEMA_SHA256 if historical else WIRE_SCHEMA_SHA256,
             "publication_budget_seconds": PUBLICATION_SECONDS}
 
 
@@ -109,9 +113,13 @@ def _packet_contract(packet: object) -> dict:
     if not isinstance(packet, dict):
         raise probe.ProbeError("invalid_manifest")
     version = packet.get("version")
-    if version not in (PACKET_VERSION, LEGACY_PACKET_VERSION):
+    if version not in (PACKET_VERSION, PRIVATE_PACKET_VERSION, LEGACY_PACKET_VERSION):
         raise probe.ProbeError("invalid_manifest")
-    capture = version == PACKET_VERSION
+    historical = version != PACKET_VERSION
+    capture = version != LEGACY_PACKET_VERSION
+    expected_wire = LEGACY_WIRE_SCHEMA_SHA256 if historical else WIRE_SCHEMA_SHA256
+    expected_effective = (LEGACY_EFFECTIVE_RUNTIME_SHA256 if historical
+                          else EFFECTIVE_RUNTIME_SHA256)
     value = assets.object_fields(packet, _FIELDS | ({"diagnostic_capture"} if capture else set()))
     old_candidate._hash(value["accepted_commit"], 40)
     for key in ("baseline_semantic_identity_sha256", "effective_runtime_identity_sha256",
@@ -133,15 +141,16 @@ def _packet_contract(packet: object) -> dict:
             or value["behavior_ancestry"] != ANCESTRY
             or value["baseline_semantic_identity_sha256"] != semantic.SEMANTICS_SHA256
             or assets.digest(value["baseline_semantic_identity"]) != semantic.SEMANTICS_SHA256
-            or value["effective_runtime_identity_sha256"] != EFFECTIVE_RUNTIME_SHA256
-            or assets.digest(value["effective_runtime_identity"]) != EFFECTIVE_RUNTIME_SHA256
+            or value["effective_runtime_identity_sha256"] != expected_effective
+            or assets.digest(value["effective_runtime_identity"]) != expected_effective
             or not old_candidate._same(value["effective_runtime_identity"],
-                                       effective_runtime_identity(value["baseline_semantic_identity"]))
+                                       effective_runtime_identity(value["baseline_semantic_identity"],
+                                                                  historical=historical))
             or value["effective_runtime_identity"]["limits"]["timeout"] != value["settings"]["call_timeout_seconds"]
             or value["effective_runtime_identity"]["limits"]["timeout"] != BedrockConfig.max_call_timeout_seconds
             or value["effective_runtime_identity"]["publication_budget_seconds"] != value["settings"]["publication_budget_seconds"]
             or value["canonical_schema_sha256"] != CANONICAL_SCHEMA_SHA256
-            or value["wire_schema_sha256"] != WIRE_SCHEMA_SHA256
+            or value["wire_schema_sha256"] != expected_wire
             or value["case_id"] != probe.CASE_ID or value["family_id"] != "E01_overview"
             or value["language"] != "en" or value["exposure"] != "exposed_regression"
             or value["question_reference"] != {"asset": "evals/p3/development-cases-v1.json",
@@ -203,6 +212,8 @@ def build_packet(database: Path, *, accepted_commit: str,
 
 def validate_packet(path: Path, database: Path, *, accepted_commit: str) -> tuple[dict, str]:
     packet = _packet_contract(assets.read_asset(path))
+    if packet["version"] != PACKET_VERSION:
+        raise probe.ProbeError("manifest_drift")
     if packet["accepted_commit"] != accepted_commit:
         raise probe.ProbeError("accepted_commit_required")
     current, question = build_packet(database, accepted_commit=accepted_commit,
@@ -233,7 +244,9 @@ def _authorization(value: object, packet_sha: str) -> dict:
 
 
 def bind_authorization(packet_path: Path, reference: str, output_path: Path) -> dict:
-    _packet_contract(assets.read_asset(packet_path))
+    packet = _packet_contract(assets.read_asset(packet_path))
+    if packet["version"] != PACKET_VERSION:
+        raise probe.ProbeError("manifest_drift")
     sha = p3_eval._pin(packet_path)["sha256"]
     value = _authorization({"version": AUTHORIZATION_VERSION, "packet_sha256": sha,
                             "owner_authorization_reference": reference}, sha)

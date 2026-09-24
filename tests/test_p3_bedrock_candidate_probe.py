@@ -88,7 +88,7 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
                          ["ap-northeast-1", "ap-northeast-3"])
         self.assertEqual(self.packet["candidate"]["response_mode"], "bedrock_converse_normalized")
         self.assertEqual(self.packet["wire_schema_sha256"],
-                         "d971f587cade56ed0096e102d5fdd12733f2fa52c038738a1da9e0f6517db21f")
+                         "93ab99c9162a43412d0588b3ded70cc41a25827582b4d11b8072e3348d201f68")
         self.assertNotEqual(self.packet["canonical_schema_sha256"], self.packet["wire_schema_sha256"])
         self.assertEqual(self.packet["case_id"], "E01_overview.en")
         self.assertIn("tools/p3_bedrock_candidate_probe.py", self.packet["source_identity"]["files_sha256"])
@@ -103,13 +103,27 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
             "location": "sibling_private_directory"})
         self.env_loader.assert_not_called()
 
-    def test_historical_v1_packet_contract_remains_readable(self):
-        historical = deepcopy(self.packet)
-        historical["version"] = runner.LEGACY_PACKET_VERSION
-        historical.pop("diagnostic_capture")
-        historical["command_template"] = runner.command_template(
-            COMMIT, capture_http_400_body=False)
-        self.assertEqual(runner._packet_contract(historical), historical)
+    def test_historical_packets_remain_readable_but_cannot_be_reauthorized(self):
+        for version in (runner.LEGACY_PACKET_VERSION, runner.PRIVATE_PACKET_VERSION):
+            with self.subTest(version=version):
+                historical = deepcopy(self.packet)
+                historical["version"] = version
+                historical["wire_schema_sha256"] = runner.LEGACY_WIRE_SCHEMA_SHA256
+                effective = runner.effective_runtime_identity(
+                    historical["baseline_semantic_identity"], historical=True)
+                historical["effective_runtime_identity"] = effective
+                historical["effective_runtime_identity_sha256"] = assets.digest(effective)
+                if version == runner.LEGACY_PACKET_VERSION:
+                    historical.pop("diagnostic_capture")
+                historical["command_template"] = runner.command_template(
+                    COMMIT, capture_http_400_body=version != runner.LEGACY_PACKET_VERSION)
+                self.assertEqual(runner._packet_contract(historical), historical)
+                path = self.root / f"historical-{version}.json"
+                path.write_text(json.dumps(historical))
+                with self.assertRaises(runner.probe.ProbeError):
+                    runner.bind_authorization(path, OWNER, self.root / f"old-auth-{version}.json")
+                with self.assertRaises(runner.probe.ProbeError):
+                    runner.validate_packet(path, self.db, accepted_commit=COMMIT)
 
     def test_private_body_name_is_ignored_even_outside_artifact_tree(self):
         path = runner.ROOT / "build-private" / "http-400-body.json"

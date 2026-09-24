@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 import hashlib
 import json
 import logging
+import math
 from pathlib import Path
 import re
 from typing import ClassVar
@@ -139,6 +140,15 @@ def _schema_node(node: object) -> dict[str, object]:
     if ("oneOf" in node and "anyOf" in node
             or "additionalProperties" in node and node["additionalProperties"] is not False):
         raise ModelError("invalid_input")
+    if "const" in node:
+        value = node["const"]
+        if isinstance(value, list) and set(node) == {"const"} and len(value) == 1 \
+                and (value[0] is None or type(value[0]) in (str, int, float, bool)) \
+                and (type(value[0]) is not float or math.isfinite(value[0])):
+            return {"type": "array", "minItems": 1, "items": {"const": value[0]}}
+        if (value is not None and type(value) not in (str, int, float, bool)
+                or type(value) is float and not math.isfinite(value)):
+            raise ModelError("invalid_input")
     result: dict[str, object] = {}
     for key, value in node.items():
         if key in _STRIP_KEYS:
