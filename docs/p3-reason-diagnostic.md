@@ -64,14 +64,30 @@ report reader must not need it.
 
 ## Admission and stop rules
 
-Before credential access the tool verifies: clean accepted `dev` at the exact
-commit, the pinned assets and DB, the eight question pins against the archived
-#70 report, the observed runner's runtime and schema identities, the Bedrock
-provider/Region/profile/transport, the attested gateway policy and exclusive
-creation of both output directories. Any drift stops before any send. Two
-consecutive network failures or timeouts stop the run. A stopped or interrupted
-run is preserved; it is not rerun to obtain a cleaner result. Each input is one
-attempt; there is no retry, fallback, resend or second run.
+The owner grant is an Issue #74 comment URL. The output directory is not
+chosen by the caller: it must equal
+`.artifacts/p374-reason-diagnostic-<first 12 hex of SHA-256(grant URL)>`,
+and its exclusive creation consumes the grant. The same grant can therefore
+never start a second run at another path, whether the first run completed,
+stopped or was interrupted; a new run needs a new owner grant. This is checked
+before any other step and before credential access.
+
+Before credential access the tool also verifies: clean accepted `dev` at the
+exact commit, the pinned assets and DB, the eight question pins against the
+archived #70 report, the observed runner's runtime and schema identities, the
+Bedrock provider/Region/profile/transport, the attested gateway policy and
+exclusive creation of both output directories. Any drift stops before any send.
+Two consecutive network failures or timeouts stop the run. A stopped or
+interrupted run is preserved; it is not rerun to obtain a cleaner result. Each
+input is one attempt; there is no retry, fallback, resend or second run.
+
+The archived public report is authoritative on its own. `read_report` checks
+the manifest's exact field set, the pinned baseline/effective/canonical/wire
+identities, DB, asset and archived-report digests, settings, stop policy,
+gateway policy, grant-derived slot and command template; every completed row
+must carry safe evidence whose `error_code` and `invalid_request_reason` equal
+the row's, the fingerprint must stay inside its closed vocabulary, and any
+`completion_text` or raw body in a public file is rejected as leakage.
 
 ## What this is not
 

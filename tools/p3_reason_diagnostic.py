@@ -81,6 +81,16 @@ _ROW_METADATA = ("case_id", "family_id", "language", "expected_branch", "cohort"
                  "oracle_id", "question_sha256")
 _PRIVATE_NAME = re.compile(r"[0-9]{2}-[A-Za-z0-9_.-]{1,80}\.json")
 _STATUSES = ("pending", "in_progress", "completed", "not_run")
+SLOT_ROOT = ROOT / ".artifacts"
+SLOT_PREFIX = "p374-reason-diagnostic-"
+_MANIFEST_FIELDS = {
+    "version", "purpose", "evidence_class", "promotion_eligible", "accepted_commit",
+    "owner_authorization_reference", "run_slot", "private_directory", "candidate", "source_identity",
+    "baseline_semantic_identity_sha256", "effective_runtime_identity_sha256", "canonical_schema_sha256",
+    "wire_schema_sha256", "database_sha256", "assets", "source_report", "panel_id", "case_ids",
+    "question_sha256", "grader_version", "settings", "settings_sha256", "stop_policy", "stop_policy_sha256",
+    "gateway_policy", "transport_security", "data_boundary", "upstream_inference_attempts", "command_template",
+}
 _ROW_FIELDS = ("order", "case_id", "family_id", "language", "expected_branch", "cohort", "exposure",
                "oracle_id", "question_sha256", "status", "runtime_invoked", "client_http_attempts",
                "outcome", "actual_action", "checked_wrong", "operational_error", "error_code",
@@ -114,6 +124,18 @@ def command_template(commit: str) -> list[str]:
             "--env-file", "<EXPLICIT_LOCAL_ENV_FILE>", "--gateway-retries", "disabled",
             "--gateway-fallback", "disabled", "--gateway-cache", "disabled",
             "--output-dir", "<FRESH_DIAGNOSTIC_OUTPUT>"]
+
+
+def _owner_reference(value: object) -> str:
+    if not isinstance(value, str) or OWNER.fullmatch(value) is None:
+        raise assets.P3Error("invalid_manifest")
+    return value
+
+
+def run_slot_for(owner_reference: str) -> Path:
+    """One grant, one slot: the output directory is derived from the grant, never chosen."""
+    digest = hashlib.sha256(_owner_reference(owner_reference).encode()).hexdigest()
+    return SLOT_ROOT / f"{SLOT_PREFIX}{digest[:12]}"
 
 
 def _hash(value: object) -> str:
@@ -408,7 +430,10 @@ async def run_live(database: Path, output_dir: Path, *, accepted_commit: str, ow
     started = clock()
     if not isinstance(accepted_commit, str) or re.fullmatch(r"[0-9a-f]{40}", accepted_commit) is None:
         raise assets.P3Error("invalid_manifest")
-    if not isinstance(owner_reference, str) or OWNER.fullmatch(owner_reference) is None:
+    _owner_reference(owner_reference)
+    # The grant fixes the slot before anything else; exclusive creation below
+    # consumes it, so the same grant can never start a second run.
+    if not isinstance(output_dir, Path) or output_dir.absolute() != run_slot_for(owner_reference).absolute():
         raise assets.P3Error("invalid_manifest")
     attestation = smoke.policy_attestation(gateway_policies, required=True)
     if attestation != smoke.policy_attestation(POLICIES, required=True) or not isinstance(env_file, Path):
@@ -513,6 +538,54 @@ async def run_live(database: Path, output_dir: Path, *, accepted_commit: str, ow
     return report
 
 
+def _manifest_contract(manifest: object, directory: Path) -> dict:
+    """Exact archived manifest: pinned identities, assets, grant-derived slot; no current source access."""
+    value = assets.object_fields(manifest, _MANIFEST_FIELDS, "invalid_manifest")
+    source = value["source_identity"]
+    if (not isinstance(source, dict) or not isinstance(source.get("files_sha256"), dict)
+            or not isinstance(value["accepted_commit"], str)
+            or re.fullmatch(r"[0-9a-f]{40}", value["accepted_commit"]) is None
+            or source.get("git_commit") != value["accepted_commit"] or source.get("branch") != "dev"
+            or source.get("worktree_dirty") is not False):
+        raise assets.P3Error("invalid_manifest")
+    for name, digest in source["files_sha256"].items():
+        assets.text(name)
+        _hash(digest)
+    reference = _owner_reference(value["owner_authorization_reference"])
+    pins = {"baseline_semantic_identity_sha256": bedrock_probe.semantic.SEMANTICS_SHA256,
+            "effective_runtime_identity_sha256": bedrock_probe.EFFECTIVE_RUNTIME_SHA256,
+            "canonical_schema_sha256": bedrock_probe.CANONICAL_SCHEMA_SHA256,
+            "wire_schema_sha256": bedrock_probe.WIRE_SCHEMA_SHA256, "database_sha256": observed.DB_SHA256}
+    if (value["version"] != VERSION or value["purpose"] != PURPOSE or value["evidence_class"] != EVIDENCE_CLASS
+            or value["promotion_eligible"] is not False
+            or value["run_slot"] != observed._run_slot(directory)
+            or value["run_slot"] != observed._run_slot(run_slot_for(reference))
+            or value["private_directory"] != observed._run_slot(_private_dir(directory))
+            or not live._same(value["candidate"], bedrock_probe.candidate_identity())
+            or any(value[name] != digest for name, digest in pins.items())
+            or not isinstance(value["panel_id"], str) or not value["panel_id"]
+            or value["case_ids"] != list(CASE_IDS) or value["question_sha256"] != QUESTION_SHA256
+            or value["grader_version"] != p3_grading.VERSION
+            or value["settings"] != settings() or value["settings_sha256"] != assets.digest(settings())
+            or value["stop_policy"] != stop_policy()
+            or value["stop_policy_sha256"] != assets.digest(stop_policy())
+            or value["gateway_policy"] != smoke.policy_attestation(POLICIES, required=True)
+            or value["transport_security"] != TRANSPORT
+            or value["data_boundary"] != "eight_observed_synthetic_questions_japan_only_regression_data"
+            or value["upstream_inference_attempts"] is not None
+            or value["command_template"] != command_template(value["accepted_commit"])):
+        raise assets.P3Error("invalid_manifest")
+    archive = assets.object_fields(value["source_report"], {"reference", "sha256"}, "invalid_manifest")
+    if archive["reference"] != SOURCE_REPORT or archive["sha256"] != SOURCE_REPORT_SHA256:
+        raise assets.P3Error("invalid_manifest")
+    pinned = assets.object_fields(value["assets"], set(observed.PINS), "invalid_manifest")
+    for name, digest in observed.PINS.items():
+        pin = assets.object_fields(pinned[name], {"reference", "sha256"}, "invalid_manifest")
+        if pin["sha256"] != digest or not isinstance(pin["reference"], str):
+            raise assets.P3Error("invalid_manifest")
+    return value
+
+
 def read_report(path: Path) -> dict:
     """Closed archived validation; needs no source checkout, DB, credentials, network or private sidecar."""
     if path.name != "report.json":
@@ -522,16 +595,7 @@ def read_report(path: Path) -> dict:
     for value in (manifest, report):
         if "completion_text" in model.canonical_json(value) or "raw_body_utf8" in model.canonical_json(value):
             raise assets.P3Error("leakage_risk")
-    if (manifest.get("version") != VERSION or manifest.get("evidence_class") != EVIDENCE_CLASS
-            or manifest.get("promotion_eligible") is not False or manifest.get("case_ids") != list(CASE_IDS)
-            or manifest.get("question_sha256") != QUESTION_SHA256 or manifest.get("settings") != settings()
-            or manifest.get("stop_policy") != stop_policy()
-            or manifest.get("gateway_policy") != smoke.policy_attestation(POLICIES, required=True)
-            or not isinstance(manifest.get("owner_authorization_reference"), str)
-            or OWNER.fullmatch(manifest["owner_authorization_reference"]) is None
-            or manifest.get("run_slot") != observed._run_slot(path.parent)
-            or manifest.get("private_directory") != observed._run_slot(_private_dir(path.parent))):
-        raise assets.P3Error("invalid_manifest")
+    _manifest_contract(manifest, path.parent)
     expected = {"version", "purpose", "evidence_class", "promotion_eligible", "status", "origin", "stop_reason",
                 "error_code", "manifest_sha256", "accepted_commit", "owner_authorization_reference",
                 "requested_profile", "returned_model", "transport_security", "runtime_invocations",
@@ -592,7 +656,8 @@ def read_report(path: Path) -> dict:
             captures += 1
         if row["status"] == "completed":
             completed += 1
-            if not row["runtime_invoked"] or row["outcome"] is None:
+            if (not row["runtime_invoked"] or row["outcome"] is None or not isinstance(row["evidence"], dict)
+                    or row["evidence"].get("error_code") != row["error_code"]):
                 raise assets.P3Error("invalid_asset")
         elif row["status"] in ("pending", "not_run") and row["evidence"] is not None:
             raise assets.P3Error("invalid_asset")
