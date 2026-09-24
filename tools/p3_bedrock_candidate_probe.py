@@ -6,6 +6,7 @@ import math
 import os
 from pathlib import Path
 import re
+import stat
 import sys
 import time
 
@@ -14,13 +15,15 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from grepbit import model, recipe_model
-from grepbit.bedrock import BEDROCK_CALL_TIMEOUT_SECONDS, BedrockClient, BedrockConfig, converse_schema
+from grepbit.bedrock import (BEDROCK_CALL_TIMEOUT_SECONDS, BEDROCK_ERROR_BODY_BYTES,
+                            BedrockClient, BedrockConfig, converse_schema)
 from grepbit.provider import client_from_env
 from tools import p3_assets as assets, p3_candidate_model as semantic
 from tools import p3_candidate_probe as old_candidate, p3_eval, p3_live_evidence as live
 from tools import p3_probe as probe, recipe_smoke, smoke
 
-PACKET_VERSION = "p3-bedrock-candidate-packet-v1"
+LEGACY_PACKET_VERSION = "p3-bedrock-candidate-packet-v1"
+PACKET_VERSION = "p3-bedrock-candidate-packet-v2"
 AUTHORIZATION_VERSION = "p3-bedrock-candidate-authorization-v1"
 MANIFEST_VERSION = "p3-bedrock-candidate-manifest-v1"
 REPORT_VERSION = "p3-bedrock-candidate-report-v1"
@@ -46,6 +49,8 @@ _FIELDS = {"version", "state", "purpose", "candidate", "accepted_commit",
            "family_id", "language", "exposure", "question_reference", "question_sha256",
            "runtime_entry", "settings", "settings_sha256", "gateway_policy",
            "transport_security", "upstream_inference_attempts", "data_boundary", "command_template"}
+DIAGNOSTIC_CAPTURE = {"http_400_body": "exclusive_private_sidecar", "max_bytes": BEDROCK_ERROR_BODY_BYTES,
+                      "location": "sibling_private_directory"}
 _SAFE = (probe.ProbeError, *probe._SAFE_ERRORS)
 
 
@@ -81,8 +86,9 @@ def effective_runtime_identity(baseline: dict) -> dict:
             "publication_budget_seconds": PUBLICATION_SECONDS}
 
 
-def command_template(commit: str) -> list[str]:
+def command_template(commit: str, *, capture_http_400_body: bool = True) -> list[str]:
     return [".venv/bin/python", "tools/p3_bedrock_candidate_probe.py", "--live",
+            *(["--capture-http-400-body"] if capture_http_400_body else []),
             "--packet", "<EXACT_PACKET>", "--authorization", "<EXACT_AUTHORIZATION>",
             "--db", "<EXACT_DB>", "--accepted-commit", commit,
             "--env-file", "<EXPLICIT_LOCAL_ENV_FILE>", "--gateway-retries", "disabled",
@@ -100,7 +106,13 @@ def _schemas() -> tuple[str, str]:
 
 
 def _packet_contract(packet: object) -> dict:
-    value = assets.object_fields(packet, _FIELDS)
+    if not isinstance(packet, dict):
+        raise probe.ProbeError("invalid_manifest")
+    version = packet.get("version")
+    if version not in (PACKET_VERSION, LEGACY_PACKET_VERSION):
+        raise probe.ProbeError("invalid_manifest")
+    capture = version == PACKET_VERSION
+    value = assets.object_fields(packet, _FIELDS | ({"diagnostic_capture"} if capture else set()))
     old_candidate._hash(value["accepted_commit"], 40)
     for key in ("baseline_semantic_identity_sha256", "effective_runtime_identity_sha256",
                 "canonical_schema_sha256", "wire_schema_sha256",
@@ -114,7 +126,8 @@ def _packet_contract(packet: object) -> dict:
     for name, sha in source["files_sha256"].items():
         assets.text(name, 1024)
         old_candidate._hash(sha)
-    if (value["version"] != PACKET_VERSION or value["state"] != "prepared_not_authorized"
+    if (value["state"] != "prepared_not_authorized"
+            or capture and not old_candidate._same(value["diagnostic_capture"], DIAGNOSTIC_CAPTURE)
             or value["purpose"] != "one_jp_bedrock_compatibility_attempt_not_quality"
             or not old_candidate._same(value["candidate"], candidate_identity())
             or value["behavior_ancestry"] != ANCESTRY
@@ -139,7 +152,8 @@ def _packet_contract(packet: object) -> dict:
             or value["gateway_policy"] != smoke.policy_attestation(POLICIES, required=True)
             or value["transport_security"] != TRANSPORT or value["upstream_inference_attempts"] is not None
             or value["data_boundary"] != "one_exposed_synthetic_question_japan_only_no_gold_no_quality"
-            or value["command_template"] != command_template(value["accepted_commit"])):
+            or value["command_template"] != command_template(
+                value["accepted_commit"], capture_http_400_body=capture)):
         raise probe.ProbeError("invalid_manifest")
     return value
 
@@ -180,6 +194,7 @@ def build_packet(database: Path, *, accepted_commit: str,
         "gateway_policy": smoke.policy_attestation(gateway_policies, required=True),
         "transport_security": transport_security, "upstream_inference_attempts": None,
         "data_boundary": "one_exposed_synthetic_question_japan_only_no_gold_no_quality",
+        "diagnostic_capture": DIAGNOSTIC_CAPTURE,
         "command_template": command_template(accepted_commit),
     }
     _packet_contract(packet)
@@ -228,9 +243,11 @@ def bind_authorization(packet_path: Path, reference: str, output_path: Path) -> 
 
 
 class _BedrockProbe(probe._LegacyProbe):
-    def __init__(self, packet_path, authorization_path, accepted_commit, policies):
+    def __init__(self, packet_path, authorization_path, accepted_commit, policies,
+                 *, capture_http_400_body=False, output_dir=None):
         super().__init__(packet_path, accepted_commit)
         self.authorization_path, self.policies = authorization_path, policies
+        self.capture_http_400_body, self.output_dir = capture_http_400_body, output_dir
         self.snapshots: dict[Path, str] = {}
 
     def budgets(self):
@@ -262,7 +279,10 @@ class _BedrockProbe(probe._LegacyProbe):
         _authorization(assets.read_asset(self.authorization_path), p3_eval._pin(self.path)["sha256"])
         if self.policies != POLICIES:
             raise probe.ProbeError("invalid_configuration")
-        return validate_packet(self.path, database, accepted_commit=self.accepted_commit)
+        packet, question = validate_packet(self.path, database, accepted_commit=self.accepted_commit)
+        if self.capture_http_400_body is not True or not isinstance(self.output_dir, Path):
+            raise probe.ProbeError("invalid_configuration")
+        return packet, question
 
     def identity(self, packet):
         return {"candidate": packet["candidate"], "database_sha256": packet["database_sha256"],
@@ -300,7 +320,41 @@ class _BedrockProbe(probe._LegacyProbe):
         if not isinstance(env_file, Path):
             raise probe.ProbeError("invalid_configuration")
         smoke._no_symlinks(env_file)
-        return client_from_env(env_file=env_file)
+        private_dir = self.output_dir.with_name(self.output_dir.name + "-private")
+        smoke._no_symlinks(private_dir)
+        try:
+            private_dir.mkdir(mode=0o700)
+            info = private_dir.stat()
+            if (not stat.S_ISDIR(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o700
+                    or info.st_uid != os.getuid()):
+                raise probe.ProbeError("artifact_io")
+        except FileExistsError:
+            raise probe.ProbeError("artifact_conflict") from None
+        except OSError:
+            raise probe.ProbeError("artifact_io") from None
+        private_path = private_dir / "http-400-body.json"
+
+        def capture(raw: bytes) -> None:
+            if len(raw) > DIAGNOSTIC_CAPTURE["max_bytes"]:
+                return
+            smoke._no_symlinks(private_path)
+            flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+            directory_fd = os.open(private_dir, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+                                   | getattr(os, "O_NOFOLLOW", 0))
+            try:
+                info = os.fstat(directory_fd)
+                if (not stat.S_ISDIR(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o700
+                        or info.st_uid != os.getuid()):
+                    raise OSError("private diagnostic directory changed")
+                fd = os.open(private_path.name, flags, 0o600, dir_fd=directory_fd)
+                with os.fdopen(fd, "wb") as stream:
+                    stream.write(raw)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+            finally:
+                os.close(directory_fd)
+
+        return client_from_env(env_file=env_file, bedrock_error_body_sink=capture)
 
     def check_client(self, client, policies):
         if (type(client) is not BedrockClient or type(client.config) is not BedrockConfig
@@ -328,10 +382,12 @@ class _BedrockProbe(probe._LegacyProbe):
 async def run_probe(database: Path, output_dir: Path, *, packet_path: Path,
                     authorization_path: Path, accepted_commit: str, gateway_policies: dict,
                     env_file: Path | None = None, origin: str = "mock", client=None,
-                    clock=time.monotonic) -> dict:
+                    clock=time.monotonic, capture_http_400_body: bool = True) -> dict:
     return await probe._run_probe(database, output_dir,
                                   contract=_BedrockProbe(packet_path, authorization_path,
-                                                         accepted_commit, gateway_policies),
+                                                         accepted_commit, gateway_policies,
+                                                         capture_http_400_body=capture_http_400_body,
+                                                         output_dir=output_dir),
                                   origin=origin, client=client, gateway_policies=gateway_policies,
                                   env_file=env_file, clock=clock)
 
@@ -440,6 +496,7 @@ def main(argv=None) -> int:
     actions = parser.add_mutually_exclusive_group(required=True)
     for name in ("prepare", "bind-authorization", "live", "report"):
         actions.add_argument("--" + name, action="store_true")
+    parser.add_argument("--capture-http-400-body", action="store_true")
     for name in ("db", "accepted-commit", "output-dir", "packet", "authorization", "env-file",
                  "owner-authorization-reference", "output", "report-path", "transport-security"):
         parser.add_argument("--" + name)
@@ -451,7 +508,7 @@ def main(argv=None) -> int:
         required = ({"prepare", "transport_security"} | common if args.prepare else
                     {"bind_authorization", "packet", "owner_authorization_reference", "output"}
                     if args.bind_authorization else
-                    {"live", "packet", "authorization", "env_file"} | common if args.live else
+                    {"live", "capture_http_400_body", "packet", "authorization", "env_file"} | common if args.live else
                     {"report", "report_path"})
         if {key for key, value in vars(args).items() if value is not None and value is not False} != required:
             raise probe.ProbeError("invalid_arguments")
@@ -464,7 +521,8 @@ def main(argv=None) -> int:
         elif args.live:
             asyncio.run(run_probe(Path(args.db), Path(args.output_dir), packet_path=Path(args.packet),
                                   authorization_path=Path(args.authorization), accepted_commit=args.accepted_commit,
-                                  env_file=Path(args.env_file), gateway_policies=policies, origin="live"))
+                                  env_file=Path(args.env_file), gateway_policies=policies, origin="live",
+                                  capture_http_400_body=args.capture_http_400_body))
             result = read_report(Path(args.output_dir) / "report.json")
         else:
             result = read_report(Path(args.report_path))

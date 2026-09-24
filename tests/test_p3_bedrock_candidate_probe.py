@@ -5,6 +5,8 @@ from copy import deepcopy
 import io
 import json
 from pathlib import Path
+import stat
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -95,6 +97,55 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.packet["effective_runtime_identity"]["limits"]["timeout"], 300)
         self.assertEqual(self.packet["effective_runtime_identity_sha256"],
                          assets.digest(self.packet["effective_runtime_identity"]))
+        self.assertEqual(self.packet["diagnostic_capture"], {
+            "http_400_body": "exclusive_private_sidecar", "max_bytes": 32768,
+            "location": "sibling_private_directory"})
+        self.env_loader.assert_not_called()
+
+    def test_historical_v1_packet_contract_remains_readable(self):
+        historical = deepcopy(self.packet)
+        historical["version"] = runner.LEGACY_PACKET_VERSION
+        historical.pop("diagnostic_capture")
+        historical["command_template"] = runner.command_template(
+            COMMIT, capture_http_400_body=False)
+        self.assertEqual(runner._packet_contract(historical), historical)
+
+    def test_private_body_name_is_ignored_even_outside_artifact_tree(self):
+        path = runner.ROOT / "build-private" / "http-400-body.json"
+        result = subprocess.run(["git", "check-ignore", "--no-index", "--quiet", str(path)],
+                                cwd=runner.ROOT, check=False, capture_output=True)
+        self.assertEqual(result.returncode, 0)
+
+    async def test_live_400_body_is_private_and_absent_from_report(self):
+        raw = b'{"message":"Invalid structured output PRIVATE_AWS_CANARY"}'
+        def fake_client(**kwargs):
+            return BedrockClient(BedrockConfig(runner.REGION, runner.PROFILE, KEY),
+                                 transport=httpx.MockTransport(lambda _: httpx.Response(
+                                     400, headers={"content-type": "application/json"}, content=raw)),
+                                 error_body_sink=kwargs["bedrock_error_body_sink"])
+        self.env_loader.side_effect = fake_client
+        output, report = await self.run_case(origin="live", client=None,
+                                             env_file=self.root / "synthetic.env")
+        private = output.with_name(output.name + "-private") / "http-400-body.json"
+        self.assertEqual(private.read_bytes(), raw)
+        self.assertEqual(stat.S_IMODE(private.parent.stat().st_mode), 0o700)
+        self.assertEqual(stat.S_IMODE(private.stat().st_mode), 0o600)
+        self.assertEqual(report["client_http_attempts"], 1)
+        self.assertEqual((report["error_code"], report["http_status"]),
+                         ("http_configuration", 400))
+        self.assertNotIn("PRIVATE_AWS_CANARY", (output / "report.json").read_text())
+        self.assertEqual(runner.read_report(output / "report.json")["status"], "stopped")
+
+    async def test_private_capture_path_conflict_stops_before_env_or_send(self):
+        output = self.output()
+        output.with_name(output.name + "-private").mkdir(mode=0o700)
+        report = await runner.run_probe(self.db, output, packet_path=self.packet_path,
+                                        authorization_path=self.auth_path, accepted_commit=COMMIT,
+                                        gateway_policies=dict(runner.POLICIES), origin="live",
+                                        env_file=self.root / "synthetic.env", clock=lambda: 0.0)
+        self.assertEqual(report["client_http_attempts"], 0)
+        self.assertEqual(report["runtime_invocations"], 0)
+        self.assertEqual(report["reservation"], "not_reserved")
         self.env_loader.assert_not_called()
 
     async def test_one_compatibility_success_keeps_model_identity_unobserved(self):
