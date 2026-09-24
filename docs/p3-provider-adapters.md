@@ -87,8 +87,12 @@ availability, data boundary, spending bounds, and candidate identity require a
 separate admission/compatibility packet and explicit owner live authorization.
 The old P3.9/10/11 runners and evidence cannot be repurposed for Bedrock merely
 by changing environment variables. Bedrock first-time schema compilation may
-exceed the current 60-second call bound; a timeout is a failed attempt, not
+exceed those runners' 60-second call bound; a timeout is a failed attempt, not
 permission to retry or raise the budget silently.
+The [shared observed regression contract](p3-shared-observed-regression.md)
+reuses the 28-input loop and scorer behind a separately pinned JP Bedrock
+admission wrapper. It preserves the historical 12B packet/reader and requires
+a new owner-scoped live packet after review and merge.
 
 ## Checkpoint evidence
 
