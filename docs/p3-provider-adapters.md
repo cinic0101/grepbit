@@ -61,6 +61,10 @@ closed exception: a sole-key singleton array `const` becomes an array with
 `minItems: 1` and a primitive item `const`. Other complex constants fail before
 send. Its new wire hash and effective runtime identity belong only to new v3
 candidate packets; v1/v2 evidence retains the original hash and interpretation.
+The subsequent [grammar-budget repair](p3-bedrock-grammar-budget.md) compacts
+only the exact pinned recipe schema for Bedrock after a v3 grammar-size HTTP 400.
+It keeps native typed validation authoritative and versions the wire/runtime
+identity again; other named schemas continue through the generic translator.
 The original schema tree is checked for private credentials and endpoint text
 before wire serialization, because JSON escaping can hide a literal secret from
 checks on the serialized schema string.

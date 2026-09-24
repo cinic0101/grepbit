@@ -47,11 +47,12 @@ class BedrockComplexConstContract(unittest.TestCase):
 
     def test_new_packet_identity_keeps_old_wire_hash_as_ancestry_only(self):
         self.assertEqual(candidate.LEGACY_PACKET_VERSION, "p3-bedrock-candidate-packet-v1")
-        self.assertEqual(candidate.PACKET_VERSION, "p3-bedrock-candidate-packet-v3")
-        self.assertNotEqual(candidate.WIRE_SCHEMA_SHA256, OLD_WIRE_SHA256)
-        effective = candidate.effective_runtime_identity(candidate.semantic.semantic_identity())
-        self.assertEqual(effective["wire_schema_sha256"], candidate.WIRE_SCHEMA_SHA256)
-        self.assertEqual(candidate.assets.digest(effective), candidate.EFFECTIVE_RUNTIME_SHA256)
+        self.assertEqual(candidate.COMPLEX_CONST_PACKET_VERSION, "p3-bedrock-candidate-packet-v3")
+        self.assertNotEqual(candidate.PREVIOUS_WIRE_SCHEMA_SHA256, OLD_WIRE_SHA256)
+        effective = candidate.effective_runtime_identity(
+            candidate.semantic.semantic_identity(), packet_version=candidate.COMPLEX_CONST_PACKET_VERSION)
+        self.assertEqual(effective["wire_schema_sha256"], candidate.PREVIOUS_WIRE_SCHEMA_SHA256)
+        self.assertEqual(candidate.assets.digest(effective), candidate.PREVIOUS_EFFECTIVE_RUNTIME_SHA256)
 
 
 if __name__ == "__main__":

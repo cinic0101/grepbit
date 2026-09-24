@@ -24,6 +24,8 @@ from .gateway import (
 ENV_NAMES = ("GREPBIT_BEDROCK_REGION", "GREPBIT_BEDROCK_MODEL_ID",
              "GREPBIT_BEDROCK_API_KEY")
 BEDROCK_CALL_TIMEOUT_SECONDS = 300.0
+RECIPE_SCHEMA_NAME = "grepbit_recipe_request"
+RECIPE_SCHEMA_SHA256 = "a2b842fedc36b77c27d05df8858d6938f67545d9d46e0219a98b8a77ad653f00"
 _SCHEMA_KEYS = {"type", "properties", "required", "additionalProperties", "description",
                 "const", "enum", "items", "anyOf", "allOf", "oneOf"}
 _STRIP_KEYS = {"minLength", "maxLength", "pattern", "minItems", "maxItems",
@@ -168,10 +170,65 @@ def _schema_node(node: object) -> dict[str, object]:
     return result
 
 
+def _without_descriptions(node: object) -> object:
+    if isinstance(node, dict):
+        return {key: _without_descriptions(value) for key, value in node.items()
+                if key != "description"}
+    if isinstance(node, list):
+        return [_without_descriptions(value) for value in node]
+    return node
+
+
+def _compact_recipe_schema(schema: dict[str, object]) -> dict[str, object]:
+    """Keep typed request/value shapes, leaving cross-field rules to native validation."""
+    try:
+        branches = schema["anyOf"]
+        if len(branches) != 5:
+            raise ValueError
+        request_shapes = [branch["properties"]["request"] for branch in branches[:3]]
+        clarification = branches[4]["properties"]["clarification"]["anyOf"]
+        if len(clarification) != 4:
+            raise ValueError
+        kinds = [branch["properties"]["kind"]["const"] for branch in clarification]
+        values = [branch["properties"]["choices"]["items"]["properties"]["semantic_value"]
+                  for branch in clarification]
+    except (KeyError, IndexError, TypeError, ValueError):
+        raise ModelError("invalid_input") from None
+    compact = {
+        "type": "object", "additionalProperties": False, "required": ["outcome"],
+        "properties": {
+            "outcome": {"enum": ["request", "clarify", "declined"]},
+            "recipe_id": {"enum": ["overview", "compare", "breakdown"]},
+            "recipe_version": {"const": "0.1"},
+            "request": {"anyOf": request_shapes},
+            "clarification": {
+                "type": "object", "additionalProperties": False,
+                "required": ["kind", "choices"],
+                "properties": {
+                    "kind": {"enum": kinds},
+                    "choices": {"type": "array", "minItems": 1, "items": {
+                        "type": "object", "additionalProperties": False,
+                        "required": ["id", "semantic_value"],
+                        "properties": {"id": {"type": "string"},
+                                       "semantic_value": {"anyOf": values}},
+                    }},
+                },
+            },
+        },
+    }
+    return _without_descriptions(compact)
+
+
 def converse_schema(constraint: object) -> tuple[dict[str, object], str]:
     wrapper = json_schema_response_format(constraint)
     entry = wrapper["json_schema"]
     schema = _schema_node(entry["schema"])
+    if entry["name"] == RECIPE_SCHEMA_NAME:
+        canonical = json.dumps(entry["schema"], sort_keys=True, separators=(",", ":"),
+                               ensure_ascii=False, allow_nan=False)
+        if hashlib.sha256(canonical.encode("utf-8")).hexdigest() != RECIPE_SCHEMA_SHA256:
+            raise ModelError("invalid_input")
+        schema = _compact_recipe_schema(schema)
     canonical = json.dumps(schema, sort_keys=True, separators=(",", ":"),
                            ensure_ascii=False, allow_nan=False)
     return ({"type": "json_schema", "structure": {"jsonSchema": {

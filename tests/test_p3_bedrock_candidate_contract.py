@@ -11,7 +11,7 @@ from tools import p3_bedrock_candidate_probe as candidate, p3_probe as legacy
 ROOT = Path(__file__).resolve().parents[1]
 MODEL = "jp.anthropic.claude-sonnet-4-6"
 REGION = "ap-northeast-1"
-WIRE_HASH = "93ab99c9162a43412d0588b3ded70cc41a25827582b4d11b8072e3348d201f68"
+WIRE_HASH = "ea4e03d02732c0c45f9905ccd9b7c0010bedc87a190666e7b31895867c43e53b"
 
 
 class JPBedrockCandidateContract(unittest.TestCase):

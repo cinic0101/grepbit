@@ -88,7 +88,7 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
                          ["ap-northeast-1", "ap-northeast-3"])
         self.assertEqual(self.packet["candidate"]["response_mode"], "bedrock_converse_normalized")
         self.assertEqual(self.packet["wire_schema_sha256"],
-                         "93ab99c9162a43412d0588b3ded70cc41a25827582b4d11b8072e3348d201f68")
+                         "ea4e03d02732c0c45f9905ccd9b7c0010bedc87a190666e7b31895867c43e53b")
         self.assertNotEqual(self.packet["canonical_schema_sha256"], self.packet["wire_schema_sha256"])
         self.assertEqual(self.packet["case_id"], "E01_overview.en")
         self.assertIn("tools/p3_bedrock_candidate_probe.py", self.packet["source_identity"]["files_sha256"])
@@ -104,13 +104,16 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
         self.env_loader.assert_not_called()
 
     def test_historical_packets_remain_readable_but_cannot_be_reauthorized(self):
-        for version in (runner.LEGACY_PACKET_VERSION, runner.PRIVATE_PACKET_VERSION):
+        for version in (runner.LEGACY_PACKET_VERSION, runner.PRIVATE_PACKET_VERSION,
+                        runner.COMPLEX_CONST_PACKET_VERSION):
             with self.subTest(version=version):
                 historical = deepcopy(self.packet)
                 historical["version"] = version
-                historical["wire_schema_sha256"] = runner.LEGACY_WIRE_SCHEMA_SHA256
+                historical["wire_schema_sha256"] = (runner.PREVIOUS_WIRE_SCHEMA_SHA256
+                                                     if version == runner.COMPLEX_CONST_PACKET_VERSION
+                                                     else runner.LEGACY_WIRE_SCHEMA_SHA256)
                 effective = runner.effective_runtime_identity(
-                    historical["baseline_semantic_identity"], historical=True)
+                    historical["baseline_semantic_identity"], packet_version=version)
                 historical["effective_runtime_identity"] = effective
                 historical["effective_runtime_identity_sha256"] = assets.digest(effective)
                 if version == runner.LEGACY_PACKET_VERSION:
