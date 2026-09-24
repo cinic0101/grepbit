@@ -22,7 +22,8 @@ subagent names and tool-specific orchestration in personal/tool configuration.
   add scheduled/live GitHub Actions or a remote-control bridge.
 - For a live run, prepare the exact command, code/source identity, case IDs,
   provider, allowed data, attempt/token/time bounds, output location and stop
-  conditions. The owner authorizes that run separately. See `docs/local-execution.md`.
+  conditions. The owner authorizes that run separately unless an owner-posted
+  standing grant covers it (see Goal-scoped delegation). See `docs/local-execution.md`.
 - Never print or commit keys, connection strings, local endpoint addresses,
   environment dumps, real customer data or unreviewed live traces.
 
@@ -57,24 +58,34 @@ subagent names and tool-specific orchestration in personal/tool configuration.
 
 - The owner may delegate one goal through a goal issue that states the goal,
   the allowed step sequence, providers, call/token/time budgets, data boundary,
-  stop conditions and one standing grant comment. Inside that scope the agent
-  proceeds without per-step chat approval and reports at milestones and stops.
+  stop conditions and one standing grant comment **posted by the owner**. An
+  agent-drafted goal issue is a proposal until that comment exists. Inside the
+  grant the agent proceeds without per-step chat approval and reports at
+  milestones and stops. The `main` rule above is unchanged.
 - Inside the scope: a contract checkpoint is the contract document plus a
-  ruler that failed before and passes after, in the same PR; code review is an
-  independent fresh-context review of the actual GitHub diff (a separate agent
-  session with no implementation context qualifies), recorded on the PR; the
-  agent may merge into `dev` after that review reports no blocker and the full
-  offline suite passes; a reviewer blocker is fixed and re-reviewed, not debated.
-  Semantic, oracle and case acceptance stay with an independent human or a
-  reviewer the owner names; the implementing agent never decides them.
+  ruler committed failing before the implementation commit and passing after,
+  in the same PR. Code review is the high-risk delta review: an independent
+  fresh-context agent session that receives only the PR reference, objective
+  and review focus, reads the actual GitHub diff, and has no access to the
+  implementing conversation, its memory or its working tree; the PR names its
+  high-risk category and records the review prompt and verdict. The agent may
+  merge into `dev` after that review reports no blocker and the full offline
+  suite passes. A reviewer blocker is fixed and re-reviewed, or escalated to
+  the owner as a stop; it is not debated. Semantic, oracle and case acceptance
+  stay with an independent human or a reviewer the owner names; the
+  implementing agent never decides them.
 - Live runs inside the scope bind to the standing grant comment and to one
-  output slot each; the tools consume slots and budgets mechanically. A run
-  outside the grant's steps or budgets still needs a separate authorization.
-- Mandatory stops, reported immediately with the evidence: a change to a
-  protected/frozen source, an oracle, gold or case text; a changed product
-  promise or accepted product contract; the roadmap's two-candidate-fix rule;
-  budget exhaustion; any credential, route or privacy anomaly; a blocker still
-  open after one fix round; evidence that the goal is unreachable as stated.
+  output slot each, and execute a tool from a merged `dev` commit whose digest
+  the run record keeps; a tool that cannot bind grant and slot is outside the
+  grant. A run outside the grant's steps or budgets needs separate authorization.
+- Mandatory stops, taken before the change is made and reported with the
+  evidence: a needed change to a protected/frozen source, an oracle, gold or
+  case text, to a product promise or accepted product contract, or to
+  `AGENTS.md`, `CLAUDE.md`, `docs/local-execution.md` or other authority text
+  (owner review and owner merge only); the roadmap's two-candidate-fix default
+  on one failure family; budget exhaustion; any credential, route or privacy
+  anomaly; a blocker still open after one fix round; evidence that the goal is
+  unreachable as stated.
 
 ## Architecture boundaries
 
