@@ -326,6 +326,9 @@ class GatewayClient:
         self._validate_private(messages, payload.get("response_format"))
         return await self._post_json(body, timeout_seconds)
 
+    async def _log_bad_request(self, response: httpx.Response) -> None:
+        """Provider-specific diagnostics; the shared transport exposes no raw error."""
+
     async def _post_json(self, body: bytes, timeout_seconds: float) -> GatewayResponse:
         """Shared one-attempt transport; provider clients own wire and response semantics."""
         status = None
@@ -350,6 +353,8 @@ class GatewayClient:
                                      "Accept-Encoding": "identity"},
                         ) as response:
                             status = response.status_code
+                            if status == 400:
+                                await self._log_bad_request(response)
                             if status in (401, 403):
                                 raise ModelError("auth_failed", http_status=status)
                             if 300 <= status < 400:
@@ -385,6 +390,9 @@ class GatewayClient:
                                 raise ModelError("invalid_response", http_status=status)
                             return GatewayResponse(bytes(result), status)
         except (TimeoutError, httpx.TimeoutException):
-            raise ModelError("timeout", http_status=status) from None
+            # Once the provider returned HTTP 400, optional diagnostics must
+            # not turn that known response into a call-timeout result.
+            raise ModelError("http_configuration" if status == 400 else "timeout",
+                             http_status=status) from None
         except (httpx.HTTPError, OSError):
             raise ModelError("transport_error", http_status=status) from None
