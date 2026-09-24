@@ -1,7 +1,9 @@
 # JP Bedrock candidate compatibility checkpoint (#64)
 
-Status: offline contract and implementation on the #64 branch. No AWS request
-is authorized by this document. Baseline: `dev@2b102b57515f3616480b515468154f5454e8c49e`.
+Status: the candidate runner is merged. Two separately authorized one-attempt
+compatibility probes stopped at HTTP 400 before model output. This document
+does not authorize another AWS request. The diagnostic packet change below
+requires its own reviewed source identity and fresh owner-bound live packet.
 
 ## Candidate and evidence meaning
 
@@ -74,11 +76,22 @@ authorize a specific live command and output path
 only after reviewing the final accepted packet. Authentication and route failures
 must use safe codes without printing raw headers, key or private endpoint.
 
-For future Bedrock HTTP 400 failures, the local logger may emit only the status,
-an allowlisted AWS exception type, a UUID-shaped request ID, and a closed hint
+For Bedrock HTTP 400 failures, the local logger emits only the status, an
+allowlisted AWS exception type, a UUID-shaped request ID, and a closed hint
 that the provider message mentions a schema, route, or inference setting. The
-hint is not a root-cause finding. The raw error body and free-form message are
-never logged or archived; this cannot recover diagnostics from earlier runs.
+hint is not a root-cause finding and cannot recover earlier error bodies.
+The version 2 packet explicitly binds a private diagnostic capture mode. Its
+live command requires `--capture-http-400-body`, and the programmatic runner
+requires an explicit `capture_http_400_body=True`; a bounded JSON error body, if
+received, is written exclusively to the sibling `<run>-private/` directory
+(`0700`) as `http-400-body.json` (`0600`). This file is ignored by Git and must
+remain local; do not publish or attach it to the PR, issue, or evidence archive.
+It may repeat sensitive request details. The public report and console logger
+retain closed safe fields. Missing, oversized, or unreadable bodies leave the
+diagnostic file absent and do not change the HTTP 400 classification. Version 1
+packets and their historical reports remain readable without private capture.
+If writing or syncing the private body fails, the runner attempts to remove the
+partial file and retains the HTTP 400 classification.
 
 The report may expose closed stage/status/error codes, requested profile,
 unknown observed model, bounded token/latency data, attempts and pinned hashes.

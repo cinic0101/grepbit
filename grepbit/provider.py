@@ -1,7 +1,7 @@
 """Explicit provider selection for the shared one-call LLM application boundary."""
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Protocol
 
@@ -44,14 +44,17 @@ def normalize_response(config: GatewayConfig | BedrockConfig,
 
 def client_from_env(*, environ: Mapping[str, str] | None = None,
                     env_file: Path | None = None,
-                    transport: httpx.AsyncBaseTransport | None = None) -> LLMClient:
+                    transport: httpx.AsyncBaseTransport | None = None,
+                    bedrock_error_body_sink: Callable[[bytes], None] | None = None) -> LLMClient:
     """No implicit file, network, provider fallback, or ambient AWS discovery."""
     selected = _env_values((PROVIDER_NAME,), environ=environ, env_file=env_file)
     provider = selected.get(PROVIDER_NAME, "litellm")
     if provider == "litellm":
+        if bedrock_error_body_sink is not None:
+            raise ModelError("invalid_configuration")
         return GatewayClient(GatewayConfig.from_env(environ=environ, env_file=env_file),
                              transport=transport)
     if provider == "bedrock_converse":
         return BedrockClient(BedrockConfig.from_env(environ=environ, env_file=env_file),
-                             transport=transport)
+                             transport=transport, error_body_sink=bedrock_error_body_sink)
     raise ModelError("invalid_configuration")

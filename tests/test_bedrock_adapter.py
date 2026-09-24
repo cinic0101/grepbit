@@ -202,6 +202,48 @@ class BedrockAdapterRulers(unittest.IsolatedAsyncioTestCase):
         for secret in (private, KEY, MESSAGES[1]["content"]):
             self.assertNotIn(secret, logged)
 
+    async def test_explicit_private_400_sink_receives_exact_bounded_body_only(self):
+        raw = (b'{"message":"Invalid structured output: private diagnostic canary '
+               + b'x' * 8192 + b'"}')
+        received = []
+        client = self.provider.client_from_env(
+            environ=ENV, transport=httpx.MockTransport(lambda _: httpx.Response(
+                400, headers={"content-type": "application/json"}, content=raw)),
+            bedrock_error_body_sink=received.append)
+        with self.assertLogs("grepbit.bedrock", level="WARNING") as logs:
+            with self.assertRaises(ModelError) as caught:
+                await client.complete(MESSAGES)
+        self.assertEqual((caught.exception.code, caught.exception.http_status),
+                         ("http_configuration", 400))
+        self.assertEqual(received, [raw])
+        self.assertNotIn("private diagnostic canary", "\n".join(logs.output))
+        self.assertEqual(client.http_attempts, 1)
+
+    async def test_private_sink_failure_preserves_http_400_classification(self):
+        def fail_sink(_raw):
+            raise OSError("private diagnostic canary")
+        client = self.provider.client_from_env(
+            environ=ENV, transport=httpx.MockTransport(lambda _: httpx.Response(
+                400, json={"message": "Invalid structured output"})),
+            bedrock_error_body_sink=fail_sink)
+        with self.assertLogs("grepbit.bedrock", level="WARNING") as logs:
+            with self.assertRaises(ModelError) as caught:
+                await client.complete(MESSAGES)
+        self.assertEqual((caught.exception.code, caught.exception.http_status),
+                         ("http_configuration", 400))
+        self.assertNotIn("private diagnostic canary", "\n".join(logs.output))
+
+    async def test_deeply_nested_400_json_preserves_http_classification(self):
+        raw = b"[" * 1500 + b"0" + b"]" * 1500
+        client = self.client(lambda _: httpx.Response(400, content=raw,
+                                  headers={"content-type": "application/json"}))
+        with self.assertLogs("grepbit.bedrock", level="WARNING"):
+            with self.assertRaises(ModelError) as caught:
+                await client.complete(MESSAGES)
+        self.assertEqual((caught.exception.code, caught.exception.http_status),
+                         ("http_configuration", 400))
+        self.assertEqual(client.http_attempts, 1)
+
     async def test_bedrock_400_diagnostic_rejects_untrusted_header_and_body(self):
         response = httpx.Response(400, headers={
             "x-amzn-errortype": "ValidationException " + KEY,

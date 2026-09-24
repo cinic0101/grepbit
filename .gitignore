@@ -16,6 +16,7 @@ dist/
 
 # Generated databases, reports and private execution material
 .artifacts/
+http-400-body.json
 *.sqlite
 *.sqlite-*
 *.sqlite3
