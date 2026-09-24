@@ -16,7 +16,8 @@ subagent names and tool-specific orchestration in personal/tool configuration.
 - Work on `dev` (or a task branch based on `dev`). Never commit to, merge into,
   or force-push `main` without explicit owner approval. Preserve unrelated work.
 - A repository instruction is not permission to make external calls. Live runs
-  are owner-triggered and executed by the owner's local coding agent only.
+  are owner-triggered, directly or through an owner-posted standing grant (see
+  Goal-scoped delegation), and executed by the owner's local coding agent only.
 - Do not invoke LiteLLM, Gemma, Bedrock, external databases, remote runners, or
   paid services merely because credentials or an issue are available. Do not
   add scheduled/live GitHub Actions or a remote-control bridge.
@@ -56,34 +57,38 @@ subagent names and tool-specific orchestration in personal/tool configuration.
 
 ## Goal-scoped delegation
 
-- The owner may delegate one goal through a goal issue that states the goal,
-  the allowed step sequence, providers, call/token/time budgets, data boundary,
-  stop conditions and one standing grant comment **posted by the owner**. An
-  agent-drafted goal issue is a proposal until that comment exists. Inside the
-  grant the agent proceeds without per-step chat approval and reports at
-  milestones and stops. The `main` rule above is unchanged.
+- The owner may delegate one goal through a goal issue plus one standing grant
+  comment **typed by the owner, not posted by an agent using the owner's
+  credentials**. The comment itself states or pins the goal, the allowed step
+  sequence, providers, run counts and call/run bounds, data boundary, route
+  retry/fallback/cache attestation per provider and stop conditions; an
+  agent-drafted goal issue or table is a proposal until then. Inside the grant
+  the agent proceeds without per-step chat approval and reports at milestones
+  and stops. The `main` rule above is unchanged.
 - Inside the scope: a contract checkpoint is the contract document plus a
   ruler committed failing before the implementation commit and passing after,
-  in the same PR. Code review is the high-risk delta review: an independent
-  fresh-context agent session that receives only the PR reference, objective
-  and review focus, reads the actual GitHub diff, and has no access to the
-  implementing conversation, its memory or its working tree; the PR names its
-  high-risk category and records the review prompt and verdict. The agent may
+  in the same PR. Code review is the high-risk delta review and satisfies the
+  independent review of the GitHub diff above: an independent fresh-context
+  agent session that receives only the PR reference, objective and review
+  focus, reads the actual GitHub diff and `dev` files through GitHub, has no
+  access to the implementing conversation, and discloses any other context it
+  was given; the PR names its high-risk category and records the review prompt
+  and verdict. The agent may
   merge into `dev` after that review reports no blocker and the full offline
   suite passes. A reviewer blocker is fixed and re-reviewed, or escalated to
   the owner as a stop; it is not debated. Semantic, oracle and case acceptance
   stay with an independent human or a reviewer the owner names; the
   implementing agent never decides them.
-- Live runs inside the scope bind to the standing grant comment and to one
-  output slot each, and execute a tool from a merged `dev` commit whose digest
+- Live runs inside the scope bind one authorization envelope to the standing
+  grant comment and to one output slot each, and execute a tool from a merged `dev` commit whose digest
   the run record keeps; a tool that cannot bind grant and slot is outside the
   grant. A run outside the grant's steps or budgets needs separate authorization.
 - Mandatory stops, taken before the change is made and reported with the
   evidence: a needed change to a protected/frozen source, an oracle, gold or
   case text, to a product promise or accepted product contract, or to
   `AGENTS.md`, `CLAUDE.md`, `docs/local-execution.md` or other authority text
-  (owner review and owner merge only); the roadmap's two-candidate-fix default
-  on one failure family; budget exhaustion; any credential, route or privacy
+  (owner review and owner merge only); a third candidate fix on one failure
+  family (the roadmap's two-fix default); budget exhaustion; any credential, route or privacy
   anomaly; a blocker still open after one fix round; evidence that the goal is
   unreachable as stated.
 
