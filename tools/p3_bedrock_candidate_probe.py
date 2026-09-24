@@ -25,13 +25,16 @@ from tools import p3_probe as probe, recipe_smoke, smoke
 LEGACY_PACKET_VERSION = "p3-bedrock-candidate-packet-v1"
 PRIVATE_PACKET_VERSION = "p3-bedrock-candidate-packet-v2"
 COMPLEX_CONST_PACKET_VERSION = "p3-bedrock-candidate-packet-v3"
-PACKET_VERSION = "p3-bedrock-candidate-packet-v4"
-AUTHORIZATION_VERSION = "p3-bedrock-candidate-authorization-v1"
+GRAMMAR_BUDGET_PACKET_VERSION = "p3-bedrock-candidate-packet-v4"
+PACKET_VERSION = "p3-bedrock-candidate-packet-v5"
+LEGACY_AUTHORIZATION_VERSION = "p3-bedrock-candidate-authorization-v1"
+AUTHORIZATION_VERSION = "p3-bedrock-candidate-authorization-v2"
 MANIFEST_VERSION = "p3-bedrock-candidate-manifest-v1"
 REPORT_VERSION = "p3-bedrock-candidate-report-v1"
 LEGACY_EFFECTIVE_RUNTIME_VERSION = "p3-bedrock-effective-runtime-v1"
 PREVIOUS_EFFECTIVE_RUNTIME_VERSION = "p3-bedrock-effective-runtime-v2"
-EFFECTIVE_RUNTIME_VERSION = "p3-bedrock-effective-runtime-v3"
+GRAMMAR_BUDGET_EFFECTIVE_RUNTIME_VERSION = "p3-bedrock-effective-runtime-v3"
+EFFECTIVE_RUNTIME_VERSION = "p3-bedrock-effective-runtime-v4"
 OWNER = re.compile(r"https://github\.com/cinic0101/grepbit/issues/64#issuecomment-[1-9][0-9]*")
 REGION = "ap-northeast-1"
 PROFILE = "jp.anthropic.claude-sonnet-4-6"
@@ -41,10 +44,12 @@ PUBLICATION_SECONDS = 420.0
 CANONICAL_SCHEMA_SHA256 = "a2b842fedc36b77c27d05df8858d6938f67545d9d46e0219a98b8a77ad653f00"
 LEGACY_WIRE_SCHEMA_SHA256 = "d971f587cade56ed0096e102d5fdd12733f2fa52c038738a1da9e0f6517db21f"
 PREVIOUS_WIRE_SCHEMA_SHA256 = "93ab99c9162a43412d0588b3ded70cc41a25827582b4d11b8072e3348d201f68"
-WIRE_SCHEMA_SHA256 = "ea4e03d02732c0c45f9905ccd9b7c0010bedc87a190666e7b31895867c43e53b"
+GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256 = "ea4e03d02732c0c45f9905ccd9b7c0010bedc87a190666e7b31895867c43e53b"
+WIRE_SCHEMA_SHA256 = "e377c4f0807d90674e3d30c8274533fc0c70c363d15d6c1a07019849a6a6c456"
 LEGACY_EFFECTIVE_RUNTIME_SHA256 = "7af570605c825a70acaae125181703c9d4204d4d74b89abd96aef35a2a9c2c7b"
 PREVIOUS_EFFECTIVE_RUNTIME_SHA256 = "f56e90fe54662a2929797623a74508751b25424b666227fbd699ec4d4ebf4a3c"
-EFFECTIVE_RUNTIME_SHA256 = "4d1f27ded8138dbe9618c6f8c4b32ca4555d8a244ac5e7d94e1287f9de4fb2ed"
+GRAMMAR_BUDGET_EFFECTIVE_RUNTIME_SHA256 = "4d1f27ded8138dbe9618c6f8c4b32ca4555d8a244ac5e7d94e1287f9de4fb2ed"
+EFFECTIVE_RUNTIME_SHA256 = "ef60af9db5fe329603fca28b4c9bc13fc6d3effd2387d9f27140cb1f79ec6480"
 POLICIES = {"retries": "disabled", "fallback": "disabled", "cache": "disabled"}
 ENTRY = old_candidate.ENTRY
 ANCESTRY = old_candidate.ANCESTRY
@@ -87,6 +92,8 @@ def effective_runtime_identity(baseline: dict, *, packet_version: str = PACKET_V
         PRIVATE_PACKET_VERSION: (LEGACY_EFFECTIVE_RUNTIME_VERSION, LEGACY_WIRE_SCHEMA_SHA256),
         COMPLEX_CONST_PACKET_VERSION: (PREVIOUS_EFFECTIVE_RUNTIME_VERSION,
                                        PREVIOUS_WIRE_SCHEMA_SHA256),
+        GRAMMAR_BUDGET_PACKET_VERSION: (GRAMMAR_BUDGET_EFFECTIVE_RUNTIME_VERSION,
+                                        GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256),
         PACKET_VERSION: (EFFECTIVE_RUNTIME_VERSION, WIRE_SCHEMA_SHA256),
     }
     if packet_version not in identity:
@@ -127,17 +134,19 @@ def _packet_contract(packet: object) -> dict:
     if not isinstance(packet, dict):
         raise probe.ProbeError("invalid_manifest")
     version = packet.get("version")
-    if version not in (PACKET_VERSION, COMPLEX_CONST_PACKET_VERSION,
+    if version not in (PACKET_VERSION, GRAMMAR_BUDGET_PACKET_VERSION, COMPLEX_CONST_PACKET_VERSION,
                        PRIVATE_PACKET_VERSION, LEGACY_PACKET_VERSION):
         raise probe.ProbeError("invalid_manifest")
     capture = version != LEGACY_PACKET_VERSION
     expected_wire = {LEGACY_PACKET_VERSION: LEGACY_WIRE_SCHEMA_SHA256,
                      PRIVATE_PACKET_VERSION: LEGACY_WIRE_SCHEMA_SHA256,
                      COMPLEX_CONST_PACKET_VERSION: PREVIOUS_WIRE_SCHEMA_SHA256,
+                     GRAMMAR_BUDGET_PACKET_VERSION: GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256,
                      PACKET_VERSION: WIRE_SCHEMA_SHA256}[version]
     expected_effective = {LEGACY_PACKET_VERSION: LEGACY_EFFECTIVE_RUNTIME_SHA256,
                           PRIVATE_PACKET_VERSION: LEGACY_EFFECTIVE_RUNTIME_SHA256,
                           COMPLEX_CONST_PACKET_VERSION: PREVIOUS_EFFECTIVE_RUNTIME_SHA256,
+                          GRAMMAR_BUDGET_PACKET_VERSION: GRAMMAR_BUDGET_EFFECTIVE_RUNTIME_SHA256,
                           PACKET_VERSION: EFFECTIVE_RUNTIME_SHA256}[version]
     value = assets.object_fields(packet, _FIELDS | ({"diagnostic_capture"} if capture else set()))
     old_candidate._hash(value["accepted_commit"], 40)
@@ -253,22 +262,59 @@ def prepare(database: Path, output_dir: Path, **kwargs) -> dict:
     return report
 
 
-def _authorization(value: object, packet_sha: str) -> dict:
-    entry = assets.object_fields(value, {"version", "packet_sha256", "owner_authorization_reference"})
-    if (entry["version"] != AUTHORIZATION_VERSION or entry["packet_sha256"] != packet_sha
+_SLOT = re.compile(r"\.artifacts(?:/[A-Za-z0-9._-]+)+")
+
+
+def _run_slot(path: Path) -> str:
+    """Repository-local output identity; the authorization binds exactly one."""
+    if not isinstance(path, Path):
+        raise probe.ProbeError("invalid_manifest")
+    try:
+        slot = path.absolute().relative_to(ROOT).as_posix()
+    except ValueError:
+        raise probe.ProbeError("invalid_manifest") from None
+    if _SLOT.fullmatch(slot) is None or ".." in Path(slot).parts:
+        raise probe.ProbeError("invalid_manifest")
+    smoke._no_symlinks(path)
+    return slot
+
+
+def _authorization(value: object, packet_sha: str, *, run_dir: Path | None = None) -> dict:
+    """v2 binds one run slot before credential access; v1 stays readable for archived v1-v4 evidence."""
+    if not isinstance(value, dict) or value.get("version") not in (AUTHORIZATION_VERSION,
+                                                                    LEGACY_AUTHORIZATION_VERSION):
+        raise probe.ProbeError("invalid_manifest")
+    legacy = value["version"] == LEGACY_AUTHORIZATION_VERSION
+    fields = {"version", "packet_sha256", "owner_authorization_reference"} | (set() if legacy else {"run_slot"})
+    try:
+        entry = assets.object_fields(value, fields)
+    except assets.P3Error:
+        raise probe.ProbeError("invalid_manifest") from None
+    if (entry["packet_sha256"] != packet_sha
             or not isinstance(entry["owner_authorization_reference"], str)
             or OWNER.fullmatch(entry["owner_authorization_reference"]) is None):
+        raise probe.ProbeError("invalid_manifest")
+    if legacy:
+        # A v1 envelope names no slot, so it can never admit a live attempt again.
+        if run_dir is not None:
+            raise probe.ProbeError("invalid_manifest")
+        return entry
+    slot = entry["run_slot"]
+    if (not isinstance(slot, str) or _SLOT.fullmatch(slot) is None
+            or any(part in (".", "..") for part in slot.split("/"))
+            or run_dir is not None and slot != _run_slot(run_dir)):
         raise probe.ProbeError("invalid_manifest")
     return entry
 
 
-def bind_authorization(packet_path: Path, reference: str, output_path: Path) -> dict:
+def bind_authorization(packet_path: Path, reference: str, output_path: Path, run_output_dir: Path) -> dict:
     packet = _packet_contract(assets.read_asset(packet_path))
     if packet["version"] != PACKET_VERSION:
         raise probe.ProbeError("manifest_drift")
     sha = p3_eval._pin(packet_path)["sha256"]
     value = _authorization({"version": AUTHORIZATION_VERSION, "packet_sha256": sha,
-                            "owner_authorization_reference": reference}, sha)
+                            "owner_authorization_reference": reference,
+                            "run_slot": _run_slot(run_output_dir)}, sha, run_dir=run_output_dir)
     live._write_authorization(output_path, value)
     return {"version": AUTHORIZATION_VERSION, "authorization_sha256": p3_eval._pin(output_path)["sha256"],
             "packet_sha256": sha}
@@ -337,7 +383,10 @@ class _BedrockProbe(probe._LegacyProbe):
     def validate(self, database):
         if not isinstance(self.authorization_path, Path):
             raise probe.ProbeError("invalid_manifest")
-        _authorization(assets.read_asset(self.authorization_path), p3_eval._pin(self.path)["sha256"])
+        # The envelope must name this exact output slot; exclusive creation of
+        # the slot already consumed it, so the same grant cannot send again.
+        _authorization(assets.read_asset(self.authorization_path), p3_eval._pin(self.path)["sha256"],
+                       run_dir=self.output_dir)
         if self.policies != POLICIES:
             raise probe.ProbeError("invalid_configuration")
         packet, question = validate_packet(self.path, database, accepted_commit=self.accepted_commit)
@@ -505,7 +554,9 @@ def read_report(path: Path) -> dict:
                     or packet["accepted_commit"] != manifest["accepted_commit"]
                     or not old_candidate._same(report["identity"], _BedrockProbe(None, None, None, None).identity(packet))):
                 raise probe.ProbeError("invalid_evidence")
-            _authorization(assets.read_asset(path.parent / "authorization.json"), manifest["packet_sha256"])
+            entry = _authorization(assets.read_asset(path.parent / "authorization.json"), manifest["packet_sha256"])
+            if entry["version"] == AUTHORIZATION_VERSION and entry["run_slot"] != _run_slot(path.parent):
+                raise probe.ProbeError("invalid_evidence")
         elif report["status"] == "complete":
             raise probe.ProbeError("invalid_evidence")
         if report["compatibility_passed"] and (
@@ -538,7 +589,8 @@ def main(argv=None) -> int:
         actions.add_argument("--" + name, action="store_true")
     parser.add_argument("--capture-http-400-body", action="store_true")
     for name in ("db", "accepted-commit", "output-dir", "packet", "authorization", "env-file",
-                 "owner-authorization-reference", "output", "report-path", "transport-security"):
+                 "owner-authorization-reference", "output", "run-output-dir", "report-path",
+                 "transport-security"):
         parser.add_argument("--" + name)
     for name in smoke.POLICY_KEYS:
         parser.add_argument("--gateway-" + name, choices=("enabled", "disabled"))
@@ -546,7 +598,7 @@ def main(argv=None) -> int:
         args = parser.parse_args(argv)
         common = {"db", "accepted_commit", "output_dir", "gateway_retries", "gateway_fallback", "gateway_cache"}
         required = ({"prepare", "transport_security"} | common if args.prepare else
-                    {"bind_authorization", "packet", "owner_authorization_reference", "output"}
+                    {"bind_authorization", "packet", "owner_authorization_reference", "output", "run_output_dir"}
                     if args.bind_authorization else
                     {"live", "capture_http_400_body", "packet", "authorization", "env_file"} | common if args.live else
                     {"report", "report_path"})
@@ -557,7 +609,8 @@ def main(argv=None) -> int:
             result = prepare(Path(args.db), Path(args.output_dir), accepted_commit=args.accepted_commit,
                              gateway_policies=policies, transport_security=args.transport_security)
         elif args.bind_authorization:
-            result = bind_authorization(Path(args.packet), args.owner_authorization_reference, Path(args.output))
+            result = bind_authorization(Path(args.packet), args.owner_authorization_reference, Path(args.output),
+                                        Path(args.run_output_dir))
         elif args.live:
             asyncio.run(run_probe(Path(args.db), Path(args.output_dir), packet_path=Path(args.packet),
                                   authorization_path=Path(args.authorization), accepted_commit=args.accepted_commit,

@@ -33,6 +33,9 @@ POLICIES = bedrock_probe.POLICIES
 TRANSPORT = bedrock_probe.TRANSPORT
 DB_SHA256 = historical._DB_SHA
 COMPATIBILITY_SHA256 = "ea4747388b8c47b6f762e521816f5daeebf4da67901a445e8745cc375f3c49e1"
+# Pinned to the wire this packet version was admitted with (v4 grammar budget).
+WIRE_SCHEMA_SHA256 = bedrock_probe.GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256
+EFFECTIVE_RUNTIME_SHA256 = bedrock_probe.GRAMMAR_BUDGET_EFFECTIVE_RUNTIME_SHA256
 BASELINE_SHA256 = historical._BASELINE_SHA
 PINS = historical._PINS
 ORDER = historical._ORDER
@@ -103,7 +106,8 @@ def _pin(path: Path, expected: str) -> dict:
 def _current_identities() -> dict:
     """Recompute runtime and schema pins before preparing a new live packet."""
     baseline = bedrock_probe.semantic.semantic_identity()
-    effective = bedrock_probe.effective_runtime_identity(baseline)
+    effective = bedrock_probe.effective_runtime_identity(
+        baseline, packet_version=bedrock_probe.GRAMMAR_BUDGET_PACKET_VERSION)
     try:
         canonical, wire = bedrock_probe._schemas()
     except bedrock_probe.probe.ProbeError:
@@ -111,10 +115,12 @@ def _current_identities() -> dict:
     actual = {"baseline_semantic_identity_sha256": assets.digest(baseline),
               "effective_runtime_identity_sha256": assets.digest(effective),
               "canonical_schema_sha256": canonical, "wire_schema_sha256": wire}
+    # The v1 observed packet is bound to the v4 (grammar-budget) wire and its
+    # compatibility witness. A later wire needs a new observed packet version.
     expected = {"baseline_semantic_identity_sha256": bedrock_probe.semantic.SEMANTICS_SHA256,
-                "effective_runtime_identity_sha256": bedrock_probe.EFFECTIVE_RUNTIME_SHA256,
+                "effective_runtime_identity_sha256": EFFECTIVE_RUNTIME_SHA256,
                 "canonical_schema_sha256": bedrock_probe.CANONICAL_SCHEMA_SHA256,
-                "wire_schema_sha256": bedrock_probe.WIRE_SCHEMA_SHA256}
+                "wire_schema_sha256": WIRE_SCHEMA_SHA256}
     if actual != expected:
         raise assets.P3Error("source_identity_failure")
     return actual
@@ -132,8 +138,7 @@ def _compatible_report(path: Path) -> dict:
             or compatible["requested_profile"] != PROFILE or compatible["observed_model"] is not None
             or compatible["baseline_semantic_identity_sha256"]
             != bedrock_probe.semantic.SEMANTICS_SHA256
-            or compatible["effective_runtime_identity_sha256"]
-            != bedrock_probe.EFFECTIVE_RUNTIME_SHA256):
+            or compatible["effective_runtime_identity_sha256"] != EFFECTIVE_RUNTIME_SHA256):
         raise assets.P3Error("invalid_manifest")
     return compatible
 
@@ -160,9 +165,9 @@ def _packet_contract(packet: dict) -> None:
             or source.get("git_commit") != packet["accepted_commit"]
             or source.get("branch") != "dev" or source.get("worktree_dirty") is not False
             or packet["baseline_semantic_identity_sha256"] != bedrock_probe.semantic.SEMANTICS_SHA256
-            or packet["effective_runtime_identity_sha256"] != bedrock_probe.EFFECTIVE_RUNTIME_SHA256
+            or packet["effective_runtime_identity_sha256"] != EFFECTIVE_RUNTIME_SHA256
             or packet["canonical_schema_sha256"] != bedrock_probe.CANONICAL_SCHEMA_SHA256
-            or packet["wire_schema_sha256"] != bedrock_probe.WIRE_SCHEMA_SHA256
+            or packet["wire_schema_sha256"] != WIRE_SCHEMA_SHA256
             or packet["database_sha256"] != DB_SHA256
             or packet["order"] != list(ORDER) or packet["order_sha256"] != assets.digest(list(ORDER))
             or packet["allocation_policy"] != allocation.identity(allocation.V2)

@@ -147,3 +147,13 @@ or another rule. The shared runtime now records one closed
 in evidence, and the shared P3 projection validates it. This field applies to
 future runs only; it does not reinterpret the archived report, and it does not
 authorize a rerun.
+
+## Wire v5 and this packet version (#77)
+
+The observed packet v1 and its reader are bound to the v4 grammar-budget wire
+(`ea4e03d0…`), its effective runtime identity (`4d1f27de…`) and the v4
+compatibility witness, so the archived #70 report reads unchanged. After the
+[wire-coupling repair](p3-bedrock-wire-coupling.md) the live wire is v5, so
+preparing a new v1 packet fails with `source_identity_failure`. A new observed
+run needs a v5 compatibility witness and a new observed packet version, each a
+separately reviewed and separately authorized gate.

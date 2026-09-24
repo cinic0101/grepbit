@@ -180,12 +180,20 @@ def _without_descriptions(node: object) -> object:
 
 
 def _compact_recipe_schema(schema: dict[str, object]) -> dict[str, object]:
-    """Keep typed request/value shapes, leaving cross-field rules to native validation."""
+    """Couple each outcome to its required fields; flatten only the clarification alternatives.
+
+    The v4 single-root compaction let the grammar admit a clarify signal on a
+    request body, which native validation always rejects (#74). Cross-choice
+    rules and the two-to-four choice count remain native.
+    """
     try:
         branches = schema["anyOf"]
         if len(branches) != 5:
             raise ValueError
-        request_shapes = [branch["properties"]["request"] for branch in branches[:3]]
+        requests = [(branch["properties"]["recipe_id"]["const"], branch["properties"]["request"])
+                    for branch in branches[:3]]
+        if [recipe for recipe, _ in requests] != ["overview", "compare", "breakdown"]:
+            raise ValueError
         clarification = branches[4]["properties"]["clarification"]["anyOf"]
         if len(clarification) != 4:
             raise ValueError
@@ -194,28 +202,21 @@ def _compact_recipe_schema(schema: dict[str, object]) -> dict[str, object]:
                   for branch in clarification]
     except (KeyError, IndexError, TypeError, ValueError):
         raise ModelError("invalid_input") from None
-    compact = {
-        "type": "object", "additionalProperties": False, "required": ["outcome"],
-        "properties": {
-            "outcome": {"enum": ["request", "clarify", "declined"]},
-            "recipe_id": {"enum": ["overview", "compare", "breakdown"]},
-            "recipe_version": {"const": "0.1"},
-            "request": {"anyOf": request_shapes},
-            "clarification": {
-                "type": "object", "additionalProperties": False,
-                "required": ["kind", "choices"],
-                "properties": {
-                    "kind": {"enum": kinds},
-                    "choices": {"type": "array", "minItems": 1, "items": {
-                        "type": "object", "additionalProperties": False,
-                        "required": ["id", "semantic_value"],
-                        "properties": {"id": {"type": "string"},
-                                       "semantic_value": {"anyOf": values}},
-                    }},
-                },
-            },
-        },
-    }
+
+    def closed(properties: dict[str, object]) -> dict[str, object]:
+        return {"type": "object", "additionalProperties": False,
+                "required": list(properties), "properties": properties}
+
+    compact = {"anyOf": [
+        *[closed({"outcome": {"const": "request"}, "recipe_id": {"const": recipe},
+                  "recipe_version": {"const": "0.1"}, "request": shape}) for recipe, shape in requests],
+        closed({"outcome": {"const": "declined"}}),
+        closed({"outcome": {"const": "clarify"}, "clarification": closed({
+            "kind": {"enum": kinds},
+            "choices": {"type": "array", "minItems": 1, "items": closed({
+                "id": {"type": "string"}, "semantic_value": {"anyOf": values}})},
+        })}),
+    ]}
     return _without_descriptions(compact)
 
 

@@ -20,15 +20,12 @@ class BedrockGrammarBudgetContract(unittest.TestCase):
         wire_format, wire_hash = converse_schema(constraint)
         wire = json.loads(wire_format["structure"]["jsonSchema"]["schema"])
 
-        self.assertEqual(wire.get("type"), "object")
-        self.assertIs(wire["additionalProperties"], False)
-        self.assertEqual(wire["required"], ["outcome"])
-        properties = wire["properties"]
-        self.assertEqual(set(properties), {"outcome", "recipe_id", "recipe_version",
-                                           "request", "clarification"})
-        self.assertEqual(set(properties["outcome"]["enum"]), {"request", "clarify", "declined"})
-        self.assertEqual(len(properties["request"]["anyOf"]), 3)
-        clarification = properties["clarification"]
+        # v5 (#77) restored coupled root branches; the flattened clarification from v4 stays.
+        self.assertEqual(set(wire), {"anyOf"})
+        self.assertEqual(len(wire["anyOf"]), 5)
+        clarify = [branch for branch in wire["anyOf"] if branch["properties"]["outcome"]["const"] == "clarify"]
+        self.assertEqual(len(clarify), 1)
+        clarification = clarify[0]["properties"]["clarification"]
         self.assertNotIn("anyOf", clarification)
         self.assertEqual(len(clarification["properties"]["choices"]["items"]
                              ["properties"]["semantic_value"]["anyOf"]), 4)
@@ -74,9 +71,14 @@ class BedrockGrammarBudgetContract(unittest.TestCase):
         self.assertEqual(caught.exception.code, "invalid_request")
 
     def test_new_wire_has_distinct_packet_and_effective_runtime_identity(self):
-        self.assertEqual(candidate.PACKET_VERSION, "p3-bedrock-candidate-packet-v4")
-        self.assertEqual(candidate.EFFECTIVE_RUNTIME_VERSION, "p3-bedrock-effective-runtime-v3")
+        self.assertEqual(candidate.GRAMMAR_BUDGET_PACKET_VERSION, "p3-bedrock-candidate-packet-v4")
+        self.assertEqual(candidate.GRAMMAR_BUDGET_EFFECTIVE_RUNTIME_VERSION, "p3-bedrock-effective-runtime-v3")
+        self.assertNotEqual(candidate.GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256, OLD_WIRE_SHA256)
         self.assertNotEqual(candidate.WIRE_SCHEMA_SHA256, OLD_WIRE_SHA256)
+        budget = candidate.effective_runtime_identity(candidate.semantic.semantic_identity(),
+                                                      packet_version=candidate.GRAMMAR_BUDGET_PACKET_VERSION)
+        self.assertEqual(budget["wire_schema_sha256"], candidate.GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256)
+        self.assertEqual(candidate.assets.digest(budget), candidate.GRAMMAR_BUDGET_EFFECTIVE_RUNTIME_SHA256)
         effective = candidate.effective_runtime_identity(candidate.semantic.semantic_identity())
         self.assertEqual(effective["wire_schema_sha256"], candidate.WIRE_SCHEMA_SHA256)
         self.assertEqual(candidate.assets.digest(effective), candidate.EFFECTIVE_RUNTIME_SHA256)

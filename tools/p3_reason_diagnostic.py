@@ -69,6 +69,11 @@ CALL_SECONDS = 300.0
 RUN_SECONDS = MAX_CALLS * CALL_SECONDS + 120.0
 PROFILE = observed.PROFILE
 REGION = observed.REGION
+# The diagnostic re-observed the v4 (grammar-budget) wire; its archive stays pinned to it.
+BASELINE_SEMANTIC_SHA256 = bedrock_probe.semantic.SEMANTICS_SHA256
+EFFECTIVE_RUNTIME_SHA256 = bedrock_probe.GRAMMAR_BUDGET_EFFECTIVE_RUNTIME_SHA256
+CANONICAL_SCHEMA_SHA256 = bedrock_probe.CANONICAL_SCHEMA_SHA256
+WIRE_SCHEMA_SHA256 = bedrock_probe.GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256
 TRANSPORT = observed.TRANSPORT
 POLICIES = observed.POLICIES
 ROOT_KEYS = ("outcome", "recipe_id", "recipe_version", "request", "clarification")
@@ -365,6 +370,17 @@ def _verify_source(database: Path, panel, accepted_commit: str) -> dict:
     return source
 
 
+def _current_identities() -> dict:
+    """The live runtime must still be the v4 wire this diagnostic was designed for."""
+    identities = observed._current_identities()
+    expected = {"baseline_semantic_identity_sha256": BASELINE_SEMANTIC_SHA256,
+                "effective_runtime_identity_sha256": EFFECTIVE_RUNTIME_SHA256,
+                "canonical_schema_sha256": CANONICAL_SCHEMA_SHA256, "wire_schema_sha256": WIRE_SCHEMA_SHA256}
+    if identities != expected:
+        raise assets.P3Error("source_identity_failure")
+    return identities
+
+
 def _admitted_client(env_file: Path):
     client = client_from_env(env_file=env_file)
     if (type(client) is not BedrockClient or type(client.config) is not BedrockConfig
@@ -442,7 +458,7 @@ async def run_live(database: Path, output_dir: Path, *, accepted_commit: str, ow
     cases = _select_cases(panel)
     archive = _verify_archive()
     source = _verify_source(database, panel, accepted_commit)
-    identities = observed._current_identities()
+    identities = _current_identities()
     run_slot = observed._run_slot(output_dir)
     manifest = {"version": VERSION, "purpose": PURPOSE, "evidence_class": EVIDENCE_CLASS,
                 "promotion_eligible": False, "accepted_commit": accepted_commit,
@@ -552,10 +568,10 @@ def _manifest_contract(manifest: object, directory: Path) -> dict:
         assets.text(name)
         _hash(digest)
     reference = _owner_reference(value["owner_authorization_reference"])
-    pins = {"baseline_semantic_identity_sha256": bedrock_probe.semantic.SEMANTICS_SHA256,
-            "effective_runtime_identity_sha256": bedrock_probe.EFFECTIVE_RUNTIME_SHA256,
-            "canonical_schema_sha256": bedrock_probe.CANONICAL_SCHEMA_SHA256,
-            "wire_schema_sha256": bedrock_probe.WIRE_SCHEMA_SHA256, "database_sha256": observed.DB_SHA256}
+    pins = {"baseline_semantic_identity_sha256": BASELINE_SEMANTIC_SHA256,
+            "effective_runtime_identity_sha256": EFFECTIVE_RUNTIME_SHA256,
+            "canonical_schema_sha256": CANONICAL_SCHEMA_SHA256,
+            "wire_schema_sha256": WIRE_SCHEMA_SHA256, "database_sha256": observed.DB_SHA256}
     if (value["version"] != VERSION or value["purpose"] != PURPOSE or value["evidence_class"] != EVIDENCE_CLASS
             or value["promotion_eligible"] is not False
             or value["run_slot"] != observed._run_slot(directory)

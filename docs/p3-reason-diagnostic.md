@@ -89,6 +89,14 @@ must carry safe evidence whose `error_code` and `invalid_request_reason` equal
 the row's, the fingerprint must stay inside its closed vocabulary, and any
 `completion_text` or raw body in a public file is rejected as leakage.
 
+## Archive pins after the wire repair
+
+The diagnostic re-observed the v4 grammar-budget wire and pins those
+identities (`WIRE_SCHEMA_SHA256`, `EFFECTIVE_RUNTIME_SHA256`) in its own
+module, so its archive reads unchanged after the
+[v5 wire-coupling repair](p3-bedrock-wire-coupling.md) and a new run under
+the consumed grant fails before credentials with `source_identity_failure`.
+
 ## What this is not
 
 Not fresh quality, stability or promotion evidence; not a candidate admission;

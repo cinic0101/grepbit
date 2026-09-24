@@ -49,14 +49,17 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
                        gateway_policies=runner.POLICIES, transport_security=runner.TRANSPORT)
         self.packet_path = self.prepared / "manifest.json"
         self.packet = assets.read_asset(self.packet_path)
-        self.auth_path = self.root / "authorization.json"
-        runner.bind_authorization(self.packet_path, OWNER, self.auth_path)
+        self.auth_path = None
         self.sent = []
         self.serial = 0
 
     def output(self):
+        """Each output slot gets its own v2 authorization envelope bound to it."""
         self.serial += 1
-        return self.root / f"run-{self.serial}"
+        output = self.root / f"run-{self.serial}"
+        self.auth_path = self.root / f"authorization-{self.serial}.json"
+        runner.bind_authorization(self.packet_path, OWNER, self.auth_path, output)
+        return output
 
     def client(self, *, content=None, handler=None):
         def respond(request):
@@ -87,8 +90,8 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.packet["candidate"]["allowed_destination_regions"],
                          ["ap-northeast-1", "ap-northeast-3"])
         self.assertEqual(self.packet["candidate"]["response_mode"], "bedrock_converse_normalized")
-        self.assertEqual(self.packet["wire_schema_sha256"],
-                         "ea4e03d02732c0c45f9905ccd9b7c0010bedc87a190666e7b31895867c43e53b")
+        self.assertEqual(self.packet["wire_schema_sha256"], runner.WIRE_SCHEMA_SHA256)
+        self.assertEqual(self.packet["version"], "p3-bedrock-candidate-packet-v5")
         self.assertNotEqual(self.packet["canonical_schema_sha256"], self.packet["wire_schema_sha256"])
         self.assertEqual(self.packet["case_id"], "E01_overview.en")
         self.assertIn("tools/p3_bedrock_candidate_probe.py", self.packet["source_identity"]["files_sha256"])
@@ -104,14 +107,15 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
         self.env_loader.assert_not_called()
 
     def test_historical_packets_remain_readable_but_cannot_be_reauthorized(self):
-        for version in (runner.LEGACY_PACKET_VERSION, runner.PRIVATE_PACKET_VERSION,
-                        runner.COMPLEX_CONST_PACKET_VERSION):
+        wires = {runner.LEGACY_PACKET_VERSION: runner.LEGACY_WIRE_SCHEMA_SHA256,
+                 runner.PRIVATE_PACKET_VERSION: runner.LEGACY_WIRE_SCHEMA_SHA256,
+                 runner.COMPLEX_CONST_PACKET_VERSION: runner.PREVIOUS_WIRE_SCHEMA_SHA256,
+                 runner.GRAMMAR_BUDGET_PACKET_VERSION: runner.GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256}
+        for version, wire in wires.items():
             with self.subTest(version=version):
                 historical = deepcopy(self.packet)
                 historical["version"] = version
-                historical["wire_schema_sha256"] = (runner.PREVIOUS_WIRE_SCHEMA_SHA256
-                                                     if version == runner.COMPLEX_CONST_PACKET_VERSION
-                                                     else runner.LEGACY_WIRE_SCHEMA_SHA256)
+                historical["wire_schema_sha256"] = wire
                 effective = runner.effective_runtime_identity(
                     historical["baseline_semantic_identity"], packet_version=version)
                 historical["effective_runtime_identity"] = effective
@@ -124,7 +128,8 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
                 path = self.root / f"historical-{version}.json"
                 path.write_text(json.dumps(historical))
                 with self.assertRaises(runner.probe.ProbeError):
-                    runner.bind_authorization(path, OWNER, self.root / f"old-auth-{version}.json")
+                    runner.bind_authorization(path, OWNER, self.root / f"old-auth-{version}.json",
+                                              self.root / f"old-run-{version}")
                 with self.assertRaises(runner.probe.ProbeError):
                     runner.validate_packet(path, self.db, accepted_commit=COMMIT)
 
@@ -213,26 +218,81 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(runner.read_report(output / "report.json")["status"], "complete")
 
     async def test_invalid_authorization_or_route_stops_before_env(self):
-        invalid = [None, {**assets.read_asset(self.auth_path), "packet_sha256": "0" * 64}]
-        for value in invalid:
-            if value is not None:
-                self.auth_path.write_text(json.dumps(value))
-            output, report = await self.run_case(origin="live", client=None,
-                                                 env_file=self.root / "unread.env",
-                                                 authorization_path=self.auth_path if value else None)
-            self.assertEqual(report["runtime_invocations"], 0)
-            self.assertEqual(report["client_http_attempts"], 0)
-            self.assertEqual(runner.read_report(output / "report.json")["status"], "stopped")
-            self.env_loader.assert_not_called()
-        self.auth_path.write_text(json.dumps({"version": runner.AUTHORIZATION_VERSION,
-            "packet_sha256": p3_eval._pin(self.packet_path)["sha256"],
-            "owner_authorization_reference": OWNER}))
-        changed = {**self.packet, "candidate": {**self.packet["candidate"],
-                   "calling_region": "us-east-1"}}
+        bound = self.output()
+        good = assets.read_asset(self.auth_path)
+        legacy = {key: value for key, value in good.items() if key != "run_slot"}
+        legacy["version"] = runner.LEGACY_AUTHORIZATION_VERSION
+        for index, value in enumerate((None, {**good, "packet_sha256": "0" * 64},
+                                       {**good, "run_slot": ".artifacts/elsewhere/run"}, legacy,
+                                       {**good, "run_slot": runner._run_slot(bound)})):
+            with self.subTest(case=index):
+                path = None
+                if value is not None:
+                    path = self.root / f"tampered-{index}.json"
+                    path.write_text(json.dumps(value))
+                output = self.root / f"unbound-{index}"
+                report = await runner.run_probe(
+                    self.db, output, packet_path=self.packet_path, authorization_path=path,
+                    accepted_commit=COMMIT, gateway_policies=dict(runner.POLICIES), origin="live",
+                    env_file=self.root / "unread.env", clock=lambda: 0.0, capture_http_400_body=True)
+                self.assertEqual(report["runtime_invocations"], 0)
+                self.assertEqual(report["client_http_attempts"], 0)
+                self.assertEqual(runner.read_report(output / "report.json")["status"], "stopped")
+                self.env_loader.assert_not_called()
+        output = self.output()
+        changed = {**self.packet, "candidate": {**self.packet["candidate"], "calling_region": "us-east-1"}}
         self.packet_path.write_text(json.dumps(changed))
-        output, report = await self.run_case(origin="live", client=None, env_file=self.root / "unread.env")
+        report = await runner.run_probe(
+            self.db, output, packet_path=self.packet_path, authorization_path=self.auth_path,
+            accepted_commit=COMMIT, gateway_policies=dict(runner.POLICIES), origin="live",
+            env_file=self.root / "unread.env", clock=lambda: 0.0, capture_http_400_body=True)
         self.assertEqual(report["runtime_invocations"], 0)
         self.env_loader.assert_not_called()
+
+    async def test_authorization_binds_exactly_one_run_slot(self):
+        bound = self.output()
+        authorization = self.auth_path
+        self.assertEqual(assets.read_asset(authorization)["run_slot"], runner._run_slot(bound))
+        other = self.root / "other-fresh-output"
+        report = await runner.run_probe(
+            self.db, other, packet_path=self.packet_path, authorization_path=authorization,
+            accepted_commit=COMMIT, gateway_policies=dict(runner.POLICIES), origin="live",
+            env_file=self.root / "unread.env", clock=lambda: 0.0, capture_http_400_body=True)
+        self.assertEqual((report["status"], report["error_code"]), ("stopped", "invalid_manifest"))
+        self.assertEqual(report["client_http_attempts"], 0)
+        self.env_loader.assert_not_called()
+        report = await runner.run_probe(
+            self.db, bound, packet_path=self.packet_path, authorization_path=authorization,
+            accepted_commit=COMMIT, gateway_policies=dict(runner.POLICIES), client=self.client(),
+            clock=lambda: 0.0, capture_http_400_body=True)
+        self.assertEqual(report["status"], "complete")
+        self.assertEqual(runner.read_report(bound / "report.json")["compatibility_passed"], True)
+        with self.assertRaisesRegex(runner.smoke.SmokeError, "artifact_conflict"):
+            await runner.run_probe(
+                self.db, bound, packet_path=self.packet_path, authorization_path=authorization,
+                accepted_commit=COMMIT, gateway_policies=dict(runner.POLICIES), origin="live",
+                env_file=self.root / "unread.env", clock=lambda: 0.0, capture_http_400_body=True)
+        self.env_loader.assert_not_called()
+        moved = self.root / "moved-archive"
+        bound.rename(moved)
+        with self.assertRaises(runner.probe.ProbeError):
+            runner.read_report(moved / "report.json")
+
+    def test_legacy_authorization_reads_back_but_never_admits_a_live_attempt(self):
+        sha = p3_eval._pin(self.packet_path)["sha256"]
+        legacy = {"version": runner.LEGACY_AUTHORIZATION_VERSION, "packet_sha256": sha,
+                  "owner_authorization_reference": OWNER}
+        self.assertEqual(runner._authorization(legacy, sha), legacy)
+        with self.assertRaises(runner.probe.ProbeError):
+            runner._authorization(legacy, sha, run_dir=self.root / "any-run")
+        with self.assertRaises(runner.probe.ProbeError):
+            runner._authorization({**legacy, "run_slot": ".artifacts/x/run"}, sha)
+        current = {**legacy, "version": runner.AUTHORIZATION_VERSION}
+        with self.assertRaises(runner.probe.ProbeError):
+            runner._authorization(current, sha)
+        for slot in ("artifacts/run", ".artifacts", ".artifacts/../escape", "/tmp/run", ""):
+            with self.subTest(slot=slot), self.assertRaises(runner.probe.ProbeError):
+                runner._authorization({**current, "run_slot": slot}, sha)
 
     async def test_v2_live_capture_requires_explicit_programmatic_opt_in(self):
         for capture in (None, False):
@@ -274,8 +334,12 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_client_timeout_limit_drift_stops_before_reservation(self):
         client = self.client()
+        output = self.output()  # bind the slot before the drift so only the live check trips
         with patch.object(BedrockConfig, "max_call_timeout_seconds", 60):
-            output, report = await self.run_case(client=client)
+            report = await runner.run_probe(
+                self.db, output, packet_path=self.packet_path, authorization_path=self.auth_path,
+                accepted_commit=COMMIT, gateway_policies=dict(runner.POLICIES), client=client,
+                clock=lambda: 0.0, capture_http_400_body=True)
         self.assertEqual(report["status"], "stopped")
         self.assertEqual(report["reservation"], "not_reserved")
         self.assertEqual(report["runtime_invocations"], 0)

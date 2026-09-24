@@ -16,6 +16,7 @@ from tools import fixture, p3_assets, p3_eval
 from tools import p3_reason_diagnostic as diagnostic
 
 GRANT = "https://github.com/cinic0101/grepbit/issues/74#issuecomment-"
+REAL_IDENTITIES = diagnostic._current_identities  # captured before setUp pins the v4 identities
 SINGLE_CHOICE = ('{"outcome":"clarify","clarification":{"kind":"center","choices":[{"id":"a",'
                  '"semantic_value":{"type":"center","request":{"center_code":"CTR-A01",'
                  '"start":"2026-03-01T00:00:00+08:00","end":"2026-04-01T00:00:00+08:00",'
@@ -68,6 +69,12 @@ class ReasonDiagnosticRulers(unittest.IsolatedAsyncioTestCase):
         self.source = {"git_commit": "1" * 40, "branch": "dev", "worktree_dirty": False,
                        "files_sha256": {"synthetic": "1" * 64}}
         self.enterContext(patch.object(diagnostic, "_verify_source", return_value=deepcopy(self.source)))
+        # The diagnostic is frozen to the v4 wire it re-observed; the live wire has since moved to v5.
+        self.enterContext(patch.object(diagnostic, "_current_identities", return_value={
+            "baseline_semantic_identity_sha256": diagnostic.BASELINE_SEMANTIC_SHA256,
+            "effective_runtime_identity_sha256": diagnostic.EFFECTIVE_RUNTIME_SHA256,
+            "canonical_schema_sha256": diagnostic.CANONICAL_SCHEMA_SHA256,
+            "wire_schema_sha256": diagnostic.WIRE_SCHEMA_SHA256}))
         self.sent = []
         self.serial = 0
 
@@ -155,7 +162,9 @@ class ReasonDiagnosticRulers(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(diagnostic.read_report(output / "report.json"), report)
         manifest = p3_assets.read_asset(output / "manifest.json")
         self.assertEqual(manifest["run_slot"], diagnostic.observed._run_slot(output))
-        self.assertEqual(manifest["wire_schema_sha256"], diagnostic.bedrock_probe.WIRE_SCHEMA_SHA256)
+        self.assertEqual(manifest["wire_schema_sha256"], diagnostic.WIRE_SCHEMA_SHA256)
+        self.assertEqual(manifest["wire_schema_sha256"], diagnostic.bedrock_probe.GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256)
+        self.assertNotEqual(manifest["wire_schema_sha256"], diagnostic.bedrock_probe.WIRE_SCHEMA_SHA256)
 
     async def test_one_grant_can_never_start_a_second_run(self):
         report, output, grant = await self.run_mock()
@@ -285,6 +294,10 @@ class ReasonDiagnosticRulers(unittest.IsolatedAsyncioTestCase):
                 diagnostic.read_report(path)
         manifest_path.write_text(original_manifest)
         self.assertEqual(diagnostic.read_report(path), report)
+
+    def test_live_wire_moved_so_the_diagnostic_refuses_to_run_again(self):
+        with self.assertRaisesRegex(p3_assets.P3Error, "source_identity_failure"):
+            REAL_IDENTITIES()
 
     def test_cli_arguments_are_closed(self):
         self.assertEqual(diagnostic.main(["--report"]), 2)

@@ -53,6 +53,11 @@ class BedrockObservedRulers(unittest.IsolatedAsyncioTestCase):
                                      tuple(exposed.oracle_for(case) for case in seeds.values()),
                                      self.root / "panel.json", self.root / "cases.json", self.root / "oracles.json")
         synthetic_order = tuple(case.case_id for case in cases)
+        # The v1 observed packet is bound to the v4 wire; the live wire moved to v5 (#77).
+        self.schemas_patch = patch.object(runner.bedrock_probe, "_schemas", return_value=(
+            runner.bedrock_probe.CANONICAL_SCHEMA_SHA256, runner.WIRE_SCHEMA_SHA256))
+        self.schemas_patch.start()
+        self.addCleanup(self.schemas_patch.stop)
         self.enterContext(patch.object(runner, "ORDER", synthetic_order))
         self.enterContext(patch.object(runner.historical, "_ORDER", synthetic_order))
         by_family = {}
@@ -118,7 +123,8 @@ class BedrockObservedRulers(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(packet["settings"]["call_timeout_seconds"], 300.0)
         self.assertEqual(packet["settings"]["panel_timeout_seconds"], 8520.0)
         self.assertEqual(packet["compatibility"]["sha256"], runner.COMPATIBILITY_SHA256)
-        self.assertEqual(packet["wire_schema_sha256"], runner.bedrock_probe.WIRE_SCHEMA_SHA256)
+        self.assertEqual(packet["wire_schema_sha256"], runner.WIRE_SCHEMA_SHA256)
+        self.assertEqual(packet["wire_schema_sha256"], runner.bedrock_probe.GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256)
         self.assertFalse(packet["promotion_eligible"])
         self.assertEqual(packet["evidence_class"], "observed_regression")
         self.assertEqual(p3_assets.read_asset(self.auth_path)["packet_sha256"],
@@ -139,10 +145,17 @@ class BedrockObservedRulers(unittest.IsolatedAsyncioTestCase):
     def test_preparation_recomputes_current_runtime_and_schema_identities(self):
         self.assertEqual(runner._current_identities(), {
             "baseline_semantic_identity_sha256": runner.bedrock_probe.semantic.SEMANTICS_SHA256,
-            "effective_runtime_identity_sha256": runner.bedrock_probe.EFFECTIVE_RUNTIME_SHA256,
+            "effective_runtime_identity_sha256": runner.EFFECTIVE_RUNTIME_SHA256,
             "canonical_schema_sha256": runner.bedrock_probe.CANONICAL_SCHEMA_SHA256,
-            "wire_schema_sha256": runner.bedrock_probe.WIRE_SCHEMA_SHA256,
+            "wire_schema_sha256": runner.WIRE_SCHEMA_SHA256,
         })
+        # Against the real v5 wire a new v1 observed packet can no longer be prepared.
+        self.schemas_patch.stop()
+        try:
+            with self.assertRaisesRegex(p3_assets.P3Error, "source_identity_failure"):
+                runner._current_identities()
+        finally:
+            self.schemas_patch.start()
         original = runner.bedrock_probe.semantic.semantic_identity
         with patch.object(runner.bedrock_probe.semantic, "semantic_identity",
                           side_effect=lambda: {**original(), "unexpected": "drift"}):
@@ -158,7 +171,7 @@ class BedrockObservedRulers(unittest.IsolatedAsyncioTestCase):
                       "client_http_attempts": 1, "report_sha256": runner.COMPATIBILITY_SHA256,
                       "requested_profile": PROFILE, "observed_model": None,
                       "baseline_semantic_identity_sha256": runner.bedrock_probe.semantic.SEMANTICS_SHA256,
-                      "effective_runtime_identity_sha256": runner.bedrock_probe.EFFECTIVE_RUNTIME_SHA256}
+                      "effective_runtime_identity_sha256": runner.EFFECTIVE_RUNTIME_SHA256}
         path = self.root / "compatible.json"
         with patch.object(runner, "_pin"), \
              patch.object(runner.bedrock_probe, "read_report", return_value=projection):
