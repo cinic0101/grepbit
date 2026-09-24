@@ -26,7 +26,8 @@ LEGACY_PACKET_VERSION = "p3-bedrock-candidate-packet-v1"
 PRIVATE_PACKET_VERSION = "p3-bedrock-candidate-packet-v2"
 COMPLEX_CONST_PACKET_VERSION = "p3-bedrock-candidate-packet-v3"
 GRAMMAR_BUDGET_PACKET_VERSION = "p3-bedrock-candidate-packet-v4"
-PACKET_VERSION = "p3-bedrock-candidate-packet-v5"
+COUPLED_PACKET_VERSION = "p3-bedrock-candidate-packet-v5"
+PACKET_VERSION = "p3-bedrock-candidate-packet-v6"
 LEGACY_AUTHORIZATION_VERSION = "p3-bedrock-candidate-authorization-v1"
 AUTHORIZATION_VERSION = "p3-bedrock-candidate-authorization-v2"
 MANIFEST_VERSION = "p3-bedrock-candidate-manifest-v1"
@@ -34,7 +35,8 @@ REPORT_VERSION = "p3-bedrock-candidate-report-v1"
 LEGACY_EFFECTIVE_RUNTIME_VERSION = "p3-bedrock-effective-runtime-v1"
 PREVIOUS_EFFECTIVE_RUNTIME_VERSION = "p3-bedrock-effective-runtime-v2"
 GRAMMAR_BUDGET_EFFECTIVE_RUNTIME_VERSION = "p3-bedrock-effective-runtime-v3"
-EFFECTIVE_RUNTIME_VERSION = "p3-bedrock-effective-runtime-v4"
+COUPLED_EFFECTIVE_RUNTIME_VERSION = "p3-bedrock-effective-runtime-v4"
+EFFECTIVE_RUNTIME_VERSION = "p3-bedrock-effective-runtime-v5"
 OWNER = re.compile(r"https://github\.com/cinic0101/grepbit/issues/64#issuecomment-[1-9][0-9]*")
 REGION = "ap-northeast-1"
 PROFILE = "jp.anthropic.claude-sonnet-4-6"
@@ -45,11 +47,13 @@ CANONICAL_SCHEMA_SHA256 = "a2b842fedc36b77c27d05df8858d6938f67545d9d46e0219a98b8
 LEGACY_WIRE_SCHEMA_SHA256 = "d971f587cade56ed0096e102d5fdd12733f2fa52c038738a1da9e0f6517db21f"
 PREVIOUS_WIRE_SCHEMA_SHA256 = "93ab99c9162a43412d0588b3ded70cc41a25827582b4d11b8072e3348d201f68"
 GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256 = "ea4e03d02732c0c45f9905ccd9b7c0010bedc87a190666e7b31895867c43e53b"
-WIRE_SCHEMA_SHA256 = "e377c4f0807d90674e3d30c8274533fc0c70c363d15d6c1a07019849a6a6c456"
+COUPLED_WIRE_SCHEMA_SHA256 = "e377c4f0807d90674e3d30c8274533fc0c70c363d15d6c1a07019849a6a6c456"
+WIRE_SCHEMA_SHA256 = "0bd5db7c524215ba7e76a1423579510e8000efda80004dc7b17ce265d517efef"
 LEGACY_EFFECTIVE_RUNTIME_SHA256 = "7af570605c825a70acaae125181703c9d4204d4d74b89abd96aef35a2a9c2c7b"
 PREVIOUS_EFFECTIVE_RUNTIME_SHA256 = "f56e90fe54662a2929797623a74508751b25424b666227fbd699ec4d4ebf4a3c"
 GRAMMAR_BUDGET_EFFECTIVE_RUNTIME_SHA256 = "4d1f27ded8138dbe9618c6f8c4b32ca4555d8a244ac5e7d94e1287f9de4fb2ed"
-EFFECTIVE_RUNTIME_SHA256 = "ef60af9db5fe329603fca28b4c9bc13fc6d3effd2387d9f27140cb1f79ec6480"
+COUPLED_EFFECTIVE_RUNTIME_SHA256 = "ef60af9db5fe329603fca28b4c9bc13fc6d3effd2387d9f27140cb1f79ec6480"
+EFFECTIVE_RUNTIME_SHA256 = "b106fb536b27ebd4feb95b3f46079468fe5ea09f791ff87b909f071ff355eb88"
 POLICIES = {"retries": "disabled", "fallback": "disabled", "cache": "disabled"}
 ENTRY = old_candidate.ENTRY
 ANCESTRY = old_candidate.ANCESTRY
@@ -94,6 +98,7 @@ def effective_runtime_identity(baseline: dict, *, packet_version: str = PACKET_V
                                        PREVIOUS_WIRE_SCHEMA_SHA256),
         GRAMMAR_BUDGET_PACKET_VERSION: (GRAMMAR_BUDGET_EFFECTIVE_RUNTIME_VERSION,
                                         GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256),
+        COUPLED_PACKET_VERSION: (COUPLED_EFFECTIVE_RUNTIME_VERSION, COUPLED_WIRE_SCHEMA_SHA256),
         PACKET_VERSION: (EFFECTIVE_RUNTIME_VERSION, WIRE_SCHEMA_SHA256),
     }
     if packet_version not in identity:
@@ -134,19 +139,21 @@ def _packet_contract(packet: object) -> dict:
     if not isinstance(packet, dict):
         raise probe.ProbeError("invalid_manifest")
     version = packet.get("version")
-    if version not in (PACKET_VERSION, GRAMMAR_BUDGET_PACKET_VERSION, COMPLEX_CONST_PACKET_VERSION,
-                       PRIVATE_PACKET_VERSION, LEGACY_PACKET_VERSION):
+    if version not in (PACKET_VERSION, COUPLED_PACKET_VERSION, GRAMMAR_BUDGET_PACKET_VERSION,
+                       COMPLEX_CONST_PACKET_VERSION, PRIVATE_PACKET_VERSION, LEGACY_PACKET_VERSION):
         raise probe.ProbeError("invalid_manifest")
     capture = version != LEGACY_PACKET_VERSION
     expected_wire = {LEGACY_PACKET_VERSION: LEGACY_WIRE_SCHEMA_SHA256,
                      PRIVATE_PACKET_VERSION: LEGACY_WIRE_SCHEMA_SHA256,
                      COMPLEX_CONST_PACKET_VERSION: PREVIOUS_WIRE_SCHEMA_SHA256,
                      GRAMMAR_BUDGET_PACKET_VERSION: GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256,
+                     COUPLED_PACKET_VERSION: COUPLED_WIRE_SCHEMA_SHA256,
                      PACKET_VERSION: WIRE_SCHEMA_SHA256}[version]
     expected_effective = {LEGACY_PACKET_VERSION: LEGACY_EFFECTIVE_RUNTIME_SHA256,
                           PRIVATE_PACKET_VERSION: LEGACY_EFFECTIVE_RUNTIME_SHA256,
                           COMPLEX_CONST_PACKET_VERSION: PREVIOUS_EFFECTIVE_RUNTIME_SHA256,
                           GRAMMAR_BUDGET_PACKET_VERSION: GRAMMAR_BUDGET_EFFECTIVE_RUNTIME_SHA256,
+                          COUPLED_PACKET_VERSION: COUPLED_EFFECTIVE_RUNTIME_SHA256,
                           PACKET_VERSION: EFFECTIVE_RUNTIME_SHA256}[version]
     value = assets.object_fields(packet, _FIELDS | ({"diagnostic_capture"} if capture else set()))
     old_candidate._hash(value["accepted_commit"], 40)

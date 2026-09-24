@@ -134,8 +134,8 @@ class BedrockAdapterRulers(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(output["type"], "json_schema")
         self.assertEqual(output["structure"]["jsonSchema"]["name"], constraint["name"])
         schema = json.loads(output["structure"]["jsonSchema"]["schema"])
-        self.assertEqual(len(schema["anyOf"]), 5)
-        self.assertEqual(sum(branch["properties"]["outcome"]["const"] == "request" for branch in schema["anyOf"]), 3)
+        self.assertEqual(len(schema["anyOf"]), 2)
+        self.assertEqual(sum("const" in branch["properties"]["outcome"] for branch in schema["anyOf"]), 1)
         self.assertNotIn("oneOf", json.dumps(schema))
         for forbidden in ('"minimum"', '"maxItems"', '"pattern"'):
             self.assertNotIn(forbidden, json.dumps(schema))

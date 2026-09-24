@@ -206,7 +206,7 @@ class InvalidRequestReasonTests(unittest.IsolatedAsyncioTestCase):
         constraint = recipe_model._structured_output(recipe_model.output_schema())[0]
         wire_format, _ = converse_schema(constraint)
         wire = json.loads(wire_format["structure"]["jsonSchema"]["schema"])
-        branches = [branch for branch in wire["anyOf"] if branch["properties"]["outcome"]["const"] == "clarify"]
+        branches = [branch for branch in wire["anyOf"] if branch["properties"]["outcome"].get("const") == "clarify"]
         self.assertEqual(len(branches), 1)
         self.assertEqual(branches[0]["properties"]["clarification"]["properties"]["choices"]["minItems"], 1)
         canonical = recipe_model.output_schema()["oneOf"][4]["properties"]["clarification"]["oneOf"]

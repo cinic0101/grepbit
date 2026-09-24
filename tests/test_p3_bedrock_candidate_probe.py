@@ -91,7 +91,7 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
                          ["ap-northeast-1", "ap-northeast-3"])
         self.assertEqual(self.packet["candidate"]["response_mode"], "bedrock_converse_normalized")
         self.assertEqual(self.packet["wire_schema_sha256"], runner.WIRE_SCHEMA_SHA256)
-        self.assertEqual(self.packet["version"], "p3-bedrock-candidate-packet-v5")
+        self.assertEqual(self.packet["version"], "p3-bedrock-candidate-packet-v6")
         self.assertNotEqual(self.packet["canonical_schema_sha256"], self.packet["wire_schema_sha256"])
         self.assertEqual(self.packet["case_id"], "E01_overview.en")
         self.assertIn("tools/p3_bedrock_candidate_probe.py", self.packet["source_identity"]["files_sha256"])
@@ -110,7 +110,8 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
         wires = {runner.LEGACY_PACKET_VERSION: runner.LEGACY_WIRE_SCHEMA_SHA256,
                  runner.PRIVATE_PACKET_VERSION: runner.LEGACY_WIRE_SCHEMA_SHA256,
                  runner.COMPLEX_CONST_PACKET_VERSION: runner.PREVIOUS_WIRE_SCHEMA_SHA256,
-                 runner.GRAMMAR_BUDGET_PACKET_VERSION: runner.GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256}
+                 runner.GRAMMAR_BUDGET_PACKET_VERSION: runner.GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256,
+                 runner.COUPLED_PACKET_VERSION: runner.COUPLED_WIRE_SCHEMA_SHA256}
         for version, wire in wires.items():
             with self.subTest(version=version):
                 historical = deepcopy(self.packet)
