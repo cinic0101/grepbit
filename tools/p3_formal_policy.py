@@ -10,7 +10,11 @@ from tools import p3_assets as assets, p3_scoring as scoring
 
 V1 = "p3-formal-allocation-v1"
 V2 = "p3-formal-allocation-v2"
-VERSIONS = (V1, V2)
+# Holdout A (#79): independently authored fresh families only, one observation per
+# candidate; never promotion eligible.
+HOLDOUT_A = "p3-holdout-a-allocation-v1"
+VERSIONS = (V1, V2, HOLDOUT_A)
+HOLDOUT_VERSIONS = (HOLDOUT_A,)
 _POLICIES = {
     V1: {
         "families": 24, "inputs": 44,
@@ -29,6 +33,15 @@ _POLICIES = {
         "input_exposures": {"frozen_fresh": 13, "exposed_regression": 15},
         "cohort_exposure": {"answer": (2, 1), "clarify": (1, 2), "decline": (2, 3), "anchor": (0, 3)},
         "languages": {"zh-TW": 8, "en": 10, "ja": 10},
+    },
+    HOLDOUT_A: {
+        "families": 7, "inputs": 21,
+        "family_cohorts": {"answer": 2, "clarify": 3, "decline": 2},
+        "input_cohorts": {"answer": 6, "clarify": 9, "decline": 6},
+        "family_exposures": {"frozen_fresh": 7},
+        "input_exposures": {"frozen_fresh": 21},
+        "cohort_exposure": {"answer": (2, 0), "clarify": (3, 0), "decline": (2, 0)},
+        "languages": {"zh-TW": 7, "en": 7, "ja": 7},
     },
 }
 
@@ -79,11 +92,19 @@ def summarize(inputs: list[dict], results: list[dict], *, panel_kind: str, run_s
     if allocation_policy is None:
         return scoring.summarize(inputs, results, panel_kind=panel_kind, run_status=run_status)
     version = validate_identity(allocation_policy)
-    if panel_kind != "formal":
+    # A holdout panel is frozen in the formal asset format; its live report labels
+    # itself "holdout". Either label is accepted only for holdout versions.
+    if panel_kind not in (("formal", "holdout") if version in HOLDOUT_VERSIONS else ("formal",)):
         raise assets.P3Error("invalid_panel")
     validate_allocation(inputs, version)
     summary = scoring.summarize(inputs, results, panel_kind="formal" if version == V1 else "development",
                                 run_status=run_status)
+    if version in HOLDOUT_VERSIONS:
+        # Fresh observation: family-weighted outcomes from the frozen engine, no
+        # promotion routing at all. Passing a holdout is evidence, not a gate.
+        summary["panel_kind"] = "holdout"
+        summary["promotion"]["eligible"] = False
+        summary["promotion"]["passed"] = False
     if version == V2:
         # Only eligibility is routed. Outcomes, fractions, denominators and every
         # success/veto gate are exactly those produced by the frozen engine.
