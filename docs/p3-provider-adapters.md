@@ -65,6 +65,11 @@ The subsequent [grammar-budget repair](p3-bedrock-grammar-budget.md) compacts
 only the exact pinned recipe schema for Bedrock after a v3 grammar-size HTTP 400.
 It keeps native typed validation authoritative and versions the wire/runtime
 identity again; other named schemas continue through the generic translator.
+The [wire-coupling repair](p3-bedrock-wire-coupling.md) (v5) restores the
+canonical coupling between `outcome` and its required fields as five closed
+root branches after the #74 diagnostic showed the v4 single-root grammar
+admitted a clarify signal on a request body; the flattened clarification and
+all native validation stay as in v4.
 The original schema tree is checked for private credentials and endpoint text
 before wire serialization, because JSON escaping can hide a literal secret from
 checks on the serialized schema string.
