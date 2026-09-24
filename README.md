@@ -83,6 +83,10 @@ request-validation failures. That run is not fresh quality or promotion evidence
 the 12B candidate was not advanced. No further live run is authorized by these
 results. Full P3 exit remains open; grounding, resume and synthesis are separate.
 
+The [provider adapter checkpoint](docs/p3-provider-adapters.md) adds an offline
+Bedrock Converse path alongside the historical LiteLLM client. It does not
+admit a Bedrock candidate or authorize a live model request.
+
 The seed has 10 tables and 88 rows. There are 30 authored case descriptions:
 18 reference-SQL checks and 12 behavioral scenarios. The fixture checker still
 marks those scenarios `not_implemented`; separate runtime tests exercise E01-E03's
@@ -135,6 +139,7 @@ are ignored by Git; rebuild from the committed source instead of committing a DB
 | [Local execution](docs/local-execution.md) | Owner-triggered work and copy/paste handoff |
 | [P1.1 fact kernel](docs/fact-kernel.md) | Explicit request contract, installation, example and bounded execution guarantees |
 | [P1 model integration](docs/model-integration.md) | Accepted adapter boundaries, smoke history and separately authorized execution |
+| [Provider adapters](docs/p3-provider-adapters.md) | LiteLLM compatibility and offline Bedrock Converse contract |
 | [P2 recipe model integration](docs/recipe-model-integration.md) | Shared one-shot recipe contract, native dispatch, safe evidence and offline-only scope |
 | [P2 recipe integration runner](docs/recipe-smoke.md) | Fixed evaluator panel, intent-first grading, explicit stops and two-gate manifest preparation |
 | [P2 recipes v0.1](docs/p2-recipes.md) | Accepted admission matrix, offline Compare/Overview/Breakdown APIs and shared execution |

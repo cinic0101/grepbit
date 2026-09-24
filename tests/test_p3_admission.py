@@ -917,8 +917,15 @@ class P3CandidateIdentityTests(AdmissionAssertions):
         self.assertEqual(identity["candidate_freeze_sha"], FROZEN_BASELINE)
         self.assertEqual(identity["declared_at"], DECLARED_AT)
         self.assertEqual(identity["declaration"], "https://github.com/cinic0101/grepbit/issues/43")
-        expected_paths = set(self.runtime_paths()) | set(PROTECTED_TOOLS)
+        frozen_runtime_paths = set(subprocess.check_output(
+            ["git", "--no-optional-locks", "ls-tree", "-r", "--name-only",
+             FROZEN_BASELINE, "--", "grepbit"], cwd=ROOT, timeout=5,
+            text=True).splitlines())
+        expected_paths = frozen_runtime_paths | set(PROTECTED_TOOLS)
         self.assertTrue(expected_paths.issubset(identity["files_sha256"]))
+        self.assertEqual(set(identity["files_sha256"]), expected_paths)
+        self.assertNotIn("grepbit/bedrock.py", identity["files_sha256"])
+        self.assertNotIn("grepbit/provider.py", identity["files_sha256"])
         for name, digest in identity["files_sha256"].items():
             with self.subTest(source=name):
                 self.assertEqual(digest, hashlib.sha256(historical_bytes(name)).hexdigest())

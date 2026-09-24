@@ -17,8 +17,10 @@ P1.3a, the second smoke (#13) passed 12/12 inputs across four semantic families.
 These completed authorizations do not permit more calls. See the
 [integration guide](model-integration.md) for `.env.example`, explicit
 `--env-file` behavior, offline preparation and the implemented live command.
-The default/dry-run loads no credentials and makes no network calls. Bedrock is
-not implemented and is not a fallback. Formal measurement starts at P3.
+The default/dry-run loads no credentials and makes no network calls. An offline
+[Bedrock Converse adapter](p3-provider-adapters.md) is available for future
+candidate tooling, but the historical runners remain pinned to LiteLLM. Bedrock
+is not a fallback or an admitted live candidate. Formal measurement starts at P3.
 P2.0 is [design/admission only](p2-recipes.md), not recipe execution or live
 authorization.
 
