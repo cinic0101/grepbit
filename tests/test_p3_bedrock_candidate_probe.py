@@ -77,7 +77,8 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
         output = self.output()
         kwargs = {"packet_path": self.packet_path, "authorization_path": self.auth_path,
                   "accepted_commit": COMMIT, "gateway_policies": dict(runner.POLICIES),
-                  "client": self.client(), "clock": lambda: 0.0}
+                  "client": self.client(), "clock": lambda: 0.0,
+                  "capture_http_400_body": True}
         kwargs.update(overrides)
         return output, await runner.run_probe(self.db, output, **kwargs)
 
@@ -142,11 +143,20 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
         report = await runner.run_probe(self.db, output, packet_path=self.packet_path,
                                         authorization_path=self.auth_path, accepted_commit=COMMIT,
                                         gateway_policies=dict(runner.POLICIES), origin="live",
-                                        env_file=self.root / "synthetic.env", clock=lambda: 0.0)
+                                        env_file=self.root / "synthetic.env", clock=lambda: 0.0,
+                                        capture_http_400_body=True)
         self.assertEqual(report["client_http_attempts"], 0)
         self.assertEqual(report["runtime_invocations"], 0)
         self.assertEqual(report["reservation"], "not_reserved")
         self.env_loader.assert_not_called()
+
+    def test_failed_private_fsync_removes_partial_body(self):
+        private_dir = self.root / "failed-private"
+        private_dir.mkdir(mode=0o700)
+        with patch.object(runner.os, "fsync", side_effect=OSError("synthetic disk failure")):
+            with self.assertRaises(OSError):
+                runner._write_private_error_body(private_dir, b"private partial body")
+        self.assertFalse((private_dir / "http-400-body.json").exists())
 
     async def test_one_compatibility_success_keeps_model_identity_unobserved(self):
         output, report = await self.run_case()
@@ -205,6 +215,24 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
         self.packet_path.write_text(json.dumps(changed))
         output, report = await self.run_case(origin="live", client=None, env_file=self.root / "unread.env")
         self.assertEqual(report["runtime_invocations"], 0)
+        self.env_loader.assert_not_called()
+
+    async def test_v2_live_capture_requires_explicit_programmatic_opt_in(self):
+        for capture in (None, False):
+            with self.subTest(capture=capture):
+                output = self.output()
+                kwargs = {} if capture is None else {"capture_http_400_body": capture}
+                report = await runner.run_probe(
+                    self.db, output, packet_path=self.packet_path,
+                    authorization_path=self.auth_path, accepted_commit=COMMIT,
+                    gateway_policies=dict(runner.POLICIES), origin="live",
+                    env_file=self.root / "synthetic.env", clock=lambda: 0.0, **kwargs)
+                self.assertEqual(report["status"], "stopped")
+                self.assertEqual(report["error_code"], "invalid_configuration")
+                self.assertEqual(report["reservation"], "not_reserved")
+                self.assertEqual(report["client_http_attempts"], 0)
+                self.assertEqual(report["runtime_invocations"], 0)
+                self.assertFalse(output.with_name(output.name + "-private").exists())
         self.env_loader.assert_not_called()
 
     async def test_typed_failure_is_not_compatibility_pass(self):

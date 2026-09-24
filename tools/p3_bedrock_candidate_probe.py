@@ -242,6 +242,35 @@ def bind_authorization(packet_path: Path, reference: str, output_path: Path) -> 
             "packet_sha256": sha}
 
 
+def _write_private_error_body(private_dir: Path, raw: bytes) -> None:
+    if len(raw) > DIAGNOSTIC_CAPTURE["max_bytes"]:
+        return
+    private_path = private_dir / "http-400-body.json"
+    smoke._no_symlinks(private_path)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+    directory_fd = os.open(private_dir, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+                           | getattr(os, "O_NOFOLLOW", 0))
+    try:
+        info = os.fstat(directory_fd)
+        if (not stat.S_ISDIR(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o700
+                or info.st_uid != os.getuid()):
+            raise OSError("private diagnostic directory changed")
+        fd = os.open(private_path.name, flags, 0o600, dir_fd=directory_fd)
+        try:
+            with os.fdopen(fd, "wb") as stream:
+                stream.write(raw)
+                stream.flush()
+                os.fsync(stream.fileno())
+        except BaseException:
+            try:
+                os.unlink(private_path.name, dir_fd=directory_fd)
+            except OSError:
+                pass
+            raise
+    finally:
+        os.close(directory_fd)
+
+
 class _BedrockProbe(probe._LegacyProbe):
     def __init__(self, packet_path, authorization_path, accepted_commit, policies,
                  *, capture_http_400_body=False, output_dir=None):
@@ -332,29 +361,8 @@ class _BedrockProbe(probe._LegacyProbe):
             raise probe.ProbeError("artifact_conflict") from None
         except OSError:
             raise probe.ProbeError("artifact_io") from None
-        private_path = private_dir / "http-400-body.json"
-
-        def capture(raw: bytes) -> None:
-            if len(raw) > DIAGNOSTIC_CAPTURE["max_bytes"]:
-                return
-            smoke._no_symlinks(private_path)
-            flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
-            directory_fd = os.open(private_dir, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
-                                   | getattr(os, "O_NOFOLLOW", 0))
-            try:
-                info = os.fstat(directory_fd)
-                if (not stat.S_ISDIR(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o700
-                        or info.st_uid != os.getuid()):
-                    raise OSError("private diagnostic directory changed")
-                fd = os.open(private_path.name, flags, 0o600, dir_fd=directory_fd)
-                with os.fdopen(fd, "wb") as stream:
-                    stream.write(raw)
-                    stream.flush()
-                    os.fsync(stream.fileno())
-            finally:
-                os.close(directory_fd)
-
-        return client_from_env(env_file=env_file, bedrock_error_body_sink=capture)
+        return client_from_env(env_file=env_file,
+                               bedrock_error_body_sink=lambda raw: _write_private_error_body(private_dir, raw))
 
     def check_client(self, client, policies):
         if (type(client) is not BedrockClient or type(client.config) is not BedrockConfig
@@ -382,7 +390,7 @@ class _BedrockProbe(probe._LegacyProbe):
 async def run_probe(database: Path, output_dir: Path, *, packet_path: Path,
                     authorization_path: Path, accepted_commit: str, gateway_policies: dict,
                     env_file: Path | None = None, origin: str = "mock", client=None,
-                    clock=time.monotonic, capture_http_400_body: bool = True) -> dict:
+                    clock=time.monotonic, capture_http_400_body: bool = False) -> dict:
     return await probe._run_probe(database, output_dir,
                                   contract=_BedrockProbe(packet_path, authorization_path,
                                                          accepted_commit, gateway_policies,
