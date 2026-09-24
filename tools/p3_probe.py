@@ -176,6 +176,9 @@ class _LegacyProbe:
     def __init__(self, plan_path, accepted_commit):
         self.path, self.accepted_commit = plan_path, accepted_commit
 
+    def budgets(self):
+        return CALL_SECONDS, PUBLICATION_SECONDS
+
     def manifest(self):
         manifest = {"version": VERSION, "runner": runner_identity(), "plan_sha256": None,
                     "accepted_commit": self.accepted_commit if isinstance(self.accepted_commit, str)
@@ -226,6 +229,7 @@ async def _run_probe(database: Path, output_dir: Path, *, contract,
     """Private one-shot lifecycle shared by two closed admission callers, never a CLI."""
     if origin not in ("mock", "live"):
         raise ProbeError("invalid_configuration")
+    call_seconds, publication_seconds = contract.budgets()
     started = clock()
     # Do not copy unvalidated plan/config values into evidence, including path strings.
     manifest = contract.manifest()
@@ -247,7 +251,7 @@ async def _run_probe(database: Path, output_dir: Path, *, contract,
 
     def before_send():
         unchanged()
-        if elapsed() >= PUBLICATION_SECONDS - CALL_SECONDS:
+        if elapsed() >= publication_seconds - call_seconds:
             raise ProbeError("panel_budget")
 
     try:
@@ -273,19 +277,19 @@ async def _run_probe(database: Path, output_dir: Path, *, contract,
         contract.check_client(active_client, report["gateway_policy"])
         report["transport_security"] = active_client.config.transport_security
         unchanged()
-        if elapsed() >= PUBLICATION_SECONDS - CALL_SECONDS:
+        if elapsed() >= publication_seconds - call_seconds:
             raise ProbeError("panel_budget")
         report.update(status="running", reservation="in_progress", possible_in_flight_attempts=1,
                       attempt_budget_used=1)
         artifacts.persist(_safe(report, active_client))
         unchanged()
-        if elapsed() >= PUBLICATION_SECONDS - CALL_SECONDS:
+        if elapsed() >= publication_seconds - call_seconds:
             raise ProbeError("panel_budget")
         report["runtime_invocations"] = 1
         artifacts.persist(_safe(report, active_client))
-        async with asyncio.timeout(CALL_SECONDS):
+        async with asyncio.timeout(call_seconds):
             result = await interpret_recipe_and_execute(
-                question, database, _SingleAttempt(active_client, before_send), timeout_seconds=CALL_SECONDS, clock=clock)
+                question, database, _SingleAttempt(active_client, before_send), timeout_seconds=call_seconds, clock=clock)
         if type(active_client.http_attempts) is not int or active_client.http_attempts not in (0, 1):
             raise ProbeError("attempt_limit")
         contract.project(report, result, active_client)
@@ -317,7 +321,7 @@ async def _run_probe(database: Path, output_dir: Path, *, contract,
         artifacts.persist(_safe(report, active_client))
         pending, target = stage_terminal(
             artifacts, _safe(terminal, active_client), validate=unchanged,
-            remaining=lambda: PUBLICATION_SECONDS - elapsed())
+            remaining=lambda: publication_seconds - elapsed())
     except (KeyboardInterrupt, asyncio.CancelledError):
         report.update(status="incomplete", error_code="interrupted", stop_reason="interrupted", compatibility_passed=False)
     except (ProbeError, *_SAFE_ERRORS) as exc:

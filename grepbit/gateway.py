@@ -13,6 +13,7 @@ import math
 import os
 from pathlib import Path
 import re
+from typing import ClassVar
 from urllib.parse import urlsplit
 
 from dotenv.parser import parse_stream
@@ -154,6 +155,7 @@ def json_schema_response_format(constraint: object) -> dict[str, object]:
 
 @dataclass(frozen=True)
 class GatewayConfig:
+    max_call_timeout_seconds: ClassVar[float] = CALL_TIMEOUT_SECONDS
     base_url: str = field(repr=False)
     api_key: str = field(repr=False)
     model: str = MODEL
@@ -275,7 +277,7 @@ class GatewayClient:
 
     def _validate_call(self, messages: list[dict[str, str]], timeout_seconds: float) -> None:
         if (type(timeout_seconds) not in (int, float) or not math.isfinite(timeout_seconds)
-                or not 0 < timeout_seconds <= CALL_TIMEOUT_SECONDS):
+                or not 0 < timeout_seconds <= self.config.max_call_timeout_seconds):
             raise ModelError("invalid_configuration")
         if (not isinstance(messages, list) or len(messages) != 2
                 or any(not isinstance(m, dict) or set(m) != {"role", "content"}

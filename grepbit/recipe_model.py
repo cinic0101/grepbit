@@ -291,7 +291,7 @@ async def interpret_recipe_and_execute(
     }
     try:
         if (type(timeout_seconds) not in (int, float)
-                or not 0 < timeout_seconds <= CALL_TIMEOUT_SECONDS):
+                or not 0 < timeout_seconds <= client.config.max_call_timeout_seconds):
             raise ModelError("invalid_configuration")
         messages = _messages(question, context)
         constraint, identity = _structured_output(context["output_schema"])
