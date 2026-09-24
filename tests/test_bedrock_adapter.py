@@ -1,5 +1,6 @@
 """Issue #62 provider rulers; dummy keys and mock HTTP only."""
 import importlib.util
+import asyncio
 import json
 from pathlib import Path
 import tempfile
@@ -180,6 +181,70 @@ class BedrockAdapterRulers(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(caught.exception.http_status, status)
                 self.assertEqual(client.http_attempts, 1)
                 self.assertNotIn(KEY, str(caught.exception))
+
+    async def test_bedrock_400_logs_only_bounded_safe_diagnostics(self):
+        private = "private-question-and-schema-value"
+        response = httpx.Response(400, headers={
+            "x-amzn-errortype": "ValidationException",
+            "x-amzn-requestid": "01234567-89ab-cdef-0123-456789abcdef",
+        }, json={"message": "Invalid JSON schema for outputConfig.textFormat: " + private})
+        client = self.client(lambda _: response)
+        with self.assertLogs("grepbit.bedrock", level="WARNING") as logs:
+            with self.assertRaises(ModelError) as caught:
+                await client.complete(MESSAGES)
+        self.assertEqual((caught.exception.code, caught.exception.http_status),
+                         ("http_configuration", 400))
+        self.assertEqual(client.http_attempts, 1)
+        logged = "\n".join(logs.output)
+        self.assertIn("ValidationException", logged)
+        self.assertIn("01234567-89ab-cdef-0123-456789abcdef", logged)
+        self.assertIn("structured_output", logged)
+        for secret in (private, KEY, MESSAGES[1]["content"]):
+            self.assertNotIn(secret, logged)
+
+    async def test_bedrock_400_diagnostic_rejects_untrusted_header_and_body(self):
+        response = httpx.Response(400, headers={
+            "x-amzn-errortype": "ValidationException " + KEY,
+            "x-amzn-requestid": "request-" + KEY,
+        }, json={"message": KEY * 1000})
+        client = self.client(lambda _: response)
+        with self.assertLogs("grepbit.bedrock", level="WARNING") as logs:
+            with self.assertRaises(ModelError):
+                await client.complete(MESSAGES)
+        logged = "\n".join(logs.output)
+        self.assertIn("status=400", logged)
+        self.assertNotIn(KEY, logged)
+        self.assertNotIn("ValidationException " + KEY, logged)
+
+    async def test_bedrock_400_diagnostic_uses_closed_body_type_without_header(self):
+        client = self.client(lambda _: httpx.Response(400, json={
+            "__type": "com.amazonaws.bedrock#ValidationException",
+            "message": "The inference profile is unavailable for this region",
+        }))
+        with self.assertLogs("grepbit.bedrock", level="WARNING") as logs:
+            with self.assertRaises(ModelError):
+                await client.complete(MESSAGES)
+        logged = "\n".join(logs.output)
+        self.assertIn("aws_type=ValidationException", logged)
+        self.assertIn("message_mentions=model_route", logged)
+        self.assertIn("request_id=unknown", logged)
+
+    async def test_slow_400_diagnostic_does_not_turn_http_failure_into_timeout(self):
+        class SlowError(httpx.AsyncByteStream):
+            async def __aiter__(self):
+                await asyncio.sleep(0.1)
+                yield b'{"message":"Invalid JSON schema"}'
+
+        client = self.client(lambda _: httpx.Response(400, headers={
+            "content-type": "application/json", "x-amzn-errortype": "ValidationException",
+        }, stream=SlowError()))
+        with self.assertLogs("grepbit.bedrock", level="WARNING") as logs:
+            with self.assertRaises(ModelError) as caught:
+                await client.complete(MESSAGES, timeout_seconds=0.02)
+        self.assertEqual((caught.exception.code, caught.exception.http_status),
+                         ("http_configuration", 400))
+        self.assertEqual(client.http_attempts, 1)
+        self.assertIn("aws_type=ValidationException", "\n".join(logs.output))
 
     async def test_invalid_response_and_non_success_stops_fail_closed(self):
         for payload, code in ((self.response(stop="max_tokens"), "truncated_output"),

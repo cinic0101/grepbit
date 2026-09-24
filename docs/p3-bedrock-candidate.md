@@ -72,7 +72,13 @@ cached for 24 hours. This is a bounded
 allowance, not a guarantee that the first call will finish. The owner will
 authorize a specific live command and output path
 only after reviewing the final accepted packet. Authentication and route failures
-must use safe codes without printing headers, key or private endpoint.
+must use safe codes without printing raw headers, key or private endpoint.
+
+For future Bedrock HTTP 400 failures, the local logger may emit only the status,
+an allowlisted AWS exception type, a UUID-shaped request ID, and a closed hint
+that the provider message mentions a schema, route, or inference setting. The
+hint is not a root-cause finding. The raw error body and free-form message are
+never logged or archived; this cannot recover diagnostics from earlier runs.
 
 The report may expose closed stage/status/error codes, requested profile,
 unknown observed model, bounded token/latency data, attempts and pinned hashes.

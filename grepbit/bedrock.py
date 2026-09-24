@@ -1,10 +1,12 @@
 """Amazon Bedrock Converse adapter with explicit API-key authentication."""
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 import hashlib
 import json
+import logging
 from pathlib import Path
 import re
 from typing import ClassVar
@@ -25,6 +27,70 @@ _SCHEMA_KEYS = {"type", "properties", "required", "additionalProperties", "descr
                 "const", "enum", "items", "anyOf", "allOf", "oneOf"}
 _STRIP_KEYS = {"minLength", "maxLength", "pattern", "minItems", "maxItems",
                "minimum", "maximum"}
+_ERROR_BODY_BYTES = 4096
+_ERROR_TYPES = frozenset({"ValidationException", "ResourceNotFoundException",
+                          "AccessDeniedException", "ThrottlingException",
+                          "ModelErrorException"})
+_LOGGER = logging.getLogger(__name__)
+
+
+def _error_type(value: object) -> str:
+    if not isinstance(value, str):
+        return "unknown"
+    name = value.split(":", 1)[0].rsplit("#", 1)[-1]
+    return name if name in _ERROR_TYPES else "unknown"
+
+
+def _request_id(value: object) -> str:
+    if (isinstance(value, str) and re.fullmatch(
+            r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+            value)):
+        return value
+    return "unknown"
+
+
+def _message_hint(value: object) -> str:
+    if not isinstance(value, str):
+        return "unknown"
+    message = value.lower()
+    if any(term in message for term in ("schema", "outputconfig", "textformat",
+                                        "structured output", "grammar")):
+        return "structured_output"
+    if any(term in message for term in ("inference profile", "model identifier",
+                                        "on-demand throughput")):
+        return "model_route"
+    if any(term in message for term in ("inferenceconfig", "maxtokens", "temperature")):
+        return "inference_config"
+    return "unknown"
+
+
+async def _error_body(response: httpx.Response) -> dict[str, object] | None:
+    if (response.headers.get("content-type", "").split(";")[0].strip().lower()
+            != "application/json"
+            or response.headers.get("content-encoding", "identity").strip().lower()
+            != "identity"):
+        return None
+    length = response.headers.get("content-length")
+    if length is not None and (not length.isascii() or not length.isdecimal()
+                               or len(length) > 9 or int(length) > _ERROR_BODY_BYTES):
+        return None
+    try:
+        raw = bytearray()
+        async with asyncio.timeout(1.0):
+            if response.is_stream_consumed:
+                raw.extend(response.content[:_ERROR_BODY_BYTES + 1])
+            else:
+                async for chunk in response.aiter_raw(chunk_size=2048):
+                    raw.extend(chunk)
+                    if len(raw) > _ERROR_BODY_BYTES:
+                        return None
+        if len(raw) > _ERROR_BODY_BYTES:
+            return None
+        body = json.loads(raw)
+    except Exception:
+        # Diagnostics cannot change the original HTTP failure classification.
+        return None
+    return body if isinstance(body, dict) else None
 
 
 @dataclass(frozen=True)
@@ -159,6 +225,20 @@ class BedrockClient(GatewayClient):
 
     def __init__(self, config: BedrockConfig, *, transport: httpx.AsyncBaseTransport | None = None):
         super().__init__(config, transport=transport)
+
+    async def _log_bad_request(self, response: httpx.Response) -> None:
+        aws_type = _error_type(response.headers.get("x-amzn-errortype"))
+        # Emit the useful header data before a slow error body can exhaust the
+        # outer call deadline. The body is optional and never logged verbatim.
+        _LOGGER.warning("Bedrock HTTP error status=400 aws_type=%s request_id=%s",
+                        aws_type, _request_id(response.headers.get("x-amzn-requestid")))
+        body = await _error_body(response)
+        if body is not None:
+            body_type = _error_type(body.get("__type", body.get("code")))
+            hint = _message_hint(body.get("message", body.get("Message")))
+            if body_type != "unknown" or hint != "unknown":
+                _LOGGER.warning("Bedrock HTTP error detail aws_type=%s message_mentions=%s",
+                                body_type if aws_type == "unknown" else aws_type, hint)
 
     async def complete(self, messages: list[dict[str, str]], *,
                        timeout_seconds: float = CALL_TIMEOUT_SECONDS,
