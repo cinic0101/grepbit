@@ -18,6 +18,7 @@ from .gateway import CALL_TIMEOUT_SECONDS, MODEL, GatewayClient, ModelError, jso
 from .json_diagnostics import invalid_json_fingerprint
 from .overview import OverviewAnalysisPack, OverviewRequest, execute_overview
 from .presentation import ClarificationPresentation, PRESENTATION_VERSION, render_clarification
+from .provider import LLMClient, normalize_response, response_mode, wire_identity
 
 CONTEXT_VERSION = "learningops-recipe-context-v2"
 OUTPUT_CONTRACT = "recipe-request-json-v2"
@@ -267,7 +268,7 @@ class RecipeInterpretation:
 
 
 async def interpret_recipe_and_execute(
-    question: str, database: Path, client: GatewayClient, *,
+    question: str, database: Path, client: LLMClient, *,
     timeout_seconds: float = CALL_TIMEOUT_SECONDS,
     clock: Callable[[], float] = time.monotonic,
 ) -> RecipeInterpretation:
@@ -281,7 +282,8 @@ async def interpret_recipe_and_execute(
     stages = dict.fromkeys(protocol.STAGES, "not_run")
     context = runtime_context()
     evidence: dict[str, object] = {
-        "requested_model": client.config.model, "returned_model": None, "response_mode": "json_content",
+        "requested_model": client.config.model, "returned_model": None,
+        "response_mode": response_mode(client.config),
         "finish_reason": None, "usage": protocol._usage(None), "http_status": None,
         "transport_security": client.config.transport_security, "stages": stages,
         "kernel_error_code": None, "response_shape": None, "context_identity": _identity(context),
@@ -292,7 +294,8 @@ async def interpret_recipe_and_execute(
                 or not 0 < timeout_seconds <= CALL_TIMEOUT_SECONDS):
             raise ModelError("invalid_configuration")
         messages = _messages(question, context)
-        constraint, evidence["structured_output_identity"] = _structured_output(context["output_schema"])
+        constraint, identity = _structured_output(context["output_schema"])
+        evidence["structured_output_identity"] = wire_identity(client.config, constraint, identity)
         stages["configuration"] = "passed"
         remaining = timeout_seconds - (clock() - started)
         if remaining <= 0:
@@ -301,6 +304,7 @@ async def interpret_recipe_and_execute(
                                          json_schema_constraint=constraint)
         stages["transport"] = "passed"
         evidence["http_status"] = response.status_code
+        response = normalize_response(client.config, response)
         content = protocol._content(response.body, evidence, expected_model=client.config.expected_model)
         stages["response_validation"] = "passed"
         try:

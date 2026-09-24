@@ -26,6 +26,7 @@ dist/
 .env
 .env.*
 !.env.example
+!.env.bedrock.example
 *.pem
 *.key
 CLAUDE.local.md

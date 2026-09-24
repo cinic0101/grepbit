@@ -1,4 +1,4 @@
-"""Explicit local-gateway configuration and one bounded, stateless HTTP attempt."""
+"""LiteLLM configuration and shared bounded stateless HTTP transport."""
 from __future__ import annotations
 
 import asyncio
@@ -26,6 +26,32 @@ CALL_TIMEOUT_SECONDS = 60.0
 ENV_NAMES = (
     "GREPBIT_LITELLM_BASE_URL", "GREPBIT_LITELLM_API_KEY", "GREPBIT_LITELLM_MODEL",
 )
+
+
+def _env_values(names: tuple[str, ...], *, environ: Mapping[str, str] | None,
+                env_file: Path | None) -> dict[str, str]:
+    """Read only named explicit bindings, without dotenv expansion or discovery."""
+    values: dict[str, str] = {}
+    if env_file is not None:
+        try:
+            with env_file.open("rb") as stream:
+                raw = stream.read(16385)
+            if len(raw) > 16384:
+                raise ValueError
+            for binding in parse_stream(io.StringIO(raw.decode("utf-8"))):
+                if binding.error:
+                    raise ValueError
+                if binding.key in names:
+                    if binding.key in values or binding.value is None:
+                        raise ValueError
+                    values[binding.key] = binding.value
+        except (OSError, ValueError, UnicodeError):
+            raise ModelError("invalid_configuration") from None
+    source = os.environ if environ is None else environ
+    for name in names:
+        if name in source:
+            values[name] = source[name]
+    return values
 
 # Codes, stages and stopping classifications are application-owned, never error text.
 _ERRORS = {
@@ -167,26 +193,7 @@ class GatewayConfig:
                  env_file: Path | None = None,
                  expected_model: ExpectedModel | None = None) -> GatewayConfig:
         _expected_alias(expected_model)  # Reject invalid admission before reading credentials.
-        values: dict[str, str] = {}
-        if env_file is not None:
-            try:
-                with env_file.open("rb") as stream:
-                    raw = stream.read(16385)
-                if len(raw) > 16384:
-                    raise ValueError
-                for binding in parse_stream(io.StringIO(raw.decode("utf-8"))):
-                    if binding.error:
-                        raise ValueError
-                    if binding.key in ENV_NAMES:
-                        if binding.key in values or binding.value is None:
-                            raise ValueError
-                        values[binding.key] = binding.value
-            except (OSError, ValueError, UnicodeError):
-                raise ModelError("invalid_configuration") from None
-        source = os.environ if environ is None else environ
-        for name in ENV_NAMES:
-            if name in source:
-                values[name] = source[name]
+        values = _env_values(ENV_NAMES, environ=environ, env_file=env_file)
         return cls(values.get(ENV_NAMES[0], ""), values.get(ENV_NAMES[1], ""),
                    values.get(ENV_NAMES[2], MODEL), expected_model=expected_model)
 
@@ -234,6 +241,8 @@ class GatewayResponse:
 class GatewayClient:
     """No constructor/import probes, session history, cookies, retries or fallback."""
 
+    response_mode = "json_content"
+
     def __init__(self, config: GatewayConfig, *, transport: httpx.AsyncBaseTransport | None = None):
         self.config = config
         self._transport = transport
@@ -264,17 +273,41 @@ class GatewayClient:
 
         return {key: clean(value) for key, value in data.items()}
 
-    async def complete(self, messages: list[dict[str, str]], *,
-                       timeout_seconds: float = CALL_TIMEOUT_SECONDS,
-                       json_schema_constraint: dict[str, object] | None = None) -> GatewayResponse:
+    def _validate_call(self, messages: list[dict[str, str]], timeout_seconds: float) -> None:
         if (type(timeout_seconds) not in (int, float) or not math.isfinite(timeout_seconds)
                 or not 0 < timeout_seconds <= CALL_TIMEOUT_SECONDS):
             raise ModelError("invalid_configuration")
         if (not isinstance(messages, list) or len(messages) != 2
                 or any(not isinstance(m, dict) or set(m) != {"role", "content"}
                        or not isinstance(m["content"], str) for m in messages)
-                or [m["role"] for m in messages] != ["system", "user"]):
+                or [m["role"] for m in messages] != ["system", "user"]
+                or not messages[1]["content"].strip()):
             raise ModelError("invalid_input")
+
+    def _validate_private(self, messages: list[dict[str, str]],
+                          response_format: dict[str, object] | None) -> None:
+        if self.safe_export({"messages": messages})["messages"] != messages:
+            raise ModelError("invalid_input")
+        if response_format is not None:
+            pending, names = [response_format], []
+            while pending:
+                value = pending.pop()
+                if isinstance(value, dict):
+                    names.extend(value)
+                    pending.extend(value.values())
+                elif isinstance(value, list):
+                    pending.extend(value)
+            private = {"response_format": response_format, "field_names": names}
+            try:
+                if self.safe_export(private) != private:
+                    raise ModelError("invalid_input")
+            except RecursionError:
+                raise ModelError("invalid_input") from None
+
+    async def complete(self, messages: list[dict[str, str]], *,
+                       timeout_seconds: float = CALL_TIMEOUT_SECONDS,
+                       json_schema_constraint: dict[str, object] | None = None) -> GatewayResponse:
+        self._validate_call(messages, timeout_seconds)
         payload: dict[str, object] = {
             "model": self.config.model, "messages": messages,
             "temperature": 0, "max_tokens": 2048, "stream": False,
@@ -286,27 +319,13 @@ class GatewayClient:
             body = json.dumps(payload, ensure_ascii=False, allow_nan=False).encode("utf-8")
         except (TypeError, ValueError, UnicodeError, RecursionError):
             raise ModelError("invalid_input") from None
-        if not messages[1]["content"].strip():
-            raise ModelError("invalid_input")
         if question_size > MAX_INPUT_BYTES or len(body) > MAX_REQUEST_BYTES:
             raise ModelError("input_too_large")
-        if self.safe_export({"messages": messages})["messages"] != messages:
-            raise ModelError("invalid_input")
-        if json_schema_constraint is not None:
-            pending, names = [payload["response_format"]], []
-            while pending:
-                value = pending.pop()
-                if isinstance(value, dict):
-                    names.extend(value)
-                    pending.extend(value.values())
-                elif isinstance(value, list):
-                    pending.extend(value)
-            private = {"response_format": payload["response_format"], "field_names": names}
-            try:
-                if self.safe_export(private) != private:
-                    raise ModelError("invalid_input")
-            except RecursionError:
-                raise ModelError("invalid_input") from None
+        self._validate_private(messages, payload.get("response_format"))
+        return await self._post_json(body, timeout_seconds)
+
+    async def _post_json(self, body: bytes, timeout_seconds: float) -> GatewayResponse:
+        """Shared one-attempt transport; provider clients own wire and response semantics."""
         status = None
         try:
             async with asyncio.timeout(timeout_seconds):

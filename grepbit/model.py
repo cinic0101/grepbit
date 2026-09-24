@@ -14,6 +14,7 @@ from .catalog import LEARNINGOPS, PROFILE_ID
 from .contracts import ExecutionLimits, FactPack, FactRequest, KernelError, utc_text
 from .gateway import CALL_TIMEOUT_SECONDS, MODEL, ExpectedModel, GatewayClient, ModelError, _expected_alias
 from .kernel import execute_facts
+from .provider import LLMClient, normalize_response, response_mode
 
 CONTEXT_VERSION = "learningops-model-context-v1"
 OUTPUT_CONTRACT = "fact-request-json-v1"
@@ -320,7 +321,7 @@ class Interpretation:
 
 
 async def interpret_and_execute(
-    question: str, database: Path, client: GatewayClient, *,
+    question: str, database: Path, client: LLMClient, *,
     constraints: Mapping[str, object] | None = None,
     timeout_seconds: float = CALL_TIMEOUT_SECONDS,
     clock: Callable[[], float] = time.monotonic,
@@ -330,7 +331,8 @@ async def interpret_and_execute(
     request = pack = error = None
     stages = dict.fromkeys(STAGES, "not_run")
     evidence: dict[str, object] = {
-        "requested_model": client.config.model, "returned_model": None, "response_mode": "json_content",
+        "requested_model": client.config.model, "returned_model": None,
+        "response_mode": response_mode(client.config),
         "finish_reason": None, "usage": _usage(None), "http_status": None,
         "transport_security": client.config.transport_security, "stages": stages,
         "kernel_error_code": None, "response_shape": None,
@@ -341,6 +343,7 @@ async def interpret_and_execute(
         response = await client.complete(messages, timeout_seconds=timeout_seconds)
         stages["transport"] = "passed"
         evidence["http_status"] = response.status_code
+        response = normalize_response(client.config, response)
         content = _content(response.body, evidence, expected_model=client.config.expected_model)
         stages["response_validation"] = "passed"
         data = strict_json(content)
