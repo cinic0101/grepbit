@@ -11,7 +11,7 @@ from typing import Literal
 from . import model as protocol
 from .breakdown import BreakdownAnalysisPack, BreakdownRequest, execute_breakdown
 from .catalog import LEARNINGOPS, PROFILE_ID
-from .clarification import Clarification, clarification_schema
+from .clarification import KINDS, MAX_CHOICES, Clarification, SemanticChoice, clarification_schema
 from .compare import CompareAnalysisPack, CompareRequest, execute_compare
 from .contracts import ExecutionLimits, KernelError
 from .gateway import CALL_TIMEOUT_SECONDS, MODEL, GatewayClient, ModelError, json_schema_response_format
@@ -27,6 +27,64 @@ STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v2"
 STRUCTURED_OUTPUT_SCHEMA_NAME = "grepbit_recipe_request"
 _NativeRequest = OverviewRequest | CompareRequest | BreakdownRequest
 _NativePack = OverviewAnalysisPack | CompareAnalysisPack | BreakdownAnalysisPack
+# Closed request-validation reasons for evidence; the failure stays one fixed
+# ``invalid_request`` code and no model text, key or value is retained. The
+# frozen validators decide accept/reject; a reason is named only after rejection.
+_CLARIFICATION_REASONS = ("clarification_shape", "choice_count", "choice_shape", "choice_values",
+                          "choice_consistency", "question_binding")
+INVALID_REQUEST_REASONS = ("root_shape", "unknown_recipe", "request_fields", "request_values",
+                           *_CLARIFICATION_REASONS, "export_drift")
+_REQUEST_FIELDS = {
+    "overview": (OverviewRequest, {"center_code", "start", "end", "timezone"}),
+    "compare": (CompareRequest, {"current", "baseline"}),
+    "breakdown": (BreakdownRequest, {"start", "end", "timezone", "top_k"}),
+}
+_VALUE_FIELDS = {
+    "count_basis": {"type", "scope", "value"}, "metric_meaning": {"type", "scope", "value"},
+    "comparison_roles": {"type", "request"}, "center": {"type", "request"},
+}
+
+
+class _InvalidRequest(ModelError):
+    """``invalid_request`` carrying one closed structural reason for evidence."""
+
+    def __init__(self, reason: str):
+        if reason not in INVALID_REQUEST_REASONS:
+            raise ValueError("Unknown request-validation reason.")
+        super().__init__("invalid_request")
+        self.reason = reason
+
+
+def _clarification_reason(raw: object, question: str) -> str:
+    """Name the first violated rule of a clarification the unchanged validators rejected."""
+    if not isinstance(raw, dict) or set(raw) != {"kind", "choices"} or raw["kind"] not in KINDS:
+        return "clarification_shape"
+    choices = raw["choices"]
+    if not isinstance(choices, list) or not 2 <= len(choices) <= MAX_CHOICES:
+        return "choice_count"
+    for choice in choices:
+        value = choice.get("semantic_value") if isinstance(choice, dict) else None
+        kind = value.get("type") if isinstance(value, dict) else None
+        if (not isinstance(choice, dict) or set(choice) != {"id", "semantic_value"}
+                or not isinstance(kind, str) or kind not in _VALUE_FIELDS or set(value) != _VALUE_FIELDS[kind]):
+            return "choice_shape"
+    try:
+        parsed = tuple(SemanticChoice.from_mapping(choice) for choice in choices)
+    except KernelError:
+        return "choice_values"
+    try:
+        clarification = Clarification(raw["kind"], parsed)
+    except KernelError:
+        return "choice_consistency"
+    try:
+        clarification.validate_question(question)
+    except KernelError:
+        return "question_binding"
+    # Deterministic presentation of a validated clarification has no rejection
+    # of its own; any remaining rejection is attributed to the bound values.
+    return "choice_values"
+
+
 _KERNEL_ERRORS = {
     "invalid_request": "kernel_failure", "unknown_metric": "kernel_failure",
     "unknown_entity": "kernel_failure", "ambiguous_entity": "kernel_failure",
@@ -239,22 +297,24 @@ class RecipeProposal:
 
 def _proposal(data: object) -> RecipeProposal:
     if not isinstance(data, dict):
-        raise ModelError("invalid_request")
+        raise _InvalidRequest("root_shape")
     if data == {"outcome": "declined"}:
         raise ModelError("model_declined")
     if (set(data) != {"outcome", "recipe_id", "recipe_version", "request"}
             or data["outcome"] != "request" or data["recipe_version"] != "0.1"):
-        raise ModelError("invalid_request")
+        raise _InvalidRequest("root_shape")
+    recipe, request = data["recipe_id"], data["request"]
+    if not isinstance(recipe, str) or recipe not in _REQUEST_FIELDS:
+        raise _InvalidRequest("unknown_recipe")
+    native, fields = _REQUEST_FIELDS[recipe]
+    # Only the selected recipe's exact top-level key set is a structural
+    # observation; nested and value failures remain the native validators' call.
+    if not isinstance(request, dict) or set(request) != fields:
+        raise _InvalidRequest("request_fields")
     try:
-        if data["recipe_id"] == "overview":
-            return RecipeProposal("overview", OverviewRequest.from_mapping(data["request"]))
-        if data["recipe_id"] == "compare":
-            return RecipeProposal("compare", CompareRequest.from_mapping(data["request"]))
-        if data["recipe_id"] == "breakdown":
-            return RecipeProposal("breakdown", BreakdownRequest.from_mapping(data["request"]))
+        return RecipeProposal(recipe, native.from_mapping(request))
     except KernelError:
-        raise ModelError("invalid_request") from None
-    raise ModelError("invalid_request")
+        raise _InvalidRequest("request_values") from None
 
 
 @dataclass(frozen=True, repr=False)
@@ -287,7 +347,7 @@ async def interpret_recipe_and_execute(
         "finish_reason": None, "usage": protocol._usage(None), "http_status": None,
         "transport_security": client.config.transport_security, "stages": stages,
         "kernel_error_code": None, "response_shape": None, "context_identity": _identity(context),
-        "structured_output_identity": None,
+        "structured_output_identity": None, "invalid_request_reason": None,
     }
     try:
         if (type(timeout_seconds) not in (int, float)
@@ -315,17 +375,17 @@ async def interpret_recipe_and_execute(
             raise
         stages["json_parse"] = "passed"
         if isinstance(data, dict) and data.get("outcome") == "clarify":
+            if set(data) != {"outcome", "clarification"}:
+                raise _InvalidRequest("clarification_shape")
             try:
-                if set(data) != {"outcome", "clarification"}:
-                    raise ModelError("invalid_request")
                 clarification = Clarification.from_mapping(data["clarification"])
                 clarification.validate_question(question)
                 presentation = render_clarification(clarification)
             except KernelError:
-                raise ModelError("invalid_request") from None
+                raise _InvalidRequest(_clarification_reason(data["clarification"], question)) from None
             action = {"clarification": clarification.to_dict(), "presentation": presentation.to_dict()}
             if client.safe_export(action) != action:
-                raise ModelError("invalid_request")
+                raise _InvalidRequest("export_drift")
         else:
             proposal = _proposal(data)
         stages["request_validation"] = "passed"
@@ -357,6 +417,8 @@ async def interpret_recipe_and_execute(
         clarification, presentation = None, None
         error = ModelError(exc.code, http_status=exc.http_status)
         stages[error.stage] = "failed"
+        if isinstance(exc, _InvalidRequest):
+            evidence["invalid_request_reason"] = exc.reason
         if error.stage == "response_validation" and evidence["response_shape"] is None:
             evidence["response_shape"] = protocol._response_shape(None, parsed=False, error=error)
         if error.http_status is not None:
@@ -390,7 +452,7 @@ async def interpret_recipe_and_execute(
         exported.update({
             "clarification": None, "presentation": None, "presentation_version": None, "model_outcome": None,
             "error_code": error.code, "stop_reason": error.stop_reason,
-            "stages": {**stages, "request_validation": "failed"},
+            "stages": {**stages, "request_validation": "failed"}, "invalid_request_reason": "export_drift",
         })
     elapsed = max(0.0, clock() - started)
     if error is None and elapsed >= timeout_seconds:

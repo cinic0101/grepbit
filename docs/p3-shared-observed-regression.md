@@ -128,3 +128,22 @@ fresh quality. The original ruler failure was the intended 300-versus-60-second
 call budget assertion; the corrected implementation now passes it. A local
 review also found and led to corrections for outer-timeout evidence projection
 and current runtime/schema identity verification before packet preparation.
+
+## Observed run follow-up (2026-09-24)
+
+The single owner-triggered 28-input run on accepted
+`dev@39984e30bf121b10735adb090b57d7eff2108a73` is archived at
+`.artifacts/p370-bedrock-observed-live-FYyH0G/run/report.json` (SHA-256
+`5fa060f21f7cf0d3b72aba88fda4eba427ead102cf33b5da45bb2c241dd8825d`) and
+recorded in [#70](https://github.com/cinic0101/grepbit/issues/70#issuecomment-5811490853):
+20/28 correct, 8/14 families, two checked-wrong, six `invalid_request`. It is
+observed regression evidence with `promotion_eligible=false`.
+
+The offline postmortem (#72) found that every request-validation failure was
+archived as the bare `invalid_request` code with empty diagnostics, so the six
+could not be separated into a one-choice clarification, an extra request field
+or another rule. The shared runtime now records one closed
+[`invalid_request_reason`](recipe-model-integration.md#invalid-request-closed-reason-72)
+in evidence, and the shared P3 projection validates it. This field applies to
+future runs only; it does not reinterpret the archived report, and it does not
+authorize a rerun.

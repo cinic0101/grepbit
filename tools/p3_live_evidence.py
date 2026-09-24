@@ -9,6 +9,7 @@ import re
 
 from grepbit import model
 from grepbit.gateway import _ERRORS, _expected_alias
+from grepbit.recipe_model import INVALID_REQUEST_REASONS
 from tools import p3_assets as assets, p3_eval as evaluator, p3_grading, p3_admission as admission, smoke
 
 _TRANSPORT = ("unencrypted_http", "tls_verification_enabled")
@@ -17,7 +18,7 @@ _SLOTS = frozenset(slot for slots in assets.ROLES.values() for slot in slots)
 _CODES = assets.SAFE_CODES | set(_ERRORS)
 _EVIDENCE_FIELDS = {
     "client_http_attempts", "elapsed_seconds", "requested_model", "returned_model", "http_status",
-    "transport_security", "usage", "stages", "error_code", "stop_reason",
+    "transport_security", "usage", "stages", "error_code", "stop_reason", "invalid_request_reason",
 }
 
 
@@ -58,6 +59,17 @@ def _evidence(value: dict, *, expected_model=None, requested_profile=None) -> di
     result = {key: deepcopy(value[key]) for key in _EVIDENCE_FIELDS if key in value}
     for key in ("error_code", "stop_reason"):
         if result.get(key) is not None and result[key] not in _CODES:
+            raise assets.P3Error("invalid_asset")
+    # Historical evidence has no reason. A reason needs the matching failure and
+    # the stage record that failure implies: parsed JSON, request validation
+    # failed, native execution never run. Contradictory archives fail closed.
+    reason = result.get("invalid_request_reason")
+    if reason is not None:
+        stages = result.get("stages")
+        if (reason not in INVALID_REQUEST_REASONS or result.get("error_code") != "invalid_request"
+                or not isinstance(stages, dict) or stages.get("json_parse") != "passed"
+                or stages.get("request_validation") != "failed"
+                or stages.get("kernel_execution") != "not_run"):
             raise assets.P3Error("invalid_asset")
     if requested_profile is not None:
         if (expected_model is not None or type(requested_profile) is not str
