@@ -69,6 +69,19 @@ version, each a separate gate. The #74 diagnostic pins its own v4 identities
 so its archive reads unchanged and its consumed grant cannot be replayed on
 the new wire.
 
+## One-shot compatibility authorization (v2)
+
+Remote review of the implementation found that the compatibility probe's
+authorization bound only the packet digest and the Issue #64 reference, so
+one envelope could in principle start another attempt at a fresh output path.
+The envelope is now `p3-bedrock-candidate-authorization-v2` and also binds the
+exact repository-local run slot (`--run-output-dir` at binding). Live mode
+checks the slot against `--output-dir` before credential access, and the
+slot's exclusive creation consumes it, so a complete, stopped or interrupted
+attempt can never be followed by a second send under the same envelope. A v1
+envelope still reads back for the archived p368/p369 evidence but never admits
+a live attempt; a moved v2 archive fails readback.
+
 ## Rulers and acceptance
 
 The specification ruler `tests/test_bedrock_wire_coupling_contract.py` failed
