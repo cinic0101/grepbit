@@ -131,8 +131,8 @@ def _current_identities() -> dict:
     actual = {"baseline_semantic_identity_sha256": assets.digest(baseline),
               "effective_runtime_identity_sha256": assets.digest(effective),
               "canonical_schema_sha256": canonical, "wire_schema_sha256": wire}
-    # The v1 observed packet is bound to the v4 (grammar-budget) wire and its
-    # compatibility witness. A later wire needs a new observed packet version.
+    # The current packet version is bound to the live wire and the witness that
+    # accepted it; older versions keep their own pins in _VERSION_PINS.
     expected = {"baseline_semantic_identity_sha256": bedrock_probe.semantic.SEMANTICS_SHA256,
                 "effective_runtime_identity_sha256": EFFECTIVE_RUNTIME_SHA256,
                 "canonical_schema_sha256": bedrock_probe.CANONICAL_SCHEMA_SHA256,

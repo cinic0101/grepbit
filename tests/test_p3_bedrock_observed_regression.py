@@ -136,6 +136,11 @@ class BedrockObservedRulers(unittest.IsolatedAsyncioTestCase):
         mixed["wire_schema_sha256"] = runner.WIRE_SCHEMA_SHA256
         with self.assertRaises(p3_assets.P3Error):
             runner._packet_contract(mixed)
+        stale_witness = deepcopy(packet)
+        stale_witness["compatibility"] = {**stale_witness["compatibility"],
+                                         "sha256": runner._VERSION_PINS[runner.LEGACY_PACKET_VERSION]["compatibility"]}
+        with self.assertRaises(p3_assets.P3Error):
+            runner._packet_contract(stale_witness)
         self.assertFalse(packet["promotion_eligible"])
         self.assertEqual(packet["evidence_class"], "observed_regression")
         self.assertEqual(p3_assets.read_asset(self.auth_path)["packet_sha256"],
