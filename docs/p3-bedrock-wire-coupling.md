@@ -128,9 +128,9 @@ native shapes, with only `outcome` required; the clarify object has `outcome`
 const `clarify` and the required v4-flattened `clarification`. A clarify
 signal can therefore never carry a request body and never omit
 `clarification`, which is exactly the #74 defect. Deliberately left to native
-validation, as in v4, are the recipe/shape pairing and a bare
-`{"outcome":"request"}` or `declined` with a body; none of these was observed
-in #70 or #74. Offline size 4,095 compact bytes, 133 above the accepted v4.
+validation, as in v4, are the recipe/shape pairing (`request_fields`) and a
+bare `{"outcome":"request"}` or `declined` with a body (`root_shape`); none of
+these was observed in #70 or #74. Offline size 4,095 compact bytes, 133 above the accepted v4.
 Acceptance is unknown until one compatibility call; a rejection of v6b moves
 to decision B, not to further reshaping.
 
