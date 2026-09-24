@@ -109,6 +109,7 @@ class HoldoutRunTests(unittest.IsolatedAsyncioTestCase):
         with patch.object(holdout, "GatewayConfig") as config_cls, \
                 patch.object(holdout, "GatewayClient", return_value=client or self.client()) as factory:
             config_cls.from_env.return_value = GatewayConfig(BASE, KEY)
+            self.config_cls, self.factory = config_cls, factory
             report = await holdout.run_live(
                 self.database, output, packet_path=self.packet_path, authorization_path=authorization,
                 accepted_commit=SHA, env_file=self.root / "unused.env", gateway_policies=policies or dict(POLICIES))
@@ -164,6 +165,8 @@ class HoldoutRunTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaisesRegex(p3_assets.P3Error, "invalid_manifest"):
             await self.run_mock(other, authorization)
         self.assertFalse(other.exists())
+        self.config_cls.from_env.assert_not_called()
+        self.factory.assert_not_called()
         self.assertEqual(len(self.sent), 21)
         moved = self.root / "moved"
         output.rename(moved)
@@ -182,6 +185,16 @@ class HoldoutRunTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaisesRegex(p3_assets.P3Error, "invalid_configuration"):
             await self.run_mock(output, bound, policies={**POLICIES, "retries": "enabled"})
         self.assertEqual(self.sent, [])
+        self.config_cls.from_env.assert_not_called()
+        self.factory.assert_not_called()
+        for field, bad in (("gateway_policy", {**self.packet["gateway_policy"], "attestation": "tampered"}),
+                           ("locations", "not-a-dict"), ("preparation_assets", {"manifest": self.packet["preparation_assets"]["manifest"]}),
+                           ("assets", {**self.packet["assets"], "extra": self.packet["assets"]["panel"]})):
+            with self.subTest(field=field):
+                changed = deepcopy(self.packet)
+                changed[field] = bad
+                with self.assertRaises(p3_assets.P3Error):
+                    holdout._packet_contract(changed)
 
     def test_cli_arguments_are_closed(self):
         self.assertEqual(holdout.main(["--report"]), 2)

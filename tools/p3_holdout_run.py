@@ -118,12 +118,17 @@ def _packet_contract(packet: dict) -> None:
             raise assets.P3Error("invalid_manifest")
         assets.Provenance.from_mapping(row["provenance"], row["exposure"])
     formal._pin_fields(packet["freeze"])
-    for pin in packet["preparation_assets"].values():
+    for pin in assets.object_fields(packet["preparation_assets"], {"manifest", "report"}, "invalid_manifest").values():
         formal._pin_fields(pin)
-    for pin in packet["assets"].values():
+    for pin in assets.object_fields(packet["assets"], {"cases", "oracles", "panel"}, "invalid_manifest").values():
         formal._pin_fields(pin)
+    locations = assets.object_fields(packet["locations"], {"freeze", "preparation"}, "invalid_manifest")
+    if any(not isinstance(value, str) or not value for value in locations.values()):
+        raise assets.P3Error("invalid_manifest")
     _hash(packet["database_sha256"])
-    smoke.policy_attestation({key: packet["gateway_policy"][key] for key in smoke.POLICY_KEYS}, required=True)
+    if not isinstance(packet["gateway_policy"], dict) or packet["gateway_policy"] != smoke.policy_attestation(
+            {key: packet["gateway_policy"].get(key) for key in smoke.POLICY_KEYS}, required=True):
+        raise assets.P3Error("invalid_manifest")
 
 
 def build_packet(database: Path, *, freeze_path: Path, preparation_path: Path, accepted_commit: str,
@@ -343,7 +348,7 @@ def main(argv=None) -> int:
                 "upstream_inference_attempts", "transport_security", "evidence_class", "promotion_eligible",
                 "summary")}
         print(model.canonical_json(result))
-        return 0 if result.get("status") in (None, "complete", "prepared_not_authorized") else 1
+        return 0 if result.get("status") in (None, "complete") else 1
     except evaluator._SAFE_ERRORS as exc:
         print(model.canonical_json({"status": "incomplete", "error_code": exc.code}), file=sys.stderr)
         return 2
