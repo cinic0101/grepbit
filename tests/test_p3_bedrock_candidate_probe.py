@@ -1,4 +1,5 @@
 """Synthetic JP Bedrock admission, fake HTTP and archived-evidence tests."""
+import asyncio
 from contextlib import redirect_stderr
 from copy import deepcopy
 import io
@@ -107,6 +108,25 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(projected["observed_model"])
         self.assertEqual(len(self.sent), 1)
 
+    async def test_packet_timeout_reaches_recipe_and_client(self):
+        client = self.client()
+        bounded = []
+        original_timeout = asyncio.timeout
+        def capture_timeout(seconds):
+            bounded.append(seconds)
+            return original_timeout(seconds)
+        with patch.object(runner.probe, "interpret_recipe_and_execute",
+                          wraps=runner.probe.interpret_recipe_and_execute) as interpret, \
+                patch.object(client, "complete", wraps=client.complete) as complete, \
+                patch.object(asyncio, "timeout", side_effect=capture_timeout):
+            output, report = await self.run_case(client=client)
+        self.assertTrue(report["compatibility_passed"])
+        self.assertEqual(self.packet["settings"]["call_timeout_seconds"], 300)
+        self.assertEqual(interpret.call_args.kwargs["timeout_seconds"], 300)
+        self.assertEqual(complete.call_args.kwargs["timeout_seconds"], 300)
+        self.assertGreaterEqual(bounded.count(300), 2)
+        self.assertEqual(runner.read_report(output / "report.json")["status"], "complete")
+
     async def test_invalid_authorization_or_route_stops_before_env(self):
         invalid = [None, {**assets.read_asset(self.auth_path), "packet_sha256": "0" * 64}]
         for value in invalid:
@@ -147,6 +167,16 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(report["status"], "stopped")
         self.assertEqual(report["client_http_attempts"], 0)
         self.assertEqual(report["runtime_invocations"], 0)
+        self.assertEqual(runner.read_report(output / "report.json")["status"], "stopped")
+
+    async def test_client_timeout_limit_drift_stops_before_reservation(self):
+        client = self.client()
+        with patch.object(BedrockConfig, "max_call_timeout_seconds", 60):
+            output, report = await self.run_case(client=client)
+        self.assertEqual(report["status"], "stopped")
+        self.assertEqual(report["reservation"], "not_reserved")
+        self.assertEqual(report["runtime_invocations"], 0)
+        self.assertEqual(report["client_http_attempts"], 0)
         self.assertEqual(runner.read_report(output / "report.json")["status"], "stopped")
 
     async def test_http_success_with_unsupported_response_stays_validation_failure(self):

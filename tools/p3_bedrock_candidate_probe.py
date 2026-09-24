@@ -14,7 +14,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from grepbit import model, recipe_model
-from grepbit.bedrock import BedrockClient, BedrockConfig, converse_schema
+from grepbit.bedrock import BEDROCK_CALL_TIMEOUT_SECONDS, BedrockClient, BedrockConfig, converse_schema
 from grepbit.provider import client_from_env
 from tools import p3_assets as assets, p3_candidate_model as semantic
 from tools import p3_candidate_probe as old_candidate, p3_eval, p3_live_evidence as live
@@ -28,6 +28,8 @@ OWNER = re.compile(r"https://github\.com/cinic0101/grepbit/issues/64#issuecommen
 REGION = "ap-northeast-1"
 PROFILE = "jp.anthropic.claude-sonnet-4-6"
 TRANSPORT = "tls_verification_enabled"
+CALL_SECONDS = BEDROCK_CALL_TIMEOUT_SECONDS
+PUBLICATION_SECONDS = 420.0
 CANONICAL_SCHEMA_SHA256 = "a2b842fedc36b77c27d05df8858d6938f67545d9d46e0219a98b8a77ad653f00"
 WIRE_SCHEMA_SHA256 = "d971f587cade56ed0096e102d5fdd12733f2fa52c038738a1da9e0f6517db21f"
 POLICIES = {"retries": "disabled", "fallback": "disabled", "cache": "disabled"}
@@ -54,7 +56,8 @@ def candidate_identity() -> dict:
 
 def settings() -> dict:
     return {"inputs": 1, "max_client_http_attempts": 1, "max_runtime_invocations": 1,
-            "concurrency": 1, "call_timeout_seconds": 60, "publication_budget_seconds": 180,
+            "concurrency": 1, "call_timeout_seconds": CALL_SECONDS,
+            "publication_budget_seconds": PUBLICATION_SECONDS,
             "temperature": 0, "max_tokens": 2048, "stream": False, "retries": 0,
             "repairs": 0, "fallbacks": 0, "resend": 0, "continuation": 0, "best_of": 0,
             "resume": False, "stop": "after_first_reserved_attempt_regardless_of_result"}
@@ -200,6 +203,9 @@ class _BedrockProbe(probe._LegacyProbe):
         self.authorization_path, self.policies = authorization_path, policies
         self.snapshots: dict[Path, str] = {}
 
+    def budgets(self):
+        return CALL_SECONDS, PUBLICATION_SECONDS
+
     def manifest(self):
         value = {"version": MANIFEST_VERSION,
                  "runner": {"version": REPORT_VERSION, "sha256": p3_eval._pin(Path(__file__))["sha256"]},
@@ -269,6 +275,7 @@ class _BedrockProbe(probe._LegacyProbe):
                 or client.config.region != REGION or client.config.model != PROFILE
                 or client.config.expected_model is not None
                 or client.config.transport_security != TRANSPORT
+                or client.config.max_call_timeout_seconds != CALL_SECONDS
                 or policies != smoke.policy_attestation(POLICIES, required=True)):
             raise probe.ProbeError("invalid_configuration")
 

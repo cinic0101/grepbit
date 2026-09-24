@@ -105,6 +105,19 @@ class BedrockAdapterRulers(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn(KEY, repr(client))
         self.assertEqual(client.safe_export({"secret": KEY}), {"secret": "[redacted]"})
 
+    async def test_bedrock_cold_schema_timeout_limit_is_provider_specific(self):
+        sent = []
+        client = self.client(lambda request: (sent.append(request) or
+                                              httpx.Response(200, json=self.response())))
+        await client.complete(MESSAGES, timeout_seconds=300)
+        self.assertEqual(len(sent), 1)
+        self.assertEqual(sent[0].extensions["timeout"]["read"], 300)
+        with self.assertRaises(ModelError) as caught:
+            await client.complete(MESSAGES, timeout_seconds=301)
+        self.assertEqual(caught.exception.code, "invalid_configuration")
+        self.assertEqual(len(sent), 1)
+        self.assertEqual(GatewayConfig.max_call_timeout_seconds, 60)
+
     async def test_recipe_wire_schema_is_adapted_without_changing_canonical_identity(self):
         before = recipe_model.structured_output_identity()
         sent = []

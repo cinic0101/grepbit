@@ -7,6 +7,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+from typing import ClassVar
 from urllib.parse import quote
 
 import httpx
@@ -19,6 +20,7 @@ from .gateway import (
 
 ENV_NAMES = ("GREPBIT_BEDROCK_REGION", "GREPBIT_BEDROCK_MODEL_ID",
              "GREPBIT_BEDROCK_API_KEY")
+BEDROCK_CALL_TIMEOUT_SECONDS = 300.0
 _SCHEMA_KEYS = {"type", "properties", "required", "additionalProperties", "description",
                 "const", "enum", "items", "anyOf", "allOf", "oneOf"}
 _STRIP_KEYS = {"minLength", "maxLength", "pattern", "minItems", "maxItems",
@@ -27,6 +29,7 @@ _STRIP_KEYS = {"minLength", "maxLength", "pattern", "minItems", "maxItems",
 
 @dataclass(frozen=True)
 class BedrockConfig:
+    max_call_timeout_seconds: ClassVar[float] = BEDROCK_CALL_TIMEOUT_SECONDS
     region: str
     model: str
     api_key: str = field(repr=False)

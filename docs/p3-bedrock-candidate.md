@@ -46,6 +46,9 @@ These are distinct identities, not interchangeable quality evidence. The one
 probe input is the existing exposed `E01_overview.en` question, looked up from
 the pinned panel after admission. The evaluated model receives the unchanged
 recipe context/schema and this synthetic question, never gold/reference SQL.
+The inherited semantic identity still records the historical LiteLLM 60-second
+limit; this candidate's effective 300-second limit is separately pinned by its
+settings, provider config and runner. They are not the same runtime limit.
 
 Prepare the packet only on a clean accepted `dev` commit after the tooling PR
 merges. The separate owner authorization must bind that packet's exact byte hash
@@ -53,10 +56,18 @@ and a task-specific owner reference. Before opening the explicit env file or
 constructing the client, the runner verifies packet/authorization/source/DB/
 candidate and route. It reserves the attempt durably before a possible send.
 There is one runtime invocation, one client HTTP attempt maximum, concurrency 1,
-60-second call timeout, 2,048 maximum output tokens, no retry, repair, resend,
-continuation, cache or fallback. The shared 180-second publication bound remains.
-A timeout or ambiguous interruption consumes the attempt; no rerun to obtain a
-cleaner result. The owner will authorize a specific live command and output path
+300-second call timeout, 2,048 maximum output tokens, no retry, repair, resend,
+continuation, cache or fallback. The legacy probe retains its 60-second call
+and 180-second publication bounds.
+A timeout or ambiguous interruption consumes the attempt and leaves compatibility
+unassessed; no rerun to obtain a cleaner result. The 420-second publication
+budget leaves 120 seconds beyond the call for preflight, validation and durable
+reporting combined. The larger Bedrock-only call budget covers possible first-time
+Structured Outputs grammar compilation; [AWS says](https://docs.aws.amazon.com/bedrock/latest/userguide/structured-output.html)
+a new schema can take a few minutes to compile and successful grammars are
+cached for 24 hours. This is a bounded
+allowance, not a guarantee that the first call will finish. The owner will
+authorize a specific live command and output path
 only after reviewing the final accepted packet. Authentication and route failures
 must use safe codes without printing headers, key or private endpoint.
 

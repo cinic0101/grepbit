@@ -5,6 +5,7 @@ import unittest
 
 from grepbit import recipe_model
 from grepbit.bedrock import BedrockConfig, converse_schema
+from tools import p3_bedrock_candidate_probe as candidate, p3_probe as legacy
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +33,14 @@ class JPBedrockCandidateContract(unittest.TestCase):
         for name in ("build_packet", "validate_packet", "bind_authorization",
                      "run_probe", "read_report"):
             self.assertTrue(callable(getattr(module, name, None)), name)
+
+    def test_cold_schema_timeout_budget_is_one_contract(self):
+        self.assertEqual(candidate.semantic.semantic_identity()["limits"]["timeout"], 60)
+        self.assertEqual(candidate.settings()["call_timeout_seconds"], 300)
+        self.assertEqual(candidate.settings()["publication_budget_seconds"], 420)
+        self.assertEqual(BedrockConfig(REGION, MODEL, "placeholder").max_call_timeout_seconds, 300)
+        self.assertEqual(candidate._BedrockProbe(None, None, None, None).budgets(), (300, 420))
+        self.assertEqual(legacy._LegacyProbe(None, None).budgets(), (60, 180))
 
 
 if __name__ == "__main__":
