@@ -35,10 +35,16 @@ class JPBedrockCandidateContract(unittest.TestCase):
             self.assertTrue(callable(getattr(module, name, None)), name)
 
     def test_cold_schema_timeout_budget_is_one_contract(self):
-        self.assertEqual(candidate.semantic.semantic_identity()["limits"]["timeout"], 60)
+        baseline = candidate.semantic.semantic_identity()
+        self.assertEqual(baseline["limits"]["timeout"], 60)
+        effective = candidate.effective_runtime_identity(baseline)
+        self.assertEqual(effective["limits"]["timeout"], 300)
+        self.assertEqual(effective["baseline_semantic_identity_sha256"],
+                         candidate.semantic.SEMANTICS_SHA256)
         self.assertEqual(candidate.settings()["call_timeout_seconds"], 300)
         self.assertEqual(candidate.settings()["publication_budget_seconds"], 420)
         self.assertEqual(BedrockConfig(REGION, MODEL, "placeholder").max_call_timeout_seconds, 300)
+        self.assertEqual(effective["limits"]["timeout"], candidate.settings()["call_timeout_seconds"])
         self.assertEqual(candidate._BedrockProbe(None, None, None, None).budgets(), (300, 420))
         self.assertEqual(legacy._LegacyProbe(None, None).budgets(), (60, 180))
 

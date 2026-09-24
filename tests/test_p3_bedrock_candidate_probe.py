@@ -90,6 +90,11 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.packet["case_id"], "E01_overview.en")
         self.assertIn("tools/p3_bedrock_candidate_probe.py", self.packet["source_identity"]["files_sha256"])
         self.assertNotIn("owner_authorization_reference", self.packet)
+        self.assertNotIn("semantic_identity", self.packet)
+        self.assertEqual(self.packet["baseline_semantic_identity"]["limits"]["timeout"], 60)
+        self.assertEqual(self.packet["effective_runtime_identity"]["limits"]["timeout"], 300)
+        self.assertEqual(self.packet["effective_runtime_identity_sha256"],
+                         assets.digest(self.packet["effective_runtime_identity"]))
         self.env_loader.assert_not_called()
 
     async def test_one_compatibility_success_keeps_model_identity_unobserved(self):
@@ -105,6 +110,8 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn(RAW, (output / "report.json").read_text())
         projected = runner.read_report(output / "report.json")
         self.assertEqual(projected["requested_profile"], runner.PROFILE)
+        self.assertEqual(projected["effective_runtime_identity_sha256"],
+                         self.packet["effective_runtime_identity_sha256"])
         self.assertIsNone(projected["observed_model"])
         self.assertEqual(len(self.sent), 1)
 
@@ -199,6 +206,15 @@ class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
         path.write_text(json.dumps(value))
         with self.assertRaises(runner.probe.ProbeError):
             runner.read_report(path)
+
+    async def test_reader_rejects_effective_runtime_identity_tampering(self):
+        output, _ = await self.run_case()
+        path = output / "packet.json"
+        value = assets.read_asset(path)
+        value["effective_runtime_identity"]["limits"]["timeout"] = 60
+        path.write_text(json.dumps(value))
+        with self.assertRaises(runner.probe.ProbeError):
+            runner.read_report(output / "report.json")
 
     async def test_reader_rejects_settled_reservation_without_invocation(self):
         output, _ = await self.run_case(client=BedrockClient(

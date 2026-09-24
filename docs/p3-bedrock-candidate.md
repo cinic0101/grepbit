@@ -46,9 +46,12 @@ These are distinct identities, not interchangeable quality evidence. The one
 probe input is the existing exposed `E01_overview.en` question, looked up from
 the pinned panel after admission. The evaluated model receives the unchanged
 recipe context/schema and this synthetic question, never gold/reference SQL.
-The inherited semantic identity still records the historical LiteLLM 60-second
-limit; this candidate's effective 300-second limit is separately pinned by its
-settings, provider config and runner. They are not the same runtime limit.
+The historical 12B semantic identity remains byte-identical and is labeled
+`baseline_semantic_identity` in this candidate packet. A separate versioned,
+hashed `effective_runtime_identity` carries the actual Bedrock provider, profile,
+Region, wire schema and 300-second timeout. The archived report presents both
+hashes by those names; it never presents the 60-second baseline as the executed
+runtime identity.
 
 Prepare the packet only on a clean accepted `dev` commit after the tooling PR
 merges. The separate owner authorization must bind that packet's exact byte hash
