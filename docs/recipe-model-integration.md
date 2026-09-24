@@ -337,6 +337,40 @@ They remain unknown, not assumed unchanged. #30's original responses were not
 retained, so this diagnostic addition cannot retrospectively identify their
 structure or demonstrate a live fix.
 
+## Invalid-request closed reason (#72)
+
+Only when parsed JSON fails the unchanged request-validation stage as
+`invalid_request`, `evidence.invalid_request_reason` records which closed rule
+rejected it. The failure code, stage, stopping classification, native
+validators, prompt, canonical schema and Bedrock wire schema are unchanged; no
+repair, second turn or provider-specific branch is added. The value is one of
+the fixed names below or `null`, never a validator message, a key, a value or
+any model text. A reason without an `invalid_request` failure fails closed in
+the shared P3 evidence projection, and historical evidence without the field
+still reads with its original meaning.
+
+| Reason | Observed structure |
+| --- | --- |
+| `root_shape` | Root is not an object, or the request root's key set, `outcome` or `recipe_version` differs from the contract |
+| `unknown_recipe` | `recipe_id` is not one of the three admitted recipes |
+| `request_fields` | The `request` object's top-level key set is not exactly the selected recipe's fields |
+| `request_values` | The key set matched, then a native request validator rejected a value or nested object |
+| `clarification_shape` | The clarify root or `clarification` object key set is wrong, or `kind` is not admitted |
+| `choice_count` | `choices` is not a list of two to four items |
+| `choice_shape` | A choice, `semantic_value` or typed value has the wrong key set or an unknown `type` |
+| `choice_values` | A choice id, enumerated value, scope or embedded native request failed its validator |
+| `choice_consistency` | Cross-choice rules failed: unique ids/values, value type equals `kind`, shared scope, required member, reversed comparison roles or one center period |
+| `question_binding` | A clarification center code does not appear in the question |
+| `export_drift` | Safe export changed the validated action, so it was not retained |
+
+`request_fields` and `choice_count` are the two observations that separate the
+hypotheses left open by the six unassessed `invalid_request` outcomes in the
+JP Bedrock observed regression (#70): the compact Bedrock wire schema keeps
+`minItems: 1` for `choices` because Bedrock supports only `minItems` 0 or 1,
+while native validation requires two to four choices. Recording the reason does
+not recover those six intended semantics; raw completions were intentionally
+not retained, and no rerun follows from this field.
+
 ## Interpretation limits and offline validation
 
 A wrong but well-typed recipe, swapped Compare roles, valid wrong center or k
