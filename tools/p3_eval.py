@@ -501,7 +501,11 @@ async def _execute_panel(database, panel, manifest, artifacts, report, client, *
             validate()
             if _attempts(client) != before:
                 raise P3Error("attempt_budget")
-            timeout = min(60.0, remaining())
+            call_budget = manifest["settings"]["call_timeout_seconds"]
+            if (type(call_budget) not in (int, float) or not math.isfinite(call_budget)
+                    or not 0 < call_budget <= 300.0):
+                raise P3Error("invalid_configuration")
+            timeout = min(call_budget, remaining())
             if timeout <= 0:
                 raise P3Error("panel_budget")
             active.update(runtime_invoked=True, attempt_evidence_status="not_returned")
@@ -511,7 +515,7 @@ async def _execute_panel(database, panel, manifest, artifacts, report, client, *
                 validate()
                 # Formal checkpoints and native admission checks consume panel
                 # time too. Do not send with a timeout sampled before that work.
-                timeout = min(60.0, remaining())
+                timeout = min(call_budget, remaining())
                 if timeout <= 0:
                     raise P3Error("panel_budget")
             invoked = True
@@ -520,9 +524,11 @@ async def _execute_panel(database, panel, manifest, artifacts, report, client, *
                     result = await interpret_recipe_and_execute(
                         entry.case.question, database, invocation_client, timeout_seconds=timeout, clock=clock)
             except TimeoutError:
+                timeout_identity = getattr(policy, "timeout_identity", None)
                 result = RecipeInterpretation(None, None, ModelError("timeout"), {
                     "client_http_attempts": _attempts(client) - before, "error_code": "timeout",
                     "elapsed_seconds": timeout,
+                    **(timeout_identity() if timeout_identity is not None else {}),
                 })
             if policy.origin == "live":
                 active.update(phase="returned", attempt_may_be_in_flight=False,

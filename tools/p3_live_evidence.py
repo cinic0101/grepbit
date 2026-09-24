@@ -51,7 +51,7 @@ def _number(value, *, integer=False, maximum=None, optional=True):
         raise assets.P3Error("invalid_asset")
 
 
-def _evidence(value: dict, *, expected_model=None) -> dict:
+def _evidence(value: dict, *, expected_model=None, requested_profile=None) -> dict:
     """Closed projection only; no proposal, pack, text, choices, facts or bodies."""
     if not isinstance(value, dict):
         raise assets.P3Error("invalid_asset")
@@ -59,10 +59,17 @@ def _evidence(value: dict, *, expected_model=None) -> dict:
     for key in ("error_code", "stop_reason"):
         if result.get(key) is not None and result[key] not in _CODES:
             raise assets.P3Error("invalid_asset")
-    alias = _expected_alias(expected_model)
-    for key in ("requested_model", "returned_model"):
-        if result.get(key) not in (None, alias):
+    if requested_profile is not None:
+        if (expected_model is not None or type(requested_profile) is not str
+                or not requested_profile or "returned_model" not in result
+                or result.get("requested_model") != requested_profile
+                or result.get("returned_model") is not None):
             raise assets.P3Error("invalid_asset")
+    else:
+        alias = _expected_alias(expected_model)
+        for key in ("requested_model", "returned_model"):
+            if result.get(key) not in (None, alias):
+                raise assets.P3Error("invalid_asset")
     if result.get("transport_security") not in (None, *_TRANSPORT):
         raise assets.P3Error("invalid_asset")
     _number(result.get("elapsed_seconds"))
@@ -131,12 +138,22 @@ class _LiveEvidence:
     maximum = 28
     summarize = staticmethod(evaluator._summarize)
 
-    def __init__(self, expected_model=None):
+    def __init__(self, expected_model=None, *, requested_profile=None):
         self.expected_model = expected_model
-        _expected_alias(expected_model)
+        self.requested_profile = requested_profile
+        if requested_profile is None:
+            _expected_alias(expected_model)
+        elif expected_model is not None or type(requested_profile) is not str or not requested_profile:
+            raise assets.P3Error("invalid_configuration")
 
     def project(self, evidence, client):
-        return evaluator._safe(_evidence(evidence, expected_model=self.expected_model), client)
+        return evaluator._safe(_evidence(evidence, expected_model=self.expected_model,
+                                         requested_profile=self.requested_profile), client)
+
+    def timeout_identity(self):
+        # The outer deadline has no response to inspect, but its admitted route is known.
+        return ({"requested_model": self.requested_profile, "returned_model": None}
+                if self.requested_profile is not None else {})
 
     def invocation_client(self, client):
         return _PerInputClient(client, self.maximum)
@@ -145,12 +162,13 @@ class _LiveEvidence:
         for row in report["results"]:
             _check_grade(row)
             if row["evidence"] is not None and not _same(
-                    _evidence(row["evidence"], expected_model=self.expected_model), row["evidence"]):
+                    _evidence(row["evidence"], expected_model=self.expected_model,
+                              requested_profile=self.requested_profile), row["evidence"]):
                 raise assets.P3Error("leakage_risk")
 
 
 def _validate_report(report, manifest, expected, inputs, *, maximum, transport_security,
-                     summarize=evaluator._summarize, expected_model=None):
+                     summarize=evaluator._summarize, expected_model=None, requested_profile=None):
     """Shared safe lifecycle/accounting validation, never current source/config access."""
     if (set(report) != set(expected) | {"summary"} or report["report_version"] != expected["report_version"]
             or report["manifest_sha256"] != assets.digest(manifest)
@@ -190,7 +208,7 @@ def _validate_report(report, manifest, expected, inputs, *, maximum, transport_s
             raise assets.P3Error("invalid_asset")
         _number(row["client_http_attempts"], integer=True, maximum=1)
         _number(row["runtime_http_attempts"], integer=True, maximum=1)
-    _LiveEvidence(expected_model).check_report(report)
+    _LiveEvidence(expected_model, requested_profile=requested_profile).check_report(report)
     counts = [row["client_http_attempts"] for row in report["results"]]
     total = None if None in counts else sum(counts)
     if (report["client_http_attempts"] != total or report["live_model_attempts"] != total
@@ -261,11 +279,20 @@ async def _run_live(database, output_dir, *, packet_path, authorization_path, ac
         smoke._no_symlinks(env_file)
         # Preserve the historical default call exactly; only a closed caller
         # may supply a typed admitted candidate after packet validation.
-        config = (contract.GatewayConfig.from_env(env_file=env_file) if expected_model is None else
-                  contract.GatewayConfig.from_env(env_file=env_file, expected_model=expected_model))
-        if config.transport_security != packet["transport_security"]:
-            raise assets.P3Error("invalid_configuration")
-        client = contract.GatewayClient(config)
+        admitted_client = getattr(contract, "_admitted_client", None)
+        if admitted_client is None:
+            config = (contract.GatewayConfig.from_env(env_file=env_file) if expected_model is None else
+                      contract.GatewayConfig.from_env(env_file=env_file, expected_model=expected_model))
+            if config.transport_security != packet["transport_security"]:
+                raise assets.P3Error("invalid_configuration")
+            client = contract.GatewayClient(config)
+        else:
+            # Only a purpose-specific, already validated caller may supply a
+            # provider client. The packet has no live provider/model override.
+            client = admitted_client(packet, env_file)
+            config = client.config
+            if config.transport_security != packet["transport_security"]:
+                raise assets.P3Error("invalid_configuration")
         if evaluator._attempts(client) != 0:
             raise assets.P3Error("attempt_budget")
         evaluator._safe(manifest, client)
