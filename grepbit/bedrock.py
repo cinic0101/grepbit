@@ -180,11 +180,14 @@ def _without_descriptions(node: object) -> object:
 
 
 def _compact_recipe_schema(schema: dict[str, object]) -> dict[str, object]:
-    """Couple each outcome to its required fields; flatten only the clarification alternatives.
+    """Two closed root branches: an action object and a clarify object (wire v6b).
 
-    The v4 single-root compaction let the grammar admit a clarify signal on a
-    request body, which native validation always rejects (#74). Cross-choice
-    rules and the two-to-four choice count remain native.
+    The v4 single root let the grammar admit a clarify signal on a request body,
+    which native validation always rejects (#74); the fully coupled v5 root
+    exceeded Bedrock's grammar budget (#77). v6b keeps only the coupling that
+    the defect needs: `clarify` must carry `clarification` and cannot carry a
+    request. Recipe/shape pairing, `declined` purity and the two-to-four choice
+    count stay native, as in v4.
     """
     try:
         branches = schema["anyOf"]
@@ -207,10 +210,13 @@ def _compact_recipe_schema(schema: dict[str, object]) -> dict[str, object]:
         return {"type": "object", "additionalProperties": False,
                 "required": list(properties), "properties": properties}
 
+    action = closed({"outcome": {"enum": ["request", "declined"]},
+                     "recipe_id": {"enum": [recipe for recipe, _ in requests]},
+                     "recipe_version": {"const": "0.1"},
+                     "request": {"anyOf": [shape for _, shape in requests]}})
+    action["required"] = ["outcome"]
     compact = {"anyOf": [
-        *[closed({"outcome": {"const": "request"}, "recipe_id": {"const": recipe},
-                  "recipe_version": {"const": "0.1"}, "request": shape}) for recipe, shape in requests],
-        closed({"outcome": {"const": "declined"}}),
+        action,
         closed({"outcome": {"const": "clarify"}, "clarification": closed({
             "kind": {"enum": kinds},
             "choices": {"type": "array", "minItems": 1, "items": closed({

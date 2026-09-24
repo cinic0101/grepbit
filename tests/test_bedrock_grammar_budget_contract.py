@@ -20,10 +20,10 @@ class BedrockGrammarBudgetContract(unittest.TestCase):
         wire_format, wire_hash = converse_schema(constraint)
         wire = json.loads(wire_format["structure"]["jsonSchema"]["schema"])
 
-        # v5 (#77) restored coupled root branches; the flattened clarification from v4 stays.
+        # v6b (#77) keeps a two-branch coupled root; the flattened clarification from v4 stays.
         self.assertEqual(set(wire), {"anyOf"})
-        self.assertEqual(len(wire["anyOf"]), 5)
-        clarify = [branch for branch in wire["anyOf"] if branch["properties"]["outcome"]["const"] == "clarify"]
+        self.assertEqual(len(wire["anyOf"]), 2)
+        clarify = [branch for branch in wire["anyOf"] if branch["properties"]["outcome"].get("const") == "clarify"]
         self.assertEqual(len(clarify), 1)
         clarification = clarify[0]["properties"]["clarification"]
         self.assertNotIn("anyOf", clarification)

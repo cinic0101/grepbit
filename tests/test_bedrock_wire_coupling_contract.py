@@ -1,13 +1,16 @@
-"""Specification rulers for the coupled Bedrock wire schema (#77): outcome binds its required fields."""
+"""Specification rulers for the Bedrock wire schema coupling (#77): v5 five-branch, then v6b two-branch."""
 import json
 import unittest
 
 from grepbit import recipe_model
 from grepbit.bedrock import converse_schema
+from grepbit.gateway import ModelError
 from tools import p3_bedrock_candidate_probe as candidate
 
 GRAMMAR_BUDGET_WIRE_SHA256 = "ea4e03d02732c0c45f9905ccd9b7c0010bedc87a190666e7b31895867c43e53b"
 GRAMMAR_BUDGET_EFFECTIVE_SHA256 = "4d1f27ded8138dbe9618c6f8c4b32ca4555d8a244ac5e7d94e1287f9de4fb2ed"
+COUPLED_WIRE_SHA256 = "e377c4f0807d90674e3d30c8274533fc0c70c363d15d6c1a07019849a6a6c456"
+COUPLED_EFFECTIVE_SHA256 = "ef60af9db5fe329603fca28b4c9bc13fc6d3effd2387d9f27140cb1f79ec6480"
 PERIOD = {"start": "2026-03-01T00:00:00+08:00", "end": "2026-04-01T00:00:00+08:00", "timezone": "Asia/Taipei"}
 SCOPE = {"metrics": ["confirmed_booked_amount"], **PERIOD}
 BASELINE = {"metrics": ["confirmed_booked_amount"], "start": "2026-02-01T00:00:00+08:00",
@@ -27,6 +30,12 @@ VALID = (
     {"outcome": "clarify", "clarification": {"kind": "center", "choices": [
         {"id": "a", "semantic_value": {"type": "center", "request": OVERVIEW}},
         {"id": "b", "semantic_value": {"type": "center", "request": {**OVERVIEW, "center_code": "CTR-B01"}}}]}},
+)
+# v6b deliberately leaves these to native validation to stay inside the grammar budget.
+GRAMMAR_ADMITTED_NATIVE_REJECTED = (
+    {"outcome": "request"},
+    {"outcome": "declined", "request": OVERVIEW},
+    {"outcome": "request", "recipe_id": "compare", "recipe_version": "0.1", "request": OVERVIEW},
 )
 
 
@@ -68,49 +77,33 @@ def wire():
 
 
 class BedrockWireCouplingRulers(unittest.TestCase):
-    def test_root_branches_couple_outcome_to_required_fields(self):
+    def test_root_has_two_closed_branches_and_clarify_requires_clarification(self):
         schema, _ = wire()
         self.assertEqual(set(schema), {"anyOf"})
         branches = schema["anyOf"]
-        self.assertEqual(len(branches), 5)
-        outcomes = []
+        self.assertEqual(len(branches), 2)
         for branch in branches:
             self.assertEqual(branch["type"], "object")
             self.assertIs(branch["additionalProperties"], False)
             self.assertIn("outcome", branch["required"])
-            outcomes.append(branch["properties"]["outcome"]["const"])
-        self.assertEqual(sorted(outcomes), ["clarify", "declined", "request", "request", "request"])
-        for branch in branches:
-            outcome = branch["properties"]["outcome"]["const"]
-            if outcome == "request":
-                self.assertEqual(set(branch["required"]), {"outcome", "recipe_id", "recipe_version", "request"})
-                self.assertEqual(set(branch["properties"]), {"outcome", "recipe_id", "recipe_version", "request"})
-                self.assertIn(branch["properties"]["recipe_id"]["const"], ("overview", "compare", "breakdown"))
-                self.assertEqual(branch["properties"]["recipe_version"]["const"], "0.1")
-                self.assertNotIn("anyOf", branch["properties"]["request"])
-            elif outcome == "declined":
-                self.assertEqual(set(branch["properties"]), {"outcome"})
-            else:
-                self.assertEqual(set(branch["required"]), {"outcome", "clarification"})
-                self.assertEqual(set(branch["properties"]), {"outcome", "clarification"})
-                clarification = branch["properties"]["clarification"]
-                self.assertNotIn("anyOf", clarification)
-                self.assertEqual(set(clarification["properties"]["kind"]["enum"]),
-                                 {"count_basis", "comparison_roles", "center", "metric_meaning"})
-                self.assertEqual(clarification["properties"]["choices"]["minItems"], 1)
-                self.assertEqual(len(clarification["properties"]["choices"]["items"]
-                                     ["properties"]["semantic_value"]["anyOf"]), 4)
+        action = next(b for b in branches if "enum" in b["properties"]["outcome"])
+        clarify = next(b for b in branches if b["properties"]["outcome"].get("const") == "clarify")
+        self.assertEqual(set(action["properties"]["outcome"]["enum"]), {"request", "declined"})
+        self.assertEqual(set(action["properties"]), {"outcome", "recipe_id", "recipe_version", "request"})
+        self.assertEqual(action["required"], ["outcome"])
+        self.assertEqual(set(action["properties"]["recipe_id"]["enum"]), {"overview", "compare", "breakdown"})
+        self.assertEqual(action["properties"]["recipe_version"]["const"], "0.1")
+        self.assertEqual(len(action["properties"]["request"]["anyOf"]), 3)
+        self.assertEqual(set(clarify["required"]), {"outcome", "clarification"})
+        self.assertEqual(set(clarify["properties"]), {"outcome", "clarification"})
+        clarification = clarify["properties"]["clarification"]
+        self.assertNotIn("anyOf", clarification)
+        self.assertEqual(set(clarification["properties"]["kind"]["enum"]),
+                         {"count_basis", "comparison_roles", "center", "metric_meaning"})
+        self.assertEqual(clarification["properties"]["choices"]["minItems"], 1)
+        self.assertEqual(len(clarification["properties"]["choices"]["items"]
+                             ["properties"]["semantic_value"]["anyOf"]), 4)
         self.assertNotIn('"description"', json.dumps(schema))
-
-    def test_recipe_id_is_bound_to_its_own_request_shape(self):
-        schema, _ = wire()
-        shapes = {branch["properties"]["recipe_id"]["const"]: branch["properties"]["request"]
-                  for branch in schema["anyOf"] if branch["properties"]["outcome"]["const"] == "request"}
-        self.assertEqual(set(shapes["overview"]["required"]), {"center_code", "start", "end", "timezone"})
-        self.assertEqual(set(shapes["compare"]["required"]), {"current", "baseline"})
-        self.assertEqual(set(shapes["breakdown"]["required"]), {"start", "end", "timezone", "top_k"})
-        self.assertFalse(admits(schema, {"outcome": "request", "recipe_id": "compare",
-                                         "recipe_version": "0.1", "request": OVERVIEW}))
 
     def test_wire_rejects_the_diagnostic_shapes_and_admits_the_contract(self):
         schema, wire_hash = wire()
@@ -120,13 +113,28 @@ class BedrockWireCouplingRulers(unittest.TestCase):
         for value in VALID:
             with self.subTest(outcome=value["outcome"], recipe=value.get("recipe_id")):
                 self.assertTrue(admits(schema, value))
-        for bad in ({"outcome": "clarify"}, {"outcome": "request"}, {"outcome": "declined", "request": OVERVIEW},
+        for bad in ({"outcome": "clarify"}, {"outcome": "clarify", "request": OVERVIEW},
                     {"outcome": "clarify", "clarification": {"kind": "center", "choices": []}},
                     {"outcome": "other"}, {}):
             with self.subTest(bad=json.dumps(bad)[:40]):
                 self.assertFalse(admits(schema, bad))
         self.assertNotEqual(wire_hash, GRAMMAR_BUDGET_WIRE_SHA256)
-        self.assertLess(len(json.dumps(schema, separators=(",", ":")).encode()), 5000)
+        self.assertNotEqual(wire_hash, COUPLED_WIRE_SHA256)
+        size = len(json.dumps(schema, separators=(",", ":")).encode())
+        self.assertLess(size, 4200)
+
+    def test_grammar_admitted_shapes_are_still_rejected_natively(self):
+        """The action branch leaves recipe/shape pairing and declined-only to the native validator."""
+        schema, _ = wire()
+        for value in GRAMMAR_ADMITTED_NATIVE_REJECTED:
+            with self.subTest(value=json.dumps(value)[:50]):
+                self.assertTrue(admits(schema, value))
+                with self.assertRaises(ModelError) as caught:
+                    recipe_model._proposal(value)
+                self.assertEqual(caught.exception.code, "invalid_request")
+        with self.assertRaises(ModelError) as caught:
+            recipe_model._proposal(GRAMMAR_ADMITTED_NATIVE_REJECTED[2])
+        self.assertEqual(caught.exception.reason, "request_fields")
 
     def test_the_v4_wire_admitted_the_diagnostic_shapes(self):
         """Documents the defect: the historical flattened root accepted a clarify signal on a request body."""
@@ -141,23 +149,29 @@ class BedrockWireCouplingRulers(unittest.TestCase):
             self.assertTrue(admits(v4_like, shape))
         self.assertTrue(callable(_compact_recipe_schema))
 
-    def test_new_identities_keep_the_v4_witness_readable(self):
-        self.assertEqual(candidate.PACKET_VERSION, "p3-bedrock-candidate-packet-v5")
+    def test_new_identities_keep_the_v4_and_v5_witnesses_readable(self):
+        self.assertEqual(candidate.PACKET_VERSION, "p3-bedrock-candidate-packet-v6")
+        self.assertEqual(candidate.COUPLED_PACKET_VERSION, "p3-bedrock-candidate-packet-v5")
         self.assertEqual(candidate.GRAMMAR_BUDGET_PACKET_VERSION, "p3-bedrock-candidate-packet-v4")
-        self.assertEqual(candidate.EFFECTIVE_RUNTIME_VERSION, "p3-bedrock-effective-runtime-v4")
+        self.assertEqual(candidate.EFFECTIVE_RUNTIME_VERSION, "p3-bedrock-effective-runtime-v5")
+        self.assertEqual(candidate.COUPLED_EFFECTIVE_RUNTIME_VERSION, "p3-bedrock-effective-runtime-v4")
+        self.assertEqual(candidate.COUPLED_WIRE_SCHEMA_SHA256, COUPLED_WIRE_SHA256)
+        self.assertEqual(candidate.COUPLED_EFFECTIVE_RUNTIME_SHA256, COUPLED_EFFECTIVE_SHA256)
         self.assertEqual(candidate.GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256, GRAMMAR_BUDGET_WIRE_SHA256)
         self.assertEqual(candidate.GRAMMAR_BUDGET_EFFECTIVE_RUNTIME_SHA256, GRAMMAR_BUDGET_EFFECTIVE_SHA256)
-        self.assertNotEqual(candidate.WIRE_SCHEMA_SHA256, GRAMMAR_BUDGET_WIRE_SHA256)
-        self.assertNotEqual(candidate.EFFECTIVE_RUNTIME_SHA256, GRAMMAR_BUDGET_EFFECTIVE_SHA256)
+        self.assertNotIn(candidate.WIRE_SCHEMA_SHA256, (GRAMMAR_BUDGET_WIRE_SHA256, COUPLED_WIRE_SHA256))
         _, wire_hash = wire()
         self.assertEqual(wire_hash, candidate.WIRE_SCHEMA_SHA256)
         baseline = candidate.semantic.semantic_identity()
         current = candidate.effective_runtime_identity(baseline)
         self.assertEqual(current["wire_schema_sha256"], candidate.WIRE_SCHEMA_SHA256)
         self.assertEqual(candidate.assets.digest(current), candidate.EFFECTIVE_RUNTIME_SHA256)
-        previous = candidate.effective_runtime_identity(baseline, packet_version=candidate.GRAMMAR_BUDGET_PACKET_VERSION)
-        self.assertEqual(previous["wire_schema_sha256"], GRAMMAR_BUDGET_WIRE_SHA256)
-        self.assertEqual(candidate.assets.digest(previous), GRAMMAR_BUDGET_EFFECTIVE_SHA256)
+        for version, wire_sha, effective_sha in (
+                (candidate.COUPLED_PACKET_VERSION, COUPLED_WIRE_SHA256, COUPLED_EFFECTIVE_SHA256),
+                (candidate.GRAMMAR_BUDGET_PACKET_VERSION, GRAMMAR_BUDGET_WIRE_SHA256, GRAMMAR_BUDGET_EFFECTIVE_SHA256)):
+            historical = candidate.effective_runtime_identity(baseline, packet_version=version)
+            self.assertEqual(historical["wire_schema_sha256"], wire_sha)
+            self.assertEqual(candidate.assets.digest(historical), effective_sha)
 
 
 if __name__ == "__main__":
