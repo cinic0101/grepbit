@@ -43,8 +43,11 @@ budget. This was a direct behavior failure, not an import/setup failure.
   runtime identity, source, synthetic DB, panel assets, compatibility report,
   historical 31B baseline, gateway policy, command, limits and stop rules
   before credential access. An authorization envelope binds the exact packet
-  hash to an Issue #70 factual reference; actual permission comes from the
-  owner's separate live instruction, not the comment itself.
+  hash, an Issue #70 factual reference and one normalized repository-relative
+  `.artifacts/` output directory. Live mode checks the slot before credential
+  access, and the exclusive output-directory creation consumes that slot.
+  Actual permission comes from the owner's separate live instruction, not the
+  comment itself.
 - Reuse the v4 compatibility report as a **pinned prerequisite**, not as a
   substitute for observed regression results. Its report reader must pass
   without live access. The Bedrock candidate identity is
@@ -71,7 +74,10 @@ budget. This was a direct behavior failure, not an import/setup failure.
   attempts and unobserved processing destination stay unknown.
 - The packet, authorization, manifest and report get new purpose-specific
   versions/hashes. Historical readers remain valid. A completed report must
-  read back without current source, DB, credentials or network access.
+  read back without current source, DB, credentials or network access. The
+  archive reader verifies its own directory against the authorization's bound
+  slot; moving the archive invalidates that readback. The authorization,
+  manifest and report use v2 because v1 was never live-authorized or merged.
 
 ## Offline acceptance before PR
 
@@ -82,7 +88,9 @@ budget. This was a direct behavior failure, not an import/setup failure.
 2. Tampered packet, compatibility pin, provider/region/profile, wire/effective
    identity, authorization, route, source, DB and case/order are rejected
    before environment or network access. Report readback rejects identity,
-   counter, stage and evidence drift.
+   counter, stage and evidence drift. An authorization bound to run A rejects
+   run B before credential access; run A cannot be created twice; readback
+   retains and verifies its bound slot.
 3. Fake Bedrock responses prove `returned_model=null` is accepted only for the
    exact pinned profile, while an invented returned identity and private-text
    canary are rejected. HTTP, timeout and request-validation outcomes retain
@@ -105,6 +113,12 @@ It does not provide a free-form live model selector. Fake-transport tests cover
 28 attempts, native request-validation classification, packet/auth/provider
 drift before send, safe identity projection and archive readback. Historical
 12B, 31B and Bedrock compatibility reports still read independently.
+
+After merge, binding requires `--run-output-dir <FRESH_ARTIFACTS_RUN_DIRECTORY>`
+alongside the authorization output file. The selected directory must remain
+available as immutable evidence after the first invocation. Binding prevents
+reusing one authorization at another output; it does not grant live permission
+or prevent a person from creating a different envelope and seeking new approval.
 
 This contract records the Bedrock evidence identity and 300/8520-second
 envelope for a future separately authorized packet.

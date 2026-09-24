@@ -246,6 +246,9 @@ async def _run_live(database, output_dir, *, packet_path, authorization_path, ac
     # Both envelopes and all source/DB/freeze gates precede any credential access.
     packet_pin = evaluator._pin(packet_path)
     authorization = contract._authorization(assets.read_asset(authorization_path), packet_pin["sha256"])
+    validate_run_slot = getattr(contract, "_validate_run_slot", None)
+    if validate_run_slot is not None:
+        validate_run_slot(authorization, output_dir)
     authorization_pin = evaluator._pin(authorization_path)
     packet, panel = contract.validate_packet(packet_path, database, accepted_commit=accepted_commit)
     if (smoke.policy_attestation(gateway_policies, required=True) != packet["gateway_policy"]

@@ -21,9 +21,9 @@ from tools import p3_formal_policy as allocation, p3_formal_run as formal
 from tools import p3_grading, p3_live_evidence as live, smoke
 
 PACKET_VERSION = "p3-bedrock-observed-regression-packet-v1"
-AUTHORIZATION_VERSION = "p3-bedrock-observed-regression-authorization-v1"
-MANIFEST_VERSION = "p3-bedrock-observed-regression-manifest-v1"
-REPORT_VERSION = "p3-bedrock-observed-regression-report-v1"
+AUTHORIZATION_VERSION = "p3-bedrock-observed-regression-authorization-v2"
+MANIFEST_VERSION = "p3-bedrock-observed-regression-manifest-v2"
+REPORT_VERSION = "p3-bedrock-observed-regression-report-v2"
 STOP_VERSION = "p3-bedrock-observed-regression-stops-v1"
 PURPOSE = "one_observed_jp_bedrock_regression_panel_not_fresh_or_promotion"
 OWNER = re.compile(r"https://github\.com/cinic0101/grepbit/issues/70#issuecomment-[1-9][0-9]*")
@@ -79,6 +79,21 @@ def _reference(value: str) -> Path:
 
 def _location(path: Path) -> str:
     return historical._location(path)
+
+
+def _run_slot(path: Path) -> str:
+    """Keep the one-shot output identity private to this repository's artifacts."""
+    if not isinstance(path, Path):
+        raise assets.P3Error("invalid_manifest")
+    try:
+        slot = path.absolute().relative_to(ROOT).as_posix()
+    except ValueError:
+        raise assets.P3Error("invalid_manifest") from None
+    _reference(slot)
+    if Path(slot).parts[:1] != (".artifacts",) or len(Path(slot).parts) < 2:
+        raise assets.P3Error("invalid_manifest")
+    smoke._no_symlinks(path)
+    return slot
 
 
 def _pin(path: Path, expected: str) -> dict:
@@ -273,20 +288,31 @@ def prepare(database: Path, output_dir: Path, **options):
 
 
 def _authorization(value: dict, packet_sha: str) -> dict:
-    assets.object_fields(value, {"version", "packet_sha256", "owner_authorization_reference"})
+    assets.object_fields(value, {"version", "packet_sha256", "owner_authorization_reference", "run_slot"})
     if (value["version"] != AUTHORIZATION_VERSION or value["packet_sha256"] != packet_sha
             or not isinstance(value["owner_authorization_reference"], str)
-            or OWNER.fullmatch(value["owner_authorization_reference"]) is None):
+            or OWNER.fullmatch(value["owner_authorization_reference"]) is None
+            or not isinstance(value["run_slot"], str)
+            or Path(value["run_slot"]).parts[:1] != (".artifacts",)
+            or len(Path(value["run_slot"]).parts) < 2
+            or Path(value["run_slot"]).as_posix() != value["run_slot"]):
         raise assets.P3Error("invalid_manifest")
+    _reference(value["run_slot"])
     formal._hash(packet_sha)
     return value
 
 
-def bind_authorization(packet_path: Path, reference: str, output_path: Path):
+def _validate_run_slot(authorization: dict, output_dir: Path) -> None:
+    if authorization["run_slot"] != _run_slot(output_dir):
+        raise assets.P3Error("invalid_manifest")
+
+
+def bind_authorization(packet_path: Path, reference: str, output_path: Path, run_output_dir: Path):
     _packet_contract(assets.read_asset(packet_path))
     digest = evaluator._pin(packet_path)["sha256"]
     value = _authorization({"version": AUTHORIZATION_VERSION, "packet_sha256": digest,
-                            "owner_authorization_reference": reference}, digest)
+                            "owner_authorization_reference": reference,
+                            "run_slot": _run_slot(run_output_dir)}, digest)
     live._write_authorization(output_path, value)
     return value
 
@@ -313,6 +339,7 @@ def _manifest(packet, packet_sha, authorization, authorization_sha):
     return {"manifest_version": MANIFEST_VERSION, "packet_sha256": packet_sha,
             "authorization_sha256": authorization_sha,
             "owner_authorization_reference": authorization["owner_authorization_reference"],
+            "run_slot": authorization["run_slot"],
             "accepted_commit": packet["accepted_commit"], "candidate": packet["candidate"],
             "evaluator_version": packet["grader_version"], "panel_id": packet["panel_id"],
             "panel_kind": "candidate_regression", "inputs": packet["inputs"], "order": packet["order"],
@@ -334,6 +361,7 @@ def _report(manifest, packet):
     report.update(report_version=REPORT_VERSION, runtime_invocations=0, transport_security=None,
                   gateway_policy=packet["gateway_policy"],
                   owner_authorization_reference=manifest["owner_authorization_reference"],
+                  run_slot=manifest["run_slot"],
                   scope="Observed 28-case JP Bedrock regression only; not fresh quality or P3 promotion.",
                   candidate=packet["candidate"], historical_31b=packet["historical_31b"],
                   compatibility=packet["compatibility"],
@@ -388,6 +416,7 @@ def read_report(path: Path):
     _packet_contract(packet)
     packet_sha = evaluator._pin(path.parent / "packet.json")["sha256"]
     authorization = _authorization(assets.read_asset(path.parent / "authorization.json"), packet_sha)
+    _validate_run_slot(authorization, path.parent)
     manifest = assets.read_asset(path.parent / "manifest.json")
     expected_manifest = _manifest(packet, packet_sha, authorization,
                                   evaluator._pin(path.parent / "authorization.json")["sha256"])
@@ -399,7 +428,7 @@ def read_report(path: Path):
                           transport_security=TRANSPORT, summarize=_summarize,
                           requested_profile=PROFILE)
     _LiveEvidence().check_report(report)
-    for key in ("candidate", "historical_31b", "compatibility", "evidence_class",
+    for key in ("run_slot", "candidate", "historical_31b", "compatibility", "evidence_class",
                 "promotion_eligible", "promotion_result", "baseline_semantic_identity_sha256",
                 "effective_runtime_identity_sha256", "canonical_schema_sha256", "wire_schema_sha256"):
         if not formal._same(report[key], expected[key]):
@@ -412,7 +441,7 @@ def main(argv=None):
     modes = parser.add_mutually_exclusive_group(required=True)
     for mode in ("prepare", "bind-authorization", "live", "report"):
         modes.add_argument("--" + mode, action="store_true")
-    for name in ("packet", "authorization", "db", "env-file", "output-dir", "output", "intake",
+    for name in ("packet", "authorization", "db", "env-file", "output-dir", "output", "run-output-dir", "intake",
                  "panel", "compatibility-report", "historical-report", "report-path"):
         parser.add_argument("--" + name, type=Path)
     parser.add_argument("--accepted-commit")
@@ -426,7 +455,7 @@ def main(argv=None):
         common = {"db", "accepted_commit", "gateway_retries", "gateway_fallback", "gateway_cache", "output_dir"}
         allowed = ({"prepare", "intake", "panel", "compatibility_report", "historical_report",
                     "transport_security"} | common if args.prepare else
-                   {"bind_authorization", "packet", "owner_authorization_reference", "output"}
+                   {"bind_authorization", "packet", "owner_authorization_reference", "output", "run_output_dir"}
                    if args.bind_authorization else {"live", "packet", "authorization", "env_file"} | common
                    if args.live else {"report", "report_path"})
         if present != allowed:
@@ -438,7 +467,8 @@ def main(argv=None):
                              historical_path=args.historical_report, accepted_commit=args.accepted_commit,
                              gateway_policies=policies, transport_security=args.transport_security)
         elif args.bind_authorization:
-            result = bind_authorization(args.packet, args.owner_authorization_reference, args.output)
+            result = bind_authorization(args.packet, args.owner_authorization_reference,
+                                        args.output, args.run_output_dir)
         else:
             if args.live:
                 asyncio.run(run_live(args.db, args.output_dir, packet_path=args.packet,

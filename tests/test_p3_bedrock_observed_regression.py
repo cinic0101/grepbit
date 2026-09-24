@@ -4,6 +4,7 @@ from dataclasses import replace
 import hashlib
 import json
 from pathlib import Path
+import shutil
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -88,7 +89,7 @@ class BedrockObservedRulers(unittest.IsolatedAsyncioTestCase):
         self.auth_path = self.root / "authorization.json"
         runner.bind_authorization(
             self.packet_path, "https://github.com/cinic0101/grepbit/issues/70#issuecomment-123",
-            self.auth_path)
+            self.auth_path, self.root / "run-1")
         self.sent = []
         self.serial = 0
 
@@ -122,6 +123,8 @@ class BedrockObservedRulers(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(packet["evidence_class"], "observed_regression")
         self.assertEqual(p3_assets.read_asset(self.auth_path)["packet_sha256"],
                          hashlib.sha256(self.packet_path.read_bytes()).hexdigest())
+        self.assertEqual(p3_assets.read_asset(self.auth_path)["run_slot"],
+                         runner._run_slot(self.root / "run-1"))
         for field, bad in (("wire_schema_sha256", "0" * 64),
                            ("effective_runtime_identity_sha256", "0" * 64),
                            ("database_sha256", "0" * 64),
@@ -234,17 +237,76 @@ class BedrockObservedRulers(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(row["error_code"], "timeout")
             self.assertEqual(row["evidence"]["requested_model"], PROFILE)
             self.assertIsNone(row["evidence"]["returned_model"])
+        with patch.object(runner, "client_from_env", side_effect=AssertionError("env")) as load:
+            with self.assertRaisesRegex(runner.smoke.SmokeError, "artifact_conflict"):
+                await runner.run_live(
+                    self.database, self.root / "run-1", packet_path=self.packet_path,
+                    authorization_path=self.auth_path, accepted_commit="1" * 40,
+                    env_file=self.root / "unused.env", gateway_policies=dict(runner.POLICIES))
+            load.assert_not_called()
+
+    async def test_authorization_rejects_other_run_slot_before_credentials(self):
+        wrong_output = self.root / "run-B"
+        with patch.object(runner, "client_from_env", side_effect=AssertionError("env")) as load:
+            with self.assertRaisesRegex(p3_assets.P3Error, "invalid_manifest"):
+                await runner.run_live(
+                    self.database, wrong_output, packet_path=self.packet_path,
+                    authorization_path=self.auth_path, accepted_commit="1" * 40,
+                    env_file=self.root / "unused.env", gateway_policies=dict(runner.POLICIES))
+            load.assert_not_called()
+        self.assertFalse(wrong_output.exists())
+        self.assertEqual(self.sent, [])
+
+    async def test_bound_run_slot_is_exclusive_after_first_run(self):
+        report, _ = await self.run_mock()
+        self.assertEqual(report["status"], "complete")
+        before = (self.root / "run-1" / "report.json").read_bytes()
+        sent = len(self.sent)
+        with patch.object(runner, "client_from_env", side_effect=AssertionError("env")) as load:
+            with self.assertRaisesRegex(runner.smoke.SmokeError, "artifact_conflict"):
+                await runner.run_live(
+                    self.database, self.root / "run-1", packet_path=self.packet_path,
+                    authorization_path=self.auth_path, accepted_commit="1" * 40,
+                    env_file=self.root / "unused.env", gateway_policies=dict(runner.POLICIES))
+            load.assert_not_called()
+        self.assertEqual(len(self.sent), sent)
+        self.assertEqual((self.root / "run-1" / "report.json").read_bytes(), before)
+
+    async def test_archive_readback_binds_run_slot(self):
+        report, _ = await self.run_mock()
+        slot = runner._run_slot(self.root / "run-1")
+        self.assertEqual(report["run_slot"], slot)
+        self.assertEqual(p3_assets.read_asset(self.root / "run-1" / "manifest.json")["run_slot"], slot)
+        self.assertEqual(p3_assets.read_asset(self.root / "run-1" / "authorization.json")["run_slot"], slot)
+        self.assertEqual(runner.read_report(self.root / "run-1" / "report.json"), report)
+        moved = self.root / "moved-archive"
+        shutil.copytree(self.root / "run-1", moved)
+        with self.assertRaises(p3_assets.P3Error):
+            runner.read_report(moved / "report.json")
+        path = self.root / "run-1" / "report.json"
+        changed = deepcopy(report)
+        changed["run_slot"] = runner._run_slot(self.root / "run-B")
+        path.write_text(json.dumps(changed))
+        with self.assertRaises(p3_assets.P3Error):
+            runner.read_report(path)
 
     async def test_wrong_provider_or_region_stops_before_send(self):
-        for wrong in (GatewayClient(GatewayConfig("http://synthetic.invalid/v1", "key"),
+        for index, wrong in enumerate((GatewayClient(GatewayConfig("http://synthetic.invalid/v1", "key"),
                                     transport=httpx.MockTransport(lambda _: AssertionError("sent"))),
                       BedrockClient(BedrockConfig("us-east-1", PROFILE, "synthetic-key"),
-                                    transport=httpx.MockTransport(lambda _: AssertionError("sent")))):
+                                    transport=httpx.MockTransport(lambda _: AssertionError("sent"))))):
+            output_dir = self.output()
+            authorization_path = self.auth_path
+            if index:
+                authorization_path = self.root / f"authorization-{index}.json"
+                runner.bind_authorization(
+                    self.packet_path, "https://github.com/cinic0101/grepbit/issues/70#issuecomment-123",
+                    authorization_path, output_dir)
             with self.subTest(client=type(wrong).__name__), \
                  patch.object(runner, "client_from_env", return_value=wrong):
                 report = await runner.run_live(
-                    self.database, self.output(), packet_path=self.packet_path,
-                    authorization_path=self.auth_path, accepted_commit="1" * 40,
+                    self.database, output_dir, packet_path=self.packet_path,
+                    authorization_path=authorization_path, accepted_commit="1" * 40,
                     env_file=self.root / "unused.env", gateway_policies=dict(runner.POLICIES))
                 self.assertEqual(report["status"], "incomplete")
                 self.assertEqual(report["stop_reason"], "invalid_configuration")
@@ -269,6 +331,7 @@ class BedrockObservedRulers(unittest.IsolatedAsyncioTestCase):
         wrong_auth = self.root / "wrong-issue-auth.json"
         wrong_auth.write_text(json.dumps({"version": runner.AUTHORIZATION_VERSION,
             "packet_sha256": hashlib.sha256(self.packet_path.read_bytes()).hexdigest(),
+            "run_slot": runner._run_slot(self.root / "run-3"),
             "owner_authorization_reference":
                 "https://github.com/cinic0101/grepbit/issues/64#issuecomment-123"}))
         with patch.object(runner, "client_from_env", side_effect=AssertionError("env")) as env:
