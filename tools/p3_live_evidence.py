@@ -60,11 +60,17 @@ def _evidence(value: dict, *, expected_model=None, requested_profile=None) -> di
     for key in ("error_code", "stop_reason"):
         if result.get(key) is not None and result[key] not in _CODES:
             raise assets.P3Error("invalid_asset")
-    # Historical evidence has no reason; a reason needs the matching failure.
+    # Historical evidence has no reason. A reason needs the matching failure and
+    # the stage record that failure implies: parsed JSON, request validation
+    # failed, native execution never run. Contradictory archives fail closed.
     reason = result.get("invalid_request_reason")
-    if reason is not None and (reason not in INVALID_REQUEST_REASONS
-                               or result.get("error_code") != "invalid_request"):
-        raise assets.P3Error("invalid_asset")
+    if reason is not None:
+        stages = result.get("stages")
+        if (reason not in INVALID_REQUEST_REASONS or result.get("error_code") != "invalid_request"
+                or not isinstance(stages, dict) or stages.get("json_parse") != "passed"
+                or stages.get("request_validation") != "failed"
+                or stages.get("kernel_execution") != "not_run"):
+            raise assets.P3Error("invalid_asset")
     if requested_profile is not None:
         if (expected_model is not None or type(requested_profile) is not str
                 or not requested_profile or "returned_model" not in result

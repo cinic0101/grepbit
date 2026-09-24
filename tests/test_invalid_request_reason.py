@@ -240,6 +240,32 @@ class LiveEvidenceReasonProjectionTests(unittest.TestCase):
                 p3_live_evidence._evidence(self.evidence(**mutation), requested_profile="jp.example.profile")
             self.assertEqual(caught.exception.code, "invalid_asset")
 
+    def test_reason_requires_the_stage_record_its_failure_implies(self):
+        """A reason with passed request validation, run execution or missing stages is contradictory."""
+        good = self.evidence(invalid_request_reason="choice_count")
+        self.assertEqual(p3_live_evidence._evidence(good, requested_profile="jp.example.profile"), good)
+        contradictions = (
+            {"request_validation": "passed"}, {"request_validation": "not_run"},
+            {"kernel_execution": "passed"}, {"kernel_execution": "failed"},
+            {"json_parse": "failed"}, {"json_parse": "not_run"},
+        )
+        for change in contradictions:
+            value = self.evidence(invalid_request_reason="choice_count")
+            value["stages"] = {**value["stages"], **change}
+            with self.subTest(stages=change), self.assertRaises(p3_assets.P3Error) as caught:
+                p3_live_evidence._evidence(value, requested_profile="jp.example.profile")
+            self.assertEqual(caught.exception.code, "invalid_asset")
+        missing = self.evidence(invalid_request_reason="choice_count")
+        del missing["stages"]
+        with self.assertRaises(p3_assets.P3Error) as caught:
+            p3_live_evidence._evidence(missing, requested_profile="jp.example.profile")
+        self.assertEqual(caught.exception.code, "invalid_asset")
+        # Without a reason, the same stage records stay acceptable historical evidence.
+        for change in contradictions:
+            value = self.evidence()
+            value["stages"] = {**value["stages"], **change}
+            self.assertEqual(p3_live_evidence._evidence(value, requested_profile="jp.example.profile"), value)
+
     def test_projection_drops_unlisted_runtime_fields_but_keeps_the_reason(self):
         value = self.evidence(invalid_request_reason="request_fields", proposal={"private": True},
                               clarification={"choices": []}, kernel_error_code=None)

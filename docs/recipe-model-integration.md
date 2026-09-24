@@ -345,9 +345,11 @@ rejected it. The failure code, stage, stopping classification, native
 validators, prompt, canonical schema and Bedrock wire schema are unchanged; no
 repair, second turn or provider-specific branch is added. The value is one of
 the fixed names below or `null`, never a validator message, a key, a value or
-any model text. A reason without an `invalid_request` failure fails closed in
-the shared P3 evidence projection, and historical evidence without the field
-still reads with its original meaning.
+any model text. In the shared P3 evidence projection a reason is accepted only
+with the failure it names: `error_code` is `invalid_request`, `json_parse`
+passed, `request_validation` failed and `kernel_execution` was not run;
+anything else, including a missing stage record, fails closed. Historical
+evidence without the field still reads with its original meaning.
 
 | Reason | Observed structure |
 | --- | --- |
