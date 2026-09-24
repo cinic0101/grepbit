@@ -53,6 +53,29 @@ subagent names and tool-specific orchestration in personal/tool configuration.
   contract. A coding assistant's local review does not satisfy that requirement
   merely because it ran in a separate conversation.
 
+## Goal-scoped delegation
+
+- The owner may delegate one goal through a goal issue that states the goal,
+  the allowed step sequence, providers, call/token/time budgets, data boundary,
+  stop conditions and one standing grant comment. Inside that scope the agent
+  proceeds without per-step chat approval and reports at milestones and stops.
+- Inside the scope: a contract checkpoint is the contract document plus a
+  ruler that failed before and passes after, in the same PR; code review is an
+  independent fresh-context review of the actual GitHub diff (a separate agent
+  session with no implementation context qualifies), recorded on the PR; the
+  agent may merge into `dev` after that review reports no blocker and the full
+  offline suite passes; a reviewer blocker is fixed and re-reviewed, not debated.
+  Semantic, oracle and case acceptance stay with an independent human or a
+  reviewer the owner names; the implementing agent never decides them.
+- Live runs inside the scope bind to the standing grant comment and to one
+  output slot each; the tools consume slots and budgets mechanically. A run
+  outside the grant's steps or budgets still needs a separate authorization.
+- Mandatory stops, reported immediately with the evidence: a change to a
+  protected/frozen source, an oracle, gold or case text; a changed product
+  promise or accepted product contract; the roadmap's two-candidate-fix rule;
+  budget exhaustion; any credential, route or privacy anomaly; a blocker still
+  open after one fix round; evidence that the goal is unreachable as stated.
+
 ## Architecture boundaries
 
 - Keep the reviewed semantic catalog, request contract, analytical intent and

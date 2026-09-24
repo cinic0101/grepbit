@@ -71,6 +71,21 @@ Existing output paths are intentionally refused. Use another fresh directory,
 not deletion/overwrite. Exit code 0 means the selected offline checks passed,
 not that P0 was human-reviewed or that the product/model works.
 
+## Standing grant for a delegated goal
+
+When the owner delegates a goal (see `AGENTS.md`, "Goal-scoped delegation"),
+one comment on the goal issue is the standing grant. It states, in one place:
+the goal, the allowed step sequence (for example compatibility call, observed
+panel, diagnostic), the provider and profile for each step, the maximum number
+of runs per step, per-call and per-run time bounds, output token caps, the
+data boundary (synthetic only unless stated), the stop conditions and the
+reporting expectation. Each tool still binds every run to one authorization
+envelope and one exclusive output slot, so the grant is consumed run by run
+and cannot be replayed; the agent records each run's factual result under the
+issue that owns that step. A run outside the listed steps or above the listed
+counts is not covered and needs a separate authorization. The owner may revoke
+the grant at any time by saying so; runs already recorded stay as evidence.
+
 ## Live run authorization procedure
 
 Before the owner initiates each live run, provide:
