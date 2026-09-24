@@ -56,6 +56,11 @@ hash is reported separately from the canonical schema hash. This weakens only
 provider-side generation constraints; existing strict JSON, typed proposal,
 clarification, and native request validation are unchanged. A generated value
 outside those constraints still fails closed as `invalid_request`.
+The later [complex-const repair](p3-bedrock-complex-const-repair.md) adds one
+closed exception: a sole-key singleton array `const` becomes an array with
+`minItems: 1` and a primitive item `const`. Other complex constants fail before
+send. Its new wire hash and effective runtime identity belong only to new v3
+candidate packets; v1/v2 evidence retains the original hash and interpretation.
 The original schema tree is checked for private credentials and endpoint text
 before wire serialization, because JSON escaping can hide a literal secret from
 checks on the serialized schema string.
