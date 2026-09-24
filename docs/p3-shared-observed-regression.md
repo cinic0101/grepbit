@@ -157,3 +157,18 @@ compatibility witness, so the archived #70 report reads unchanged. After the
 preparing a new v1 packet fails with `source_identity_failure`. A new observed
 run needs a v5 compatibility witness and a new observed packet version, each a
 separately reviewed and separately authorized gate.
+
+## Packet v2: bound to the accepted v6b witness (#77, PR #81)
+
+`p3-bedrock-observed-regression-packet-v2` binds the two-branch wire v6b
+(`0bd5db7c…`), effective runtime v5 (`b106fb53…`) and the accepted v6b
+compatibility witness (report SHA-256
+`546a20004da49ce0af615ed3b5f2f158eff264bbccd1bc57b2cc3ff29a3ea758`, #64).
+The runner keeps a per-version pin table: v1 stays bound to the v4 wire and the
+v4 witness so the archived #70 report reads unchanged, and a v1 packet with a
+v6b wire, or a v2 packet with a v4 witness, is rejected. Envelope, manifest and
+report versions are unchanged because their shapes did not change. The 28
+inputs, oracles, grader, order, thresholds, 31B baseline projection, 300 s call
+and 8,520 s panel bounds are the same as v1. A v2 run is observed regression
+evidence under the #79 standing grant (observed runs: at most three); it is
+not fresh quality or promotion evidence.

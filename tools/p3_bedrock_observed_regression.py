@@ -20,7 +20,8 @@ from tools import p3_candidate_regression as historical, p3_eval as evaluator
 from tools import p3_formal_policy as allocation, p3_formal_run as formal
 from tools import p3_grading, p3_live_evidence as live, smoke
 
-PACKET_VERSION = "p3-bedrock-observed-regression-packet-v1"
+LEGACY_PACKET_VERSION = "p3-bedrock-observed-regression-packet-v1"  # v4 grammar-budget wire (#70 run)
+PACKET_VERSION = "p3-bedrock-observed-regression-packet-v2"  # v6b two-branch wire (#77 / PR #81)
 AUTHORIZATION_VERSION = "p3-bedrock-observed-regression-authorization-v2"
 MANIFEST_VERSION = "p3-bedrock-observed-regression-manifest-v2"
 REPORT_VERSION = "p3-bedrock-observed-regression-report-v2"
@@ -32,10 +33,25 @@ REGION = bedrock_probe.REGION
 POLICIES = bedrock_probe.POLICIES
 TRANSPORT = bedrock_probe.TRANSPORT
 DB_SHA256 = historical._DB_SHA
-COMPATIBILITY_SHA256 = "ea4747388b8c47b6f762e521816f5daeebf4da67901a445e8745cc375f3c49e1"
-# Pinned to the wire this packet version was admitted with (v4 grammar budget).
-WIRE_SCHEMA_SHA256 = bedrock_probe.GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256
-EFFECTIVE_RUNTIME_SHA256 = bedrock_probe.GRAMMAR_BUDGET_EFFECTIVE_RUNTIME_SHA256
+# Each observed packet version is bound to the wire it was admitted with and to
+# the compatibility witness that accepted that wire. Readers keep every version.
+_VERSION_PINS = {
+    LEGACY_PACKET_VERSION: {
+        "compatibility": "ea4747388b8c47b6f762e521816f5daeebf4da67901a445e8745cc375f3c49e1",
+        "wire": bedrock_probe.GRAMMAR_BUDGET_WIRE_SCHEMA_SHA256,
+        "effective": bedrock_probe.GRAMMAR_BUDGET_EFFECTIVE_RUNTIME_SHA256,
+        "probe_packet": bedrock_probe.GRAMMAR_BUDGET_PACKET_VERSION,
+    },
+    PACKET_VERSION: {
+        "compatibility": "546a20004da49ce0af615ed3b5f2f158eff264bbccd1bc57b2cc3ff29a3ea758",
+        "wire": bedrock_probe.WIRE_SCHEMA_SHA256,
+        "effective": bedrock_probe.EFFECTIVE_RUNTIME_SHA256,
+        "probe_packet": bedrock_probe.PACKET_VERSION,
+    },
+}
+COMPATIBILITY_SHA256 = _VERSION_PINS[PACKET_VERSION]["compatibility"]
+WIRE_SCHEMA_SHA256 = _VERSION_PINS[PACKET_VERSION]["wire"]
+EFFECTIVE_RUNTIME_SHA256 = _VERSION_PINS[PACKET_VERSION]["effective"]
 BASELINE_SHA256 = historical._BASELINE_SHA
 PINS = historical._PINS
 ORDER = historical._ORDER
@@ -107,7 +123,7 @@ def _current_identities() -> dict:
     """Recompute runtime and schema pins before preparing a new live packet."""
     baseline = bedrock_probe.semantic.semantic_identity()
     effective = bedrock_probe.effective_runtime_identity(
-        baseline, packet_version=bedrock_probe.GRAMMAR_BUDGET_PACKET_VERSION)
+        baseline, packet_version=_VERSION_PINS[PACKET_VERSION]["probe_packet"])
     try:
         canonical, wire = bedrock_probe._schemas()
     except bedrock_probe.probe.ProbeError:
@@ -126,19 +142,20 @@ def _current_identities() -> dict:
     return actual
 
 
-def _compatible_report(path: Path) -> dict:
-    _pin(path, COMPATIBILITY_SHA256)
+def _compatible_report(path: Path, version: str = PACKET_VERSION) -> dict:
+    pins = _VERSION_PINS[version]
+    _pin(path, pins["compatibility"])
     try:
         compatible = bedrock_probe.read_report(path)
     except bedrock_probe.probe.ProbeError:
         raise assets.P3Error("invalid_manifest") from None
     if (not compatible["compatibility_passed"] or compatible["status"] != "complete"
             or compatible["origin"] != "live" or compatible["client_http_attempts"] != 1
-            or compatible["report_sha256"] != COMPATIBILITY_SHA256
+            or compatible["report_sha256"] != pins["compatibility"]
             or compatible["requested_profile"] != PROFILE or compatible["observed_model"] is not None
             or compatible["baseline_semantic_identity_sha256"]
             != bedrock_probe.semantic.SEMANTICS_SHA256
-            or compatible["effective_runtime_identity_sha256"] != EFFECTIVE_RUNTIME_SHA256):
+            or compatible["effective_runtime_identity_sha256"] != pins["effective"]):
         raise assets.P3Error("invalid_manifest")
     return compatible
 
@@ -158,16 +175,19 @@ def _packet_contract(packet: dict) -> None:
                  "canonical_schema_sha256", "wire_schema_sha256", "database_sha256", "order_sha256",
                  "settings_sha256", "stop_policy_sha256"):
         formal._hash(packet[name])
-    if (packet["version"] != PACKET_VERSION or packet["state"] != "prepared_not_authorized"
+    if packet["version"] not in _VERSION_PINS:
+        raise assets.P3Error("invalid_manifest")
+    pins = _VERSION_PINS[packet["version"]]
+    if (packet["state"] != "prepared_not_authorized"
             or packet["purpose"] != PURPOSE or packet["evidence_class"] != "observed_regression"
             or packet["promotion_eligible"] is not False or packet["promotion_result"] != "not_applicable"
             or not formal._same(packet["candidate"], bedrock_probe.candidate_identity())
             or source.get("git_commit") != packet["accepted_commit"]
             or source.get("branch") != "dev" or source.get("worktree_dirty") is not False
             or packet["baseline_semantic_identity_sha256"] != bedrock_probe.semantic.SEMANTICS_SHA256
-            or packet["effective_runtime_identity_sha256"] != EFFECTIVE_RUNTIME_SHA256
+            or packet["effective_runtime_identity_sha256"] != pins["effective"]
             or packet["canonical_schema_sha256"] != bedrock_probe.CANONICAL_SCHEMA_SHA256
-            or packet["wire_schema_sha256"] != WIRE_SCHEMA_SHA256
+            or packet["wire_schema_sha256"] != pins["wire"]
             or packet["database_sha256"] != DB_SHA256
             or packet["order"] != list(ORDER) or packet["order_sha256"] != assets.digest(list(ORDER))
             or packet["allocation_policy"] != allocation.identity(allocation.V2)
@@ -198,7 +218,7 @@ def _packet_contract(packet: dict) -> None:
         formal._hash(row["question_sha256"])
         assets.Provenance.from_mapping(row["provenance"], row["exposure"])
     allocation.validate_allocation(packet["inputs"], allocation.V2)
-    for name, digest in (("compatibility", COMPATIBILITY_SHA256),
+    for name, digest in (("compatibility", pins["compatibility"]),
                          ("historical_31b", BASELINE_SHA256)):
         fields = {"reference", "sha256"} | ({"projection"} if name == "historical_31b" else set())
         assets.object_fields(packet[name], fields)
