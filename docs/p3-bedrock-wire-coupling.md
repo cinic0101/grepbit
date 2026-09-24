@@ -103,3 +103,38 @@ repair line pending a separate design decision; it is not permission to keep
 reshaping the schema. Only an accepted witness admits a new observed packet
 version and a separately authorized 28-input observed run. Neither is fresh
 quality, stability or promotion evidence.
+
+## v6b: two-branch root after the v5 grammar rejection (#77, decision A)
+
+The single owner-granted v5 compatibility attempt on accepted `dev@5e9aecf1`
+(packet `ea641bfe…`, slot `.artifacts/p375-bedrock-stage-d-8RHP4H/run`,
+report SHA-256 `90d9e74ae8f486ccb2424e1f361d0746a10913cd49ce51f1447789c099f601d2`)
+stopped at HTTP 400 `ValidationException` with the same private diagnostic
+class as v3: the compiled structured-output grammar is too large. No model
+output, no native execution. Observed boundary so far:
+
+| Wire | Root | Compact bytes | Bedrock |
+| --- | --- | --- | --- |
+| v3 | five branches, clarification shapes repeated | 7,607 | rejected |
+| v4 | one object, every branch field optional | 3,962 | accepted (admits the #74 defect) |
+| v5 | five coupled branches | 4,663 | rejected |
+
+The owner chose, in the local conversation on 2026-09-25, the order A (smaller
+coupled root) → B (no provider-side grammar for Bedrock) → C (smaller
+clarification contract, a P3.1 change). v6b is A: a root `anyOf` of **two**
+closed objects. The action object has `outcome` enum `request | declined`,
+`recipe_id` enum, `recipe_version` const and `request` anyOf of the three
+native shapes, with only `outcome` required; the clarify object has `outcome`
+const `clarify` and the required v4-flattened `clarification`. A clarify
+signal can therefore never carry a request body and never omit
+`clarification`, which is exactly the #74 defect. Deliberately left to native
+validation, as in v4, are the recipe/shape pairing and a bare
+`{"outcome":"request"}` or `declined` with a body; none of these was observed
+in #70 or #74. Offline size 4,095 compact bytes, 133 above the accepted v4.
+Acceptance is unknown until one compatibility call; a rejection of v6b moves
+to decision B, not to further reshaping.
+
+Identities: candidate packet v6, effective runtime v5; v5 constants stay as
+`COUPLED_*` and v4 as `GRAMMAR_BUDGET_*`, so the p368, p369, p370, p374 and
+p375 archives read unchanged. The observed runner's v1 packet and the #74
+diagnostic remain bound to v4.
