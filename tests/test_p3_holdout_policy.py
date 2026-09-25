@@ -56,7 +56,7 @@ class HoldoutPolicyTests(unittest.TestCase):
             ("missing_language", lambda r: [x for x in r if not (x["family_id"].endswith("clarify-2") and x["language"] == "ja")]),
             ("observational", lambda r: [{**x, "observational": True} if x["order"] == 1 else x for x in r]),
             ("anchor_cohort", lambda r: [{**x, "cohort": "anchor"} if x["family_id"].endswith("decline-0") else x for x in r]),
-            ("wrong_shape", lambda r: holdout_scaffolding(((("answer", 2), ("clarify", 3), ("decline", 2))))),
+            ("wrong_shape", lambda r: holdout_scaffolding(((("answer", 2), ("clarify", 2), ("decline", 2))))),
         ):
             with self.subTest(mutation=name), self.assertRaises(p3_assets.P3Error):
                 policy.validate_allocation(mutate(copy.deepcopy(rows)), policy.HOLDOUT_A)
