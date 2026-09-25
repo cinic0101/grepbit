@@ -14,6 +14,7 @@ import httpx
 from grepbit import json_diagnostics, model, recipe_model
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL, ModelError
 from tools import fixture, recipe_smoke
+from tools import candidate_registry
 
 
 BASE = "https://json-diagnostics-private.invalid/v1"
@@ -49,15 +50,9 @@ P2_IDENTITY = {
     "instruction_sha256": "cbf9e613e6b2a8e42ff758f9b0ceed1d2b4227be1a4d5d17cea1aee62b1cb270",
     "system_message_sha256": "5893fb44fbad47c3e5b2f970e0165d0caaf062e75ac9af88dc80e6dcd4a2ffab",
 }
-RECIPE_IDENTITY = {
-    "context_version": "learningops-recipe-context-v2", "output_contract": "recipe-request-json-v2",
-    "instruction_version": "recipe-selection-instruction-v2",
-    "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5",
-    "context_sha256": "1cae4d1955ab76ed2205b5b22fc85a33fabaa3274dca618af5cd4cade656d151",
-    "output_contract_sha256": "a2b842fedc36b77c27d05df8858d6938f67545d9d46e0219a98b8a77ad653f00",
-    "instruction_sha256": "8fbfa08c428220d452b7f83ccea7c908fdc2349641510bd8911d0055fa35acf5",
-    "system_message_sha256": "911ebd780de32eadc535c2b52f55c3c013a7ca809f3c5905f9c0913dcebfc3cb",
-}
+# The recipe identity under test is the registered current candidate (#87); the
+# frozen P3.3 identity stays byte-stable in the registry and the P3.10 fixture.
+RECIPE_IDENTITY = candidate_registry.current()["recipe_context"]
 
 
 def proposal(recipe="overview"):

@@ -1,0 +1,12 @@
+{
+  "registry_version": "candidate-registry-v1",
+  "current": "p33-frozen-20abb559",
+  "entries": [
+    {
+      "candidate_id": "p33-frozen-20abb559",
+      "path": "p33-frozen-20abb559.json",
+      "sha256": "854b42f1168b34dd7f29c45b84ad59f19e6c6c97fa30e93011536e89d0ea6af5",
+      "ancestor": null
+    }
+  ]
+}

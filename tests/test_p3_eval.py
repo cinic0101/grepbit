@@ -19,6 +19,7 @@ import httpx
 from grepbit import recipe_model
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL, ModelError
 from tools import fixture, p3_assets, p3_eval as runner, p3_expectations, smoke
+from tools import candidate_registry
 
 
 BASE = "https://p3-test-private.invalid/v1"
@@ -337,9 +338,10 @@ class P3EvalTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(set(json.loads(request.content)), {
                 "model", "messages", "temperature", "max_tokens", "stream", "response_format"})
         self.sent = []
-        await recipe_model.interpret_recipe_and_execute(
-            "March 2026 bookings; \u4e09\u6708\u9810\u8a02.", self.database, self.client())
-        self.assertEqual(len(self.sent[0].content), 25250)
+        witness_question = "March 2026 bookings; \u4e09\u6708\u9810\u8a02."
+        await recipe_model.interpret_recipe_and_execute(witness_question, self.database, self.client())
+        self.assertEqual(len(self.sent[0].content),
+                         candidate_registry.witness(candidate_registry.current(), witness_question)["recipe_body_bytes"])
 
     def test_no_runtime_imports_evaluator_modules(self):
         for path in (runner.ROOT / "grepbit").glob("*.py"):
