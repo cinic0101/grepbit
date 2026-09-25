@@ -26,15 +26,15 @@ supplies the owner review reference. The implementing agent runs only the
 intake audit, freeze and preparation tools with hash and count output and
 never reads question text or oracle values.
 
-## Allocation policy `p3-holdout-a-allocation-v1`
+## Allocation policy `p3-holdout-a-allocation-v2`
 
 | Item | Value |
 | --- | --- |
-| Families / inputs | 7 / 21, all `frozen_fresh`, three languages each |
-| Cohorts (families) | answer 2, clarify 3, decline 2; no anchors |
-| Cohorts (inputs) | answer 6, clarify 9, decline 6 |
-| Matrix cells filled | A05, C01, A04 (new bundle), C03 (new bundle), C04 (new bundle), D06 (new bundle), D02 (new bundle) |
-| Not filled | A03: no distinct candidate found after two authoring rounds; recorded, not padded |
+| Families / inputs | 6 / 18, all `frozen_fresh`, three languages each |
+| Cohorts (families) | answer 1, clarify 3, decline 2; no anchors |
+| Cohorts (inputs) | answer 3, clarify 9, decline 6 |
+| Matrix cells filled | C01, A04 (new bundle), C03 (new bundle), C04 (new bundle), D06 (new bundle), D02 (new bundle) |
+| Not filled | A03: no distinct candidate found after two authoring rounds; A05: the candidate was a k/month re-parameterisation of E03 and was withdrawn after independent ratification (v1 of this policy, 7/21, never froze a panel) |
 
 `p3_formal_policy.summarize` accepts the holdout policy with panel kind
 `formal` (the frozen asset format) or `holdout` (the live report) and always
@@ -46,7 +46,7 @@ V2 identities are unchanged.
 
 Same shape as the formal runner, with: purpose
 `one_fresh_holdout_observation_not_promotion`, evidence class
-`fresh_holdout_observation`, `promotion_eligible=false`, 21 inputs, 60-second
+`fresh_holdout_observation`, `promotion_eligible=false`, 18 inputs, 60-second
 calls, the default LiteLLM identity, an authorization envelope that binds the
 packet digest, one Issue #79 grant comment and one exclusive run slot before
 credential access, and a report reader that rejects a moved archive, a
