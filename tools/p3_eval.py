@@ -232,6 +232,12 @@ def build_manifest(
     return manifest
 
 
+_ROW_LIFECYCLE_FIELDS = frozenset({
+    "status", "not_run_reason", "client_http_attempts", "runtime_http_attempts", "runtime_invoked",
+    "attempt_evidence_status", "attempt_may_be_in_flight", "evidence", "error_code", "runner_error_code", "phase",
+})
+
+
 def _empty_grade() -> dict:
     return {"version": p3_grading.VERSION, "outcome": None, "actual_action": None,
             "layers": dict.fromkeys(p3_grading.LAYERS, "not_assessed"), "checked_wrong": False,
@@ -536,7 +542,21 @@ async def _execute_panel(database, panel, manifest, artifacts, report, client, *
                 report.update(client_http_attempts=_attempts(client), possible_in_flight_attempts=0,
                               attempt_budget_used=_attempts(client))
                 persist()
-            active.update(p3_grading.grade(result, entry.oracle))
+            graded = p3_grading.grade(result, entry.oracle)
+            # A purpose-specific policy may record closed observations of the
+            # same native result (never text) in its own declared fields; the
+            # frozen grade is unchanged and a bad observation stops before it lands.
+            observed = {}
+            observe_result = getattr(policy, "observe_result", None)
+            if observe_result is not None:
+                observed = observe_result(result)
+                declared = set(getattr(policy, "observation_fields", ()))
+                if (not isinstance(observed, dict) or set(observed) != declared
+                        or declared & (set(graded) | set(entry.metadata) | _ROW_LIFECYCLE_FIELDS)
+                        or any(value is not None and type(value) not in (str, int) for value in observed.values())):
+                    raise P3Error("internal_failure")
+            active.update(graded)
+            active.update(observed)
             active.update(status="completed", attempt_may_be_in_flight=False)
             if policy.origin == "live":
                 active["phase"] = "graded"
