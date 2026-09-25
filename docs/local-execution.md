@@ -28,7 +28,7 @@ authorization.
 
 [P2.7 recipe-runner tooling](recipe-smoke.md) has two offline gates: candidate
 implementation/review, then a fresh final manifest on the clean accepted dev
-merge commit after owner merge. A feature-branch manifest is never eligible for
+merge commit after merge into `dev`. A feature-branch manifest is never eligible for
 live reuse. Neither gate permits a model call; explicit live authorization and
 fresh route-policy attestations remain separate.
 
