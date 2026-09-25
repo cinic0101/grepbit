@@ -4,9 +4,10 @@
 
 The owner explicitly chose manual authorization and execution by their local
 coding agent, or, for one delegated goal, a standing grant the owner gives in
-the CLI session and the agent records on the goal issue (see below). This repository does not establish a connection from ChatGPT to a
-local Codex/Claude CLI. Do not add a remote-control bridge, AWS OIDC setup, live
-GitHub Actions, scheduled runs or model-calling CI as part of this scaffold.
+the CLI session and the agent records on the goal issue (see below). This
+repository does not connect any hosted assistant to the local CLI. Do not add
+a remote-control bridge, AWS OIDC setup, live GitHub Actions, scheduled runs or
+model-calling CI as part of this scaffold.
 
 P0 and P1 are accepted. For the offline kernel, dependency setup, example
 and separate P0/kernel test commands, see [the fact-kernel guide](fact-kernel.md).
