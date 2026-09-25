@@ -16,14 +16,15 @@ subagent names and tool-specific orchestration in personal/tool configuration.
 - Work on `dev` (or a task branch based on `dev`). Never commit to, merge into,
   or force-push `main` without explicit owner approval. Preserve unrelated work.
 - A repository instruction is not permission to make external calls. Live runs
-  are owner-triggered, directly or through an owner-typed standing grant (see
-  Goal-scoped delegation), and executed by the owner's local coding agent only.
+  are owner-triggered, directly or through a standing grant the owner gives in
+  the CLI session and the agent records (see Goal-scoped delegation), and
+  executed by the owner's local coding agent only.
 - Do not invoke LiteLLM, Gemma, Bedrock, external databases, remote runners, or
   paid services merely because credentials or an issue are available. Do not
   add scheduled/live GitHub Actions or a remote-control bridge.
 - For a live run, prepare the exact command, code/source identity, case IDs,
   provider, allowed data, attempt/token/time bounds, output location and stop
-  conditions. The owner authorizes that run separately unless an owner-typed
+  conditions. The owner authorizes that run separately unless a recorded
   standing grant covers it (see Goal-scoped delegation). See `docs/local-execution.md`.
 - Never print or commit keys, connection strings, local endpoint addresses,
   environment dumps, real customer data or unreviewed live traces.
@@ -44,27 +45,40 @@ subagent names and tool-specific orchestration in personal/tool configuration.
   required. If required review is unavailable, report it pending, not self-certified.
 - Open a PR for one coherent tracked change after implementation, relevant checks
   and self-review; read-only investigation and local evidence do not need a PR.
-  For substantive PRs, request independent remote review of the actual GitHub
-  diff before merge. Send a compact objective, invariants, test results, risks
-  and review focus; the summary does not replace diff review. Small mechanical
-  changes may use owner review. Tests, local QA and remote review do not authorize
-  merge. Merge requires explicit owner approval unless the owner explicitly
-  delegates it for the current task; follow task-specific Git and execution
-  permissions.
+  Substantive PRs get an independent fresh-context sub-agent review of the
+  actual GitHub diff before merge (see Goal-scoped delegation for its shape);
+  the PR records its risk category, the review prompt or focus, the reviewer's
+  disclosure and the verdict. A PR states its classification; a change in any
+  high-risk category above is never "small mechanical", and only a small
+  mechanical change may merge on tests alone. No remote agent, hosted reviewer
+  or remote-control bridge takes part in any step. Merge into `dev` follows a
+  no-blocker review plus the full offline suite, or, for documentation-only
+  changes, the proportionate checks under Implementation and checks; `main`
+  stays owner-only.
 - Preserve independent semantic/oracle acceptance required by the evaluation
   contract. A coding assistant's local review does not satisfy that requirement
   merely because it ran in a separate conversation.
 
 ## Goal-scoped delegation
 
-- The owner may delegate one goal through a goal issue plus one standing grant
-  comment **typed by the owner, not posted by an agent using the owner's
-  credentials**. The comment itself states or pins the goal, the allowed step
-  sequence, providers, run counts and call/run bounds, data boundary, route
-  retry/fallback/cache attestation per provider and stop conditions; an
-  agent-drafted goal issue or table is a proposal until then. Inside the grant
+- The owner may delegate one goal through a goal issue plus one standing grant.
+  The owner gives decisions, approvals and grants in the CLI session; the agent
+  records each on the issue or PR verbatim (the owner's words in their original
+  language, quoted, plus an English rendering), dated and attributed ("owner
+  decision given in chat, recorded by the agent"), and never records a
+  decision, approval or grant the owner did not give. The owner may void or
+  amend a recorded decision by saying so in the session; the agent records the
+  amendment the same way. The recorded grant states or pins the goal, the
+  allowed step sequence, providers, the cost, time and run bounds that
+  `docs/local-execution.md` lists, data boundary, route retry/fallback/cache
+  attestation per provider and stop conditions; an agent-drafted goal issue or
+  table is a proposal until the owner's approval is recorded. Inside the grant
   the agent proceeds without per-step chat approval and reports at milestones
   and stops. The `main` rule above is unchanged.
+- The agent manages GitHub issues and PRs as the project record: `decision`
+  issues in ADR form (context, options, decision, consequences), `defect`
+  issues (issue, regression, PR) and `evidence` records (run index, identities,
+  claim level). Chat holds approvals; GitHub holds the conclusions.
 - Inside the scope: a contract checkpoint is the contract document plus a ruler
   committed failing before the implementation commit and passing after, in the
   same PR. Code review is the high-risk delta review and satisfies the
@@ -72,9 +86,10 @@ subagent names and tool-specific orchestration in personal/tool configuration.
   agent session that receives only the PR reference, objective and review focus,
   reads the actual GitHub diff and `dev` files through GitHub, has no access to
   the implementing conversation, and discloses any other context it was given;
-  the PR names its high-risk category and records the review prompt and verdict.
-  The agent may merge into `dev` after that review reports no blocker and the
-  full offline suite passes. A reviewer blocker is fixed and re-reviewed, or
+  the PR names its high-risk category and records the review prompt, the
+  reviewer's disclosure and the verdict. The agent may merge into `dev` after
+  that review reports no blocker and the checks under Collaboration and review
+  pass. A reviewer blocker is fixed and re-reviewed, or
   escalated to the owner as a stop; it is not debated. Semantic, oracle and case
   acceptance stay with an independent human or a reviewer the owner names; the
   implementing agent never decides them.
@@ -88,8 +103,11 @@ subagent names and tool-specific orchestration in personal/tool configuration.
   evidence: a needed change to a protected/frozen source, an oracle, gold or
   case text, to a product promise or accepted product contract, or to
   `AGENTS.md`, `CLAUDE.md`, `docs/local-execution.md` or other authority text
-  (owner review and owner merge only); a third candidate fix on one failure
-  family, the roadmap's two-fix default; budget exhaustion; any credential,
+  (the owner approves the change in the session, the agent records that
+  approval on the PR, and the PR still gets the independent sub-agent review
+  before merge, in addition to the independent acceptance that Evidence and
+  improvement requires for oracle, gold or case text); a third candidate fix
+  on one failure family, the roadmap's two-fix default; budget exhaustion; any credential,
   route or privacy anomaly; a blocker still open after one fix round; evidence
   that the goal is unreachable as stated.
 

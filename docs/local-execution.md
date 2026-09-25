@@ -3,10 +3,11 @@
 ## Current policy
 
 The owner explicitly chose manual authorization and execution by their local
-coding agent, or, for one delegated goal, an owner-typed standing grant
-(see below). This repository does not establish a connection from ChatGPT to a
-local Codex/Claude CLI. Do not add a remote-control bridge, AWS OIDC setup, live
-GitHub Actions, scheduled runs or model-calling CI as part of this scaffold.
+coding agent, or, for one delegated goal, a standing grant the owner gives in
+the CLI session and the agent records on the goal issue (see below). This
+repository does not connect any hosted assistant to the local CLI. Do not add
+a remote-control bridge, AWS OIDC setup, live GitHub Actions, scheduled runs or
+model-calling CI as part of this scaffold.
 
 P0 and P1 are accepted. For the offline kernel, dependency setup, example
 and separate P0/kernel test commands, see [the fact-kernel guide](fact-kernel.md).
@@ -26,8 +27,8 @@ P2.0 is [design/admission only](p2-recipes.md), not recipe execution or live
 authorization.
 
 [P2.7 recipe-runner tooling](recipe-smoke.md) has two offline gates: candidate
-implementation/review, then a fresh final manifest on the clean accepted dev
-merge commit after owner merge. A feature-branch manifest is never eligible for
+implementation/review, then a fresh final manifest on the clean accepted `dev`
+merge commit. A feature-branch manifest is never eligible for
 live reuse. Neither gate permits a model call; explicit live authorization and
 fresh route-policy attestations remain separate.
 
@@ -75,10 +76,12 @@ not that P0 was human-reviewed or that the product/model works.
 ## Standing grant for a delegated goal
 
 When the owner delegates a goal (see `AGENTS.md`, "Goal-scoped delegation"),
-one comment on the goal issue **typed by the owner** (not posted by an agent
-using the owner's credentials) is the standing grant; an agent-drafted goal
-issue or budget table is a proposal until that comment exists, and the comment
-must state or pin the budgets itself. The grant states, in one place: the
+one comment on the goal issue is the standing grant: the owner gives it in the
+CLI session and the agent records it verbatim, dated and attributed ("owner
+grant given in chat, recorded by the agent"); an agent-drafted goal issue or
+budget table is a proposal until the owner's grant is recorded, and the
+recorded comment must state or pin the budgets itself. The agent never records
+a grant the owner did not give. The grant states, in one place: the
 goal, the allowed step sequence (for example compatibility call, observed
 panel, diagnostic), the provider and profile for each step, the maximum number
 of runs per step, per-call and per-run time bounds, output token caps, the
@@ -120,6 +123,6 @@ short-lived credentials where available, but configure them locally only after
 owner authorization. Do not create keys or ask for them in chat/public issues.
 
 Review safe output before returning it. Git-ignored is not equivalent to redacted.
-Do not upload full raw traces automatically. ChatGPT may analyze a sanitized
-report and prepare a fix/next bounded request; it does not imply the next run is
-authorized. The owner may stop or decline any live run.
+Do not upload full raw traces automatically. The local coding agent analyzes
+the sanitized report and prepares the next bounded request; analysis does not
+imply the next run is authorized. The owner may stop or decline any live run.
