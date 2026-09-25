@@ -537,6 +537,11 @@ async def _execute_panel(database, panel, manifest, artifacts, report, client, *
                               attempt_budget_used=_attempts(client))
                 persist()
             active.update(p3_grading.grade(result, entry.oracle))
+            # A purpose-specific policy may record closed observations of the
+            # same native result (never text); the frozen grade is unchanged.
+            observe_result = getattr(policy, "observe_result", None)
+            if observe_result is not None:
+                active.update(observe_result(result))
             active.update(status="completed", attempt_may_be_in_flight=False)
             if policy.origin == "live":
                 active["phase"] = "graded"
