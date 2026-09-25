@@ -175,7 +175,8 @@ def load_entry(candidate_id: str, index_path: Path | None = None) -> dict:
             or entry["ancestor_sha256"] != ancestor_sha
             or entry["semantic_identity_sha256"] != _digest(semantic)
             or entry["candidate_sha256"] != _digest({**semantic, "wire_witnesses": entry["wire_witnesses"]})
-            or not isinstance(entry["note"], str) or len(entry["note"]) > _MAX_NOTE or "\n" in entry["note"]):
+            or not isinstance(entry["note"], str) or not entry["note"] or len(entry["note"]) > _MAX_NOTE
+            or not entry["note"].isprintable()):
         raise RegistryError("registry_drift")
     return entry
 

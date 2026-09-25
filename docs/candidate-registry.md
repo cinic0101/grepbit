@@ -47,6 +47,9 @@ The semantic identity the runtime submits and enforces:
   wire-only change (for example the default model name) is registrable.
   **A modified or removed existing file under `evals/candidates/` is a review
   blocker**; the registry is append-only and git history is its audit trail.
+  Tail truncation with `current` moved back is self-consistent and not
+  detectable by the tool; the anchor is the pinned `EXPECTED_CURRENT` /
+  `EXPECTED_ENTRIES` in the registry rulers, updated by each registration PR.
   The `note` is one printable line of at most 200 characters and must never
   contain fresh case text or a secret.
 - Rulers (`tests/test_candidate_registry.py`): entries are byte-stable against

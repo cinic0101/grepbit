@@ -11,6 +11,9 @@ from tools import candidate_registry as registry, p3_candidate_model
 
 ROOT = Path(__file__).resolve().parents[1]
 BASELINE = json.loads((ROOT / "tests/fixtures/p310_identity_baseline.json").read_bytes())
+# Pinned registry expectations; a candidate registration PR updates both lines.
+EXPECTED_CURRENT = "p33-frozen-20abb559"
+EXPECTED_ENTRIES = 1
 
 
 class CandidateRegistryRulers(unittest.TestCase):
@@ -132,18 +135,45 @@ class CandidateRegistryRulers(unittest.TestCase):
             with self.assertRaises(registry.RegistryError) as broken:
                 registry.load_entry("synthetic-wire", index_path)
             self.assertEqual(broken.exception.code, "registry_drift")
-            # Forks, second roots, truncation with current moved back, and a path not tied to the id are refused.
+            # Forks, second roots, a path not tied to the id, a reordered chain and a bad row digest are refused.
             original = json.loads(index_path.read_text())
-            for mutate in (lambda i: i["entries"][1].update(ancestor=None),
-                           lambda i: i["entries"].pop() or i.update(current="synthetic-root"),
-                           lambda i: i["entries"][1].update(path="other.json"),
-                           lambda i: i["entries"].reverse() or i.update(current="synthetic-root"),
-                           lambda i: i["entries"][0].update(sha256="0" * 64) or None):
+
+            def fork(i): i["entries"][1]["ancestor"] = None
+            def bad_path(i): i["entries"][1]["path"] = "other.json"
+            def reorder(i): i["entries"].reverse(); i["current"] = "synthetic-root"
+            def bad_sha(i): i["entries"][0]["sha256"] = "0" * 64
+            def dangling_current(i): i["entries"].pop()
+
+            for mutate in (fork, bad_path, reorder, bad_sha, dangling_current):
                 tampered = json.loads(json.dumps(original))
                 mutate(tampered)
                 index_path.write_text(json.dumps(tampered) + "\n")
                 with self.assertRaises(registry.RegistryError):
                     registry.load_entry(tampered["current"], index_path)
+            # Tail truncation with current moved back is self-consistent and NOT detectable by the tool;
+            # the anchor is the pinned expectation below plus the documented review blocker.
+            truncated = json.loads(json.dumps(original))
+            truncated["entries"].pop()
+            truncated["current"] = "synthetic-root"
+            index_path.write_text(json.dumps(truncated) + "\n")
+            self.assertEqual(registry.load_entry("synthetic-root", index_path)["candidate_id"], "synthetic-root")
+            index_path.write_text(json.dumps(original) + "\n")
+            # A hand-edited note with a control character is rejected on load.
+            wire_path = Path(tmp) / "synthetic-wire.json"
+            edited = json.loads(wire_path.read_text())
+            edited["note"] = "tab\tnote"
+            wire_path.write_text(json.dumps(edited, indent=2, ensure_ascii=False) + "\n")
+            original["entries"][1]["sha256"] = hashlib.sha256(wire_path.read_bytes()).hexdigest()
+            index_path.write_text(json.dumps(original) + "\n")
+            with self.assertRaises(registry.RegistryError) as control:
+                registry.load_entry("synthetic-wire", index_path)
+            self.assertEqual(control.exception.code, "registry_drift")
+
+    def test_registry_expectations_are_pinned(self):
+        # The anchor against tail truncation: a registration PR updates these two values consciously.
+        index = registry.load_index()
+        self.assertEqual(index["current"], EXPECTED_CURRENT)
+        self.assertEqual(len(index["entries"]), EXPECTED_ENTRIES)
 
     def test_witness_lookup_is_by_question_digest_only(self):
         entry = registry.current()
