@@ -42,6 +42,22 @@ reports `panel_kind: holdout`, `promotion.eligible: false`, `promotion.passed:
 false`. Family-weighted outcomes come from the unchanged frozen scorer. V1 and
 V2 identities are unchanged.
 
+## Freeze bound to the accepted dev commit
+
+The P3.3 formal freeze pins the product snapshot of 2026-09-21
+(`candidate_identity` compares the `grepbit/` file set to that commit and now
+fails by design, because the provider adapters were added later). A holdout
+observes the behavior of the accepted `dev` commit, so the holdout runner
+freezes on its own: `--freeze-holdout` validates the reviewed intake through
+the same admission materials, records the accepted commit, the full source
+identity, the database digest, the asset pins, the owner review reference and
+the allocation identity, and snapshots the four assets exclusively. The
+intake's `candidate_freeze_sha` stays as the **authoring baseline** (the
+semantics the author and reviewer wrote against). Loading a freeze recomputes
+the payload from the snapshots on the same accepted commit and rejects drift,
+a different commit or a tampered payload. There is no separate `p3_eval`
+preparation artifact; the packet pins the freeze directly.
+
 ## Runner `tools/p3_holdout_run.py`
 
 Same shape as the formal runner, with: purpose

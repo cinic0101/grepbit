@@ -48,8 +48,6 @@ class HoldoutRunTests(unittest.IsolatedAsyncioTestCase):
                        "context": recipe_model.context_identity(),
                        "structured_output": recipe_model.structured_output_identity()}
         self.enterContext(patch.object(recipe_smoke, "_source_identity", side_effect=lambda: deepcopy(self.source)))
-        from p3_historical_source import historical_candidate
-        self.enterContext(patch.object(p3_admission, "candidate_identity", return_value=historical_candidate()))
         exposed = p3_assets.load_panel(p3_eval.DEFAULT_PANEL)
         seeds = {branch: next(c for c in exposed.cases if c.expected_branch == branch) for branch in p3_assets.BRANCHES}
         self.cases = tuple(replace(seeds[row["expected_branch"]], **{
@@ -70,21 +68,17 @@ class HoldoutRunTests(unittest.IsolatedAsyncioTestCase):
         panel = p3_assets.Panel("SyntheticHoldoutNotAdmitted", "formal", self.cases, self.oracles, self.panel_path,
                                 self.root / "development-cases-v1.json", self.root / "development-oracles-v1.json")
         review = {"state": "novelty_reviewed", "owner_review_reference": GRANT + "1",
+                  "candidate_freeze_sha": p3_admission.FROZEN_CANDIDATE,
                   "families": abstract_reviews(panel.inputs()),
                   **{name: p3_eval._pin(self.root / filename) for name, filename in (
                       ("cases", "development-cases-v1.json"), ("oracles", "development-oracles-v1.json"))}}
         self.enterContext(patch.object(p3_admission, "_intake", side_effect=lambda path: (
             deepcopy(review), self.cases, self.oracles, {"review_assertions_complete": True})))
         self.frozen = self.root / "synthetic-freeze"
-        p3_admission.freeze_panel(self.database, self.intake_path, self.panel_path, self.frozen,
-                                 accepted_commit=SHA, allocation_policy=p3_formal_policy.HOLDOUT_A)
-        self.prepared = self.root / "synthetic-offline-prepared"
-        p3_eval.prepare(self.database, self.prepared, panel_path=self.frozen / self.panel_path.name,
-                        accepted_commit=SHA, formal_freeze=self.frozen / "report.json")
+        holdout.freeze_holdout(self.database, self.intake_path, self.panel_path, self.frozen, accepted_commit=SHA)
         self.packet_dir = self.root / "packet"
         holdout.prepare(self.database, self.packet_dir, freeze_path=self.frozen / "report.json",
-                        preparation_path=self.prepared / "manifest.json", accepted_commit=SHA,
-                        gateway_policies=POLICIES, transport_security="unencrypted_http")
+                        accepted_commit=SHA, gateway_policies=POLICIES, transport_security="unencrypted_http")
         self.packet_path = self.packet_dir / "manifest.json"
         self.packet = json.loads(self.packet_path.read_text())
         self.sent, self.serial = [], 0
@@ -126,20 +120,65 @@ class HoldoutRunTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.packet["settings"]["max_client_http_attempts"], 18)
         self.assertEqual(self.packet["settings"]["call_timeout_seconds"], 60.0)
         self.assertTrue(all(row["exposure"] == "frozen_fresh" for row in self.packet["inputs"]))
+        self.assertEqual(self.packet["authoring_baseline_sha"], p3_admission.FROZEN_CANDIDATE)
+        self.assertEqual(self.packet["candidate"]["kind"], "accepted_dev_behavior")
+        self.assertEqual(self.packet["candidate"]["accepted_commit"], SHA)
+        self.assertNotIn("preparation_assets", self.packet)
         for field, bad in (("promotion_eligible", True), ("panel_kind", "formal"),
                            ("allocation_policy", p3_formal_policy.identity(p3_formal_policy.V2)),
-                           ("evidence_class", "formal_quality")):
+                           ("evidence_class", "formal_quality"),
+                           ("candidate", {**self.packet["candidate"], "accepted_commit": "2" * 40}),
+                           ("authoring_baseline_sha", "0" * 40)):
             with self.subTest(field=field):
                 changed = deepcopy(self.packet)
                 changed[field] = bad
                 with self.assertRaises(p3_assets.P3Error):
                     holdout._packet_contract(changed)
 
-    def test_v2_formal_freeze_is_not_a_holdout(self):
-        frozen = self.root / "v2-freeze"
+    def test_holdout_freeze_binds_the_accepted_dev_commit_and_the_authoring_baseline(self):
+        payload = json.loads((self.frozen / "report.json").read_text())
+        self.assertEqual(payload["version"], "p3-holdout-freeze-v1")
+        self.assertEqual(payload["accepted_commit"], SHA)
+        self.assertEqual(payload["authoring_baseline_sha"], p3_admission.FROZEN_CANDIDATE)
+        self.assertEqual(payload["allocation_policy"], p3_formal_policy.identity(p3_formal_policy.HOLDOUT_A))
+        self.assertEqual(len(payload["inputs"]), 18)
+        self.assertNotIn("candidate_freeze_sha", payload)  # the P3.3 snapshot check is not consulted
+        for name in ("intake", "panel", "cases", "oracles"):
+            self.assertTrue((self.frozen / payload["assets"][name]["reference"]).is_file())
+        loaded, panel = holdout.load_holdout_freeze(self.frozen / "report.json", self.database, accepted_commit=SHA)
+        self.assertEqual(loaded, payload)
+        self.assertEqual(len(panel.cases), 18)
+        with self.assertRaisesRegex(p3_assets.P3Error, "invalid_manifest"):
+            holdout.load_holdout_freeze(self.frozen / "report.json", self.database, accepted_commit="2" * 40)
+        with self.assertRaisesRegex(recipe_smoke.RecipeSmokeError, "accepted_commit_required"):
+            holdout.freeze_holdout(self.database, self.intake_path, self.panel_path, self.root / "wrong-commit",
+                                   accepted_commit="2" * 40)
+        tampered = self.root / "tampered-freeze"
+        import shutil
+        shutil.copytree(self.frozen, tampered)
+        report = json.loads((tampered / "report.json").read_text())
+        report["order"] = list(reversed(report["order"]))
+        (tampered / "report.json").write_text(json.dumps(report))
         with self.assertRaises(p3_assets.P3Error):
-            p3_admission.freeze_panel(self.database, self.intake_path, self.panel_path, frozen,
+            holdout.load_holdout_freeze(tampered / "report.json", self.database, accepted_commit=SHA)
+        # The P3.3 formal freeze path is not used for holdouts; a V2 policy cannot freeze this panel.
+        with self.assertRaises(p3_assets.P3Error):
+            p3_admission.freeze_panel(self.database, self.intake_path, self.panel_path, self.root / "v2-freeze",
                                      accepted_commit=SHA, allocation_policy=p3_formal_policy.V2)
+        # A formal-format freeze of the same panel is not a holdout freeze either.
+        from p3_historical_source import historical_candidate
+        with patch.object(p3_admission, "candidate_identity", return_value=historical_candidate()):
+            p3_admission.freeze_panel(self.database, self.intake_path, self.panel_path, self.root / "formal-freeze",
+                                     accepted_commit=SHA, allocation_policy=p3_formal_policy.HOLDOUT_A)
+        with self.assertRaisesRegex(p3_assets.P3Error, "invalid_manifest"):
+            holdout.load_holdout_freeze(self.root / "formal-freeze" / "report.json", self.database, accepted_commit=SHA)
+        # A replaced snapshot fails the pin before any recomputation.
+        swapped = self.root / "swapped-freeze"
+        shutil.copytree(self.frozen, swapped)
+        cases_snapshot = swapped / payload["assets"]["cases"]["reference"]
+        cases_snapshot.write_bytes(cases_snapshot.read_bytes() + b"\n")
+        with self.assertRaisesRegex(p3_assets.P3Error, "manifest_drift"):
+            holdout.load_holdout_freeze(swapped / "report.json", self.database, accepted_commit=SHA)
 
     async def test_one_observation_per_slot_with_grant_bound_envelope_and_readback(self):
         output = self.root / "run-1"
@@ -188,7 +227,7 @@ class HoldoutRunTests(unittest.IsolatedAsyncioTestCase):
         self.config_cls.from_env.assert_not_called()
         self.factory.assert_not_called()
         for field, bad in (("gateway_policy", {**self.packet["gateway_policy"], "attestation": "tampered"}),
-                           ("locations", "not-a-dict"), ("preparation_assets", {"manifest": self.packet["preparation_assets"]["manifest"]}),
+                           ("locations", "not-a-dict"), ("locations", {"freeze": "x", "preparation": "y"}),
                            ("assets", {**self.packet["assets"], "extra": self.packet["assets"]["panel"]})):
             with self.subTest(field=field):
                 changed = deepcopy(self.packet)
@@ -202,6 +241,7 @@ class HoldoutRunTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(holdout.main(["--bind-authorization", "--packet", str(self.packet_path),
                                        "--owner-authorization-reference", GRANT + "9",
                                        "--output", str(self.root / "cli-auth.json")]), 2)
+        self.assertEqual(holdout.main(["--freeze-holdout", "--intake", str(self.intake_path)]), 2)
 
 
 if __name__ == "__main__":
