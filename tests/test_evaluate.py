@@ -141,11 +141,11 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
         self.sent, self.serial = [], 0
 
     # ----------------------------------------------------------------- helpers
-    def prepare(self, panel="synthetic-dev", route="litellm-31b", baseline=None, name=None):
+    def prepare(self, panel="synthetic-dev", route="litellm-31b", baseline=None, name=None, commit=SHA):
         self.serial += 1
         packet_dir = self.root / (name or f"packet-{self.serial}")
         runner.prepare(self.database, packet_dir, candidate_id=self.candidate, panel_id=panel, route_id=route,
-                       accepted_commit=SHA, gateway_policies=dict(POLICY), baseline_path=baseline, **self.registries)
+                       accepted_commit=commit, gateway_policies=dict(POLICY), baseline_path=baseline, **self.registries)
         return packet_dir / "manifest.json"
 
     def bind(self, packet_path, output):
@@ -171,7 +171,8 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
                                            expected_model=GEMMA_12B if model_name == GEMMA_12B.model_alias else None),
                              transport=httpx.MockTransport(respond))
 
-    async def run_mock(self, packet_path, output, authorization, *, client=None, policies=None, route="litellm"):
+    async def run_mock(self, packet_path, output, authorization, *, client=None, policies=None, route="litellm",
+                       commit=SHA):
         original = runner.validate_packet
 
         def with_registries(path, db, *, accepted_commit):
@@ -181,7 +182,7 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
             if route == "bedrock":
                 with patch.object(runner, "client_from_env", return_value=client) as loader:
                     report = await runner.run_live(self.database, output, packet_path=packet_path,
-                                                   authorization_path=authorization, accepted_commit=SHA,
+                                                   authorization_path=authorization, accepted_commit=commit,
                                                    env_file=self.root / "unused.env",
                                                    gateway_policies=policies or dict(POLICY))
                 return report, loader
@@ -189,7 +190,7 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
                     patch.object(runner, "GatewayClient", return_value=client or self.litellm_client()) as factory:
                 config_cls.from_env.return_value = (client or self.litellm_client()).config
                 report = await runner.run_live(self.database, output, packet_path=packet_path,
-                                               authorization_path=authorization, accepted_commit=SHA,
+                                               authorization_path=authorization, accepted_commit=commit,
                                                env_file=self.root / "unused.env",
                                                gateway_policies=policies or dict(POLICY))
             return report, config_cls
@@ -219,7 +220,9 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
                        lambda i: i["panels"][0].update(intake={"path": "x.json", "sha256": "0" * 64}),
                        lambda i: i["panels"][0].update(path="/etc/passwd"),
                        lambda i: i["panels"].append(dict(i["panels"][0])),
-                       lambda i: i["panels"].append({**i["panels"][2], "panel_id": "holdout-again"})):
+                       lambda i: i["panels"].append({**i["panels"][2], "panel_id": "holdout-again"}),
+                       lambda i: i["panels"].append({**i["panels"][2], "panel_id": "holdout-copy",
+                                                     "assets": {**i["panels"][2]["assets"], "panel": "0" * 64}})):
             broken = json.loads(self.panels.read_text())
             mutate(broken)
             bad = self.root / "bad-panels.json"
@@ -371,10 +374,16 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(report["claim"], "fresh_holdout_observation")
         # A second archive prepared and run before the first was recorded also claims fresh;
         # once the first is recorded, recording the second is refused.
-        twin_packet = self.prepare(panel="synthetic-holdout", name="twin")
+        # The twin is prepared and run on another accepted commit, so its run id differs.
+        self.source["git_commit"] = "2" * 40
+        self.source["files_sha256"] = {"synthetic": "2" * 64}
+        twin_packet = self.prepare(panel="synthetic-holdout", name="twin", commit="2" * 40)
         twin_output = self.output()
-        twin, _ = await self.run_mock(twin_packet, twin_output, self.bind(twin_packet, twin_output))
+        twin, _ = await self.run_mock(twin_packet, twin_output, self.bind(twin_packet, twin_output), commit="2" * 40)
         self.assertEqual(twin["claim"], "fresh_holdout_observation")
+        self.assertNotEqual(twin["run_id"], report["run_id"])
+        self.source["git_commit"] = SHA
+        self.source["files_sha256"] = {}
         runner.record(output / "report.json", runs_path=self.runs, now="2026-09-25T00:00:00Z")
         with self.assertRaises(p3_assets.P3Error) as twice:
             runner.record(twin_output / "report.json", runs_path=self.runs, now="2026-09-25T00:00:01Z")

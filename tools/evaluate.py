@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import re
+import stat
 import sys
 import time
 
@@ -96,6 +97,8 @@ def _report_digest(path: Path) -> str:
     """Digest of a report archive, which may exceed the asset cap but never the report cap."""
     try:
         smoke._no_symlinks(path)
+        if not stat.S_ISREG(path.lstat().st_mode):
+            raise assets.P3Error("invalid_asset")
         with path.open("rb") as stream:
             raw = stream.read(evaluator.MAX_REPORT_BYTES + 1)
     except OSError:
@@ -138,9 +141,13 @@ def load_panels(path: Path | None = None) -> dict:
             if row[key] is not None:
                 _location(row[key]["path"])
         seen.add(row["panel_id"])
-    # The same frozen assets under a second id would earn a second fresh claim.
+    # The same frozen assets under a second id would earn a second fresh claim; a
+    # holdout's case text must be unique across the whole registry.
     digests = [tuple(sorted(row["assets"].items())) for row in index["panels"]]
     if len(set(digests)) != len(digests):
+        raise assets.P3Error("invalid_manifest")
+    cases = [row["assets"]["cases"] for row in index["panels"]]
+    if any(cases.count(row["assets"]["cases"]) != 1 for row in index["panels"] if row["tier"] == "holdout"):
         raise assets.P3Error("invalid_manifest")
     return index
 
