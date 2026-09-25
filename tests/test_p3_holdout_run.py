@@ -48,8 +48,6 @@ class HoldoutRunTests(unittest.IsolatedAsyncioTestCase):
                        "context": recipe_model.context_identity(),
                        "structured_output": recipe_model.structured_output_identity()}
         self.enterContext(patch.object(recipe_smoke, "_source_identity", side_effect=lambda: deepcopy(self.source)))
-        from p3_historical_source import historical_candidate
-        self.enterContext(patch.object(p3_admission, "candidate_identity", return_value=historical_candidate()))
         exposed = p3_assets.load_panel(p3_eval.DEFAULT_PANEL)
         seeds = {branch: next(c for c in exposed.cases if c.expected_branch == branch) for branch in p3_assets.BRANCHES}
         self.cases = tuple(replace(seeds[row["expected_branch"]], **{
@@ -167,6 +165,20 @@ class HoldoutRunTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(p3_assets.P3Error):
             p3_admission.freeze_panel(self.database, self.intake_path, self.panel_path, self.root / "v2-freeze",
                                      accepted_commit=SHA, allocation_policy=p3_formal_policy.V2)
+        # A formal-format freeze of the same panel is not a holdout freeze either.
+        from p3_historical_source import historical_candidate
+        with patch.object(p3_admission, "candidate_identity", return_value=historical_candidate()):
+            p3_admission.freeze_panel(self.database, self.intake_path, self.panel_path, self.root / "formal-freeze",
+                                     accepted_commit=SHA, allocation_policy=p3_formal_policy.HOLDOUT_A)
+        with self.assertRaisesRegex(p3_assets.P3Error, "invalid_manifest"):
+            holdout.load_holdout_freeze(self.root / "formal-freeze" / "report.json", self.database, accepted_commit=SHA)
+        # A replaced snapshot fails the pin before any recomputation.
+        swapped = self.root / "swapped-freeze"
+        shutil.copytree(self.frozen, swapped)
+        cases_snapshot = swapped / payload["assets"]["cases"]["reference"]
+        cases_snapshot.write_bytes(cases_snapshot.read_bytes() + b"\n")
+        with self.assertRaisesRegex(p3_assets.P3Error, "manifest_drift"):
+            holdout.load_holdout_freeze(swapped / "report.json", self.database, accepted_commit=SHA)
 
     async def test_one_observation_per_slot_with_grant_bound_envelope_and_readback(self):
         output = self.root / "run-1"
