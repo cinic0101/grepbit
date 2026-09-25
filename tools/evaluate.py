@@ -59,6 +59,7 @@ GRANT = re.compile(r"https://github\.com/cinic0101/grepbit/issues/[1-9][0-9]*#is
 _ID = re.compile(r"[a-z0-9][a-z0-9.-]{2,63}")
 _SLOT = re.compile(r"\.artifacts(?:/[A-Za-z0-9._-]+)+")
 _SHA = re.compile(r"[0-9a-f]{64}")
+_TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z")
 _TRANSPORT = formal._TRANSPORT
 _same = formal._same
 _hash = formal._hash
@@ -89,6 +90,19 @@ def _read_json(path: Path, code: str = "invalid_manifest") -> dict:
     if not isinstance(value, dict):
         raise assets.P3Error(code)
     return value
+
+
+def _report_digest(path: Path) -> str:
+    """Digest of a report archive, which may exceed the asset cap but never the report cap."""
+    try:
+        smoke._no_symlinks(path)
+        with path.open("rb") as stream:
+            raw = stream.read(evaluator.MAX_REPORT_BYTES + 1)
+    except OSError:
+        raise assets.P3Error("invalid_asset") from None
+    if len(raw) > evaluator.MAX_REPORT_BYTES:
+        raise assets.P3Error("invalid_asset")
+    return smoke._digest(raw)
 
 
 def _location(value: object) -> Path:
@@ -124,6 +138,10 @@ def load_panels(path: Path | None = None) -> dict:
             if row[key] is not None:
                 _location(row[key]["path"])
         seen.add(row["panel_id"])
+    # The same frozen assets under a second id would earn a second fresh claim.
+    digests = [tuple(sorted(row["assets"].items())) for row in index["panels"]]
+    if len(set(digests)) != len(digests):
+        raise assets.P3Error("invalid_manifest")
     return index
 
 
@@ -145,6 +163,9 @@ def load_routes(path: Path | None = None) -> dict:
                 or row["provider"] == "bedrock_converse" and row["transport_security"] != "tls_verification_enabled"):
             raise assets.P3Error("invalid_manifest")
         seen.add(row["route_id"])
+    identities = [(row["provider"], row["model"], row["region"]) for row in index["routes"]]
+    if len(set(identities)) != len(identities):
+        raise assets.P3Error("invalid_manifest")
     return index
 
 
@@ -177,13 +198,21 @@ def load_runs(path: Path | None = None) -> list[dict]:
             raise assets.P3Error("invalid_manifest")
         ids.add(row["run_id"])
         runs.append(row)
+    fresh = [(run["panel_id"], run["route_id"]) for run in runs if run["claim"] == "fresh_holdout_observation"]
+    if len(set(fresh)) != len(fresh):
+        raise assets.P3Error("invalid_manifest")
     return runs
 
 
 def _run_record(row: object) -> dict:
     if (not isinstance(row, dict) or set(row) != _RUN_FIELDS or row["version"] != RUN_RECORD_VERSION
             or row["tier"] not in TIERS or row["claim"] not in CLAIMS or row["status"] not in ("complete", "incomplete")
+            or (row["tier"] == "dev") != (row["claim"] == "development_observation")
+            or row["tier"] == "regression" and row["claim"] != "observed_regression"
             or not isinstance(row["report_sha256"], str) or _SHA.fullmatch(row["report_sha256"]) is None
+            or not isinstance(row["accepted_commit"], str) or formal._COMMIT.fullmatch(row["accepted_commit"]) is None
+            or not isinstance(row["slot"], str) or _SLOT.fullmatch(row["slot"]) is None
+            or not isinstance(row["recorded_at"], str) or _TIMESTAMP.fullmatch(row["recorded_at"]) is None
             or not isinstance(row["outcomes"], dict)
             or any(type(row[key]) is not int or row[key] < 0 for key in ("inputs", "correct", "families",
                                                                           "families_correct"))
@@ -291,7 +320,7 @@ def _baseline_projection(path: Path) -> dict:
             for result, score in zip(report["results"], report["summary"]["per_input"])]
     families = {key: value["family_all_variants_correct"] for key, value in report["summary"]["per_family"].items()}
     return {"reference": path.absolute().relative_to(ROOT).as_posix() if path.absolute().is_relative_to(ROOT) else str(path),
-            "sha256": evaluator._pin(path)["sha256"], "report_version": version,
+            "sha256": _report_digest(path), "report_version": version,
             "inputs": rows, "family_correct": families}
 
 
@@ -739,12 +768,16 @@ def record(report_path: Path, *, runs_path: Path | None = None, now: str | None 
     runs = load_runs(runs_file)
     if any(run["run_id"] == report["run_id"] for run in runs):
         raise assets.P3Error("artifact_conflict")
+    # The claim must still be derivable from the index the record joins: a second
+    # fresh observation of the same (panel, route), however prepared, is refused.
+    if derive_claim(report["tier"], report["panel"]["panel_id"], report["route"]["route_id"], runs) != report["claim"]:
+        raise assets.P3Error("artifact_conflict")
     summary = report["summary"]
     row = {"version": RUN_RECORD_VERSION, "run_id": report["run_id"],
            "recorded_at": now or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
            "candidate_id": report["candidate"]["candidate_id"], "panel_id": report["panel"]["panel_id"],
            "tier": report["tier"], "route_id": report["route"]["route_id"], "claim": report["claim"],
-           "report_sha256": evaluator._pin(report_path)["sha256"], "slot": report["run_slot"],
+           "report_sha256": _report_digest(report_path), "slot": report["run_slot"],
            "accepted_commit": report["preparation"]["accepted_commit"],
            "grant": report["owner_authorization_reference"], "status": report["status"],
            "inputs": summary["input_count"], "correct": sum(r["correct"] for r in summary["per_input"]),

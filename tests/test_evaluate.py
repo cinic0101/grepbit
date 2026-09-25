@@ -92,9 +92,13 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
                   "oracles": p3_eval._pin(self.root / "holdout-oracles.json")}
         self.enterContext(patch.object(p3_admission, "_intake", side_effect=lambda path: (
             deepcopy(review), holdout_cases, holdout_oracles, {"review_assertions_complete": True})))
+        regression_panel = json.loads((self.root / "development-panel-v1.json").read_text())
+        regression_panel["panel_id"] = "synthetic-regression"
+        (self.root / "regression-panel.json").write_text(json.dumps(regression_panel))
         pins = {name: hashlib.sha256((self.root / name).read_bytes()).hexdigest() for name in (
             "development-panel-v1.json", "development-cases-v1.json", "development-oracles-v1.json",
-            "holdout-panel.json", "holdout-cases.json", "holdout-oracles.json", "holdout-intake.json")}
+            "regression-panel.json", "holdout-panel.json", "holdout-cases.json", "holdout-oracles.json",
+            "holdout-intake.json")}
         (self.root / "holdout-freeze.json").write_text(json.dumps({
             "version": "synthetic-freeze", "owner_review_reference": GRANT + "77",
             "assets": {"panel": {"sha256": pins["holdout-panel.json"]}, "cases": {"sha256": pins["holdout-cases.json"]},
@@ -107,9 +111,9 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
             {"panel_id": "synthetic-dev", "tier": "dev", "path": f"{self.relative}/development-panel-v1.json",
              "assets": dev_assets, "allocation_policy": None, "intake": None, "freeze": None, "authoring": "development",
              "note": "dev"},
-            {"panel_id": "synthetic-regression", "tier": "regression", "path": f"{self.relative}/development-panel-v1.json",
-             "assets": dev_assets, "allocation_policy": None, "intake": None, "freeze": None, "authoring": "historical",
-             "note": "reg"},
+            {"panel_id": "synthetic-regression", "tier": "regression", "path": f"{self.relative}/regression-panel.json",
+             "assets": {**dev_assets, "panel": pins["regression-panel.json"]}, "allocation_policy": None,
+             "intake": None, "freeze": None, "authoring": "historical", "note": "reg"},
             {"panel_id": "synthetic-holdout", "tier": "holdout", "path": f"{self.relative}/holdout-panel.json",
              "assets": {"panel": pins["holdout-panel.json"], "cases": pins["holdout-cases.json"],
                         "oracles": pins["holdout-oracles.json"]},
@@ -214,7 +218,8 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
                        lambda i: i["panels"][2].update(intake=None),
                        lambda i: i["panels"][0].update(intake={"path": "x.json", "sha256": "0" * 64}),
                        lambda i: i["panels"][0].update(path="/etc/passwd"),
-                       lambda i: i["panels"].append(dict(i["panels"][0]))):
+                       lambda i: i["panels"].append(dict(i["panels"][0])),
+                       lambda i: i["panels"].append({**i["panels"][2], "panel_id": "holdout-again"})):
             broken = json.loads(self.panels.read_text())
             mutate(broken)
             bad = self.root / "bad-panels.json"
@@ -224,7 +229,8 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
         for mutate in (lambda i: i["routes"][0].update(model="gpt-anything"),
                        lambda i: i["routes"][2].update(transport_security="unencrypted_http"),
                        lambda i: i["routes"][0].update(region="ap-northeast-1"),
-                       lambda i: i["routes"][2].update(call_timeout_seconds=900)):
+                       lambda i: i["routes"][2].update(call_timeout_seconds=900),
+                       lambda i: i["routes"].append({**i["routes"][0], "route_id": "litellm-31b-again"})):
             broken = json.loads(self.routes.read_text())
             mutate(broken)
             bad = self.root / "bad-routes.json"
@@ -363,12 +369,34 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
         report, _ = await self.run_mock(first_packet, output, self.bind(first_packet, output))
         self.assertEqual(report["status"], "complete")
         self.assertEqual(report["claim"], "fresh_holdout_observation")
+        # A second archive prepared and run before the first was recorded also claims fresh;
+        # once the first is recorded, recording the second is refused.
+        twin_packet = self.prepare(panel="synthetic-holdout", name="twin")
+        twin_output = self.output()
+        twin, _ = await self.run_mock(twin_packet, twin_output, self.bind(twin_packet, twin_output))
+        self.assertEqual(twin["claim"], "fresh_holdout_observation")
         runner.record(output / "report.json", runs_path=self.runs, now="2026-09-25T00:00:00Z")
+        with self.assertRaises(p3_assets.P3Error) as twice:
+            runner.record(twin_output / "report.json", runs_path=self.runs, now="2026-09-25T00:00:01Z")
+        self.assertEqual(twice.exception.code, "artifact_conflict")
+        self.assertEqual(len(runner.load_runs(self.runs)), 1)
         # The same panel on the same route is regression now; another route is still fresh.
         second = json.loads(self.prepare(panel="synthetic-holdout").read_text())
         self.assertEqual(second["claim"], "observed_regression")
         other = json.loads(self.prepare(panel="synthetic-holdout", route="litellm-12b").read_text())
         self.assertEqual(other["claim"], "fresh_holdout_observation")
+        # A second archive claiming fresh for the same (panel, route) is refused at record, and an index
+        # carrying two fresh rows for one (panel, route) does not load.
+        recorded = runner.load_runs(self.runs)[0]
+        forged = dict(recorded, run_id=recorded["run_id"] + "-again")
+        self.runs.write_text(self.runs.read_text() + json.dumps(forged, sort_keys=True) + "\n")
+        with self.assertRaises(p3_assets.P3Error):
+            runner.load_runs(self.runs)
+        self.runs.write_text(json.dumps(recorded, sort_keys=True) + "\n")
+        for bad in (dict(recorded, tier="dev"), dict(recorded, accepted_commit="abc"),
+                    dict(recorded, slot="/tmp/x"), dict(recorded, recorded_at="yesterday")):
+            with self.assertRaises(p3_assets.P3Error):
+                runner._run_record(bad)
         # A packet prepared before the index moved cannot run: its claim and index pin drifted.
         with patch.object(runner, "GatewayConfig") as config_cls:
             stale_output = self.output()
