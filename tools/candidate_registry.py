@@ -92,15 +92,26 @@ async def _capture(question: str, *, scalar: bool) -> bytes:
     return sent[0]
 
 
+def _run(coroutine):
+    """Run the offline capture whether or not the caller already owns an event loop."""
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coroutine)
+    import concurrent.futures
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+        return pool.submit(asyncio.run, coroutine).result()
+
+
 def wire_witnesses() -> list[dict]:
     """Exact request bodies for the fixed witness questions; the P3.10 witness also records P1."""
     witnesses = []
     for label, question in WITNESS_QUESTIONS:
-        body = asyncio.run(_capture(question, scalar=False))
+        body = _run(_capture(question, scalar=False))
         witness = {"label": label, "question_sha256": hashlib.sha256(question.encode()).hexdigest(),
                    "recipe_body_sha256": hashlib.sha256(body).hexdigest(), "recipe_body_bytes": len(body)}
         if label == "p310_e01_en":
-            p1 = asyncio.run(_capture(question, scalar=True))
+            p1 = _run(_capture(question, scalar=True))
             witness.update(p1_body_sha256=hashlib.sha256(p1).hexdigest(), p1_body_bytes=len(p1))
         witnesses.append(witness)
     return witnesses
