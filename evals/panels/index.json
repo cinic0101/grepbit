@@ -1,0 +1,59 @@
+{
+  "registry_version": "evaluation-registries-v1",
+  "panels": [
+    {
+      "panel_id": "p3-development-v1",
+      "tier": "dev",
+      "path": "evals/p3/development-panel-v1.json",
+      "assets": {
+        "panel": "c0180d9beac5cf8536e193dc6242068faf046ce50fd7484b07ea77776db07ceb",
+        "cases": "ed249de6d7d2ddbf5635701d0b0794c4626ad790740374df30436783a546b117",
+        "oracles": "1ba9277d4abd0b64c3a302d36fdd3b828dc68bca70cb905a8474a757ae5dd91a"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "Exposed development panel (15 inputs) used by the offline evaluator; free to iterate on."
+    },
+    {
+      "panel_id": "p33-formal-v2",
+      "tier": "regression",
+      "path": ".artifacts/p35-stage-c-pIKdCM/freeze/formal-panel-v2-draft.json",
+      "assets": {
+        "panel": "689b81e20d0b2c5b93eaf13698eaaefbf9ea9ebfe0bb8c0b046cdd2e98c39c1f",
+        "cases": "018bfa0bcc65a0225bb3787a7cdabcf64457dd9e1fba2e8ad7671228e9aced47",
+        "oracles": "1839a9994922d631618a5e0d1fa7e432b0132bfa86f70dbe06286e6cdf080fa5"
+      },
+      "allocation_policy": "p3-formal-allocation-v2",
+      "intake": {
+        "path": ".artifacts/p35-stage-c-pIKdCM/freeze/intake.json",
+        "sha256": "3e213bcb0a42c3e20d8cc897abb7ebdb6f3f002b9c7b5ba54391370aa686b02c"
+      },
+      "freeze": null,
+      "authoring": "independent",
+      "note": "Frozen P3 formal panel (14 families / 28 inputs); regression data since P3.5, local archive only."
+    },
+    {
+      "panel_id": "p3-holdout-a-v2",
+      "tier": "holdout",
+      "path": ".artifacts/p381-holdout-a-freeze-fB5mo7/panel.json",
+      "assets": {
+        "panel": "5c80e3d7ba30f2aa901cbf48ba04477811ca4bfe27106cd6e03caf77e14dd16c",
+        "cases": "234fd99dc979080945156f5b76399f025ffbd9a31acd8f412c9ff6aeb197af3a",
+        "oracles": "c2425e3fc574aed22802814dd74551415c742e4cf766e07f8270e1068c6bf18b"
+      },
+      "allocation_policy": "p3-holdout-a-allocation-v2",
+      "intake": {
+        "path": ".artifacts/p381-holdout-a-freeze-fB5mo7/intake.json",
+        "sha256": "1799ee8cb020ad251277fc712cbffcaf2d3b62204701ed465c85e9ab237e0a17"
+      },
+      "freeze": {
+        "path": ".artifacts/p381-holdout-a-freeze-fB5mo7/report.json",
+        "sha256": "5078196ed2d5edeb426eb20010c34d2b7bac2b32afd62253f491988234677f7a"
+      },
+      "authoring": "independent",
+      "note": "Holdout A (6 families / 18 inputs), independently authored and reviewed; consumed by the 31B route on 2026-09-25."
+    }
+  ]
+}

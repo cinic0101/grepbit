@@ -1,0 +1,32 @@
+{
+  "registry_version": "evaluation-registries-v1",
+  "routes": [
+    {
+      "route_id": "litellm-gemma-4-31b",
+      "provider": "litellm",
+      "model": "gemma-4-31b",
+      "region": null,
+      "call_timeout_seconds": 60.0,
+      "transport_security": "unencrypted_http",
+      "note": "Local LiteLLM gateway, primary supported model."
+    },
+    {
+      "route_id": "litellm-gemma-4-12b-it",
+      "provider": "litellm",
+      "model": "gemma-4-12b-it",
+      "region": null,
+      "call_timeout_seconds": 60.0,
+      "transport_security": "unencrypted_http",
+      "note": "Local LiteLLM gateway, weak-model probe."
+    },
+    {
+      "route_id": "bedrock-jp-sonnet-4-6",
+      "provider": "bedrock_converse",
+      "model": "jp.anthropic.claude-sonnet-4-6",
+      "region": "ap-northeast-1",
+      "call_timeout_seconds": 300.0,
+      "transport_security": "tls_verification_enabled",
+      "note": "Bedrock Converse, Japan route; control/diagnostic model only."
+    }
+  ]
+}
