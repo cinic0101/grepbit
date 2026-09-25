@@ -300,7 +300,8 @@ def _observations(results: list[dict]) -> dict:
     kinds = dict.fromkeys(KINDS, 0)
     false_kinds = dict.fromkeys(KINDS, 0)
     for row in results:
-        if row["status"] == "completed" and row["actual_action"] == "clarify" and row["clarification_kind"] in kinds:
+        if (row["status"] == "completed" and row["actual_action"] == "clarify"
+                and isinstance(row["clarification_kind"], str) and row["clarification_kind"] in kinds):
             kinds[row["clarification_kind"]] += 1
             if row["outcome"] == "false_clarification":
                 false_kinds[row["clarification_kind"]] += 1
@@ -323,7 +324,8 @@ def _check_observation(row: dict) -> None:
     kind, count = row["clarification_kind"], row["clarification_choice_count"]
     if kind is not None and kind not in KINDS:
         raise assets.P3Error("invalid_asset")
-    if count is not None and (type(count) is not int or not 2 <= count <= MAX_CHOICES):
+    if count is not None and (type(count) is not int or not 2 <= count <= MAX_CHOICES
+                              or kind == "comparison_roles" and count != 2):
         raise assets.P3Error("invalid_asset")
     clarified = row["status"] == "completed" and row["actual_action"] == "clarify"
     if clarified != (kind is not None) or clarified != (count is not None):
@@ -333,6 +335,7 @@ def _check_observation(row: dict) -> None:
 class _LiveEvidence(live._LiveEvidence):
     maximum = MAX_INPUTS
     summarize = staticmethod(_summarize)
+    observation_fields = OBSERVATION_FIELDS
 
     @staticmethod
     def observe_result(result) -> dict:
@@ -382,6 +385,15 @@ def read_report(path: Path) -> dict:
         raise assets.P3Error("invalid_manifest")
     report = evaluator._document(path, evaluator.MAX_REPORT_BYTES, "invalid_asset")
     expected = _report(manifest, packet)
+    # Observation shape first, so a malformed archive fails closed as invalid_asset
+    # before the recomputed summary touches the rows.
+    rows = report.get("results")
+    if not isinstance(rows, list) or len(rows) != MAX_INPUTS:
+        raise assets.P3Error("invalid_asset")
+    for row in rows:
+        if not isinstance(row, dict) or set(row) != set(expected["results"][0]):
+            raise assets.P3Error("invalid_asset")
+        _check_observation(row)
     live._validate_report(report, manifest, expected, packet["inputs"], maximum=MAX_INPUTS,
                           transport_security=packet["transport_security"], summarize=_summarize)
     _LiveEvidence().check_report(report)

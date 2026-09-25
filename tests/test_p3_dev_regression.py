@@ -243,6 +243,11 @@ class DevRegressionTests(unittest.IsolatedAsyncioTestCase):
         for mutate in (lambda r: r["results"][index].update(clarification_kind="free_text"),
                        lambda r: r["results"][index].update(clarification_kind=None),
                        lambda r: r["results"][index].update(clarification_choice_count=9),
+                       lambda r: r["results"][index].update(clarification_kind=["count_basis"]),
+                       lambda r: r["results"][index].update(clarification_kind={"kind": "count_basis"}),
+                       lambda r: r["results"][index].update(clarification_choice_count=True),
+                       lambda r: r["results"][index].update(clarification_kind="comparison_roles",
+                                                            clarification_choice_count=3),
                        lambda r: r["results"][answer_index].update(clarification_kind="count_basis"),
                        lambda r: r["results"][index].update(clarification_question="leaked"),
                        lambda r: r.update(promotion_eligible=True),
@@ -284,6 +289,20 @@ class DevRegressionTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(hasattr(p3_holdout_run._LiveEvidence, "observe_result"))
         self.assertEqual(runner._LiveEvidence.observe_result(object()),
                          {"clarification_kind": None, "clarification_choice_count": None})
+
+    async def test_shared_loop_rejects_observations_that_touch_the_grade_or_carry_text(self):
+        for observed in ({"outcome": "complete_correct", "clarification_choice_count": None},
+                         {"clarification_kind": None},
+                         {"clarification_kind": {"text": "leak"}, "clarification_choice_count": None},
+                         {"clarification_kind": None, "clarification_choice_count": True}):
+            with self.subTest(observed=observed):
+                output = self.output()
+                with patch.object(runner._LiveEvidence, "observe_result", staticmethod(lambda result: observed)):
+                    report, _ = await self.run_mock(output, self.bind(output))
+                self.assertEqual(report["status"], "incomplete")
+                self.assertEqual(report["stop_reason"], "internal_failure")
+                self.assertEqual(report["client_http_attempts"], 1)
+                self.assertTrue(all(row["outcome"] != "complete_correct" for row in report["results"]))
 
     def test_cli_arguments_are_closed(self):
         with patch("sys.stderr"):
