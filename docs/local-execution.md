@@ -27,8 +27,8 @@ P2.0 is [design/admission only](p2-recipes.md), not recipe execution or live
 authorization.
 
 [P2.7 recipe-runner tooling](recipe-smoke.md) has two offline gates: candidate
-implementation/review, then a fresh final manifest on the clean accepted dev
-merge commit after merge into `dev`. A feature-branch manifest is never eligible for
+implementation/review, then a fresh final manifest on the clean accepted `dev`
+merge commit. A feature-branch manifest is never eligible for
 live reuse. Neither gate permits a model call; explicit live authorization and
 fresh route-policy attestations remain separate.
 

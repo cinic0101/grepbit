@@ -86,9 +86,10 @@ subagent names and tool-specific orchestration in personal/tool configuration.
   agent session that receives only the PR reference, objective and review focus,
   reads the actual GitHub diff and `dev` files through GitHub, has no access to
   the implementing conversation, and discloses any other context it was given;
-  the PR names its high-risk category and records the review prompt and verdict.
-  The agent may merge into `dev` after that review reports no blocker and the
-  full offline suite passes. A reviewer blocker is fixed and re-reviewed, or
+  the PR names its high-risk category and records the review prompt, the
+  reviewer's disclosure and the verdict. The agent may merge into `dev` after
+  that review reports no blocker and the checks under Collaboration and review
+  pass. A reviewer blocker is fixed and re-reviewed, or
   escalated to the owner as a stop; it is not debated. Semantic, oracle and case
   acceptance stay with an independent human or a reviewer the owner names; the
   implementing agent never decides them.
@@ -106,8 +107,7 @@ subagent names and tool-specific orchestration in personal/tool configuration.
   approval on the PR, and the PR still gets the independent sub-agent review
   before merge, in addition to the independent acceptance that Evidence and
   improvement requires for oracle, gold or case text); a third candidate fix
-  on one failure
-  family, the roadmap's two-fix default; budget exhaustion; any credential,
+  on one failure family, the roadmap's two-fix default; budget exhaustion; any credential,
   route or privacy anomaly; a blocker still open after one fix round; evidence
   that the goal is unreachable as stated.
 
