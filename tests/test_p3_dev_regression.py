@@ -302,7 +302,20 @@ class DevRegressionTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(report["status"], "incomplete")
                 self.assertEqual(report["stop_reason"], "internal_failure")
                 self.assertEqual(report["client_http_attempts"], 1)
-                self.assertTrue(all(row["outcome"] != "complete_correct" for row in report["results"]))
+                first = report["results"][0]
+                self.assertEqual((first["status"], first["outcome"], first["actual_action"]),
+                                 ("in_progress", None, None))
+                self.assertEqual((first["clarification_kind"], first["clarification_choice_count"]), (None, None))
+                self.assertEqual(runner.read_report(output / "report.json"), report)
+        # A policy whose declared fields overlap the grade is refused even when it returns them.
+        output = self.output()
+        with patch.object(runner._LiveEvidence, "observation_fields", ("outcome", "clarification_kind",
+                                                                        "clarification_choice_count")), \
+                patch.object(runner._LiveEvidence, "observe_result", staticmethod(lambda result: {
+                    "outcome": "complete_correct", "clarification_kind": None, "clarification_choice_count": None})):
+            report, _ = await self.run_mock(output, self.bind(output))
+        self.assertEqual(report["stop_reason"], "internal_failure")
+        self.assertIsNone(report["results"][0]["outcome"])
 
     def test_cli_arguments_are_closed(self):
         with patch("sys.stderr"):
