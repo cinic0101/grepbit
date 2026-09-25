@@ -17,7 +17,7 @@ from unittest.mock import patch
 import httpx
 
 from grepbit import gateway, model, recipe_model
-from tools import fixture
+from tools import candidate_registry, fixture
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -99,12 +99,18 @@ class CandidateModelRulers(unittest.IsolatedAsyncioTestCase):
         return result, sent[0]
 
     def test_frozen_semantic_identities_and_limits(self):
-        self.assertEqual(recipe_model.context_identity(), BASELINE["recipe_context"])
-        self.assertEqual(recipe_model.structured_output_identity(), BASELINE["structured_output"])
-        self.assertEqual(model.context_identity(), BASELINE["p1_context"])
+        # History: the P3.10 fixture is the frozen P3.3 candidate's registry entry, byte for byte.
+        frozen = candidate_registry.load_entry(candidate_registry.FROZEN_CANDIDATE_ID)
+        for key in ("recipe_context", "structured_output", "p1_context", "limits"):
+            self.assertEqual(frozen[key], BASELINE[key])
+        # Present: the live runtime is whatever candidate the registry names as current (#87).
+        current = candidate_registry.current()
+        self.assertEqual(recipe_model.context_identity(), current["recipe_context"])
+        self.assertEqual(recipe_model.structured_output_identity(), current["structured_output"])
+        self.assertEqual(model.context_identity(), current["p1_context"])
         self.assertEqual({"input": gateway.MAX_INPUT_BYTES, "request": gateway.MAX_REQUEST_BYTES,
                           "response": gateway.MAX_RESPONSE_BYTES,
-                          "timeout": gateway.CALL_TIMEOUT_SECONDS}, BASELINE["limits"])
+                          "timeout": gateway.CALL_TIMEOUT_SECONDS}, current["limits"])
         self.assertEqual(gateway.MODEL, LEGACY)
 
     def test_other_protected_behavior_files_remain_byte_identical(self):
@@ -124,18 +130,20 @@ class CandidateModelRulers(unittest.IsolatedAsyncioTestCase):
                 self.assert_configuration_rejected(gateway.GatewayConfig, BASE, KEY, alias)
         self.assertEqual(gateway.GatewayConfig.from_env(environ=ENV).model, LEGACY)
 
-    async def test_default_recipe_wire_matches_captured_prechange_bytes(self):
+    async def test_default_recipe_wire_matches_the_registered_current_candidate(self):
         result, body = await self.invoke(gateway.GatewayConfig(BASE, KEY))
-        self.assertEqual(digest(body), BASELINE["wire"]["recipe_body_sha256"])
-        self.assertEqual(len(body), BASELINE["wire"]["recipe_body_bytes"])
+        witness = candidate_registry.witness(candidate_registry.current(), QUESTION)
+        self.assertEqual(digest(body), witness["recipe_body_sha256"])
+        self.assertEqual(len(body), witness["recipe_body_bytes"])
         self.assertEqual(result.error.code, "model_declined")
         self.assertEqual(result.evidence["requested_model"], LEGACY)
         self.assertEqual(result.evidence["returned_model"], LEGACY)
 
-    async def test_default_p1_wire_matches_captured_prechange_bytes(self):
+    async def test_default_p1_wire_matches_the_registered_current_candidate(self):
         result, body = await self.invoke(gateway.GatewayConfig(BASE, KEY), scalar=True)
-        self.assertEqual(digest(body), BASELINE["wire"]["p1_body_sha256"])
-        self.assertEqual(len(body), BASELINE["wire"]["p1_body_bytes"])
+        witness = candidate_registry.witness(candidate_registry.current(), QUESTION)
+        self.assertEqual(digest(body), witness["p1_body_sha256"])
+        self.assertEqual(len(body), witness["p1_body_bytes"])
         self.assertNotIn("response_format", json.loads(body))
         self.assertEqual(result.evidence["requested_model"], LEGACY)
 
@@ -210,7 +218,7 @@ class CandidateModelRulers(unittest.IsolatedAsyncioTestCase):
         result, after = await self.invoke(
             gateway.GatewayConfig(BASE, KEY, ALTERNATIVE, expected_model=expected),
             returned_model=ALTERNATIVE)
-        self.assertEqual(digest(before), BASELINE["wire"]["recipe_body_sha256"])
+        self.assertEqual(digest(before), candidate_registry.witness(candidate_registry.current(), QUESTION)["recipe_body_sha256"])
         self.assertEqual(after, before.replace(b'"model": "gemma-4-31b"',
                                               b'"model": "gemma-4-12b-it"', 1))
         left, right = json.loads(before), json.loads(after)

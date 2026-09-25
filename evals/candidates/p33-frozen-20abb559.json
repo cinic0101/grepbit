@@ -1,0 +1,77 @@
+{
+  "registry_version": "candidate-registry-v1",
+  "candidate_id": "p33-frozen-20abb559",
+  "ancestor": null,
+  "ancestor_sha256": null,
+  "registered_commit": "a5451c48f8de35e4578fae24dfb4988c31f1a069+dirty",
+  "registered_at": "2026-09-25T04:30:11.500366Z",
+  "note": "Frozen P3.3 candidate (authoring baseline 20abb559): the identity the P3.10 contract fixture pins; registered on dev where the live identity still equals it.",
+  "recipe_context": {
+    "context_version": "learningops-recipe-context-v2",
+    "output_contract": "recipe-request-json-v2",
+    "instruction_version": "recipe-selection-instruction-v2",
+    "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5",
+    "context_sha256": "1cae4d1955ab76ed2205b5b22fc85a33fabaa3274dca618af5cd4cade656d151",
+    "output_contract_sha256": "a2b842fedc36b77c27d05df8858d6938f67545d9d46e0219a98b8a77ad653f00",
+    "instruction_sha256": "8fbfa08c428220d452b7f83ccea7c908fdc2349641510bd8911d0055fa35acf5",
+    "system_message_sha256": "911ebd780de32eadc535c2b52f55c3c013a7ca809f3c5905f9c0913dcebfc3cb"
+  },
+  "structured_output": {
+    "version": "recipe-structured-output-v2",
+    "mode": "json_schema",
+    "schema_name": "grepbit_recipe_request",
+    "schema_sha256": "a2b842fedc36b77c27d05df8858d6938f67545d9d46e0219a98b8a77ad653f00",
+    "response_format_sha256": "4f4e3ea6ec8ba6951d353d15c6388633f7c687ae0d19bb5925e80047dbc7fc86"
+  },
+  "p1_context": {
+    "context_version": "learningops-model-context-v1",
+    "output_contract": "fact-request-json-v1",
+    "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5",
+    "context_sha256": "70545dbc5ed67b33b907301933a5556d7575d014bcc19472119d10ba11647fc6",
+    "instruction_sha256": "bff03c3ac45478f5530e9f3e152c277466ec838eeb960eda233ee1e30a73188c"
+  },
+  "limits": {
+    "input": 4096,
+    "request": 32768,
+    "response": 131072,
+    "timeout": 60.0
+  },
+  "semantic_identity_sha256": "b5d919d0083abc5baecea7462a97e3edf024a1f3a5ae6cb1401a175156d5116d",
+  "candidate_sha256": "1777c196b75c3c5e0f9ee5ffa5d5f3523f0856c383272278266be57440f15acc",
+  "wire_witnesses": [
+    {
+      "label": "p310_e01_en",
+      "question_sha256": "634a6e868a355af50ee7ca122282776aab6159573b16b5bd19f0277b4c67e57a",
+      "recipe_body_sha256": "6ba240b00959589ef5579527019c8e37dee6856bc6bb50705c01ebd41c2749bf",
+      "recipe_body_bytes": 25259,
+      "p1_body_sha256": "bce2e680673e0a0227ceddfbab44bb23cc4a1da5e724e548861f658a6745431d",
+      "p1_body_bytes": 2911
+    },
+    {
+      "label": "development_wire",
+      "question_sha256": "64d49690bc4bf021865c874d7916902361dd92439386435a80b830452307f37b",
+      "recipe_body_sha256": "b943a5d3b95c40638cca97271a516a65e97c688b3f52b6873a64481bffdf0dfd",
+      "recipe_body_bytes": 25250
+    }
+  ],
+  "runtime_files_sha256": {
+    "grepbit/__init__.py": "b79c2eac8fc5ed252050d8bd1c06cbc11eb53849739ddda6741da3c0bf9bc6e7",
+    "grepbit/__main__.py": "08d36af6fd0488ba438793155308c51aacd458a70dc1cc8cbb2b6ed2127d9efe",
+    "grepbit/bedrock.py": "60adb573ce45b9d61ae2b6324663f80802a016eeef7981e526f4a2493e2493ec",
+    "grepbit/breakdown.py": "a352cd70894665740beac899f128e224de1b74d8b10e94321e8ae8399da3dff9",
+    "grepbit/catalog.py": "e14ad8c323855a69fc8f41c585d24fd58de1f9ac0bfb86aebee34e371c972dfc",
+    "grepbit/clarification.py": "16d5dc6d112fa6311ce6caf59854ecbd8bdf97d5e997b14536a57cbce17fb0cd",
+    "grepbit/compare.py": "29497022a5d4528d45391103cc9d80bcf3e21160ebe440bbe9fc38765c4daafc",
+    "grepbit/composition.py": "6c6921df055fa5f1f5ba1469d924152ce323b3c8aa018236256c26b388548768",
+    "grepbit/contracts.py": "f4b3a2ce51b6469fb6de8688e37689129231072102eb4cb203243c9af92281b9",
+    "grepbit/gateway.py": "5739e79d9e3c1eaf828eb347e4c5930dfdeb41fd157e9e3c68cc5b61da8e526f",
+    "grepbit/grouped.py": "30f58f739be8c4b5901a6590f4d2e6f7b87735716f5ba13b34c046f182b43490",
+    "grepbit/json_diagnostics.py": "56d9ad89b2427e2e90faf97bec6da58826feb7e809940e6e333b6d7c1c348db6",
+    "grepbit/kernel.py": "e817b1e97684b27ef2021a6eff20a5c1b5c7164cef370fe3d4980cf0f3072401",
+    "grepbit/model.py": "09cef6e6fbdd1e77c2f60f4851eafb5be86936d42bd8da2c255bc5dd2334d8e8",
+    "grepbit/overview.py": "751c33bb2bf9ebf16217cd9c3b47fadf5c5a88c40e3f77d9acc7d1308884178f",
+    "grepbit/presentation.py": "bfa2427e02ae8b21c020bd9ce09574a8d86448a3bd73ff447e68576cb8fe44aa",
+    "grepbit/provider.py": "0d1a2867a81216417b0e34ebb2cf1223364307bd29a946fcaa92bf22544bd836",
+    "grepbit/recipe_model.py": "d7b35aa0e6724927743ba7d962d4f7aa9d9a3c5d5627285d48b28b531a669dd8"
+  }
+}

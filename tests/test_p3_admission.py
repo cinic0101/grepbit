@@ -27,6 +27,7 @@ from tools import (
     fixture, p3_admission as admission, p3_assets as assets, p3_eval as runner,
     p3_expectations, p3_scoring, recipe_smoke, smoke,
 )
+from tools import candidate_registry
 from test_p3_scoring import formal_scaffolding, metadata as allocation_metadata
 from test_structured_output import GENERATION, QUESTION as EXPOSED_WIRE_WITNESS
 
@@ -1704,13 +1705,14 @@ class P3ExposedWrapperIsolationTests(unittest.IsolatedAsyncioTestCase):
                 ):
                     self.assertNotIn(marker, surface)
 
-    async def test_existing_exposed_representative_wire_witness_remains_exactly_25250_bytes(self):
+    async def test_existing_exposed_representative_wire_witness_matches_the_registered_candidate(self):
         sent = []
         result = await recipe_model.interpret_recipe_and_execute(
             EXPOSED_WIRE_WITNESS, self.database, self.client([self.actions["D01_profit.en"]], sent),
             clock=lambda: 0.0)
         self.assertEqual(len(sent), 1)
-        self.assertEqual(len(sent[0].content), 25250)
+        self.assertEqual(len(sent[0].content), candidate_registry.witness(
+            candidate_registry.current(), EXPOSED_WIRE_WITNESS)["recipe_body_bytes"])
         wire = json.loads(sent[0].content)
         self.assertEqual(wire["messages"], recipe_model.messages_for(EXPOSED_WIRE_WITNESS))
         self.assertEqual(assets.digest(wire["response_format"]), GENERATION["response_format_sha256"])

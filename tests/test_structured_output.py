@@ -19,7 +19,7 @@ import httpx
 
 from grepbit import gateway, json_diagnostics, model, recipe_model
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL, ModelError
-from tools import fixture, recipe_smoke as runner, smoke
+from tools import candidate_registry, fixture, recipe_smoke as runner, smoke
 from test_json_diagnostics import RECIPE_IDENTITY
 from test_model import request_content
 from test_recipe_model import envelope, proposal
@@ -39,12 +39,7 @@ P2_GENERATION = {
     "schema_sha256": "ac6ca4d71fbe6a69c978231458bc6d4be7fca3f5ebbee732d4cdedad0dec9a02",
     "response_format_sha256": "4333d65dede04246311681767015be7438503ff019b239d1d0c0194ab9a037ab",
 }
-GENERATION = {
-    "version": "recipe-structured-output-v2", "mode": "json_schema",
-    "schema_name": "grepbit_recipe_request",
-    "schema_sha256": "a2b842fedc36b77c27d05df8858d6938f67545d9d46e0219a98b8a77ad653f00",
-    "response_format_sha256": "4f4e3ea6ec8ba6951d353d15c6388633f7c687ae0d19bb5925e80047dbc7fc86",
-}
+GENERATION = candidate_registry.current()["structured_output"]
 
 
 def wrapper(schema, name="grepbit_recipe_request"):
