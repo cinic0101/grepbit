@@ -44,10 +44,11 @@ WITNESS_QUESTIONS = (
 )
 RUNTIME_FILES = tuple(sorted(path.relative_to(ROOT).as_posix() for path in (ROOT / "grepbit").glob("*.py")))
 _ENTRY_FIELDS = {
-    "registry_version", "candidate_id", "ancestor", "registered_commit", "registered_at", "note",
-    "recipe_context", "structured_output", "p1_context", "limits", "semantic_identity_sha256",
-    "wire_witnesses", "runtime_files_sha256",
+    "registry_version", "candidate_id", "ancestor", "ancestor_sha256", "registered_commit", "registered_at",
+    "note", "recipe_context", "structured_output", "p1_context", "limits", "semantic_identity_sha256",
+    "candidate_sha256", "wire_witnesses", "runtime_files_sha256",
 }
+_MAX_NOTE = 200
 
 
 class RegistryError(ValueError):
@@ -106,8 +107,11 @@ def wire_witnesses() -> list[dict]:
 
 
 def live_identity() -> dict:
+    """Semantic surfaces plus the wire witnesses; ``candidate_sha256`` covers everything ``check`` enforces."""
     semantic = semantic_identity()
-    return {**semantic, "semantic_identity_sha256": _digest(semantic), "wire_witnesses": wire_witnesses(),
+    witnesses = wire_witnesses()
+    return {**semantic, "semantic_identity_sha256": _digest(semantic),
+            "candidate_sha256": _digest({**semantic, "wire_witnesses": witnesses}), "wire_witnesses": witnesses,
             "runtime_files_sha256": {name: _file_digest(ROOT / name) for name in RUNTIME_FILES}}
 
 
@@ -138,14 +142,17 @@ def load_index(index_path: Path | None = None) -> dict:
     if (set(index) != {"registry_version", "current", "entries"} or index["registry_version"] != REGISTRY_VERSION
             or not isinstance(index["entries"], list) or not index["entries"]):
         raise RegistryError("invalid_registry")
-    ids = []
+    ids: list[str] = []
     for row in index["entries"]:
+        # One linear append-only chain: each row's ancestor is exactly the previous row.
         if (not isinstance(row, dict) or set(row) != {"candidate_id", "path", "sha256", "ancestor"}
-                or not isinstance(row["candidate_id"], str) or row["candidate_id"] in ids
-                or row["ancestor"] not in (None, *ids)):
+                or not isinstance(row["candidate_id"], str) or re.fullmatch(_ID, row["candidate_id"]) is None
+                or row["candidate_id"] in ids or row["path"] != f"{row['candidate_id']}.json"
+                or not isinstance(row["sha256"], str) or re.fullmatch(r"[0-9a-f]{64}", row["sha256"]) is None
+                or row["ancestor"] != (ids[-1] if ids else None)):
             raise RegistryError("invalid_registry")
         ids.append(row["candidate_id"])
-    if index["entries"][0]["ancestor"] is not None or index["current"] != ids[-1]:
+    if index["current"] != ids[-1]:
         raise RegistryError("invalid_registry")
     return index
 
@@ -160,10 +167,15 @@ def load_entry(candidate_id: str, index_path: Path | None = None) -> dict:
     if not path.is_file() or path.is_symlink() or _file_digest(path) != row["sha256"]:
         raise RegistryError("registry_drift")
     entry = _read(path)
+    position = [row["candidate_id"] for row in index["entries"]].index(candidate_id)
+    ancestor_sha = index["entries"][position - 1]["sha256"] if position else None
+    semantic = {key: entry.get(key) for key in ("recipe_context", "structured_output", "p1_context", "limits")}
     if (set(entry) != _ENTRY_FIELDS or entry["registry_version"] != REGISTRY_VERSION
             or entry["candidate_id"] != candidate_id or entry["ancestor"] != row["ancestor"]
-            or entry["semantic_identity_sha256"] != _digest({key: entry[key] for key in (
-                "recipe_context", "structured_output", "p1_context", "limits")})):
+            or entry["ancestor_sha256"] != ancestor_sha
+            or entry["semantic_identity_sha256"] != _digest(semantic)
+            or entry["candidate_sha256"] != _digest({**semantic, "wire_witnesses": entry["wire_witnesses"]})
+            or not isinstance(entry["note"], str) or len(entry["note"]) > _MAX_NOTE or "\n" in entry["note"]):
         raise RegistryError("registry_drift")
     return entry
 
@@ -186,7 +198,7 @@ def check(index_path: Path | None = None) -> dict:
     entry = current(index_path)
     live = live_identity()
     for key in ("recipe_context", "structured_output", "p1_context", "limits", "semantic_identity_sha256",
-                "wire_witnesses"):
+                "candidate_sha256", "wire_witnesses"):
         if live[key] != entry[key]:
             raise RegistryError("unregistered_candidate")
     return {"candidate_id": entry["candidate_id"], "semantic_identity_sha256": entry["semantic_identity_sha256"],
@@ -195,36 +207,45 @@ def check(index_path: Path | None = None) -> dict:
 
 
 def register(candidate_id: str, note: str, *, index_path: Path | None = None, now: str | None = None) -> dict:
-    """Append the live identity as a new candidate; refuses a duplicate identity or id."""
+    """Append the live identity as a new candidate; refuses an unchanged identity or a reused id."""
     index_path = INDEX if index_path is None else index_path
-    if re.fullmatch(_ID, candidate_id) is None or not isinstance(note, str) or not note.strip():
+    if re.fullmatch(_ID, candidate_id) is None:
         raise RegistryError("invalid_candidate_id")
+    note = note.strip() if isinstance(note, str) else ""
+    if not note or len(note) > _MAX_NOTE or not note.isprintable():
+        raise RegistryError("invalid_note")
     live = live_identity()
     if index_path.exists():
         index = load_index(index_path)
         head = current(index_path)
         if any(row["candidate_id"] == candidate_id for row in index["entries"]):
             raise RegistryError("duplicate_candidate_id")
-        if head["semantic_identity_sha256"] == live["semantic_identity_sha256"]:
+        # The same surface check() enforces: semantic surfaces plus wire witnesses.
+        if head["candidate_sha256"] == live["candidate_sha256"]:
             raise RegistryError("identity_unchanged")
-        ancestor = head["candidate_id"]
+        ancestor, ancestor_sha = head["candidate_id"], index["entries"][-1]["sha256"]
     else:
         index = {"registry_version": REGISTRY_VERSION, "current": None, "entries": []}
-        ancestor = None
+        ancestor, ancestor_sha = None, None
     commit, dirty = _head()
     entry = {"registry_version": REGISTRY_VERSION, "candidate_id": candidate_id, "ancestor": ancestor,
-             "registered_commit": commit + ("+dirty" if dirty else ""),
+             "ancestor_sha256": ancestor_sha, "registered_commit": commit + ("+dirty" if dirty else ""),
              "registered_at": now or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-             "note": note.strip(), **live}
+             "note": note, **live}
     path = index_path.parent / f"{candidate_id}.json"
     if path.exists():
         raise RegistryError("duplicate_candidate_id")
     index_path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(entry, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    index["entries"].append({"candidate_id": candidate_id, "path": path.name, "sha256": _file_digest(path),
-                             "ancestor": ancestor})
+    index["entries"].append({"candidate_id": candidate_id, "path": path.name,
+                             "sha256": hashlib.sha256((json.dumps(entry, indent=2, ensure_ascii=False) + "\n")
+                                                      .encode("utf-8")).hexdigest(), "ancestor": ancestor})
     index["current"] = candidate_id
-    index_path.write_text(json.dumps(index, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    try:
+        path.write_text(json.dumps(entry, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        index_path.write_text(json.dumps(index, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    except OSError:
+        path.unlink(missing_ok=True)
+        raise RegistryError("registry_write_failed") from None
     return check(index_path)
 
 

@@ -10,6 +10,7 @@ constants: the P3.10 ruler asserted that the live recipe context equals the
 frozen P3.3 fixture, evaluator rulers carried the same hashes and a 25,250-byte
 wire witness inline, and the frozen-candidate route tools hard-coded the
 semantic digest. Any change to the recipe instruction therefore broke 75 tests
+(12 of them evaluator identity rulers, the rest frozen-candidate route tools)
 and needed an owner-merged contract change. Identity must be bound to
 evidence, not frozen into the checkout.
 
@@ -39,6 +40,15 @@ The semantic identity the runtime submits and enforces:
   duplicate id and an invalid id; the ancestor is always the previous current.
   `check` verifies the live runtime equals the current entry (surfaces and wire
   bytes); `show` prints the current entry.
+- The chain is strictly linear: each index row's ancestor is the previous row
+  and each entry records its ancestor's digest, so rewriting an ancestor in
+  place invalidates its descendants. `candidate_sha256` covers the semantic
+  surfaces and the wire witnesses, the same surface `check` enforces, so a
+  wire-only change (for example the default model name) is registrable.
+  **A modified or removed existing file under `evals/candidates/` is a review
+  blocker**; the registry is append-only and git history is its audit trail.
+  The `note` is one printable line of at most 200 characters and must never
+  contain fresh case text or a secret.
 - Rulers (`tests/test_candidate_registry.py`): entries are byte-stable against
   the index; the frozen entry equals the P3.10 fixture and the historical
   semantic digest; the live runtime is the registered current candidate; an

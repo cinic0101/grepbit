@@ -130,7 +130,7 @@ class CandidateModelRulers(unittest.IsolatedAsyncioTestCase):
                 self.assert_configuration_rejected(gateway.GatewayConfig, BASE, KEY, alias)
         self.assertEqual(gateway.GatewayConfig.from_env(environ=ENV).model, LEGACY)
 
-    async def test_default_recipe_wire_matches_captured_prechange_bytes(self):
+    async def test_default_recipe_wire_matches_the_registered_current_candidate(self):
         result, body = await self.invoke(gateway.GatewayConfig(BASE, KEY))
         witness = candidate_registry.witness(candidate_registry.current(), QUESTION)
         self.assertEqual(digest(body), witness["recipe_body_sha256"])
@@ -139,7 +139,7 @@ class CandidateModelRulers(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.evidence["requested_model"], LEGACY)
         self.assertEqual(result.evidence["returned_model"], LEGACY)
 
-    async def test_default_p1_wire_matches_captured_prechange_bytes(self):
+    async def test_default_p1_wire_matches_the_registered_current_candidate(self):
         result, body = await self.invoke(gateway.GatewayConfig(BASE, KEY), scalar=True)
         witness = candidate_registry.witness(candidate_registry.current(), QUESTION)
         self.assertEqual(digest(body), witness["p1_body_sha256"])

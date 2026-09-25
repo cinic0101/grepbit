@@ -2,9 +2,10 @@
   "registry_version": "candidate-registry-v1",
   "candidate_id": "p33-frozen-20abb559",
   "ancestor": null,
-  "registered_commit": "32811046fc59a8b3d9b12b75c83abbff6be3a175",
-  "registered_at": "2026-09-25T04:14:01.717598Z",
-  "note": "Frozen P3.3 candidate (authoring baseline 20abb559): the identity the P3.10 contract fixture pins; registered from dev@3281104 where the live identity still equals it.",
+  "ancestor_sha256": null,
+  "registered_commit": "a5451c48f8de35e4578fae24dfb4988c31f1a069+dirty",
+  "registered_at": "2026-09-25T04:30:11.500366Z",
+  "note": "Frozen P3.3 candidate (authoring baseline 20abb559): the identity the P3.10 contract fixture pins; registered on dev where the live identity still equals it.",
   "recipe_context": {
     "context_version": "learningops-recipe-context-v2",
     "output_contract": "recipe-request-json-v2",
@@ -36,6 +37,7 @@
     "timeout": 60.0
   },
   "semantic_identity_sha256": "b5d919d0083abc5baecea7462a97e3edf024a1f3a5ae6cb1401a175156d5116d",
+  "candidate_sha256": "1777c196b75c3c5e0f9ee5ffa5d5f3523f0856c383272278266be57440f15acc",
   "wire_witnesses": [
     {
       "label": "p310_e01_en",

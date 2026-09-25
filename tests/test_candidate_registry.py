@@ -97,6 +97,53 @@ class CandidateRegistryRulers(unittest.TestCase):
             for bad in ("not-valid ID", "", "A-upper"):
                 with self.assertRaises(registry.RegistryError):
                     registry.register(bad, "note", index_path=index_path)
+            for bad_note in ("", "x" * 201, "two\nlines", 7):
+                with self.assertRaises(registry.RegistryError) as note:
+                    with patch.object(recipe_model, "SYSTEM_INSTRUCTION", recipe_model.SYSTEM_INSTRUCTION + " Two."):
+                        registry.register("synthetic-note", bad_note, index_path=index_path)
+                self.assertEqual(note.exception.code, "invalid_note")
+
+    def test_wire_only_change_is_registrable_and_the_chain_is_strictly_linear(self):
+        with tempfile.TemporaryDirectory(prefix="registry-", dir=ROOT / ".artifacts") as tmp:
+            index_path = Path(tmp) / "index.json"
+            registry.register("synthetic-root", "root", index_path=index_path, now="2026-09-25T00:00:00Z")
+            # A change that alters only the wire (here the witness question set) but no semantic
+            # surface must be registrable, because check() enforces the wire witnesses too.
+            with patch.object(registry, "WITNESS_QUESTIONS", (registry.WITNESS_QUESTIONS[0],
+                                                              ("development_wire", "March 2026 bookings."))):
+                with self.assertRaises(registry.RegistryError) as stale:
+                    registry.check(index_path)
+                self.assertEqual(stale.exception.code, "unregistered_candidate")
+                second = registry.register("synthetic-wire", "same semantics, new wire", index_path=index_path,
+                                           now="2026-09-25T00:00:01Z")
+                root = registry.load_entry("synthetic-root", index_path)
+                wire = registry.load_entry("synthetic-wire", index_path)
+            self.assertEqual(second["semantic_identity_sha256"], root["semantic_identity_sha256"])
+            self.assertNotEqual(wire["candidate_sha256"], root["candidate_sha256"])
+            index = json.loads(index_path.read_text())
+            self.assertEqual(wire["ancestor_sha256"], index["entries"][0]["sha256"])
+            # Rewriting the root in place (entry plus index row) invalidates its descendant.
+            root_path = Path(tmp) / "synthetic-root.json"
+            rewritten = json.loads(root_path.read_text())
+            rewritten["note"] = "rewritten history"
+            root_path.write_text(json.dumps(rewritten, indent=2, ensure_ascii=False) + "\n")
+            index["entries"][0]["sha256"] = hashlib.sha256(root_path.read_bytes()).hexdigest()
+            index_path.write_text(json.dumps(index, indent=2) + "\n")
+            with self.assertRaises(registry.RegistryError) as broken:
+                registry.load_entry("synthetic-wire", index_path)
+            self.assertEqual(broken.exception.code, "registry_drift")
+            # Forks, second roots, truncation with current moved back, and a path not tied to the id are refused.
+            original = json.loads(index_path.read_text())
+            for mutate in (lambda i: i["entries"][1].update(ancestor=None),
+                           lambda i: i["entries"].pop() or i.update(current="synthetic-root"),
+                           lambda i: i["entries"][1].update(path="other.json"),
+                           lambda i: i["entries"].reverse() or i.update(current="synthetic-root"),
+                           lambda i: i["entries"][0].update(sha256="0" * 64) or None):
+                tampered = json.loads(json.dumps(original))
+                mutate(tampered)
+                index_path.write_text(json.dumps(tampered) + "\n")
+                with self.assertRaises(registry.RegistryError):
+                    registry.load_entry(tampered["current"], index_path)
 
     def test_witness_lookup_is_by_question_digest_only(self):
         entry = registry.current()
