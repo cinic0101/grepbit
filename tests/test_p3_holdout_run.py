@@ -122,8 +122,8 @@ class HoldoutRunTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(self.packet["promotion_eligible"])
         self.assertEqual(self.packet["panel_kind"], "holdout")
         self.assertEqual(self.packet["allocation_policy"], p3_formal_policy.identity(p3_formal_policy.HOLDOUT_A))
-        self.assertEqual(len(self.packet["inputs"]), 21)
-        self.assertEqual(self.packet["settings"]["max_client_http_attempts"], 21)
+        self.assertEqual(len(self.packet["inputs"]), 18)
+        self.assertEqual(self.packet["settings"]["max_client_http_attempts"], 18)
         self.assertEqual(self.packet["settings"]["call_timeout_seconds"], 60.0)
         self.assertTrue(all(row["exposure"] == "frozen_fresh" for row in self.packet["inputs"]))
         for field, bad in (("promotion_eligible", True), ("panel_kind", "formal"),
@@ -149,7 +149,7 @@ class HoldoutRunTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(envelope_value["owner_authorization_reference"].startswith(GRANT))
         report, factory = await self.run_mock(output, authorization)
         self.assertEqual(report["status"], "complete")
-        self.assertEqual((report["client_http_attempts"], report["runtime_invocations"], len(self.sent)), (21, 21, 21))
+        self.assertEqual((report["client_http_attempts"], report["runtime_invocations"], len(self.sent)), (18, 18, 18))
         self.assertEqual(report["evidence_class"], "fresh_holdout_observation")
         self.assertFalse(report["promotion_eligible"])
         self.assertEqual(report["summary"]["panel_kind"], "holdout")
@@ -167,7 +167,7 @@ class HoldoutRunTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(other.exists())
         self.config_cls.from_env.assert_not_called()
         self.factory.assert_not_called()
-        self.assertEqual(len(self.sent), 21)
+        self.assertEqual(len(self.sent), 18)
         moved = self.root / "moved"
         output.rename(moved)
         with self.assertRaises(p3_assets.P3Error):

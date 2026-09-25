@@ -11,8 +11,9 @@ from tools import p3_assets as assets, p3_scoring as scoring
 V1 = "p3-formal-allocation-v1"
 V2 = "p3-formal-allocation-v2"
 # Holdout A (#79): independently authored fresh families only, one observation per
-# candidate; never promotion eligible.
-HOLDOUT_A = "p3-holdout-a-allocation-v1"
+# candidate; never promotion eligible. v1 (7 families / 21 inputs) was superseded
+# before any freeze when HA01 was withdrawn after novelty ratification.
+HOLDOUT_A = "p3-holdout-a-allocation-v2"
 VERSIONS = (V1, V2, HOLDOUT_A)
 HOLDOUT_VERSIONS = (HOLDOUT_A,)
 _POLICIES = {
@@ -35,13 +36,13 @@ _POLICIES = {
         "languages": {"zh-TW": 8, "en": 10, "ja": 10},
     },
     HOLDOUT_A: {
-        "families": 7, "inputs": 21,
-        "family_cohorts": {"answer": 2, "clarify": 3, "decline": 2},
-        "input_cohorts": {"answer": 6, "clarify": 9, "decline": 6},
-        "family_exposures": {"frozen_fresh": 7},
-        "input_exposures": {"frozen_fresh": 21},
-        "cohort_exposure": {"answer": (2, 0), "clarify": (3, 0), "decline": (2, 0)},
-        "languages": {"zh-TW": 7, "en": 7, "ja": 7},
+        "families": 6, "inputs": 18,
+        "family_cohorts": {"answer": 1, "clarify": 3, "decline": 2},
+        "input_cohorts": {"answer": 3, "clarify": 9, "decline": 6},
+        "family_exposures": {"frozen_fresh": 6},
+        "input_exposures": {"frozen_fresh": 18},
+        "cohort_exposure": {"answer": (1, 0), "clarify": (3, 0), "decline": (2, 0)},
+        "languages": {"zh-TW": 6, "en": 6, "ja": 6},
     },
 }
 
