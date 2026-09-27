@@ -8,7 +8,7 @@
       "region": null,
       "call_timeout_seconds": 60.0,
       "transport_security": "unencrypted_http",
-      "note": "Local LiteLLM gateway, primary supported model."
+      "note": "Local LiteLLM; serving witness gemma-31b-xgrammar-compact-v1 sha256=e1b257030935f093a06c052595ab50155639d5cf6e3ead7e0927c42cb4879196"
     },
     {
       "route_id": "litellm-gemma-4-12b-it",
