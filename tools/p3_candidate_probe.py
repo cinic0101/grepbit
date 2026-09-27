@@ -70,6 +70,11 @@ def _reference(value):
 def _checkout(source, accepted_commit):
     _hash(accepted_commit, 40)
     recipe_smoke._accepted(source, accepted_commit)
+    # Frozen-candidate routes prepare and run only while the live runtime is the frozen candidate.
+    try:
+        candidate.live_is_frozen()
+    except assets.P3Error:
+        raise probe.ProbeError("source_identity_failure") from None
     # Local cached refs only; never fetch or contact GitHub/provider from a runner.
     for reference in ("refs/heads/dev", "refs/remotes/origin/dev"):
         try:

@@ -7,7 +7,7 @@ import unittest
 from unittest.mock import patch
 
 from grepbit import recipe_model
-from tools import candidate_registry as registry, p3_candidate_model
+from tools import candidate_registry as registry, p3_assets, p3_candidate_model
 
 ROOT = Path(__file__).resolve().parents[1]
 BASELINE = json.loads((ROOT / "tests/fixtures/p310_identity_baseline.json").read_bytes())
@@ -174,6 +174,18 @@ class CandidateRegistryRulers(unittest.TestCase):
         index = registry.load_index()
         self.assertEqual(index["current"], EXPECTED_CURRENT)
         self.assertEqual(len(index["entries"]), EXPECTED_ENTRIES)
+
+    def test_historical_route_tools_bind_the_frozen_entry_and_gate_on_the_live_candidate(self):
+        frozen = registry.load_entry(registry.FROZEN_CANDIDATE_ID)
+        self.assertEqual(p3_candidate_model.semantic_identity(),
+                         {key: frozen[key] for key in ("recipe_context", "structured_output", "p1_context", "limits")})
+        p3_candidate_model.live_is_frozen()
+        with patch.object(recipe_model, "SYSTEM_INSTRUCTION", recipe_model.SYSTEM_INSTRUCTION + " Restated."):
+            # The frozen identity is still readable (archives stay readable) but preparation is refused.
+            self.assertEqual(p3_candidate_model.semantic_identity()["recipe_context"], frozen["recipe_context"])
+            with self.assertRaises(p3_assets.P3Error) as refused:
+                p3_candidate_model.live_is_frozen()
+            self.assertEqual(refused.exception.code, "source_identity_failure")
 
     def test_witness_lookup_is_by_question_digest_only(self):
         entry = registry.current()

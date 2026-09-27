@@ -2,7 +2,7 @@
 from dataclasses import asdict
 from pathlib import Path
 
-from grepbit import gateway, model, recipe_model
+from grepbit import model
 from grepbit.gateway import ExpectedModel, GEMMA_12B, ModelError
 from tools import p3_assets as assets, smoke
 
@@ -34,11 +34,30 @@ def load_identity(path: Path) -> ExpectedModel:
 
 
 def semantic_identity() -> dict:
-    value = {"recipe_context": recipe_model.context_identity(),
-             "structured_output": recipe_model.structured_output_identity(),
-             "p1_context": model.context_identity(),
-             "limits": {"input": gateway.MAX_INPUT_BYTES, "request": gateway.MAX_REQUEST_BYTES,
-                        "response": gateway.MAX_RESPONSE_BYTES, "timeout": gateway.CALL_TIMEOUT_SECONDS}}
+    """The frozen P3.3 candidate's semantic identity, read from the candidate registry (#87).
+
+    Historical route tools bind their packets to this identity. Whether the live
+    runtime still equals it is checked where a packet is prepared or run
+    (`p3_candidate_probe._checkout`), not here, so archives read back on any
+    registered candidate while new packets for these routes fail closed.
+    """
+    from tools import candidate_registry
+    try:
+        entry = candidate_registry.load_entry(candidate_registry.FROZEN_CANDIDATE_ID)
+    except candidate_registry.RegistryError:
+        raise assets.P3Error("source_identity_failure") from None
+    value = {key: entry[key] for key in ("recipe_context", "structured_output", "p1_context", "limits")}
     if assets.digest(value) != SEMANTICS_SHA256:
         raise assets.P3Error("source_identity_failure")
     return value
+
+
+def live_is_frozen() -> None:
+    """Refuse to prepare or run a frozen-candidate route on any other registered candidate."""
+    from tools import candidate_registry
+    try:
+        current = candidate_registry.check()["candidate_id"]
+    except candidate_registry.RegistryError:
+        raise assets.P3Error("source_identity_failure") from None
+    if current != candidate_registry.FROZEN_CANDIDATE_ID:
+        raise assets.P3Error("source_identity_failure")
