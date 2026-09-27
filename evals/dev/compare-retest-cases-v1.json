@@ -1,0 +1,77 @@
+{
+  "version": "p3-cases-v1",
+  "cases": [
+    {
+      "case_id": "dev-A3.en",
+      "family_id": "dev-A3",
+      "question": "How does the confirmed booking amount across all centers for March 2026 compare against February?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A3",
+          "evals/p3/development-cases-v1.json#E02_compare"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|A3|compare|current=2026-03|baseline=2026-02|bound_orientation",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A3.v1"
+    },
+    {
+      "case_id": "dev-C2.zh-TW",
+      "family_id": "dev-C2",
+      "question": "幫我比一下 2026 年 2 月和 3 月的整體已確認報名金額。",
+      "language": "zh-TW",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#C2",
+          "evals/p3/development-cases-v1.json#C02_comparison_roles"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|C2|clarify|comparison_roles|2026-02,2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-C2.v1"
+    },
+    {
+      "case_id": "dev-C2.en",
+      "family_id": "dev-C2",
+      "question": "Compare the overall confirmed booking amounts of February and March 2026.",
+      "language": "en",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#C2",
+          "evals/p3/development-cases-v1.json#C02_comparison_roles"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|C2|clarify|comparison_roles|2026-02,2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-C2.v1"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "profile_id": "gemma-31b-xgrammar-compact-v1",
+  "infra_commit": "fdb1f05353fb9ab0ff63b359cc92cb6d4c83a7ec",
+  "model_alias": "gemma-4-31b",
+  "image": "sha256:956eee5caccb567b661a7b83a1126a3f683e214df4e7f68722758dac9e0d01ed",
+  "versions": {
+    "ray": "2.56.0",
+    "vllm": "0.24.0+cu129",
+    "xgrammar": "0.2.3",
+    "pydantic": "2.13.4"
+  },
+  "serving_sha256": "ac01cea858c9029f26f92a8dd1f4a4f208af59f52e8adf974d585b7ff0aa0e59",
+  "app_sha256": "fac7e2223e4e0a9fa4acea5affc27dfe111694048a1e9b8d3af7aa46e8a8bc47",
+  "import_path": "llm_serve_app:build_openai_app",
+  "structured_outputs_config": {
+    "backend": "xgrammar",
+    "disable_any_whitespace": true
+  },
+  "evidence_reference": "https://github.com/cinic0101/grepbit/issues/79#issuecomment-5856912199",
+  "scope": "Observed serving identity; not automatic remote-state attestation. Same candidate/prompt/schema; no new semantic claim."
+}

@@ -1,0 +1,145 @@
+{
+  "version": "p3-oracles-v1",
+  "oracles": [
+    {
+      "oracle_id": "dev-A3.v1",
+      "revision": 1,
+      "branch": "answer",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "recipe_id": "compare",
+      "recipe_version": "0.1",
+      "request": {
+        "current": {
+          "metrics": [
+            "confirmed_booked_amount"
+          ],
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei",
+          "center_id": null
+        },
+        "baseline": {
+          "metrics": [
+            "confirmed_booked_amount"
+          ],
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei",
+          "center_id": null
+        }
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {
+          "current": "required",
+          "baseline": "required",
+          "delta": "required",
+          "growth": "required"
+        },
+        "states": [
+          "checked",
+          "undefined"
+        ]
+      },
+      "values": {
+        "current": 158000,
+        "baseline": 50000,
+        "delta": 108000,
+        "growth": {
+          "numerator": 54,
+          "denominator": 25
+        }
+      },
+      "required_slots": [
+        "current",
+        "baseline",
+        "delta",
+        "growth"
+      ],
+      "auxiliary_slots": [],
+      "auxiliary_values": {},
+      "slot_states": {
+        "current": "checked",
+        "baseline": "checked",
+        "delta": "checked",
+        "growth": "checked"
+      },
+      "units": {
+        "current": "TWD_minor",
+        "baseline": "TWD_minor",
+        "delta": "TWD_minor",
+        "growth": "dimensionless"
+      },
+      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5"
+    },
+    {
+      "oracle_id": "dev-C2.v1",
+      "revision": 1,
+      "branch": "clarify",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "clarification": {
+        "kind": "comparison_roles",
+        "choices": [
+          {
+            "id": "c1",
+            "semantic_value": {
+              "type": "comparison_roles",
+              "request": {
+                "current": {
+                  "metrics": [
+                    "confirmed_booked_amount"
+                  ],
+                  "start": "2026-03-01T00:00:00+08:00",
+                  "end": "2026-04-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei",
+                  "center_id": null
+                },
+                "baseline": {
+                  "metrics": [
+                    "confirmed_booked_amount"
+                  ],
+                  "start": "2026-02-01T00:00:00+08:00",
+                  "end": "2026-03-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei",
+                  "center_id": null
+                }
+              }
+            }
+          },
+          {
+            "id": "c2",
+            "semantic_value": {
+              "type": "comparison_roles",
+              "request": {
+                "current": {
+                  "metrics": [
+                    "confirmed_booked_amount"
+                  ],
+                  "start": "2026-02-01T00:00:00+08:00",
+                  "end": "2026-03-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei",
+                  "center_id": null
+                },
+                "baseline": {
+                  "metrics": [
+                    "confirmed_booked_amount"
+                  ],
+                  "start": "2026-03-01T00:00:00+08:00",
+                  "end": "2026-04-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei",
+                  "center_id": null
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": "p3-panel-v1",
+  "panel_id": "p3-dev-compare-retest-v1",
+  "kind": "development",
+  "cases": "compare-retest-cases-v1.json",
+  "oracles": "compare-retest-oracles-v1.json",
+  "order": [
+    "dev-A3.en",
+    "dev-C2.zh-TW",
+    "dev-C2.en"
+  ]
+}

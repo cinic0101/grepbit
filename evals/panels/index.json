@@ -99,6 +99,21 @@
       "freeze": null,
       "authoring": "development",
       "note": "Order-only dev observation (#79): original 54 inputs and shared cases/oracles; three timeout reproductions first, other Compare next. Exposed development evidence only."
+    },
+    {
+      "panel_id": "p3-dev-compare-retest-v1",
+      "tier": "dev",
+      "path": "evals/dev/compare-retest-panel-v1.json",
+      "assets": {
+        "panel": "6f5c0514b78f119a9e18087a3d26f7b8d76ee2d816420b4bd8ac35ae8ebea8f7",
+        "cases": "76980bf0ddf14cd0de991870774d0b1c0c24f9a1680074c286653829b220400f",
+        "oracles": "0396909363314a10a16082365b522c472bacb2e5c78c5dcb7bd7149bbd5825e1"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "Exact exposed projection of A3.en/C2.zh-TW/C2.en from dev-matrix-v1. Same cases/oracles; subset family results cover selected variants only."
     }
   ]
 }
