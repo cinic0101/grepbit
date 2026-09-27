@@ -6,7 +6,8 @@ Read `README.md`, then `STATE.md` (generated from the registries and the run
 index: current candidate, panels with tier and latest results, routes, last
 runs), then the goal issue you are working (GitHub labels `decision`,
 `defect`, `evidence`). Read only the design section in `docs/` the task
-needs; `docs/history/` is context, not authority. This is V3: analytical
+needs; historical phase documents (moving to `docs/history/` in #87 step 5)
+are context, not authority. This is V3: analytical
 intent -> checked facts, not another expanding Text2SQL language. Evaluation
 runs go through `tools/evaluate.py` against registered candidates, panels
 and routes (`docs/evaluation-runner.md`); the claim a run may make comes from

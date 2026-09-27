@@ -68,18 +68,21 @@ def render() -> str:
     for entry in panels:
         cells = []
         for route in routes:
-            matching = [run for run in runs if run["panel_id"] == entry["panel_id"] and run["route_id"] == route["route_id"]]
+            matching = [run for run in runs if run["panel_id"] == entry["panel_id"] and run["route_id"] == route["route_id"]
+                        and run["candidate_id"] == current["candidate_id"] and run["tier"] == entry["tier"]]
             if not matching:
                 claim = runner.derive_claim(entry["tier"], entry["panel_id"], route["route_id"], runs)
                 cells.append("none (next: fresh)" if claim == "fresh_holdout_observation" else "none")
                 continue
             last = matching[-1]
             cells.append(f"{last['correct']}/{last['inputs']}, {last['families_correct']}/{last['families']} fam "
-                         f"({CLAIM_LABEL[last['claim']]}, {last['recorded_at'][:10]})")
+                         f"({CLAIM_LABEL[last['claim']]}, {last['recorded_at'][:10]}, report `{last['report_sha256'][:8]}`"
+                         + (", incomplete" if last["status"] != "complete" else "") + ")")
         lines.append(f"| `{entry['panel_id']}` | {entry['tier']} | {_input_count(entry, runs)} | {entry['authoring']} | "
                      + " | ".join(cells) + " |")
-    lines += ["", "Claims: dev = development observation (agent-authored, never fresh); regression = observed "
-              "regression on exposed data; fresh = the one fresh holdout observation per panel and route, "
+    lines += ["", "Cells show the last recorded run of the current candidate on that panel and route (file order "
+              "of the run index). Claims: dev = development observation (agent-authored, never fresh); regression = "
+              "observed regression on exposed data; fresh = the one fresh holdout observation per panel and route, "
               "after which that panel is regression data for that route. Nothing here is promotion.", "",
               "## Routes", "", "| Route | Provider | Model | Region | Call timeout | Transport |", "| --- | --- | --- | --- | --- | --- |"]
     for route in routes:
@@ -94,7 +97,8 @@ def render() -> str:
               "and the run index `evals/runs/index.jsonl`.",
               "- Process: `AGENTS.md`. Evaluation: `docs/evaluation-runner.md`, `docs/candidate-registry.md`, "
               "`docs/coverage-matrix.md`. Semantic contract: `docs/p3-evaluation-contract.md`.",
-              "- Local archives under `.artifacts/` are not in git; panel and run digests above pin them.", ""]
+              "- Local archives under `.artifacts/` are not in git; the registries and `evals/runs/index.jsonl` "
+              "pin them by digest (report digest prefixes are shown in the cells above).", ""]
     return "\n".join(lines)
 
 
