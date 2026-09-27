@@ -5,7 +5,7 @@ import unittest
 from grepbit import recipe_model
 from grepbit.bedrock import converse_schema
 from grepbit.gateway import ModelError
-from tools import p3_bedrock_candidate_probe as candidate
+from tools.history import p3_bedrock_candidate_probe as candidate
 
 
 OLD_WIRE_SHA256 = "d971f587cade56ed0096e102d5fdd12733f2fa52c038738a1da9e0f6517db21f"

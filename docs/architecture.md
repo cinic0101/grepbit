@@ -24,7 +24,7 @@ shared model contract, existing strict protocol normalization, selected native
 validation and fixed dispatch to exactly one of those public APIs. It preserves
 native evidence and wrong-but-valid proposals without repair or a universal pack.
 This is offline-tested wiring, not live model acceptance. P2.7 (#28) adds only
-[evaluation tooling](recipe-smoke.md): a fixed panel, ordered intent/coverage/value
+[evaluation tooling](history/recipe-smoke.md): a fixed panel, ordered intent/coverage/value
 grading, explicit stop rules and two-gate manifest preparation. It does not alter
 the runtime execution path or implement the remaining future layers below.
 
