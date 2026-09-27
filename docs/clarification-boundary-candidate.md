@@ -79,3 +79,65 @@ Historical C4 scores remain recorded, with the independent review concern
 disclosed. Revised C4 results are exposed development observations under new
 identities, not fixes to the original broad-term questions. Separate operational completion, historical scoring and
 accepted semantic claims. No fresh quality, stability or promotion claim.
+
+## Observed result (2026-09-28 Asia/Taipei)
+
+[PR #106](https://github.com/cinic0101/grepbit/pull/106) merged as
+`5b2c697803f4a5ec05b3bbe328b4e576cde028ac` after focused 17/17, the complete
+1,242-test offline gate, fixture 27/27, local risk review and independent
+GitHub diff review without actionable findings. The owner-designated semantic
+reviewer separately accepted the exact registered C4 v2 objects at a72efc8
+([record](https://github.com/cinic0101/grepbit/issues/79#issuecomment-5857662824)).
+Read-only preflight confirmed the registered serving image/configuration and
+healthy service before execution; no serving change was made.
+
+Exactly one run of `p3-dev-matrix-compare-first-v2` completed from the merged
+commit, using the recorded grant chain and unchanged route attestation above.
+All 54 inputs completed, with 54 observed client calls, valid JSON and no
+operational failure or timeout. Upstream inference attempts remain unknown.
+No retry, rerun, raw completion/reasoning retention or subsequent candidate
+change occurred. Run duration was 217.376754 seconds; per-call latency median
+3.351699 seconds, range 0.365872–12.448763 seconds.
+
+| Evidence slice | Result | Interpretation |
+| --- | ---: | --- |
+| Revised 54-input dev panel | 53/54; 17/18 families | Development observation under the new panel identity |
+| 51 unchanged cases | v5 48/51 → v6 50/51 | C1.zh-TW and C1.en improved; no newly failing case in this observation |
+| C1, all three languages | 3/3 | Correct two-choice count-basis clarification |
+| Revised C4 v2, all three languages | 3/3 | Correct two-choice metric-meaning clarification on explicitly contrasted new questions |
+| D8, all three languages | 2/3 | zh-TW remains false clarification; en/ja correctly decline |
+| A3/A4/C2 Compare controls | 9/9 | All previously passing Compare cases passed this observation |
+
+The unchanged-case comparison is an offline intersection, not the runner's
+same-panel baseline comparison. All 51 input question hashes, oracle IDs,
+expected branches and semantic signatures match the v5 report. The asset
+ruler also proves the corresponding case and oracle objects are unchanged.
+The old C4 questions are absent from the new panel: their earlier results are
+preserved, and this run establishes neither a fix nor a new score for them.
+The revised C4 trio is evidence of the accepted explicit-contrast behavior,
+not an additional three repaired historical failures.
+
+The sole failure is `dev-D8.zh-TW`: HTTP/JSON and typed request validation
+passed, but the model produced `clarify/count_basis` with two choices where
+`decline` is required. The grader records `false_clarification`; native kernel
+execution did not run. Its call took 7.596632 seconds and returned 252 completion
+tokens. This is a semantic action failure, not a timeout or malformed JSON.
+English and Japanese D8 still correctly decline. No raw output or reasoning is
+available to establish the model's internal cause.
+
+Outcomes: 18 `complete_correct`, 12 `correct_clarification`, 23 `correct_decline`,
+1 `false_clarification`; no checked-wrong answer. The targeted observation is
+complete. D8 remains open after this second targeted C1/D8 instruction attempt;
+a third targeted candidate needs the applicable owner checkpoint. Do not rerun
+or start holdout/golden consumption automatically. These exposed observations
+do not establish stability, fresh quality, promotion or general absence of
+regressions.
+
+Evidence is appended to `evals/runs/index.jsonl` and reflected in `STATE.md`:
+
+- Run ID: `p3-dev-matrix-compare-first-v2--litellm-gemma-4-31b--p3-31b-instruction-v6--9bcaaccd1c99`.
+- Local slot: `.artifacts/clarification-boundaries-v6-20260928/run`.
+- Report SHA256: `f9dae48e0d54026a60c93a311df48b5097aa7b5029362ca5e3c8b0a8deb39237`.
+- v5 comparison report SHA256: `dee80abb63c011ea0123e434d1db915b4c434968b4fa1fc2ee4d1cb615ab1b92`.
+- Local offline readback and `comparison.json` preserve the counts and case-ID
+  comparison; claim remains `development_observation`, promotion-ineligible.
