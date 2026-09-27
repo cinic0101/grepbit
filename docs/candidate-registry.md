@@ -82,3 +82,27 @@ The frozen-candidate route tools (`p3_candidate_probe`, `p3_candidate_regression
 frozen digest and fail closed on any other candidate; they become historical
 readers when the single tiered runner replaces them. Until then a new
 candidate cannot prepare packets for those routes, by design.
+
+## 31B instruction candidate 1 (#79)
+
+Candidate `p3-31b-instruction-v3` restates existing branch policy from the
+[P3 semantic matrix](p3-evaluation-contract.md) and
+[bounded clarification contract](clarification-action.md):
+
+- Distinguish explicitly required outputs from unresolved interpretations.
+  Any required unsupported output causes whole-request decline; an ambiguity
+  elsewhere does not make that requirement optional.
+- Clarification choices follow the alternatives the question leaves open.
+  Allowed enum values are not a default choice set; an explicit contrast is
+  preserved without adding unrelated interpretations.
+- Comparison roles already assigned by the question remain bound, including
+  a current month earlier than its baseline. Only unresolved orientation
+  admits a role clarification.
+
+Only the shared instruction and its version advance. Runtime context, action
+schema, native logic, P1 wire and limits stay unchanged. The candidate-specific
+ruler checks these archived identity boundaries and the registration, not
+model understanding; it deliberately refers to this entry rather than requiring
+future current candidates to equal it. Dev observations and frozen regression
+are measured separately under their grants. No oracle/case change, new product
+capability, fresh claim or successful model outcome follows from this ruler.
