@@ -1,0 +1,746 @@
+{
+  "version": "p3-oracles-v1",
+  "oracles": [
+    {
+      "oracle_id": "dev-A1.v1",
+      "revision": 1,
+      "branch": "answer",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "recipe_id": "overview",
+      "recipe_version": "0.1",
+      "request": {
+        "center_code": "CTR-A01",
+        "start": "2026-03-01T00:00:00+08:00",
+        "end": "2026-04-01T00:00:00+08:00",
+        "timezone": "Asia/Taipei"
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {
+          "amount": "required",
+          "bookings": "required",
+          "seats": "required",
+          "daily_amount": "optional",
+          "category_amounts": "optional"
+        },
+        "states": [
+          "checked"
+        ],
+        "binding_center_id": "CA"
+      },
+      "values": {
+        "amount": 68000,
+        "bookings": 4,
+        "seats": 6
+      },
+      "required_slots": [
+        "amount",
+        "bookings",
+        "seats"
+      ],
+      "auxiliary_slots": [
+        "daily_amount",
+        "category_amounts"
+      ],
+      "auxiliary_values": {
+        "daily_amount": [
+          {
+            "key": "2026-03-01",
+            "value": 35000
+          },
+          {
+            "key": "2026-03-05",
+            "value": 8000
+          },
+          {
+            "key": "2026-03-07",
+            "value": 10000
+          },
+          {
+            "key": "2026-03-10",
+            "value": 15000
+          }
+        ],
+        "category_amounts": [
+          {
+            "key": "arts",
+            "value": 30000
+          },
+          {
+            "key": "technology",
+            "value": 38000
+          }
+        ]
+      },
+      "slot_states": {
+        "amount": "checked",
+        "bookings": "checked",
+        "seats": "checked",
+        "daily_amount": "checked",
+        "category_amounts": "checked"
+      },
+      "units": {
+        "amount": "TWD_minor",
+        "bookings": "bookings",
+        "seats": "seats",
+        "daily_amount": "TWD_minor",
+        "category_amounts": "TWD_minor"
+      },
+      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5"
+    },
+    {
+      "oracle_id": "dev-A2.v1",
+      "revision": 1,
+      "branch": "answer",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "recipe_id": "overview",
+      "recipe_version": "0.1",
+      "request": {
+        "center_code": "CTR-B01",
+        "start": "2026-03-01T00:00:00+08:00",
+        "end": "2026-04-01T00:00:00+08:00",
+        "timezone": "Asia/Taipei"
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {
+          "amount": "required",
+          "bookings": "required",
+          "seats": "required",
+          "daily_amount": "optional",
+          "category_amounts": "optional"
+        },
+        "states": [
+          "checked"
+        ],
+        "binding_center_id": "CC"
+      },
+      "values": {
+        "amount": 60000,
+        "bookings": 2,
+        "seats": 3
+      },
+      "required_slots": [
+        "amount",
+        "bookings",
+        "seats"
+      ],
+      "auxiliary_slots": [
+        "daily_amount",
+        "category_amounts"
+      ],
+      "auxiliary_values": {
+        "daily_amount": [
+          {
+            "key": "2026-03-13",
+            "value": 40000
+          },
+          {
+            "key": "2026-03-20",
+            "value": 20000
+          }
+        ],
+        "category_amounts": [
+          {
+            "key": "arts",
+            "value": 60000
+          }
+        ]
+      },
+      "slot_states": {
+        "amount": "checked",
+        "bookings": "checked",
+        "seats": "checked",
+        "daily_amount": "checked",
+        "category_amounts": "checked"
+      },
+      "units": {
+        "amount": "TWD_minor",
+        "bookings": "bookings",
+        "seats": "seats",
+        "daily_amount": "TWD_minor",
+        "category_amounts": "TWD_minor"
+      },
+      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5"
+    },
+    {
+      "oracle_id": "dev-A3.v1",
+      "revision": 1,
+      "branch": "answer",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "recipe_id": "compare",
+      "recipe_version": "0.1",
+      "request": {
+        "current": {
+          "metrics": [
+            "confirmed_booked_amount"
+          ],
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei",
+          "center_id": null
+        },
+        "baseline": {
+          "metrics": [
+            "confirmed_booked_amount"
+          ],
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei",
+          "center_id": null
+        }
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {
+          "current": "required",
+          "baseline": "required",
+          "delta": "required",
+          "growth": "required"
+        },
+        "states": [
+          "checked",
+          "undefined"
+        ]
+      },
+      "values": {
+        "current": 158000,
+        "baseline": 50000,
+        "delta": 108000,
+        "growth": {
+          "numerator": 54,
+          "denominator": 25
+        }
+      },
+      "required_slots": [
+        "current",
+        "baseline",
+        "delta",
+        "growth"
+      ],
+      "auxiliary_slots": [],
+      "auxiliary_values": {},
+      "slot_states": {
+        "current": "checked",
+        "baseline": "checked",
+        "delta": "checked",
+        "growth": "checked"
+      },
+      "units": {
+        "current": "TWD_minor",
+        "baseline": "TWD_minor",
+        "delta": "TWD_minor",
+        "growth": "dimensionless"
+      },
+      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5"
+    },
+    {
+      "oracle_id": "dev-A4.v1",
+      "revision": 1,
+      "branch": "answer",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "recipe_id": "compare",
+      "recipe_version": "0.1",
+      "request": {
+        "current": {
+          "metrics": [
+            "confirmed_booked_amount"
+          ],
+          "start": "2026-04-01T00:00:00+08:00",
+          "end": "2026-05-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei",
+          "center_id": null
+        },
+        "baseline": {
+          "metrics": [
+            "confirmed_booked_amount"
+          ],
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei",
+          "center_id": null
+        }
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {
+          "current": "required",
+          "baseline": "required",
+          "delta": "required",
+          "growth": "required"
+        },
+        "states": [
+          "checked",
+          "undefined"
+        ]
+      },
+      "values": {
+        "current": 20000,
+        "baseline": 50000,
+        "delta": -30000,
+        "growth": {
+          "numerator": -3,
+          "denominator": 5
+        }
+      },
+      "required_slots": [
+        "current",
+        "baseline",
+        "delta",
+        "growth"
+      ],
+      "auxiliary_slots": [],
+      "auxiliary_values": {},
+      "slot_states": {
+        "current": "checked",
+        "baseline": "checked",
+        "delta": "checked",
+        "growth": "checked"
+      },
+      "units": {
+        "current": "TWD_minor",
+        "baseline": "TWD_minor",
+        "delta": "TWD_minor",
+        "growth": "dimensionless"
+      },
+      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5"
+    },
+    {
+      "oracle_id": "dev-A5.v1",
+      "revision": 1,
+      "branch": "answer",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "recipe_id": "breakdown",
+      "recipe_version": "0.1",
+      "request": {
+        "start": "2026-03-01T00:00:00+08:00",
+        "end": "2026-04-01T00:00:00+08:00",
+        "timezone": "Asia/Taipei",
+        "top_k": 3
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {
+          "top_courses": "required",
+          "all_amount": "required",
+          "top_subtotal": "required",
+          "share": "required"
+        },
+        "states": [
+          "checked",
+          "undefined"
+        ],
+        "group": {
+          "dimension": "course",
+          "coverage": "top_k",
+          "top_k": 3
+        }
+      },
+      "values": {
+        "rows": [
+          {
+            "key": "K1",
+            "value": 68000
+          },
+          {
+            "key": "K3",
+            "value": 60000
+          },
+          {
+            "key": "K2",
+            "value": 30000
+          }
+        ],
+        "all_amount": 158000,
+        "top_subtotal": 158000,
+        "share": {
+          "numerator": 1,
+          "denominator": 1
+        }
+      },
+      "required_slots": [
+        "all_amount",
+        "top_courses",
+        "top_subtotal",
+        "share"
+      ],
+      "auxiliary_slots": [],
+      "auxiliary_values": {},
+      "slot_states": {
+        "top_courses": "checked",
+        "all_amount": "checked",
+        "top_subtotal": "checked",
+        "share": "checked"
+      },
+      "units": {
+        "all_amount": "TWD_minor",
+        "top_courses": "TWD_minor",
+        "top_subtotal": "TWD_minor",
+        "share": "dimensionless"
+      },
+      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5"
+    },
+    {
+      "oracle_id": "dev-A6.v1",
+      "revision": 1,
+      "branch": "answer",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "recipe_id": "breakdown",
+      "recipe_version": "0.1",
+      "request": {
+        "start": "2026-03-01T00:00:00+08:00",
+        "end": "2026-04-01T00:00:00+08:00",
+        "timezone": "Asia/Taipei",
+        "top_k": 2
+      },
+      "coverage": {
+        "status": "complete",
+        "slots": {
+          "top_courses": "required",
+          "all_amount": "required",
+          "top_subtotal": "required",
+          "share": "required"
+        },
+        "states": [
+          "checked",
+          "undefined"
+        ],
+        "group": {
+          "dimension": "course",
+          "coverage": "top_k",
+          "top_k": 2
+        }
+      },
+      "values": {
+        "rows": [
+          {
+            "key": "K1",
+            "value": 68000
+          },
+          {
+            "key": "K3",
+            "value": 60000
+          }
+        ],
+        "all_amount": 158000,
+        "top_subtotal": 128000,
+        "share": {
+          "numerator": 64,
+          "denominator": 79
+        }
+      },
+      "required_slots": [
+        "all_amount",
+        "top_courses",
+        "top_subtotal",
+        "share"
+      ],
+      "auxiliary_slots": [],
+      "auxiliary_values": {},
+      "slot_states": {
+        "top_courses": "checked",
+        "all_amount": "checked",
+        "top_subtotal": "checked",
+        "share": "checked"
+      },
+      "units": {
+        "all_amount": "TWD_minor",
+        "top_courses": "TWD_minor",
+        "top_subtotal": "TWD_minor",
+        "share": "dimensionless"
+      },
+      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5"
+    },
+    {
+      "oracle_id": "dev-C1.v1",
+      "revision": 1,
+      "branch": "clarify",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "clarification": {
+        "kind": "count_basis",
+        "choices": [
+          {
+            "id": "c1",
+            "semantic_value": {
+              "type": "count_basis",
+              "scope": {
+                "center_code": "CTR-B01",
+                "start": "2026-03-01T00:00:00+08:00",
+                "end": "2026-04-01T00:00:00+08:00",
+                "timezone": "Asia/Taipei"
+              },
+              "value": "booked_seats"
+            }
+          },
+          {
+            "id": "c2",
+            "semantic_value": {
+              "type": "count_basis",
+              "scope": {
+                "center_code": "CTR-B01",
+                "start": "2026-03-01T00:00:00+08:00",
+                "end": "2026-04-01T00:00:00+08:00",
+                "timezone": "Asia/Taipei"
+              },
+              "value": "known_booking_accounts"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "oracle_id": "dev-C2.v1",
+      "revision": 1,
+      "branch": "clarify",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "clarification": {
+        "kind": "comparison_roles",
+        "choices": [
+          {
+            "id": "c1",
+            "semantic_value": {
+              "type": "comparison_roles",
+              "request": {
+                "current": {
+                  "metrics": [
+                    "confirmed_booked_amount"
+                  ],
+                  "start": "2026-03-01T00:00:00+08:00",
+                  "end": "2026-04-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei",
+                  "center_id": null
+                },
+                "baseline": {
+                  "metrics": [
+                    "confirmed_booked_amount"
+                  ],
+                  "start": "2026-02-01T00:00:00+08:00",
+                  "end": "2026-03-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei",
+                  "center_id": null
+                }
+              }
+            }
+          },
+          {
+            "id": "c2",
+            "semantic_value": {
+              "type": "comparison_roles",
+              "request": {
+                "current": {
+                  "metrics": [
+                    "confirmed_booked_amount"
+                  ],
+                  "start": "2026-02-01T00:00:00+08:00",
+                  "end": "2026-03-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei",
+                  "center_id": null
+                },
+                "baseline": {
+                  "metrics": [
+                    "confirmed_booked_amount"
+                  ],
+                  "start": "2026-03-01T00:00:00+08:00",
+                  "end": "2026-04-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei",
+                  "center_id": null
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "oracle_id": "dev-C3.v1",
+      "revision": 1,
+      "branch": "clarify",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "clarification": {
+        "kind": "center",
+        "choices": [
+          {
+            "id": "c1",
+            "semantic_value": {
+              "type": "center",
+              "request": {
+                "center_code": "CTR-A01",
+                "start": "2026-03-01T00:00:00+08:00",
+                "end": "2026-04-01T00:00:00+08:00",
+                "timezone": "Asia/Taipei"
+              }
+            }
+          },
+          {
+            "id": "c2",
+            "semantic_value": {
+              "type": "center",
+              "request": {
+                "center_code": "CTR-A02",
+                "start": "2026-03-01T00:00:00+08:00",
+                "end": "2026-04-01T00:00:00+08:00",
+                "timezone": "Asia/Taipei"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "oracle_id": "dev-C4.v2",
+      "revision": 2,
+      "branch": "clarify",
+      "provenance": [
+        "Authored semantic expectations for an explicit two-way ambiguity; not kernel-derived and not a candidate output.",
+        "Exposed development revision of dev-C4.v1 restoring the stated booked-amount/cash-received contrast of C04_metric_meaning.en; owner-designated independent semantic review before registration.",
+        "Independent semantic acceptance: https://github.com/cinic0101/grepbit/issues/79#issuecomment-5857639706"
+      ],
+      "clarification": {
+        "kind": "metric_meaning",
+        "choices": [
+          {
+            "id": "c1",
+            "semantic_value": {
+              "type": "metric_meaning",
+              "scope": {
+                "center_code": "CTR-A02",
+                "start": "2026-03-01T00:00:00+08:00",
+                "end": "2026-04-01T00:00:00+08:00",
+                "timezone": "Asia/Taipei"
+              },
+              "value": "confirmed_booked_amount"
+            }
+          },
+          {
+            "id": "c2",
+            "semantic_value": {
+              "type": "metric_meaning",
+              "scope": {
+                "center_code": "CTR-A02",
+                "start": "2026-03-01T00:00:00+08:00",
+                "end": "2026-04-01T00:00:00+08:00",
+                "timezone": "Asia/Taipei"
+              },
+              "value": "cash_received"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "oracle_id": "dev-D1.v1",
+      "revision": 1,
+      "branch": "decline",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "designated_control": true,
+      "capability_category": "D01"
+    },
+    {
+      "oracle_id": "dev-D2.v1",
+      "revision": 1,
+      "branch": "decline",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "designated_control": true,
+      "capability_category": "D02"
+    },
+    {
+      "oracle_id": "dev-D3.v1",
+      "revision": 1,
+      "branch": "decline",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "designated_control": true,
+      "capability_category": "D03"
+    },
+    {
+      "oracle_id": "dev-D4.v1",
+      "revision": 1,
+      "branch": "decline",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "designated_control": true,
+      "capability_category": "D04"
+    },
+    {
+      "oracle_id": "dev-D6.v1",
+      "revision": 1,
+      "branch": "decline",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "designated_control": true,
+      "capability_category": "D06"
+    },
+    {
+      "oracle_id": "dev-D7.v1",
+      "revision": 1,
+      "branch": "decline",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "designated_control": true,
+      "capability_category": "D06"
+    },
+    {
+      "oracle_id": "dev-D8.v1",
+      "revision": 1,
+      "branch": "decline",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "designated_control": true,
+      "capability_category": "D04"
+    },
+    {
+      "oracle_id": "dev-D9.v1",
+      "revision": 1,
+      "branch": "decline",
+      "provenance": [
+        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
+        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
+      ],
+      "designated_control": true,
+      "capability_category": "D06"
+    }
+  ]
+}
