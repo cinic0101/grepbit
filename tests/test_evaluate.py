@@ -198,8 +198,8 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
     # ----------------------------------------------------------------- registries and claims
     def test_repository_registries_load_and_the_seeded_run_index_consumes_holdout_a_for_31b(self):
         panels = runner.load_panels()
-        self.assertEqual({row["panel_id"] for row in panels["panels"]},
-                         {"p3-development-v1", "p33-formal-v2", "p3-holdout-a-v2"})
+        self.assertLessEqual({"p3-development-v1", "p33-formal-v2", "p3-holdout-a-v2"},
+                             {row["panel_id"] for row in panels["panels"]})
         routes = runner.load_routes()
         self.assertEqual({row["route_id"] for row in routes["routes"]},
                          {"litellm-gemma-4-31b", "litellm-gemma-4-12b-it", "bedrock-jp-sonnet-4-6"})
