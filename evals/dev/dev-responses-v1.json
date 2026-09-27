@@ -996,24 +996,6 @@
       "action": {
         "outcome": "declined"
       }
-    },
-    {
-      "case_id": "dev-D10.zh-TW",
-      "action": {
-        "outcome": "declined"
-      }
-    },
-    {
-      "case_id": "dev-D10.en",
-      "action": {
-        "outcome": "declined"
-      }
-    },
-    {
-      "case_id": "dev-D10.ja",
-      "action": {
-        "outcome": "declined"
-      }
     }
   ]
 }

@@ -60,15 +60,15 @@
       "tier": "dev",
       "path": "evals/dev/dev-panel-v1.json",
       "assets": {
-        "panel": "eeef16fc823f8a7b8c6c3c94f6b88342abd97620b83b2b655e89b2aeea466062",
-        "cases": "ffabce048087ca946029e9635c84aff912820fdf035e8abf2fda945547e710d4",
-        "oracles": "380a52a58e3bbe5a111c424eb3b5211b250ed164aa03cc7cbf3c9147e1752829"
+        "panel": "df351e28ea0a44b970ff3aea59d9e8858b863730b09fa21a3c126bfa77dbc42f",
+        "cases": "54372f9160101aa8bec48555821afce30e9533398d14e2c52ab34b52f79dd1ec",
+        "oracles": "508e3a221a083df981d13ae8af8a678bdd92686a87db92dcb2679498b6802aec"
       },
       "allocation_policy": null,
       "intake": null,
       "freeze": null,
       "authoring": "development",
-      "note": "Dev-tier coverage panel (#87 step 3): 18 matrix rows x 3 languages, kernel-derived oracles; agent-authored, unlimited runs."
+      "note": "Dev-tier coverage panel (#87 step 3): 18 matrix rows x 3 languages (D5, D10 deferred), kernel-derived oracles; agent-authored, unlimited runs."
     }
   ]
 }

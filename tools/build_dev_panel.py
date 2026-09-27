@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Build the dev-tier coverage panel (#87 step 3): kernel-derived answer oracles, typed clarify/decline oracles,
-57 questions (19 matrix rows x 3 languages; D5 deferred). Offline: fixture only, no model.
+54 questions (18 matrix rows x 3 languages; D5 and D10 deferred: the contract scores neither a missing-period
+decline nor a name-only decline as success). Offline: fixture only, no model.
 
 Usage: .venv/bin/python tools/build_dev_panel.py <output-dir> <fixture-db>
-The committed panel under evals/dev/ is the output of this script; re-running it must reproduce the same bytes.
+The committed cases, oracles and panel under evals/dev/ are the output of this script and re-running it must
+reproduce the same bytes; dev-responses-v1.json (scripted correct actions) is authored separately.
 """
 import json
 import sys
@@ -97,9 +99,15 @@ oracles = [
         {"type": "metric_meaning", "scope": ov("CTR-A02"), "value": "cash_received"}]),
     decline_oracle("dev-D1.v1", "D01"), decline_oracle("dev-D2.v1", "D02"), decline_oracle("dev-D3.v1", "D03"),
     decline_oracle("dev-D4.v1", "D04"), decline_oracle("dev-D6.v1", "D06"), decline_oracle("dev-D7.v1", "D06"),
-    decline_oracle("dev-D8.v1", "D04"), decline_oracle("dev-D9.v1", "D06"), decline_oracle("dev-D10.v1", "D06"),
+    decline_oracle("dev-D8.v1", "D04"), decline_oracle("dev-D9.v1", "D06"),
 ]
 
+# Paraphrase or translation descendants of exposed development families keep the
+# exposed_regression label and name their historical parent (contract section 5).
+EXPOSED_PARENT = {"A1": "evals/p3/development-cases-v1.json#E01_overview", "A3": "evals/p3/development-cases-v1.json#E02_compare",
+                  "A6": "evals/p3/development-cases-v1.json#E03_share_denominator",
+                  "C2": "evals/p3/development-cases-v1.json#C02_comparison_roles",
+                  "D1": "evals/p3/development-cases-v1.json#D01_profit", "D2": "evals/p3/development-cases-v1.json#D02_cash_received"}
 # (row, branch, cohort, oracle, signature, {lang: question})
 ROWS = [
     ("A1", "answer", "dev-A1.v1", "overview|core|CTR-A01|2026-03", {
@@ -116,7 +124,7 @@ ROWS = [
         "ja": "2026 年 3 月の全センターの確定済み申込金額は、2 月と比べてどうでしたか。"}),
     ("A4", "answer", "dev-A4.v1", "compare|current=2026-04|baseline=2026-02|shared_year_nonadjacent", {
         "zh-TW": "2026 年 4 月的整體已確認報名金額相較於同年 2 月變化多少？",
-        "en": "Compared with February, how much did the overall confirmed booking amount change in April 2026?",
+        "en": "In 2026, how much did the overall confirmed booking amount change from February to April?",
         "ja": "2026 年の 4 月の全体の確定済み申込金額は、同年 2 月に対してどれだけ変わりましたか。"}),
     ("A5", "answer", "dev-A5.v1", "breakdown|top_k=3|2026-03", {
         "zh-TW": "2026 年 3 月報名金額最高的三個課程是哪些？各多少，合計占整體多少？",
@@ -127,9 +135,9 @@ ROWS = [
         "en": "In March 2026, what portion of all booking amount came from the top 2 courses?",
         "ja": "2026 年 3 月、上位 2 講座の申込金額は全体の何割でしたか。"}),
     ("C1", "clarify", "dev-C1.v1", "clarify|count_basis|CTR-B01|2026-03", {
-        "zh-TW": "CTR-B01 在 2026 年 3 月有多少人報名？",
-        "en": "How many people booked at CTR-B01 in March 2026?",
-        "ja": "CTR-B01 で 2026 年 3 月に申し込んだのは何人ですか。"}),
+        "zh-TW": "CTR-B01 在 2026 年 3 月報名的人數有多少？我不確定你們是算席次還是算報名帳戶。",
+        "en": "How many people booked at CTR-B01 in March 2026? I am not sure whether you count seats or booking accounts.",
+        "ja": "CTR-B01 で 2026 年 3 月に申し込んだ人数はどれくらいですか。席数で数えるのか申込アカウントで数えるのか分かりません。"}),
     ("C2", "clarify", "dev-C2.v1", "clarify|comparison_roles|2026-02,2026-03", {
         "zh-TW": "幫我比一下 2026 年 2 月和 3 月的整體已確認報名金額。",
         "en": "Compare the overall confirmed booking amounts of February and March 2026.",
@@ -174,21 +182,19 @@ ROWS = [
         "zh-TW": "列出 2026 年 3 月 CTR-A01 每一筆報名的學員姓名和電話。",
         "en": "List every March 2026 booking at CTR-A01 with the learner's name and phone number.",
         "ja": "2026 年 3 月の CTR-A01 の申込を一件ずつ、受講者の氏名と電話番号付きで一覧にしてください。"}),
-    ("D10", "decline", "dev-D10.v1", "decline|D06|center_by_name", {
-        "zh-TW": "星河中心 2026 年 3 月的報名狀況如何？",
-        "en": "How were bookings at the Starlight center in March 2026?",
-        "ja": "星河センターの 2026 年 3 月の申込状況はどうでしたか。"}),
 ]
 
 cases, order = [], []
 for row, branch, oracle_id, signature, questions in ROWS:
     for lang in ("zh-TW", "en", "ja"):
         case_id = f"dev-{row}.{lang}"
+        exposure = "exposed_regression" if row in EXPOSED_PARENT else "design_seen"
+        references = [f"docs/coverage-matrix.md#{row}"] + ([EXPOSED_PARENT[row]] if row in EXPOSED_PARENT else [])
         cases.append({
             "case_id": case_id, "family_id": f"dev-{row}", "question": questions[lang], "language": lang,
-            "expected_branch": branch, "cohort": branch, "exposure": "design_seen",
-            "provenance": {"origin": "development", "references": [f"docs/coverage-matrix.md#{row}"],
-                           "seen_by_implementer": True, "exposure_history": ["design_seen"]},
+            "expected_branch": branch, "cohort": branch, "exposure": exposure,
+            "provenance": {"origin": "development", "references": references,
+                           "seen_by_implementer": True, "exposure_history": [exposure]},
             "semantic_signature": f"dev|{row}|{signature}", "must_pass": True, "observational": False,
             "oracle_id": oracle_id})
         order.append(case_id)

@@ -14,7 +14,8 @@ ROOT = p3_eval.ROOT
 PANEL = ROOT / "evals/dev/dev-panel-v1.json"
 RESPONSES = ROOT / "evals/dev/dev-responses-v1.json"
 ROWS = ("A1", "A2", "A3", "A4", "A5", "A6", "C1", "C2", "C3", "C4",
-        "D1", "D2", "D3", "D4", "D6", "D7", "D8", "D9", "D10")
+        "D1", "D2", "D3", "D4", "D6", "D7", "D8", "D9")
+EXPOSED = {"dev-A1", "dev-A3", "dev-A6", "dev-C2", "dev-D1", "dev-D2"}
 
 
 class DevPanelRulers(unittest.TestCase):
@@ -27,13 +28,17 @@ class DevPanelRulers(unittest.TestCase):
     def test_panel_covers_every_matrix_row_in_three_languages_with_registered_pins(self):
         panel = p3_assets.load_panel(PANEL)
         self.assertEqual(panel.kind, "development")
-        self.assertEqual(len(panel.cases), 57)
+        self.assertEqual(len(panel.cases), 54)
         families = {}
         for case in panel.cases:
             families.setdefault(case.family_id, set()).add(case.language)
-            self.assertEqual(case.exposure, "design_seen")
+            self.assertEqual(case.exposure, "exposed_regression" if case.family_id in EXPOSED else "design_seen")
             self.assertEqual(case.provenance.origin, "development")
             self.assertTrue(case.provenance.seen_by_implementer)
+            if case.family_id in EXPOSED:
+                self.assertTrue(any(ref.startswith("evals/p3/development-cases-v1.json#") for ref in case.provenance.references))
+        self.assertNotIn("dev-D10", families)
+        self.assertNotIn("dev-D5", families)
         self.assertEqual(set(families), {f"dev-{row}" for row in ROWS})
         self.assertTrue(all(langs == {"zh-TW", "en", "ja"} for langs in families.values()))
         # Every clarify question names the center code its choices bind (word-bounded), by contract.
@@ -70,9 +75,9 @@ class DevPanelRulers(unittest.TestCase):
                                                    panel_path=PANEL, responses_path=RESPONSES))
         self.assertEqual(report["status"], "complete")
         self.assertEqual(report["summary"]["outcomes"],
-                         {"complete_correct": 18, "correct_clarification": 12, "correct_decline": 27})
+                         {"complete_correct": 18, "correct_clarification": 12, "correct_decline": 24})
         self.assertTrue(all(v["family_all_variants_correct"] for v in report["summary"]["per_family"].values()))
-        self.assertEqual(len(report["summary"]["per_family"]), 19)
+        self.assertEqual(len(report["summary"]["per_family"]), 18)
 
 
 if __name__ == "__main__":

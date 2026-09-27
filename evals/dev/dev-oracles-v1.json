@@ -740,17 +740,6 @@
       ],
       "designated_control": true,
       "capability_category": "D06"
-    },
-    {
-      "oracle_id": "dev-D10.v1",
-      "revision": 1,
-      "branch": "decline",
-      "provenance": [
-        "Dev tier (#87 step 3): kernel-derived from the synthetic LearningOps fixture; development gold, not fresh semantics.",
-        "Coverage matrix row; questions authored by the implementing agent; never a candidate output."
-      ],
-      "designated_control": true,
-      "capability_category": "D06"
     }
   ]
 }

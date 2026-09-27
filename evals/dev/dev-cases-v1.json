@@ -8,15 +8,16 @@
       "language": "zh-TW",
       "expected_branch": "answer",
       "cohort": "answer",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#A1"
+          "docs/coverage-matrix.md#A1",
+          "evals/p3/development-cases-v1.json#E01_overview"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|A1|overview|core|CTR-A01|2026-03",
@@ -31,15 +32,16 @@
       "language": "en",
       "expected_branch": "answer",
       "cohort": "answer",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#A1"
+          "docs/coverage-matrix.md#A1",
+          "evals/p3/development-cases-v1.json#E01_overview"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|A1|overview|core|CTR-A01|2026-03",
@@ -54,15 +56,16 @@
       "language": "ja",
       "expected_branch": "answer",
       "cohort": "answer",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#A1"
+          "docs/coverage-matrix.md#A1",
+          "evals/p3/development-cases-v1.json#E01_overview"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|A1|overview|core|CTR-A01|2026-03",
@@ -146,15 +149,16 @@
       "language": "zh-TW",
       "expected_branch": "answer",
       "cohort": "answer",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#A3"
+          "docs/coverage-matrix.md#A3",
+          "evals/p3/development-cases-v1.json#E02_compare"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|A3|compare|current=2026-03|baseline=2026-02|bound_orientation",
@@ -169,15 +173,16 @@
       "language": "en",
       "expected_branch": "answer",
       "cohort": "answer",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#A3"
+          "docs/coverage-matrix.md#A3",
+          "evals/p3/development-cases-v1.json#E02_compare"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|A3|compare|current=2026-03|baseline=2026-02|bound_orientation",
@@ -192,15 +197,16 @@
       "language": "ja",
       "expected_branch": "answer",
       "cohort": "answer",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#A3"
+          "docs/coverage-matrix.md#A3",
+          "evals/p3/development-cases-v1.json#E02_compare"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|A3|compare|current=2026-03|baseline=2026-02|bound_orientation",
@@ -234,7 +240,7 @@
     {
       "case_id": "dev-A4.en",
       "family_id": "dev-A4",
-      "question": "Compared with February, how much did the overall confirmed booking amount change in April 2026?",
+      "question": "In 2026, how much did the overall confirmed booking amount change from February to April?",
       "language": "en",
       "expected_branch": "answer",
       "cohort": "answer",
@@ -353,15 +359,16 @@
       "language": "zh-TW",
       "expected_branch": "answer",
       "cohort": "answer",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#A6"
+          "docs/coverage-matrix.md#A6",
+          "evals/p3/development-cases-v1.json#E03_share_denominator"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|A6|breakdown|top_k=2|share|2026-03",
@@ -376,15 +383,16 @@
       "language": "en",
       "expected_branch": "answer",
       "cohort": "answer",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#A6"
+          "docs/coverage-matrix.md#A6",
+          "evals/p3/development-cases-v1.json#E03_share_denominator"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|A6|breakdown|top_k=2|share|2026-03",
@@ -399,15 +407,16 @@
       "language": "ja",
       "expected_branch": "answer",
       "cohort": "answer",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#A6"
+          "docs/coverage-matrix.md#A6",
+          "evals/p3/development-cases-v1.json#E03_share_denominator"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|A6|breakdown|top_k=2|share|2026-03",
@@ -418,7 +427,7 @@
     {
       "case_id": "dev-C1.zh-TW",
       "family_id": "dev-C1",
-      "question": "CTR-B01 在 2026 年 3 月有多少人報名？",
+      "question": "CTR-B01 在 2026 年 3 月報名的人數有多少？我不確定你們是算席次還是算報名帳戶。",
       "language": "zh-TW",
       "expected_branch": "clarify",
       "cohort": "clarify",
@@ -441,7 +450,7 @@
     {
       "case_id": "dev-C1.en",
       "family_id": "dev-C1",
-      "question": "How many people booked at CTR-B01 in March 2026?",
+      "question": "How many people booked at CTR-B01 in March 2026? I am not sure whether you count seats or booking accounts.",
       "language": "en",
       "expected_branch": "clarify",
       "cohort": "clarify",
@@ -464,7 +473,7 @@
     {
       "case_id": "dev-C1.ja",
       "family_id": "dev-C1",
-      "question": "CTR-B01 で 2026 年 3 月に申し込んだのは何人ですか。",
+      "question": "CTR-B01 で 2026 年 3 月に申し込んだ人数はどれくらいですか。席数で数えるのか申込アカウントで数えるのか分かりません。",
       "language": "ja",
       "expected_branch": "clarify",
       "cohort": "clarify",
@@ -491,15 +500,16 @@
       "language": "zh-TW",
       "expected_branch": "clarify",
       "cohort": "clarify",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#C2"
+          "docs/coverage-matrix.md#C2",
+          "evals/p3/development-cases-v1.json#C02_comparison_roles"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|C2|clarify|comparison_roles|2026-02,2026-03",
@@ -514,15 +524,16 @@
       "language": "en",
       "expected_branch": "clarify",
       "cohort": "clarify",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#C2"
+          "docs/coverage-matrix.md#C2",
+          "evals/p3/development-cases-v1.json#C02_comparison_roles"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|C2|clarify|comparison_roles|2026-02,2026-03",
@@ -537,15 +548,16 @@
       "language": "ja",
       "expected_branch": "clarify",
       "cohort": "clarify",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#C2"
+          "docs/coverage-matrix.md#C2",
+          "evals/p3/development-cases-v1.json#C02_comparison_roles"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|C2|clarify|comparison_roles|2026-02,2026-03",
@@ -698,15 +710,16 @@
       "language": "zh-TW",
       "expected_branch": "decline",
       "cohort": "decline",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#D1"
+          "docs/coverage-matrix.md#D1",
+          "evals/p3/development-cases-v1.json#D01_profit"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|D1|decline|D01|profit",
@@ -721,15 +734,16 @@
       "language": "en",
       "expected_branch": "decline",
       "cohort": "decline",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#D1"
+          "docs/coverage-matrix.md#D1",
+          "evals/p3/development-cases-v1.json#D01_profit"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|D1|decline|D01|profit",
@@ -744,15 +758,16 @@
       "language": "ja",
       "expected_branch": "decline",
       "cohort": "decline",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#D1"
+          "docs/coverage-matrix.md#D1",
+          "evals/p3/development-cases-v1.json#D01_profit"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|D1|decline|D01|profit",
@@ -767,15 +782,16 @@
       "language": "zh-TW",
       "expected_branch": "decline",
       "cohort": "decline",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#D2"
+          "docs/coverage-matrix.md#D2",
+          "evals/p3/development-cases-v1.json#D02_cash_received"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|D2|decline|D02|cash_received",
@@ -790,15 +806,16 @@
       "language": "en",
       "expected_branch": "decline",
       "cohort": "decline",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#D2"
+          "docs/coverage-matrix.md#D2",
+          "evals/p3/development-cases-v1.json#D02_cash_received"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|D2|decline|D02|cash_received",
@@ -813,15 +830,16 @@
       "language": "ja",
       "expected_branch": "decline",
       "cohort": "decline",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#D2"
+          "docs/coverage-matrix.md#D2",
+          "evals/p3/development-cases-v1.json#D02_cash_received"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|D2|decline|D02|cash_received",
@@ -1242,75 +1260,6 @@
       "must_pass": true,
       "observational": false,
       "oracle_id": "dev-D9.v1"
-    },
-    {
-      "case_id": "dev-D10.zh-TW",
-      "family_id": "dev-D10",
-      "question": "星河中心 2026 年 3 月的報名狀況如何？",
-      "language": "zh-TW",
-      "expected_branch": "decline",
-      "cohort": "decline",
-      "exposure": "design_seen",
-      "provenance": {
-        "origin": "development",
-        "references": [
-          "docs/coverage-matrix.md#D10"
-        ],
-        "seen_by_implementer": true,
-        "exposure_history": [
-          "design_seen"
-        ]
-      },
-      "semantic_signature": "dev|D10|decline|D06|center_by_name",
-      "must_pass": true,
-      "observational": false,
-      "oracle_id": "dev-D10.v1"
-    },
-    {
-      "case_id": "dev-D10.en",
-      "family_id": "dev-D10",
-      "question": "How were bookings at the Starlight center in March 2026?",
-      "language": "en",
-      "expected_branch": "decline",
-      "cohort": "decline",
-      "exposure": "design_seen",
-      "provenance": {
-        "origin": "development",
-        "references": [
-          "docs/coverage-matrix.md#D10"
-        ],
-        "seen_by_implementer": true,
-        "exposure_history": [
-          "design_seen"
-        ]
-      },
-      "semantic_signature": "dev|D10|decline|D06|center_by_name",
-      "must_pass": true,
-      "observational": false,
-      "oracle_id": "dev-D10.v1"
-    },
-    {
-      "case_id": "dev-D10.ja",
-      "family_id": "dev-D10",
-      "question": "星河センターの 2026 年 3 月の申込状況はどうでしたか。",
-      "language": "ja",
-      "expected_branch": "decline",
-      "cohort": "decline",
-      "exposure": "design_seen",
-      "provenance": {
-        "origin": "development",
-        "references": [
-          "docs/coverage-matrix.md#D10"
-        ],
-        "seen_by_implementer": true,
-        "exposure_history": [
-          "design_seen"
-        ]
-      },
-      "semantic_signature": "dev|D10|decline|D06|center_by_name",
-      "must_pass": true,
-      "observational": false,
-      "oracle_id": "dev-D10.v1"
     }
   ]
 }

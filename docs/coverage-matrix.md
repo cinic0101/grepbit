@@ -2,8 +2,8 @@
 
 Status: approved by the owner on 2026-09-27 (recorded on #87). The dev-tier
 panel `p3-dev-matrix-v1` (`evals/dev/`, built by `tools/build_dev_panel.py`)
-fills every row below in all three languages; the golden tier follows the fill
-rules at the end.
+fills every row below except the two deferred ones (D5, D10) in all three
+languages; the golden tier follows the fill rules at the end.
 
 The golden tier is filled cell by cell against this matrix, so "common and
 generalizable" is checkable rather than felt. Cells are product boundaries of
@@ -37,7 +37,7 @@ not to copy questions.
 | D7 | Arbitrary formula or unit/currency conversion | decline | D06 (the oracle parser admits D01-D06 only) |
 | D8 | Supported overview plus an explicitly required attendance count | decline | D04 |
 | D9 | Enumeration of members or arbitrary row details | decline | D06 |
-| D10 | Center referred to by name, not code | decline | D06 (grounding is deferred; a name is an unsupported reference today) |
+| D10 | Center referred to by name, not code | deferred: name-only references are deferred grounding/clarification (C05) and the contract says a decline here is not success; no dev family until grounding exists |
 
 ## Columns: surface variation
 
@@ -45,8 +45,8 @@ not to copy questions.
 | --- | --- |
 | Language | zh-TW, en, ja (every cell in all three) |
 | Register | formal, colloquial |
-| Time phrasing | explicit month with year; explicit month with the year stated once for two months; relative phrase ("last month") which must decline |
-| Entity phrasing | exact code; code with different casing (must echo exactly); name (must decline) |
+| Time phrasing | explicit month with year; explicit month with the year stated once for two months; relative phrase ("last month") is a D05 deferred case, not scored as a correct decline |
+| Entity phrasing | exact code; code with different casing (must echo exactly); name (deferred grounding, not scored) |
 | Noise | none; one irrelevant sentence before the question |
 
 ## Fill rules
@@ -74,17 +74,19 @@ transfer (P5) and anything that requires a clock or AS_OF default.
 | dev-A1 | overview | CTR-A01, 2026-03 | plain overview |
 | dev-A2 | overview | CTR-B01, 2026-03 | explicit reviewed definitions in the question |
 | dev-A3 | compare | 2026-03 vs 2026-02 | orientation bound by grammar in all three languages |
-| dev-A4 | compare | 2026-04 vs 2026-02 | non-adjacent months, one stated year, negative growth |
+| dev-A4 | compare | 2026-04 vs 2026-02 | non-adjacent months, one stated year in every language, negative growth |
 | dev-A5 | breakdown k=3 | 2026-03 | all three observed courses, share 1/1 |
 | dev-A6 | breakdown k=2 | 2026-03 | share 64/79 |
-| dev-C1 | count_basis | CTR-B01 | "how many people" |
+| dev-C1 | count_basis | CTR-B01 | "how many people", naming seats vs booking accounts as the open alternatives |
 | dev-C2 | comparison_roles | 2026-02, 2026-03 | two months, no orientation |
 | dev-C3 | center | CTR-A01 or CTR-A02 | two codes, one month |
 | dev-C4 | metric_meaning | CTR-A02 | "revenue" |
-| dev-D1..D10 | decline D01/D02/D03/D04/D06/D06/D04/D06/D06 | | see the row table |
+| dev-D1..D9 (no D5, no D10) | decline D01/D02/D03/D04/D06/D06/D04/D06 | | see the row table |
 
 Answer oracle values are produced by executing the native request through the
 kernel against the synthetic fixture (`tools/build_dev_panel.py`), and a
-scripted-response mock run grades all 57 cases correct. Exposure is
-`design_seen`, authoring `development`: this panel is for iteration and its
+scripted-response mock run grades all 54 cases correct. Authoring is
+`development`; families that paraphrase or translate an exposed development
+family (A1, A3, A6, C2, D1, D2) keep the `exposed_regression` label and name
+their parent, the rest are `design_seen`. This panel is for iteration and its
 results are development observations, never fresh evidence.
