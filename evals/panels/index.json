@@ -54,6 +54,21 @@
       },
       "authoring": "independent",
       "note": "Holdout A (6 families / 18 inputs), independently authored and reviewed; consumed by the 31B route on 2026-09-25."
+    },
+    {
+      "panel_id": "p3-dev-matrix-v1",
+      "tier": "dev",
+      "path": "evals/dev/dev-panel-v1.json",
+      "assets": {
+        "panel": "eeef16fc823f8a7b8c6c3c94f6b88342abd97620b83b2b655e89b2aeea466062",
+        "cases": "ffabce048087ca946029e9635c84aff912820fdf035e8abf2fda945547e710d4",
+        "oracles": "380a52a58e3bbe5a111c424eb3b5211b250ed164aa03cc7cbf3c9147e1752829"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "Dev-tier coverage panel (#87 step 3): 18 matrix rows x 3 languages, kernel-derived oracles; agent-authored, unlimited runs."
     }
   ]
 }
