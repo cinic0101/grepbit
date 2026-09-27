@@ -11,11 +11,14 @@ import httpx
 
 from grepbit import recipe_model
 from grepbit.gateway import MODEL
-from tools import evaluate, fixture, p3_completion_diagnostic as diagnostic, recipe_smoke
+from tools import candidate_registry, evaluate, fixture, p3_completion_diagnostic as diagnostic, recipe_smoke
 
 
 class CompletionDiagnosticTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
+        # Synthetic lifecycle tests follow the registered checkout. Production
+        # remains pinned to v3; successor rejection is tested separately.
+        self.enterContext(patch.object(diagnostic, "CANDIDATE", candidate_registry.current()["candidate_id"]))
         tmp = tempfile.TemporaryDirectory(prefix="compare-diagnostic-test-", dir=evaluate.ROOT / ".artifacts")
         self.addCleanup(tmp.cleanup)
         self.root = Path(tmp.name)
