@@ -805,6 +805,9 @@ def main(argv=None) -> int:
     if argv and argv[0] == "--completion-diagnostic":
         from tools import p3_completion_diagnostic
         return p3_completion_diagnostic.main(argv[1:])
+    if argv and argv[0] == "--completion-diagnostic-v2":
+        from tools import p3_completion_diagnostic
+        return p3_completion_diagnostic.main(argv[1:], profile=p3_completion_diagnostic.V2)
     parser = evaluator._Parser(description=__doc__)
     modes = parser.add_mutually_exclusive_group(required=True)
     for mode in ("prepare", "bind-authorization", "live", "report", "record"):
