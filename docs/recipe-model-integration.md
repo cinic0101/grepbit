@@ -167,7 +167,7 @@ identify the constructed generation contract separately from semantic context:
 `recipe-structured-output-v2`, `mode=json_schema`, the fixed schema name,
 canonical schema SHA-256 and canonical complete response-format wrapper
 SHA-256. These identify the requested policy, not proof that a server honored it.
-The [recipe manifest](recipe-smoke.md) pins that identity and current source.
+The [recipe manifest](history/recipe-smoke.md) pins that identity and current source.
 
 The accepted envelope parser, `strict_json`, RecipeProposal/native validators,
 deterministic APIs, invalid-JSON fingerprint and intent-first grader remain
@@ -399,7 +399,7 @@ variants are not independent semantic families.
 
 ## Separately scoped runner and live gates
 
-[P2.7 (#28)](recipe-smoke.md) implements the fixed evaluator panel
+[P2.7 (#28)](history/recipe-smoke.md) implements the fixed evaluator panel
 **E01 / E02 / E03 x zh-TW / en / ja: 9 inputs, 3 semantic families**, using this
 recipe adapter and independent one-shot attempts. P3.1 changes the shared action
 protocol as described above, not the panel or native expectations. Its candidate

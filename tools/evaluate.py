@@ -35,7 +35,8 @@ from grepbit.gateway import GEMMA_12B, MODEL, GatewayClient, GatewayConfig
 from grepbit.provider import client_from_env
 from tools import candidate_registry as registry, p3_admission as admission, p3_assets as assets
 from tools import p3_eval as evaluator
-from tools import p3_formal_policy as allocation, p3_formal_run as formal, p3_grading
+from tools import p3_formal_policy as allocation, p3_grading
+from tools.history import p3_formal_run as formal
 from tools import p3_live_evidence as live, p3_scoring as scoring
 from tools import recipe_smoke, smoke
 

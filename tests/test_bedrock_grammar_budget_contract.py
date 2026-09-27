@@ -7,7 +7,7 @@ from grepbit.bedrock import converse_schema
 from grepbit.clarification import Clarification
 from grepbit.contracts import KernelError
 from grepbit.gateway import ModelError
-from tools import p3_bedrock_candidate_probe as candidate
+from tools.history import p3_bedrock_candidate_probe as candidate
 
 
 OLD_WIRE_SHA256 = "93ab99c9162a43412d0588b3ded70cc41a25827582b4d11b8072e3348d201f68"

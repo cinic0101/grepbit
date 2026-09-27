@@ -14,7 +14,8 @@ from grepbit.bedrock import BedrockClient, BedrockConfig
 from grepbit.clarification import KINDS
 from grepbit.gateway import GEMMA_12B, GatewayClient, GatewayConfig, MODEL
 from tools import candidate_registry as registry, evaluate as runner, fixture, p3_admission, p3_assets, p3_eval
-from tools import p3_dev_regression, p3_formal_run, p3_holdout_run, recipe_smoke
+from tools import recipe_smoke
+from tools.history import p3_dev_regression, p3_formal_run, p3_holdout_run
 from test_p3_admission import abstract_reviews, metadata_provenance
 from test_p3_holdout_policy import holdout_scaffolding
 

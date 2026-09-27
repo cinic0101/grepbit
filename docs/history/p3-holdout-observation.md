@@ -1,0 +1,79 @@
+> Historical phase record; see [the current evaluation runner](../evaluation-runner.md).
+
+# Fresh holdout observation (#79)
+
+Status: goal-delegated tooling; offline implementation with rulers. A live
+run needs the owner's standing grant on #79, a frozen holdout panel and one
+bound run slot.
+
+## Purpose
+
+The frozen 14-family / 28-input panel is regression data: every input has
+been exposed to the candidates and, since #74, to the implementing agent's
+structured view of their outputs. A holdout is an independently authored,
+independently reviewed, matrix-allocated set of fresh families that no
+candidate has seen and the implementing agent has not read. One observation
+per candidate answers "does the harness generalize past the regression set";
+after that observation the holdout is regression data too, so holdouts are
+prepared in pairs and refreshed.
+
+Authoring and review follow [P3.3](../p3-fresh-case-authoring.md) with role
+separation through fresh-context agent sessions: an author session that reads
+only the intent matrix, semantics, fixture and formats; a reviewer session that
+recomputes answer facts by SQL over the fixture, checks clarify and decline
+oracles against the contracts, judges novelty against every existing family
+and translation equivalence, and writes a rationale in Traditional Chinese for
+the owner; the owner judges realism and ratifies boundary novelty claims and
+supplies the owner review reference. The implementing agent runs only the
+intake audit, freeze and preparation tools with hash and count output and
+never reads question text or oracle values.
+
+## Allocation policy `p3-holdout-a-allocation-v2`
+
+| Item | Value |
+| --- | --- |
+| Families / inputs | 6 / 18, all `frozen_fresh`, three languages each |
+| Cohorts (families) | answer 1, clarify 3, decline 2; no anchors |
+| Cohorts (inputs) | answer 3, clarify 9, decline 6 |
+| Matrix cells filled | C01, A04 (new bundle), C03 (new bundle), C04 (new bundle), D06 (new bundle), D02 (new bundle) |
+| Not filled | A03: no distinct candidate found after two authoring rounds; A05: the candidate was a k/month re-parameterisation of E03 and was withdrawn after independent ratification (v1 of this policy, 7/21, never froze a panel) |
+
+`p3_formal_policy.summarize` accepts the holdout policy with panel kind
+`formal` (the frozen asset format) or `holdout` (the live report) and always
+reports `panel_kind: holdout`, `promotion.eligible: false`, `promotion.passed:
+false`. Family-weighted outcomes come from the unchanged frozen scorer. V1 and
+V2 identities are unchanged.
+
+## Freeze bound to the accepted dev commit
+
+The P3.3 formal freeze pins the product snapshot of 2026-09-21
+(`candidate_identity` compares the `grepbit/` file set to that commit and now
+fails by design, because the provider adapters were added later). A holdout
+observes the behavior of the accepted `dev` commit, so the holdout runner
+freezes on its own: `--freeze-holdout` validates the reviewed intake through
+the same admission materials, records the accepted commit, the full source
+identity, the database digest, the asset pins, the owner review reference and
+the allocation identity, and snapshots the four assets exclusively. The
+intake's `candidate_freeze_sha` stays as the **authoring baseline** (the
+semantics the author and reviewer wrote against). Loading a freeze recomputes
+the payload from the snapshots on the same accepted commit and rejects drift,
+a different commit or a tampered payload. There is no separate `p3_eval`
+preparation artifact; the packet pins the freeze directly.
+
+## Runner `tools/p3_holdout_run.py`
+
+Same shape as the formal runner, with: purpose
+`one_fresh_holdout_observation_not_promotion`, evidence class
+`fresh_holdout_observation`, `promotion_eligible=false`, 18 inputs, 60-second
+calls, the default LiteLLM identity, an authorization envelope that binds the
+packet digest, one Issue #79 grant comment and one exclusive run slot before
+credential access, and a report reader that rejects a moved archive, a
+promotion claim or a non-holdout summary. A second observation of the same
+holdout needs a new grant comment and a new slot and is regression evidence.
+
+## What it is not
+
+Not promotion, stability or P3 exit evidence; not a replacement for the frozen
+regression panel; not proof of real-data transfer (P5). A holdout family that
+informs a fix becomes regression data and the pair's other holdout is used
+next.

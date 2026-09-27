@@ -12,7 +12,7 @@ whole-scope denominator and two exact derivations. P2.6 (#26) adds the bounded
 It introduces a separate shared recipe prompt/contract, not a change to P1's
 prompt. Dependencies, deterministic APIs, fixtures, gold and live-run
 authorizations remain unchanged; recipe live evidence remains future work.
-P2.7 (#28) adds the separate [fixed integration runner](recipe-smoke.md).
+P2.7 (#28) adds the separate [fixed integration runner](history/recipe-smoke.md).
 Gate A review precedes Gate B accepted-commit offline preparation; neither
 authorizes live execution or completes P2.
 

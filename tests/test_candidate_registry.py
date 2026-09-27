@@ -7,7 +7,8 @@ import unittest
 from unittest.mock import patch
 
 from grepbit import recipe_model
-from tools import candidate_registry as registry, p3_candidate_model
+from tools import candidate_registry as registry, p3_assets
+from tools.history import p3_candidate_model
 
 ROOT = Path(__file__).resolve().parents[1]
 BASELINE = json.loads((ROOT / "tests/fixtures/p310_identity_baseline.json").read_bytes())
@@ -174,6 +175,36 @@ class CandidateRegistryRulers(unittest.TestCase):
         index = registry.load_index()
         self.assertEqual(index["current"], EXPECTED_CURRENT)
         self.assertEqual(len(index["entries"]), EXPECTED_ENTRIES)
+
+    def test_historical_route_tools_bind_the_frozen_entry_and_gate_on_the_live_candidate(self):
+        frozen = registry.load_entry(registry.FROZEN_CANDIDATE_ID)
+        self.assertEqual(p3_candidate_model.semantic_identity(),
+                         {key: frozen[key] for key in ("recipe_context", "structured_output", "p1_context", "limits")})
+        # Exercise frozen admission without pinning the real current candidate to history.
+        with patch.object(registry, "check", return_value={"candidate_id": registry.FROZEN_CANDIDATE_ID}):
+            p3_candidate_model.live_is_frozen()
+        with patch.object(recipe_model, "SYSTEM_INSTRUCTION", recipe_model.SYSTEM_INSTRUCTION + " Restated."):
+            # The frozen identity is still readable (archives stay readable) but preparation is refused.
+            self.assertEqual(p3_candidate_model.semantic_identity()["recipe_context"], frozen["recipe_context"])
+            with self.assertRaises(p3_assets.P3Error) as refused:
+                p3_candidate_model.live_is_frozen()
+            self.assertEqual(refused.exception.code, "source_identity_failure")
+            # A valid registered successor also stays outside the frozen runner's gate.
+            # Use a private registry copy; preserve every committed entry and index byte.
+            with tempfile.TemporaryDirectory(prefix="registry-history-", dir=ROOT / ".artifacts") as tmp:
+                index_path = Path(tmp) / "index.json"
+                index_path.write_bytes(registry.INDEX.read_bytes())
+                for row in registry.load_index()["entries"]:
+                    (Path(tmp) / row["path"]).write_bytes((registry.DIRECTORY / row["path"]).read_bytes())
+                registry.register("synthetic-history-successor", "registered successor gate witness",
+                                  index_path=index_path)
+                check = registry.check
+                self.assertEqual(check(index_path)["candidate_id"], "synthetic-history-successor")
+                with patch.object(registry, "check", side_effect=lambda: check(index_path)):
+                    self.assertEqual(p3_candidate_model.semantic_identity()["recipe_context"], frozen["recipe_context"])
+                    with self.assertRaises(p3_assets.P3Error) as successor:
+                        p3_candidate_model.live_is_frozen()
+                    self.assertEqual(successor.exception.code, "source_identity_failure")
 
     def test_witness_lookup_is_by_question_digest_only(self):
         entry = registry.current()

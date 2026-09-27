@@ -56,10 +56,17 @@ the run to the index.
 
 ## Historical tools
 
-`p3_formal_run`, `p3_stability_run`, `p3_candidate_regression`,
-`p3_bedrock_candidate_probe`, `p3_bedrock_observed_regression`,
-`p3_reason_diagnostic`, `p3_holdout_run` and `p3_dev_regression` remain as
-readers of their archives and are not used for new runs. They still bind the
-frozen P3.3 semantic identity to the live code and therefore refuse to prepare
-on any other registered candidate, by design; step 5 of #87 moves them under
-`tools/history/`.
+The prior route tools and candidate helper now live under `tools/history/`;
+`tests/history/` remains included by the full offline unittest discovery.
+They provide archive readers and are not the entry for new runs. The frozen
+P3.3 registry entry supplies their semantic identity, so later registered
+candidates do not change the identity of old reports. Frozen-candidate route
+preparation still refuses a different live candidate.
+
+Recorded `command_template` strings retain their original paths because those
+strings are part of historical packet validation. They are evidence, not
+commands to replay from the current checkout. Inspect an archive with its
+reader at the new path (for example, `tools/history/p3_formal_run.py --report
+--report-path <archive>/report.json`); new work uses `tools/evaluate.py`.
+Current source identities include `tools/history/p3_*.py`; archived source
+identities, report versions and evidence bytes remain unchanged.

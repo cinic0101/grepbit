@@ -164,7 +164,8 @@ def _asset_paths(panel: Panel, responses_path: Path | None) -> dict[str, Path]:
 def _source_identity(panel: Panel, responses_path: Path | None, formal_freeze: Path | None = None) -> dict:
     identity = recipe_smoke._source_identity()
     identity["evidence_expectations"] = p3_expectations.identity()
-    for path in sorted((ROOT / "tools").glob("p3_*.py")):
+    for path in sorted([*(ROOT / "tools").glob("p3_*.py"),
+                        *(ROOT / "tools/history").glob("p3_*.py")]):
         identity["files_sha256"][path.relative_to(ROOT).as_posix()] = _pin(path)["sha256"]
     for name in ("pyproject.toml", "uv.lock"):
         identity["files_sha256"][name] = _pin(ROOT / name)["sha256"]

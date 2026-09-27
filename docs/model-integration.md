@@ -12,7 +12,7 @@ calls. [P2.0](p2-recipes.md) is a design checkpoint with no new runtime or live 
 The separate [P2.6 recipe route](recipe-model-integration.md) reuses this gateway
 and protocol boundary with a new shared recipe contract. It does not change this
 P1 guide's prompt, scalar API, constraints, historical runner or manifest pins.
-The [P2.7 recipe runner](recipe-smoke.md) owns its separate panel, intent-first
+The [P2.7 recipe runner](history/recipe-smoke.md) owns its separate panel, intent-first
 grader, timeout/network stop policy and operational-only CLI exit semantics;
 it does not retroactively change the P1 behavior documented here.
 

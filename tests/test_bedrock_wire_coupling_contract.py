@@ -5,7 +5,7 @@ import unittest
 from grepbit import recipe_model
 from grepbit.bedrock import converse_schema
 from grepbit.gateway import ModelError
-from tools import p3_bedrock_candidate_probe as candidate
+from tools.history import p3_bedrock_candidate_probe as candidate
 
 GRAMMAR_BUDGET_WIRE_SHA256 = "ea4e03d02732c0c45f9905ccd9b7c0010bedc87a190666e7b31895867c43e53b"
 GRAMMAR_BUDGET_EFFECTIVE_SHA256 = "4d1f27ded8138dbe9618c6f8c4b32ca4555d8a244ac5e7d94e1287f9de4fb2ed"
