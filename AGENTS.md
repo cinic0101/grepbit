@@ -2,14 +2,17 @@
 
 ## Start here
 
-Read `README.md`, then the current GitHub issue. Read only the relevant design
-section in `docs/`; do not reload the legacy research history for every task.
-This is V3: analytical intent -> checked facts, not another expanding Text2SQL
-language. Use the current task's accepted contracts and exact evidence pins to
-establish phase and scope; historical phase descriptions do not grant authority.
-See `docs/roadmap.md` for gates and the relevant P1/P2/P3 contract for the task.
-These agreements are shared across coding tools. Keep model choices, effort,
-subagent names and tool-specific orchestration in personal/tool configuration.
+Read `README.md`, then `STATE.md` (generated from the registries and the run
+index: current candidate, panels with tier and latest results, routes, last
+runs), then the goal issue you are working (GitHub labels `decision`,
+`defect`, `evidence`). Read only the design section in `docs/` the task
+needs; `docs/history/` is context, not authority. This is V3: analytical
+intent -> checked facts, not another expanding Text2SQL language. Evaluation
+runs go through `tools/evaluate.py` against registered candidates, panels
+and routes (`docs/evaluation-runner.md`); the claim a run may make comes from
+its tier, never from the runner's caller. These agreements are shared across
+coding tools. Keep model choices, effort, subagent names and tool-specific
+orchestration in personal/tool configuration.
 
 ## Authority and branches
 
