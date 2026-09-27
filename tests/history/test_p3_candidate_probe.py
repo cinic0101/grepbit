@@ -14,7 +14,7 @@ import httpx
 
 from grepbit import recipe_model
 from grepbit.gateway import GEMMA_12B, GatewayClient, GatewayConfig, ModelError
-from tools import fixture, p3_assets as assets, p3_eval, recipe_smoke, smoke
+from tools import candidate_registry, fixture, p3_assets as assets, p3_eval, recipe_smoke, smoke
 from tools.history import p3_probe as legacy
 from tools.history import p3_candidate_model as candidate, p3_candidate_probe as runner
 from test_recipe_model import proposal
@@ -117,14 +117,25 @@ class CandidateProbeTests(unittest.IsolatedAsyncioTestCase):
             module.load_identity(self.candidate_path)
 
     def test_checkout_requires_current_clean_dev_and_cached_refs(self):
-        with patch.object(runner.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout=COMMIT)):
-            CHECKOUT(self.source, COMMIT)
-            for changed in ({"branch": "feature"}, {"worktree_dirty": True}, {"git_commit": "2" * 40}):
-                with self.assertRaises((legacy.ProbeError, recipe_smoke.RecipeSmokeError)):
-                    CHECKOUT({**self.source, **changed}, COMMIT)
-        with patch.object(runner.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout="2" * 40)):
-            with self.assertRaises(legacy.ProbeError):
+        # Ref/branch checks use an explicit frozen witness, independent of the current registry.
+        with patch.object(candidate_registry, "check",
+                          return_value={"candidate_id": candidate_registry.FROZEN_CANDIDATE_ID}):
+            with patch.object(runner.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout=COMMIT)):
                 CHECKOUT(self.source, COMMIT)
+                for changed in ({"branch": "feature"}, {"worktree_dirty": True}, {"git_commit": "2" * 40}):
+                    with self.assertRaises((legacy.ProbeError, recipe_smoke.RecipeSmokeError)):
+                        CHECKOUT({**self.source, **changed}, COMMIT)
+            with patch.object(runner.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout="2" * 40)):
+                with self.assertRaises(legacy.ProbeError):
+                    CHECKOUT(self.source, COMMIT)
+        # A registered successor is refused before consulting refs or loading credentials.
+        with patch.object(candidate_registry, "check", return_value={"candidate_id": "synthetic-successor"}), \
+                patch.object(runner.subprocess, "run") as refs:
+            with self.assertRaises(legacy.ProbeError) as refused:
+                CHECKOUT(self.source, COMMIT)
+            self.assertEqual(refused.exception.code, "source_identity_failure")
+            refs.assert_not_called()
+        self.loader.assert_not_called()
 
     def test_bind_is_exclusive_and_does_not_change_packet(self):
         before = self.packet_path.read_bytes()
