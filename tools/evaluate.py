@@ -800,6 +800,11 @@ def record(report_path: Path, *, runs_path: Path | None = None, now: str | None 
 
 
 def main(argv=None) -> int:
+    if argv is None:
+        argv = sys.argv[1:]
+    if argv and argv[0] == "--completion-diagnostic":
+        from tools import p3_completion_diagnostic
+        return p3_completion_diagnostic.main(argv[1:])
     parser = evaluator._Parser(description=__doc__)
     modes = parser.add_mutually_exclusive_group(required=True)
     for mode in ("prepare", "bind-authorization", "live", "report", "record"):
