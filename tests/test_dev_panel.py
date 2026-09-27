@@ -15,7 +15,7 @@ PANEL = ROOT / "evals/dev/dev-panel-v1.json"
 RESPONSES = ROOT / "evals/dev/dev-responses-v1.json"
 ROWS = ("A1", "A2", "A3", "A4", "A5", "A6", "C1", "C2", "C3", "C4",
         "D1", "D2", "D3", "D4", "D6", "D7", "D8", "D9")
-EXPOSED = {"dev-A1", "dev-A3", "dev-A6", "dev-C2", "dev-D1", "dev-D2"}
+EXPOSED = {"dev-A1", "dev-A3", "dev-A5", "dev-A6", "dev-C1", "dev-C2", "dev-C3", "dev-C4", "dev-D1", "dev-D2"}
 
 
 class DevPanelRulers(unittest.TestCase):

@@ -37,7 +37,7 @@ not to copy questions.
 | D7 | Arbitrary formula or unit/currency conversion | decline | D06 (the oracle parser admits D01-D06 only) |
 | D8 | Supported overview plus an explicitly required attendance count | decline | D04 |
 | D9 | Enumeration of members or arbitrary row details | decline | D06 |
-| D10 | Center referred to by name, not code | deferred: name-only references are deferred grounding/clarification (C05) and the contract says a decline here is not success; no dev family until grounding exists |
+| D10 | Center referred to by name, not code | deferred | C05: name-only references are deferred grounding/clarification and the contract says a decline here is not success; no dev family until grounding exists |
 
 ## Columns: surface variation
 
@@ -87,6 +87,7 @@ Answer oracle values are produced by executing the native request through the
 kernel against the synthetic fixture (`tools/build_dev_panel.py`), and a
 scripted-response mock run grades all 54 cases correct. Authoring is
 `development`; families that paraphrase or translate an exposed development
-family (A1, A3, A6, C2, D1, D2) keep the `exposed_regression` label and name
-their parent, the rest are `design_seen`. This panel is for iteration and its
+family by paraphrase, translation or code/k substitution (A1, A3, A5, A6, C1,
+C2, C3, C4, D1, D2) keep the `exposed_regression` label and name their parent;
+the rest (A2, A4, D3, D4, D6, D7, D8, D9) are `design_seen`. This panel is for iteration and its
 results are development observations, never fresh evidence.

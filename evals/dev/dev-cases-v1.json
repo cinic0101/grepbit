@@ -240,7 +240,7 @@
     {
       "case_id": "dev-A4.en",
       "family_id": "dev-A4",
-      "question": "In 2026, how much did the overall confirmed booking amount change from February to April?",
+      "question": "In 2026, how much did the overall confirmed booking amount change in April compared with February?",
       "language": "en",
       "expected_branch": "answer",
       "cohort": "answer",
@@ -290,15 +290,16 @@
       "language": "zh-TW",
       "expected_branch": "answer",
       "cohort": "answer",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#A5"
+          "docs/coverage-matrix.md#A5",
+          "evals/p3/development-cases-v1.json#E03_share_denominator"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|A5|breakdown|top_k=3|2026-03",
@@ -313,15 +314,16 @@
       "language": "en",
       "expected_branch": "answer",
       "cohort": "answer",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#A5"
+          "docs/coverage-matrix.md#A5",
+          "evals/p3/development-cases-v1.json#E03_share_denominator"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|A5|breakdown|top_k=3|2026-03",
@@ -336,15 +338,16 @@
       "language": "ja",
       "expected_branch": "answer",
       "cohort": "answer",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#A5"
+          "docs/coverage-matrix.md#A5",
+          "evals/p3/development-cases-v1.json#E03_share_denominator"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|A5|breakdown|top_k=3|2026-03",
@@ -431,15 +434,16 @@
       "language": "zh-TW",
       "expected_branch": "clarify",
       "cohort": "clarify",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#C1"
+          "docs/coverage-matrix.md#C1",
+          "evals/p3/development-cases-v1.json#C01_count_basis"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|C1|clarify|count_basis|CTR-B01|2026-03",
@@ -454,15 +458,16 @@
       "language": "en",
       "expected_branch": "clarify",
       "cohort": "clarify",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#C1"
+          "docs/coverage-matrix.md#C1",
+          "evals/p3/development-cases-v1.json#C01_count_basis"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|C1|clarify|count_basis|CTR-B01|2026-03",
@@ -477,15 +482,16 @@
       "language": "ja",
       "expected_branch": "clarify",
       "cohort": "clarify",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#C1"
+          "docs/coverage-matrix.md#C1",
+          "evals/p3/development-cases-v1.json#C01_count_basis"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|C1|clarify|count_basis|CTR-B01|2026-03",
@@ -572,15 +578,16 @@
       "language": "zh-TW",
       "expected_branch": "clarify",
       "cohort": "clarify",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#C3"
+          "docs/coverage-matrix.md#C3",
+          "evals/p3/development-cases-v1.json#C03_center"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|C3|clarify|center|CTR-A01,CTR-A02|2026-03",
@@ -595,15 +602,16 @@
       "language": "en",
       "expected_branch": "clarify",
       "cohort": "clarify",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#C3"
+          "docs/coverage-matrix.md#C3",
+          "evals/p3/development-cases-v1.json#C03_center"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|C3|clarify|center|CTR-A01,CTR-A02|2026-03",
@@ -618,15 +626,16 @@
       "language": "ja",
       "expected_branch": "clarify",
       "cohort": "clarify",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#C3"
+          "docs/coverage-matrix.md#C3",
+          "evals/p3/development-cases-v1.json#C03_center"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|C3|clarify|center|CTR-A01,CTR-A02|2026-03",
@@ -641,15 +650,16 @@
       "language": "zh-TW",
       "expected_branch": "clarify",
       "cohort": "clarify",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#C4"
+          "docs/coverage-matrix.md#C4",
+          "evals/p3/development-cases-v1.json#C04_metric_meaning"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|C4|clarify|metric_meaning|CTR-A02|2026-03",
@@ -664,15 +674,16 @@
       "language": "en",
       "expected_branch": "clarify",
       "cohort": "clarify",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#C4"
+          "docs/coverage-matrix.md#C4",
+          "evals/p3/development-cases-v1.json#C04_metric_meaning"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|C4|clarify|metric_meaning|CTR-A02|2026-03",
@@ -687,15 +698,16 @@
       "language": "ja",
       "expected_branch": "clarify",
       "cohort": "clarify",
-      "exposure": "design_seen",
+      "exposure": "exposed_regression",
       "provenance": {
         "origin": "development",
         "references": [
-          "docs/coverage-matrix.md#C4"
+          "docs/coverage-matrix.md#C4",
+          "evals/p3/development-cases-v1.json#C04_metric_meaning"
         ],
         "seen_by_implementer": true,
         "exposure_history": [
-          "design_seen"
+          "exposed_regression"
         ]
       },
       "semantic_signature": "dev|C4|clarify|metric_meaning|CTR-A02|2026-03",

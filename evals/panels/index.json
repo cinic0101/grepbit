@@ -61,7 +61,7 @@
       "path": "evals/dev/dev-panel-v1.json",
       "assets": {
         "panel": "df351e28ea0a44b970ff3aea59d9e8858b863730b09fa21a3c126bfa77dbc42f",
-        "cases": "54372f9160101aa8bec48555821afce30e9533398d14e2c52ab34b52f79dd1ec",
+        "cases": "997d0068941534749d73e27648ceccfb54a46109df7ddc89fd7aee4a322c7fa6",
         "oracles": "508e3a221a083df981d13ae8af8a678bdd92686a87db92dcb2679498b6802aec"
       },
       "allocation_policy": null,

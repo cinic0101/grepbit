@@ -105,8 +105,11 @@ oracles = [
 # Paraphrase or translation descendants of exposed development families keep the
 # exposed_regression label and name their historical parent (contract section 5).
 EXPOSED_PARENT = {"A1": "evals/p3/development-cases-v1.json#E01_overview", "A3": "evals/p3/development-cases-v1.json#E02_compare",
+                  "A5": "evals/p3/development-cases-v1.json#E03_share_denominator",
                   "A6": "evals/p3/development-cases-v1.json#E03_share_denominator",
+                  "C1": "evals/p3/development-cases-v1.json#C01_count_basis",
                   "C2": "evals/p3/development-cases-v1.json#C02_comparison_roles",
+                  "C3": "evals/p3/development-cases-v1.json#C03_center", "C4": "evals/p3/development-cases-v1.json#C04_metric_meaning",
                   "D1": "evals/p3/development-cases-v1.json#D01_profit", "D2": "evals/p3/development-cases-v1.json#D02_cash_received"}
 # (row, branch, cohort, oracle, signature, {lang: question})
 ROWS = [
@@ -124,7 +127,7 @@ ROWS = [
         "ja": "2026 年 3 月の全センターの確定済み申込金額は、2 月と比べてどうでしたか。"}),
     ("A4", "answer", "dev-A4.v1", "compare|current=2026-04|baseline=2026-02|shared_year_nonadjacent", {
         "zh-TW": "2026 年 4 月的整體已確認報名金額相較於同年 2 月變化多少？",
-        "en": "In 2026, how much did the overall confirmed booking amount change from February to April?",
+        "en": "In 2026, how much did the overall confirmed booking amount change in April compared with February?",
         "ja": "2026 年の 4 月の全体の確定済み申込金額は、同年 2 月に対してどれだけ変わりましたか。"}),
     ("A5", "answer", "dev-A5.v1", "breakdown|top_k=3|2026-03", {
         "zh-TW": "2026 年 3 月報名金額最高的三個課程是哪些？各多少，合計占整體多少？",
