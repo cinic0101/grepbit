@@ -1,9 +1,10 @@
 """Archived formatting-only candidate and order-only panel; no quality claim."""
 import hashlib
+from pathlib import Path
 import unittest
 from unittest.mock import patch
 
-from tools import candidate_registry as registry, evaluate, p3_assets
+from tools import candidate_registry as registry, evaluate, p3_assets, p3_completion_diagnostic as diagnostic
 
 CANDIDATE = "p3-31b-instruction-v4"
 PANEL = "p3-dev-matrix-compare-first-v1"
@@ -59,6 +60,15 @@ class CompactJsonCandidateTests(unittest.TestCase):
         for name, path in (("panel", evaluate.ROOT / entry["path"]),
                            ("cases", panel.cases_path), ("oracles", panel.oracles_path)):
             self.assertEqual(entry["assets"][name], hashlib.sha256(path.read_bytes()).hexdigest())
+
+    def test_consumed_diagnostics_keep_v3_and_refuse_successor_before_panel_access(self):
+        self.assertEqual(diagnostic.CANDIDATE, "p3-31b-instruction-v3")
+        self.assertNotEqual(registry.check()["candidate_id"], diagnostic.CANDIDATE)
+        with patch.object(evaluate, "load_panel_entry", side_effect=AssertionError("Admission must stop first")):
+            for profile in (None, diagnostic.V2):
+                with self.subTest(profile=profile), self.assertRaises(p3_assets.P3Error) as caught:
+                    diagnostic.build_packet(Path("unused-synthetic.sqlite"), "1" * 40, profile)
+                self.assertEqual(caught.exception.code, "source_identity_failure")
 
 
 if __name__ == "__main__":

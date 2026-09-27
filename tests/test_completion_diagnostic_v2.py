@@ -12,11 +12,14 @@ import httpx
 
 from grepbit import recipe_model
 from grepbit.gateway import MODEL
-from tools import evaluate, fixture, p3_completion_diagnostic as diagnostic, recipe_smoke
+from tools import candidate_registry, evaluate, fixture, p3_completion_diagnostic as diagnostic, recipe_smoke
 
 
 class CompletionDiagnosticV2Tests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
+        # Only synthetic lifecycle fixtures follow the current registered
+        # checkout. The consumed diagnostic's production identity stays v3.
+        self.enterContext(patch.object(diagnostic, "CANDIDATE", candidate_registry.current()["candidate_id"]))
         (evaluate.ROOT / ".artifacts").mkdir(exist_ok=True)
         tmp = tempfile.TemporaryDirectory(prefix="compare-v2-offline-", dir=evaluate.ROOT / ".artifacts")
         self.addCleanup(tmp.cleanup)

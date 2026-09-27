@@ -84,6 +84,21 @@
       "freeze": null,
       "authoring": "development",
       "note": "Order-only dev observation (#79): all original 54 inputs and shared case/oracle bytes; D8/C4/C1/D4 first, Compare last. New order; no fresh or causal improvement claim."
+    },
+    {
+      "panel_id": "p3-dev-matrix-compare-first-v1",
+      "tier": "dev",
+      "path": "evals/dev/dev-panel-compare-first-v1.json",
+      "assets": {
+        "panel": "31fb3ef407a13afb63aeb55441eaa2dede4bef78a0deb090c0616acf57ed2298",
+        "cases": "997d0068941534749d73e27648ceccfb54a46109df7ddc89fd7aee4a322c7fa6",
+        "oracles": "508e3a221a083df981d13ae8af8a678bdd92686a87db92dcb2679498b6802aec"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "Order-only dev observation (#79): original 54 inputs and shared cases/oracles; three timeout reproductions first, other Compare next. Exposed development evidence only."
     }
   ]
 }
