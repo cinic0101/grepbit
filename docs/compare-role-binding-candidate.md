@@ -71,3 +71,56 @@ within the standing1,000/day ceiling. Keep all scoring thresholds and stop rules
 A failed three-input gate stops this candidate's live sequence. Do not silently
 start a fourth candidate. Any full-panel result remains exposed development
 observation; it does not establish fresh quality, stability or promotion.
+
+## Observed results (2026-09-27)
+
+PR #104 merged as `2141d819bd95f17eac54e4723b76f44dc9dbdd32` after
+1,240 offline tests passed, focused16/16, fixture27/27 and two reviews without
+actionable findings. Both live runs used that commit, unchanged serving witness,
+the recorded decision/grant chain above, separate exclusive slots and normal
+limits. The three-input run finished and passed offline readback before the
+54-input packet was prepared. Exactly57 client calls total; no retries/reruns,
+raw completion/reasoning retention, or further candidate change.
+
+| Run | Inputs correct | Selected/full families correct | Client calls | Run seconds |
+| --- | ---: | ---: | ---: | ---: |
+| Three-input gate | 3/3 | 2/2 selected only | 3 | 34.597905 |
+| Full dev panel | 48/54 | 15/18 | 54 | 229.262421 |
+
+The gate produced A3.en `complete_correct` in8.065192seconds, C2.zh-TW
+`correct_clarification` in12.765445seconds and C2.en `correct_clarification`
+in12.798998seconds. Compared through the runner to the completed same-panel
+v4report, this is1`FIXED_KNOWN_FAILURE`,2`UNCHANGED_CORRECT`,0`NEW_REGRESSION`
+**within these three exposed inputs only**.
+
+The full run completed all54 inputs with validJSON and no timeout/operational
+failure. Client latency median3.380122seconds, range0.382409-14.414391seconds.
+All9 A3/A4/C2 inputs passed across zh-TW/en/ja, including earlier-current A4
+and intentionally ambiguous C2. This supports the targeted A3 repair under the
+observed dev conditions; it is not stability, fresh generalization or promotion.
+
+Six semantic failures remain:
+
+| Inputs | Recorded outcome | Observation |
+| --- | --- | --- |
+| C1.zh-TW, C1.en | wrong_action | count_basis clarification with4choices; semantic_choices failed |
+| C4.zh-TW | wrong_action | metric_meaning clarification with4choices; semantic_choices failed |
+| C4.en, C4.ja | missed_clarification | answered where clarification was required |
+| D8.zh-TW | false_clarification | count_basis clarification with2choices where decline was required |
+
+These same six IDs failed semantically in the earlier v3 boundaries-first
+observation (C4.zh-TW had a different wrong outcome there). That historical
+run was incomplete and used a different order/serving configuration, so this
+is a case-ID observation, not a formal complete no-regression or causal claim.
+No gold, threshold, historical result or prompt was adjusted after these runs.
+The targeted sequence is complete; remaining clarification boundaries need a
+separate bounded follow-up, not an automatic fourth candidate or holdout run.
+
+Evidence is appended in the run index. Local slots under
+`.artifacts/compare-role-binding-v5-20260927/`:
+
+- `three/run`, report SHA256 `bb92c8aa6a4ada722ee22474d75d0c9d0c9c7ef6d84fdfd26b9eab55acdaa6ee`.
+- `full/run`, report SHA256 `dee80abb63c011ea0123e434d1db915b4c434968b4fa1fc2ee4d1cb615ab1b92`.
+
+Both reports remain `development_observation`, promotion-ineligible. Upstream
+inference attempt counts remain unknown;57 is the observed client-call total.
