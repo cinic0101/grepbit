@@ -69,6 +69,21 @@
       "freeze": null,
       "authoring": "development",
       "note": "Dev-tier coverage panel (#87 step 3): 18 matrix rows x 3 languages (D5, D10 deferred), kernel-derived oracles; agent-authored, unlimited runs."
+    },
+    {
+      "panel_id": "p3-dev-matrix-boundaries-first-v1",
+      "tier": "dev",
+      "path": "evals/dev/dev-panel-boundaries-first-v1.json",
+      "assets": {
+        "panel": "af017cb1de84f350285aad0cb3c95863aadba9e8ac2db73b9f016cfe41bb77e3",
+        "cases": "997d0068941534749d73e27648ceccfb54a46109df7ddc89fd7aee4a322c7fa6",
+        "oracles": "508e3a221a083df981d13ae8af8a678bdd92686a87db92dcb2679498b6802aec"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "Order-only dev observation (#79): all original 54 inputs and shared case/oracle bytes; D8/C4/C1/D4 first, Compare last. New order; no fresh or causal improvement claim."
     }
   ]
 }
