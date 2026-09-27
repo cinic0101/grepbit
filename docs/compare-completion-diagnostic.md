@@ -27,6 +27,22 @@ quality run index as a development score.
 
 `--describe`, `--prepare`, `--bind-authorization`, `--live`, `--report` are distinct
 modes. No general deadline, model, input or raw-capture override is exposed.
+After the diagnostic code is merged on `dev`, the offline and live CLI shapes are:
+
+```bash
+.venv/bin/python tools/evaluate.py --completion-diagnostic --describe
+.venv/bin/python tools/evaluate.py --completion-diagnostic --prepare --db <PINNED_DB> --accepted-commit <MERGED_DEV_SHA> --output .artifacts/<PREPARATION>/packet.json
+.venv/bin/python tools/evaluate.py --completion-diagnostic --bind-authorization --packet .artifacts/<PREPARATION>/packet.json --owner-authorization-reference https://github.com/cinic0101/grepbit/issues/79#issuecomment-5855110091 --output .artifacts/<PREPARATION>/authorization.json
+.venv/bin/python tools/evaluate.py --completion-diagnostic --live --db <PINNED_DB> --packet .artifacts/<PREPARATION>/packet.json --authorization .artifacts/<PREPARATION>/authorization.json --accepted-commit <MERGED_DEV_SHA> --env-file <EXPLICIT_LOCAL_ENV_FILE>
+.venv/bin/python tools/evaluate.py --completion-diagnostic --report --report-path .artifacts/compare-completion-3dc99bb3b3f23ad252b5/report.json
+```
+
+Create the preparation directory before `--prepare`; the packet and authorization
+files use exclusive creation. The fixed run slot above is derived from the exact
+grant URL. The live command takes no output override and consumes that slot before
+loading credentials. `complete` means all three selected calls have a terminal
+client observation; individual calls may have failed. The report and CLI mark the
+result `diagnostic_observation` and `promotion_eligible=false`.
 Use one packet, authorization and exclusive run directory. Bind the exact grant
 URL and deterministic grant-derived run slot so the grant cannot be reused at a
 second path. Creating the run slot consumes the grant before credential reads;
@@ -55,6 +71,10 @@ Persist only allowlisted enums, key names, booleans and bounded numerical fields
   enum observations, unknown-key counts (never unknown names or values);
 - numeric repetition statistics with an explicit bounded algorithm (for example,
   maximum repeated non-overlapping 32-character block count; no repeated text).
+
+For repetition, scan each 32-character window left to right. For each window
+value, count an occurrence only when its start is at least 32 characters after
+the prior counted occurrence of that same value; publish only the maximum count.
 
 Absent usage or fields are unknown, not zero. Invalid envelopes fail closed without
 publishing unvalidated model labels or arbitrary exception strings. The report
