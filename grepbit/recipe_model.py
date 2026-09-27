@@ -22,7 +22,7 @@ from .provider import LLMClient, normalize_response, response_mode, wire_identit
 
 CONTEXT_VERSION = "learningops-recipe-context-v2"
 OUTPUT_CONTRACT = "recipe-request-json-v2"
-INSTRUCTION_VERSION = "recipe-selection-instruction-v4"
+INSTRUCTION_VERSION = "recipe-selection-instruction-v5"
 STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v2"
 STRUCTURED_OUTPUT_SCHEMA_NAME = "grepbit_recipe_request"
 _NativeRequest = OverviewRequest | CompareRequest | BreakdownRequest
@@ -131,10 +131,8 @@ SYSTEM_INSTRUCTION = (
     "Overview requires center_code, start, end, timezone. Echo an explicitly supplied center code "
     "exactly; do not trim, case-fold, resolve a name, invent a canonical center_id or provide a mapping. "
     "Compare requires current and baseline, each with metrics:[\"confirmed_booked_amount\"], "
-    "start, end, timezone; center_id may only be omitted or null. Both distinct named months and "
-    "their comparison roles must be explicit for a request; ambiguous orientation may use comparison_roles. "
-    "Treat roles assigned by the question's wording as bound; keep them even when the current "
-    "month is earlier than the baseline. Ask comparison_roles only when both assignments remain possible. "
+    "start, end, timezone; center_id may only be omitted or null. "
+    "Both distinct named months must be supplied. Bind comparison roles from the question's grammatical target and reference: the period being assessed is current, and the period it is assessed against is baseline. A stated reference binds the roles without requiring the literal labels current or baseline. Keep those roles even when current is earlier than baseline. A symmetric comparison that merely names two months supplies no direction: use comparison_roles only when both reversed assignments remain compatible with the wording. Never use chronological order or first mention alone to assign the roles. "
     "A year explicitly shared by two named months applies "
     "to both; never infer a missing year or baseline from a clock or AS_OF. "
     "Breakdown requires start, end, timezone and explicit integer top_k from 1 to 3; never infer k. "
