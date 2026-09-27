@@ -524,6 +524,46 @@ def _report(report, packet_sha, auth_sha):
         _fail()
 
 
+def _checkpoint_transition(before: dict, after: dict) -> None:
+    if after["elapsed_seconds"] < before["elapsed_seconds"]:
+        _fail()
+    changed = [index for index, (old, new) in enumerate(zip(before["results"], after["results"]))
+               if old != new]
+    if before["stop_reason"] is not None:
+        if changed or after["client_http_attempts"] != before["client_http_attempts"]:
+            _fail()
+        if (after["stop_reason"] != before["stop_reason"]
+                and not (before["stop_reason"] == "complete" and after["stop_reason"] == "budget"
+                         and after["elapsed_seconds"] >= RUN_SECONDS)):
+            _fail()
+        return
+    if len(changed) > 1:
+        _fail()
+    if not changed:
+        # A no-attempt checkpoint may only finalize a stop or completed plan.
+        if after["stop_reason"] is None or after["client_http_attempts"] != before["client_http_attempts"]:
+            _fail()
+        return
+    old, new = before["results"][changed[0]], after["results"][changed[0]]
+    if old["state"] == "not_started":
+        if (new["state"] != "reserved" or new["http_attempts"] != 0
+                or after["stop_reason"] is not None
+                or after["client_http_attempts"] != before["client_http_attempts"]):
+            _fail()
+    elif old["state"] == "reserved":
+        if new["state"] == "reserved":
+            if (after["stop_reason"] != "interrupted"
+                    or new["http_attempts"] < old["http_attempts"]):
+                _fail()
+        elif new["state"] not in ("returned", "failed"):
+            _fail()
+        if (after["client_http_attempts"] - before["client_http_attempts"]
+                != new["http_attempts"] - old["http_attempts"]):
+            _fail()
+    else:
+        _fail()
+
+
 def read_report(path: Path) -> dict:
     if path.name != "report.json" or path.parent.resolve() != ROOT / SLOT:
         _fail()
@@ -549,13 +589,11 @@ def read_report(path: Path) -> dict:
     for name in checkpoints:
         snapshot = _read(path.parent / name)
         _report(snapshot, packet_sha, auth_sha)
-        if previous is not None:
-            for before, after in zip(previous["results"], snapshot["results"]):
-                if (before["state"] in ("returned", "failed") and before != after
-                        or before["state"] == "reserved" and after["state"] == "not_started"):
-                    _fail()
-            if snapshot["client_http_attempts"] < previous["client_http_attempts"]:
+        if previous is None:
+            if not evaluate._same(snapshot, _new_report(packet_sha, auth_sha)):
                 _fail()
+        else:
+            _checkpoint_transition(previous, snapshot)
         previous = snapshot
     if not evaluate._same(previous, report):
         _fail()
@@ -584,6 +622,7 @@ async def run_live(database: Path, packet_path: Path, authorization_path: Path, 
     _persist(artifacts, report)
     started = clock()
     timeout_streak = network_streak = 0
+    bound_config = None  # Opaque in-memory equality; never written to an artifact.
     for index, selected in enumerate(packet["selected"]):
         elapsed = clock() - started
         if elapsed >= RUN_SECONDS:
@@ -612,6 +651,10 @@ async def run_live(database: Path, packet_path: Path, authorization_path: Path, 
             if (client.config.model != MODEL
                     or client.config.transport_security != packet["canonical_packet"]["transport_security"]
                     or client.http_attempts != 0):
+                raise DiagnosticError("invalid_configuration")
+            if bound_config is None:
+                bound_config = client.config
+            elif client.config != bound_config:
                 raise DiagnosticError("invalid_configuration")
             if clock() - started >= RUN_SECONDS:
                 raise DiagnosticError("panel_budget")

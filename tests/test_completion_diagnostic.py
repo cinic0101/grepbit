@@ -211,6 +211,45 @@ class CompletionDiagnosticTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(sent, [])
         self.assertEqual(result["results"][0]["error_code"], "invalid_configuration")
 
+    async def _rotated_configuration(self, *, rotate_endpoint: bool):
+        self.prepare()
+        sent = []
+        configs = [
+            diagnostic.DiagnosticGatewayConfig("http://private-first.invalid/v1", "PRIVATE_FIRST_KEY"),
+            diagnostic.DiagnosticGatewayConfig(
+                "http://private-second.invalid/v1" if rotate_endpoint else "http://private-first.invalid/v1",
+                "PRIVATE_FIRST_KEY" if rotate_endpoint else "PRIVATE_SECOND_KEY"),
+        ]
+        constructions = 0
+        def factory(_env, expected_sha):
+            nonlocal constructions
+            config = configs[min(constructions, 1)]
+            constructions += 1
+            return diagnostic.DiagnosticGatewayClient(config, expected_sha,
+                transport=httpx.MockTransport(lambda request: (
+                    sent.append(request), httpx.Response(200, json=self.envelope()))[1]))
+        result = await diagnostic.run_live(self.database, self.packet, self.authorization,
+                                           accepted_commit=self.commit, env_file=self.root / "unused.env",
+                                           client_factory=factory)
+        self.assertEqual(constructions, 2)
+        self.assertEqual(len(sent), 1)
+        self.assertEqual(result["client_http_attempts"], 1)
+        self.assertEqual(result["results"][1]["error_code"], "invalid_configuration")
+        self.assertEqual(result["stop_reason"], "anomaly")
+        self.assertEqual(diagnostic.read_report(self.root / "run/report.json"), result)
+        for path in (self.root / "run").iterdir():
+            if path.is_file():
+                raw = path.read_bytes()
+                for canary in (b"private-first.invalid", b"private-second.invalid",
+                               b"PRIVATE_FIRST_KEY", b"PRIVATE_SECOND_KEY"):
+                    self.assertNotIn(canary, raw)
+
+    async def test_endpoint_rotation_stops_before_second_send(self):
+        await self._rotated_configuration(rotate_endpoint=True)
+
+    async def test_credential_rotation_stops_before_second_send(self):
+        await self._rotated_configuration(rotate_endpoint=False)
+
     async def test_reader_rejects_forced_later_send_and_elapsed_completion(self):
         index = 0
         def response(_):
@@ -342,6 +381,32 @@ class CompletionDiagnosticTests(unittest.IsolatedAsyncioTestCase):
         path.write_text(json.dumps(report))
         with self.assertRaises(diagnostic.DiagnosticError):
             diagnostic.read_report(path)
+
+    async def test_archive_reader_rejects_initial_stop_then_later_attempts(self):
+        await self.run_synthetic(lambda _: httpx.Response(200, json=self.envelope()))
+        first = self.root / "run/checkpoint-0000.json"
+        snapshot = json.loads(first.read_text())
+        snapshot["stop_reason"] = "anomaly"
+        first.write_text(json.dumps(snapshot))
+        with self.assertRaises(diagnostic.DiagnosticError):
+            diagnostic.read_report(self.root / "run/report.json")
+
+    async def test_archive_reader_requires_reservation_before_return(self):
+        await self.run_synthetic(lambda _: httpx.Response(200, json=self.envelope()))
+        reserved = self.root / "run/checkpoint-0001.json"
+        terminal = self.root / "run/checkpoint-0002.json"
+        reserved.write_bytes(terminal.read_bytes())
+        with self.assertRaises(diagnostic.DiagnosticError):
+            diagnostic.read_report(self.root / "run/report.json")
+
+    async def test_archive_reader_refuses_attempt_after_prior_stop(self):
+        await self.run_synthetic(lambda _: httpx.Response(200, json=self.envelope()))
+        first_terminal = self.root / "run/checkpoint-0002.json"
+        snapshot = json.loads(first_terminal.read_text())
+        snapshot["stop_reason"] = "anomaly"
+        first_terminal.write_text(json.dumps(snapshot))
+        with self.assertRaises(diagnostic.DiagnosticError):
+            diagnostic.read_report(self.root / "run/report.json")
 
     def test_binding_requires_exact_grant(self):
         diagnostic.prepare(self.database, self.packet, accepted_commit=self.commit)
