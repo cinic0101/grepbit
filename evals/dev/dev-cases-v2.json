@@ -1,0 +1,1283 @@
+{
+  "version": "p3-cases-v1",
+  "cases": [
+    {
+      "case_id": "dev-A1.zh-TW",
+      "family_id": "dev-A1",
+      "question": "CTR-A01 在 2026 年 3 月的報名狀況如何？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A1",
+          "evals/p3/development-cases-v1.json#E01_overview"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|A1|overview|core|CTR-A01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A1.v1"
+    },
+    {
+      "case_id": "dev-A1.en",
+      "family_id": "dev-A1",
+      "question": "Give me the March 2026 booking picture for CTR-A01.",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A1",
+          "evals/p3/development-cases-v1.json#E01_overview"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|A1|overview|core|CTR-A01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A1.v1"
+    },
+    {
+      "case_id": "dev-A1.ja",
+      "family_id": "dev-A1",
+      "question": "CTR-A01 の 2026 年 3 月の申込状況を教えてください。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A1",
+          "evals/p3/development-cases-v1.json#E01_overview"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|A1|overview|core|CTR-A01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A1.v1"
+    },
+    {
+      "case_id": "dev-A2.zh-TW",
+      "family_id": "dev-A2",
+      "question": "想看 CTR-B01 2026 年 3 月的已確認報名：折扣後、未扣退款的金額、報名筆數和席次。",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A2"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|A2|overview|explicit_definitions|CTR-B01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A2.v1"
+    },
+    {
+      "case_id": "dev-A2.en",
+      "family_id": "dev-A2",
+      "question": "For CTR-B01 in March 2026, show confirmed bookings: amount after discounts and before refunds, number of bookings, and seats.",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A2"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|A2|overview|explicit_definitions|CTR-B01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A2.v1"
+    },
+    {
+      "case_id": "dev-A2.ja",
+      "family_id": "dev-A2",
+      "question": "CTR-B01 の 2026 年 3 月の確定済み申込について、割引後・返金差引前の金額、申込件数、席数を見たいです。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A2"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|A2|overview|explicit_definitions|CTR-B01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A2.v1"
+    },
+    {
+      "case_id": "dev-A3.zh-TW",
+      "family_id": "dev-A3",
+      "question": "2026 年 3 月全部中心的已確認報名金額，跟 2 月比起來怎麼樣？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A3",
+          "evals/p3/development-cases-v1.json#E02_compare"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|A3|compare|current=2026-03|baseline=2026-02|bound_orientation",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A3.v1"
+    },
+    {
+      "case_id": "dev-A3.en",
+      "family_id": "dev-A3",
+      "question": "How does the confirmed booking amount across all centers for March 2026 compare against February?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A3",
+          "evals/p3/development-cases-v1.json#E02_compare"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|A3|compare|current=2026-03|baseline=2026-02|bound_orientation",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A3.v1"
+    },
+    {
+      "case_id": "dev-A3.ja",
+      "family_id": "dev-A3",
+      "question": "2026 年 3 月の全センターの確定済み申込金額は、2 月と比べてどうでしたか。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A3",
+          "evals/p3/development-cases-v1.json#E02_compare"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|A3|compare|current=2026-03|baseline=2026-02|bound_orientation",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A3.v1"
+    },
+    {
+      "case_id": "dev-A4.zh-TW",
+      "family_id": "dev-A4",
+      "question": "2026 年 4 月的整體已確認報名金額相較於同年 2 月變化多少？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A4"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|A4|compare|current=2026-04|baseline=2026-02|shared_year_nonadjacent",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A4.v1"
+    },
+    {
+      "case_id": "dev-A4.en",
+      "family_id": "dev-A4",
+      "question": "In 2026, how much did the overall confirmed booking amount change in April compared with February?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A4"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|A4|compare|current=2026-04|baseline=2026-02|shared_year_nonadjacent",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A4.v1"
+    },
+    {
+      "case_id": "dev-A4.ja",
+      "family_id": "dev-A4",
+      "question": "2026 年の 4 月の全体の確定済み申込金額は、同年 2 月に対してどれだけ変わりましたか。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A4"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|A4|compare|current=2026-04|baseline=2026-02|shared_year_nonadjacent",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A4.v1"
+    },
+    {
+      "case_id": "dev-A5.zh-TW",
+      "family_id": "dev-A5",
+      "question": "2026 年 3 月報名金額最高的三個課程是哪些？各多少，合計占整體多少？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A5",
+          "evals/p3/development-cases-v1.json#E03_share_denominator"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|A5|breakdown|top_k=3|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A5.v1"
+    },
+    {
+      "case_id": "dev-A5.en",
+      "family_id": "dev-A5",
+      "question": "Which three courses had the highest booking amounts in March 2026, and what share of the total do they make up together?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A5",
+          "evals/p3/development-cases-v1.json#E03_share_denominator"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|A5|breakdown|top_k=3|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A5.v1"
+    },
+    {
+      "case_id": "dev-A5.ja",
+      "family_id": "dev-A5",
+      "question": "2026 年 3 月に申込金額が最も多かった講座トップ 3 とその金額、合計が全体に占める割合を教えてください。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A5",
+          "evals/p3/development-cases-v1.json#E03_share_denominator"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|A5|breakdown|top_k=3|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A5.v1"
+    },
+    {
+      "case_id": "dev-A6.zh-TW",
+      "family_id": "dev-A6",
+      "question": "3 月（2026）前兩名課程的報名金額合計占全體幾成？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A6",
+          "evals/p3/development-cases-v1.json#E03_share_denominator"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|A6|breakdown|top_k=2|share|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A6.v1"
+    },
+    {
+      "case_id": "dev-A6.en",
+      "family_id": "dev-A6",
+      "question": "In March 2026, what portion of all booking amount came from the top 2 courses?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A6",
+          "evals/p3/development-cases-v1.json#E03_share_denominator"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|A6|breakdown|top_k=2|share|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A6.v1"
+    },
+    {
+      "case_id": "dev-A6.ja",
+      "family_id": "dev-A6",
+      "question": "2026 年 3 月、上位 2 講座の申込金額は全体の何割でしたか。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A6",
+          "evals/p3/development-cases-v1.json#E03_share_denominator"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|A6|breakdown|top_k=2|share|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A6.v1"
+    },
+    {
+      "case_id": "dev-C1.zh-TW",
+      "family_id": "dev-C1",
+      "question": "CTR-B01 在 2026 年 3 月報名的人數有多少？我不確定你們是算席次還是算報名帳戶。",
+      "language": "zh-TW",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#C1",
+          "evals/p3/development-cases-v1.json#C01_count_basis"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|C1|clarify|count_basis|CTR-B01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-C1.v1"
+    },
+    {
+      "case_id": "dev-C1.en",
+      "family_id": "dev-C1",
+      "question": "How many people booked at CTR-B01 in March 2026? I am not sure whether you count seats or booking accounts.",
+      "language": "en",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#C1",
+          "evals/p3/development-cases-v1.json#C01_count_basis"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|C1|clarify|count_basis|CTR-B01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-C1.v1"
+    },
+    {
+      "case_id": "dev-C1.ja",
+      "family_id": "dev-C1",
+      "question": "CTR-B01 で 2026 年 3 月に申し込んだ人数はどれくらいですか。席数で数えるのか申込アカウントで数えるのか分かりません。",
+      "language": "ja",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#C1",
+          "evals/p3/development-cases-v1.json#C01_count_basis"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|C1|clarify|count_basis|CTR-B01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-C1.v1"
+    },
+    {
+      "case_id": "dev-C2.zh-TW",
+      "family_id": "dev-C2",
+      "question": "幫我比一下 2026 年 2 月和 3 月的整體已確認報名金額。",
+      "language": "zh-TW",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#C2",
+          "evals/p3/development-cases-v1.json#C02_comparison_roles"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|C2|clarify|comparison_roles|2026-02,2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-C2.v1"
+    },
+    {
+      "case_id": "dev-C2.en",
+      "family_id": "dev-C2",
+      "question": "Compare the overall confirmed booking amounts of February and March 2026.",
+      "language": "en",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#C2",
+          "evals/p3/development-cases-v1.json#C02_comparison_roles"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|C2|clarify|comparison_roles|2026-02,2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-C2.v1"
+    },
+    {
+      "case_id": "dev-C2.ja",
+      "family_id": "dev-C2",
+      "question": "2026 年 2 月と 3 月の全体の確定済み申込金額を比較してください。",
+      "language": "ja",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#C2",
+          "evals/p3/development-cases-v1.json#C02_comparison_roles"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|C2|clarify|comparison_roles|2026-02,2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-C2.v1"
+    },
+    {
+      "case_id": "dev-C3.zh-TW",
+      "family_id": "dev-C3",
+      "question": "CTR-A01 或 CTR-A02，2026 年 3 月的報名狀況如何？",
+      "language": "zh-TW",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#C3",
+          "evals/p3/development-cases-v1.json#C03_center"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|C3|clarify|center|CTR-A01,CTR-A02|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-C3.v1"
+    },
+    {
+      "case_id": "dev-C3.en",
+      "family_id": "dev-C3",
+      "question": "What did March 2026 bookings look like at CTR-A01 or CTR-A02?",
+      "language": "en",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#C3",
+          "evals/p3/development-cases-v1.json#C03_center"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|C3|clarify|center|CTR-A01,CTR-A02|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-C3.v1"
+    },
+    {
+      "case_id": "dev-C3.ja",
+      "family_id": "dev-C3",
+      "question": "CTR-A01 か CTR-A02 の 2026 年 3 月の申込状況はどうでしたか。",
+      "language": "ja",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#C3",
+          "evals/p3/development-cases-v1.json#C03_center"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|C3|clarify|center|CTR-A01,CTR-A02|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-C3.v1"
+    },
+    {
+      "case_id": "dev-C4-v2.zh-TW",
+      "family_id": "dev-C4-v2",
+      "question": "請提供 CTR-A02 在 2026 年 3 月的報名概況與金額；這裡的金額要用已確認報名金額，還是實際收款金額，我尚未決定。",
+      "language": "zh-TW",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/c4-semantic-revision.md",
+          "evals/dev/dev-cases-v1.json#dev-C4.zh-TW",
+          "evals/p3/development-cases-v1.json#C04_metric_meaning",
+          "https://github.com/cinic0101/grepbit/issues/79#issuecomment-5857639706"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|C4-v2|clarify|metric_meaning|CTR-A02|2026-03|confirmed_booked_amount,cash_received",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-C4.v2"
+    },
+    {
+      "case_id": "dev-C4-v2.en",
+      "family_id": "dev-C4-v2",
+      "question": "Give me a booking overview for CTR-A02 in March 2026 with the amount; I have not specified whether that means confirmed booked amount or cash received.",
+      "language": "en",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/c4-semantic-revision.md",
+          "evals/dev/dev-cases-v1.json#dev-C4.en",
+          "evals/p3/development-cases-v1.json#C04_metric_meaning",
+          "https://github.com/cinic0101/grepbit/issues/79#issuecomment-5857639706"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|C4-v2|clarify|metric_meaning|CTR-A02|2026-03|confirmed_booked_amount,cash_received",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-C4.v2"
+    },
+    {
+      "case_id": "dev-C4-v2.ja",
+      "family_id": "dev-C4-v2",
+      "question": "CTR-A02 の 2026 年 3 月の申込概況と金額を知りたいです。金額は確定済み申込金額と実際の入金額のどちらを意味するか、まだ指定していません。",
+      "language": "ja",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/c4-semantic-revision.md",
+          "evals/dev/dev-cases-v1.json#dev-C4.ja",
+          "evals/p3/development-cases-v1.json#C04_metric_meaning",
+          "https://github.com/cinic0101/grepbit/issues/79#issuecomment-5857639706"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|C4-v2|clarify|metric_meaning|CTR-A02|2026-03|confirmed_booked_amount,cash_received",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-C4.v2"
+    },
+    {
+      "case_id": "dev-D1.zh-TW",
+      "family_id": "dev-D1",
+      "question": "CTR-A01 在 2026 年 3 月賺了多少利潤？",
+      "language": "zh-TW",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D1",
+          "evals/p3/development-cases-v1.json#D01_profit"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|D1|decline|D01|profit",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D1.v1"
+    },
+    {
+      "case_id": "dev-D1.en",
+      "family_id": "dev-D1",
+      "question": "How much profit did CTR-A01 make in March 2026?",
+      "language": "en",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D1",
+          "evals/p3/development-cases-v1.json#D01_profit"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|D1|decline|D01|profit",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D1.v1"
+    },
+    {
+      "case_id": "dev-D1.ja",
+      "family_id": "dev-D1",
+      "question": "CTR-A01 は 2026 年 3 月にいくら利益を出しましたか。",
+      "language": "ja",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D1",
+          "evals/p3/development-cases-v1.json#D01_profit"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|D1|decline|D01|profit",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D1.v1"
+    },
+    {
+      "case_id": "dev-D2.zh-TW",
+      "family_id": "dev-D2",
+      "question": "2026 年 3 月實際入帳的收款金額是多少？",
+      "language": "zh-TW",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D2",
+          "evals/p3/development-cases-v1.json#D02_cash_received"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|D2|decline|D02|cash_received",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D2.v1"
+    },
+    {
+      "case_id": "dev-D2.en",
+      "family_id": "dev-D2",
+      "question": "What was the total cash actually received in March 2026?",
+      "language": "en",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D2",
+          "evals/p3/development-cases-v1.json#D02_cash_received"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|D2|decline|D02|cash_received",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D2.v1"
+    },
+    {
+      "case_id": "dev-D2.ja",
+      "family_id": "dev-D2",
+      "question": "2026 年 3 月に実際に入金された金額はいくらですか。",
+      "language": "ja",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D2",
+          "evals/p3/development-cases-v1.json#D02_cash_received"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|D2|decline|D02|cash_received",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D2.v1"
+    },
+    {
+      "case_id": "dev-D3.zh-TW",
+      "family_id": "dev-D3",
+      "question": "2026 年全年到目前為止的已確認報名金額總計是多少？",
+      "language": "zh-TW",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D3"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D3|decline|D03|annual",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D3.v1"
+    },
+    {
+      "case_id": "dev-D3.en",
+      "family_id": "dev-D3",
+      "question": "What is the year-to-date confirmed booking amount for 2026?",
+      "language": "en",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D3"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D3|decline|D03|annual",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D3.v1"
+    },
+    {
+      "case_id": "dev-D3.ja",
+      "family_id": "dev-D3",
+      "question": "2026 年の年初から今までの確定済み申込金額の合計はいくらですか。",
+      "language": "ja",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D3"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D3|decline|D03|annual",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D3.v1"
+    },
+    {
+      "case_id": "dev-D4.zh-TW",
+      "family_id": "dev-D4",
+      "question": "給我 CTR-A01 2026 年 3 月的報名概況，並且列出哪位講師的評價最高。",
+      "language": "zh-TW",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D4"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D4|decline|D04|overview_plus_instructor_ranking",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D4.v1"
+    },
+    {
+      "case_id": "dev-D4.en",
+      "family_id": "dev-D4",
+      "question": "Show CTR-A01's March 2026 booking overview and also tell me which instructor got the best ratings.",
+      "language": "en",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D4"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D4|decline|D04|overview_plus_instructor_ranking",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D4.v1"
+    },
+    {
+      "case_id": "dev-D4.ja",
+      "family_id": "dev-D4",
+      "question": "CTR-A01 の 2026 年 3 月の申込概況と、あわせて評価が一番高い講師を教えてください。",
+      "language": "ja",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D4"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D4|decline|D04|overview_plus_instructor_ranking",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D4.v1"
+    },
+    {
+      "case_id": "dev-D6.zh-TW",
+      "family_id": "dev-D6",
+      "question": "2026 年 3 月各地區每週的已確認報名金額是多少？",
+      "language": "zh-TW",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D6"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D6|decline|D06|weekly_by_region",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D6.v1"
+    },
+    {
+      "case_id": "dev-D6.en",
+      "family_id": "dev-D6",
+      "question": "What were the confirmed booking amounts per region per week in March 2026?",
+      "language": "en",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D6"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D6|decline|D06|weekly_by_region",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D6.v1"
+    },
+    {
+      "case_id": "dev-D6.ja",
+      "family_id": "dev-D6",
+      "question": "2026 年 3 月の地域別・週別の確定済み申込金額を教えてください。",
+      "language": "ja",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D6"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D6|decline|D06|weekly_by_region",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D6.v1"
+    },
+    {
+      "case_id": "dev-D7.zh-TW",
+      "family_id": "dev-D7",
+      "question": "把 2026 年 3 月全部中心的已確認報名金額換算成美元給我。",
+      "language": "zh-TW",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D7"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D7|decline|D06|currency_conversion",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D7.v1"
+    },
+    {
+      "case_id": "dev-D7.en",
+      "family_id": "dev-D7",
+      "question": "Convert the March 2026 confirmed booking amount across all centers into US dollars.",
+      "language": "en",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D7"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D7|decline|D06|currency_conversion",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D7.v1"
+    },
+    {
+      "case_id": "dev-D7.ja",
+      "family_id": "dev-D7",
+      "question": "2026 年 3 月の全センターの確定済み申込金額を米ドルに換算してください。",
+      "language": "ja",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D7"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D7|decline|D06|currency_conversion",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D7.v1"
+    },
+    {
+      "case_id": "dev-D8.zh-TW",
+      "family_id": "dev-D8",
+      "question": "CTR-B01 2026 年 3 月的報名概況，另外也要實際到場的人次。",
+      "language": "zh-TW",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D8"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D8|decline|D04|overview_plus_attendance_count",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D8.v1"
+    },
+    {
+      "case_id": "dev-D8.en",
+      "family_id": "dev-D8",
+      "question": "I need CTR-B01's March 2026 booking overview plus the number of attendance visits that actually took place.",
+      "language": "en",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D8"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D8|decline|D04|overview_plus_attendance_count",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D8.v1"
+    },
+    {
+      "case_id": "dev-D8.ja",
+      "family_id": "dev-D8",
+      "question": "CTR-B01 の 2026 年 3 月の申込概況に加えて、実際に出席した延べ人数も必要です。",
+      "language": "ja",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D8"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D8|decline|D04|overview_plus_attendance_count",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D8.v1"
+    },
+    {
+      "case_id": "dev-D9.zh-TW",
+      "family_id": "dev-D9",
+      "question": "列出 2026 年 3 月 CTR-A01 每一筆報名的學員姓名和電話。",
+      "language": "zh-TW",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D9"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D9|decline|D06|row_enumeration",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D9.v1"
+    },
+    {
+      "case_id": "dev-D9.en",
+      "family_id": "dev-D9",
+      "question": "List every March 2026 booking at CTR-A01 with the learner's name and phone number.",
+      "language": "en",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D9"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D9|decline|D06|row_enumeration",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D9.v1"
+    },
+    {
+      "case_id": "dev-D9.ja",
+      "family_id": "dev-D9",
+      "question": "2026 年 3 月の CTR-A01 の申込を一件ずつ、受講者の氏名と電話番号付きで一覧にしてください。",
+      "language": "ja",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#D9"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|D9|decline|D06|row_enumeration",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-D9.v1"
+    }
+  ]
+}

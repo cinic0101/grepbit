@@ -114,6 +114,21 @@
       "freeze": null,
       "authoring": "development",
       "note": "Exact exposed projection of A3.en/C2.zh-TW/C2.en from dev-matrix-v1. Same cases/oracles; subset family results cover selected variants only."
+    },
+    {
+      "panel_id": "p3-dev-matrix-compare-first-v2",
+      "tier": "dev",
+      "path": "evals/dev/dev-panel-compare-first-v2.json",
+      "assets": {
+        "panel": "9a69e3d30ff2c72998afedfb0a41766c5c1d79784cfd6964f087b85b1eb37a78",
+        "cases": "0cbb5b04e74328e5089b7026730f46d9b7c6f9c2df27890649b3946d89f2d06e",
+        "oracles": "ce1006a917cddfef1e72b233b0e1a725c1cab87f6111898fda38526ed1392f72"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "Versioned C4 explicit contrast with independent semantic acceptance; 51 unchanged inputs, 3 revised exposed C4 inputs. Report C4 separately; not fresh or an old-C4 model fix."
     }
   ]
 }

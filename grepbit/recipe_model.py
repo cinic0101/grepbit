@@ -22,7 +22,7 @@ from .provider import LLMClient, normalize_response, response_mode, wire_identit
 
 CONTEXT_VERSION = "learningops-recipe-context-v2"
 OUTPUT_CONTRACT = "recipe-request-json-v2"
-INSTRUCTION_VERSION = "recipe-selection-instruction-v5"
+INSTRUCTION_VERSION = "recipe-selection-instruction-v6"
 STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v2"
 STRUCTURED_OUTPUT_SCHEMA_NAME = "grepbit_recipe_request"
 _NativeRequest = OverviewRequest | CompareRequest | BreakdownRequest
@@ -101,19 +101,27 @@ SYSTEM_INSTRUCTION = (
     "Return one JSON object, no prose, markdown, reasoning, confidence, answers, rows, SQL or tasks. "
     'A request has exactly outcome:"request", recipe_id (one of "overview", "compare", "breakdown"), '
     'recipe_version:"0.1" and request (the selected native object). '
-    "First distinguish required outputs from unresolved interpretations. "
-    "If an explicitly required output, scope or meaning is unsupported by the recipe, "
-    "decline the whole request, even if another part is ambiguous; do not turn a required "
-    "unsupported quantity into a choice against a supported one. "
-    "Unresolved alternatives are possible meanings, not a list of required outputs. "
+    'Read the entire question before selecting an action. Collect its requested outputs and '
+    'explicit qualifiers. Outputs requested together or in addition are cumulative '
+    'requirements, not competing interpretations. An explicitly named event or population binds '
+    'a count to that meaning; a generic count noun does not erase its qualifiers. If any '
+    'required output, scope or bound meaning is unsupported by the recipe, decline the whole '
+    'request, even when another part is ambiguous. Do not replace a required unsupported '
+    'measure with a supported measure, or offer those two measures as alternatives. An '
+    'unresolved interpretation is a meaning the question leaves open, not an additional output '
+    'it explicitly requires. '
     'For an unsupported requirement or ambiguity outside the admitted kinds, return exactly '
     '{"outcome":"declined"}. A decline on deferred ambiguity is not proof of necessary refusal. '
     'For one admitted ambiguity return exactly outcome:"clarify" and clarification with kind and choices. '
     "Each choice has a unique local id and typed semantic_value, not a label, recommendation or task. "
     "Use 2-4 distinct mutually exclusive interpretations with the same already-bound scope. "
-    "Choose only the alternatives the question genuinely leaves open. "
-    "When it specifies a contrast, preserve exactly that contrast; do not add other enum values. "
-    "The reviewed lists define allowed values, not a default choice set. "
+    'Derive choices from the entire question before mapping them to allowed enum values. An '
+    'explicit either/or contrast restricts the open interpretations to that contrast, even '
+    'after an earlier generic noun. Represent each explicitly contrasted meaning once and '
+    'include no other meanings: two contrasted meanings require exactly two choices. Do not '
+    'reopen alternatives excluded by the question or expand a contrast to fill the schema '
+    'choice limit. The reviewed enum lists are a vocabulary for representing grounded choices, '
+    'never a menu to offer in full. '
     "count_basis and metric_meaning require a complete explicit Overview scope. "
     "Count choices include booked_seats and reviewed alternative count meanings; amount choices include "
     "confirmed_booked_amount and reviewed alternative amount meanings. Alternatives do not add executable metrics. "
