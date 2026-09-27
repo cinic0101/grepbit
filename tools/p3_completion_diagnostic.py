@@ -533,7 +533,8 @@ def _checkpoint_transition(before: dict, after: dict) -> None:
         if changed or after["client_http_attempts"] != before["client_http_attempts"]:
             _fail()
         if (after["stop_reason"] != before["stop_reason"]
-                and not (before["stop_reason"] == "complete" and after["stop_reason"] == "budget"
+                and not (before["stop_reason"] in ("complete", "anomaly", "timeout_streak", "network_streak")
+                         and after["stop_reason"] == "budget"
                          and after["elapsed_seconds"] >= RUN_SECONDS)):
             _fail()
         return

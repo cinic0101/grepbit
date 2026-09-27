@@ -334,6 +334,32 @@ class CompletionDiagnosticTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result["stop_reason"], "budget")
         self.assertEqual(result["elapsed_seconds"], 391.25)
 
+    async def test_anomaly_publication_overrun_keeps_archive_readable(self):
+        self.prepare()
+        sent = []
+        now = [0.0]
+        calls = 0
+        original = diagnostic._persist
+        def advance_after_anomaly(artifacts, report):
+            nonlocal calls
+            calls += 1
+            original(artifacts, report)
+            if calls == 3:
+                now[0] = 391.25
+        with patch.object(diagnostic, "_persist", side_effect=advance_after_anomaly):
+            result = await diagnostic.run_live(self.database, self.packet, self.authorization,
+                                               accepted_commit=self.commit, env_file=self.root / "unused.env",
+                                               client_factory=self.client_factory(lambda _: httpx.Response(
+                                                   200, json=self.envelope(model="unexpected-model")), sent),
+                                               clock=lambda: now[0])
+        prior = json.loads((self.root / "run/checkpoint-0002.json").read_text())
+        self.assertEqual(len(sent), 1)
+        self.assertEqual(prior["stop_reason"], "anomaly")
+        self.assertEqual(result["stop_reason"], "budget")
+        self.assertEqual(result["elapsed_seconds"], 391.25)
+        self.assertEqual(result["results"], prior["results"])
+        self.assertEqual(diagnostic.read_report(self.root / "run/report.json"), result)
+
     async def test_cancellation_keeps_reserved_possible_attempt(self):
         self.prepare()
         sent = []
