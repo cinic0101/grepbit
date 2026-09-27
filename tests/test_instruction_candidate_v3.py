@@ -30,8 +30,10 @@ class InstructionCandidateV3Tests(unittest.TestCase):
                          {"grepbit/recipe_model.py"})
         self.assertEqual(len(candidate["wire_witnesses"]), len(frozen["wire_witnesses"]))
         for wire, old in zip(candidate["wire_witnesses"], frozen["wire_witnesses"]):
+            self.assertEqual(set(wire), set(old))
             for key in ("label", "question_sha256", "p1_body_sha256", "p1_body_bytes"):
-                self.assertEqual(wire[key], old[key], key)
+                if key in old:
+                    self.assertEqual(wire[key], old[key], key)
             self.assertNotEqual(wire["recipe_body_sha256"], old["recipe_body_sha256"])
             self.assertGreater(wire["recipe_body_bytes"], old["recipe_body_bytes"])
             self.assertLessEqual(wire["recipe_body_bytes"], candidate["limits"]["request"])

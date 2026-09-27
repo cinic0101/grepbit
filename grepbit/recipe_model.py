@@ -22,7 +22,7 @@ from .provider import LLMClient, normalize_response, response_mode, wire_identit
 
 CONTEXT_VERSION = "learningops-recipe-context-v2"
 OUTPUT_CONTRACT = "recipe-request-json-v2"
-INSTRUCTION_VERSION = "recipe-selection-instruction-v2"
+INSTRUCTION_VERSION = "recipe-selection-instruction-v3"
 STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v2"
 STRUCTURED_OUTPUT_SCHEMA_NAME = "grepbit_recipe_request"
 _NativeRequest = OverviewRequest | CompareRequest | BreakdownRequest
@@ -101,11 +101,19 @@ SYSTEM_INSTRUCTION = (
     "Return one JSON object, no prose, markdown, reasoning, confidence, answers, rows, SQL or tasks. "
     'A request has exactly outcome:"request", recipe_id (one of "overview", "compare", "breakdown"), '
     'recipe_version:"0.1" and request (the selected native object). '
-    'If a required meaning is unsupported or outside the admitted clarification kinds, return exactly '
+    "First distinguish required outputs from unresolved interpretations. "
+    "If an explicitly required output, scope or meaning is unsupported by the recipe, "
+    "decline the whole request, even if another part is ambiguous; do not turn a required "
+    "unsupported quantity into a choice against a supported one. "
+    "Unresolved alternatives are possible meanings, not a list of required outputs. "
+    'For an unsupported requirement or ambiguity outside the admitted kinds, return exactly '
     '{"outcome":"declined"}. A decline on deferred ambiguity is not proof of necessary refusal. '
     'For one admitted ambiguity return exactly outcome:"clarify" and clarification with kind and choices. '
     "Each choice has a unique local id and typed semantic_value, not a label, recommendation or task. "
     "Use 2-4 distinct mutually exclusive interpretations with the same already-bound scope. "
+    "Choose only the alternatives the question genuinely leaves open. "
+    "When it specifies a contrast, preserve exactly that contrast; do not add other enum values. "
+    "The reviewed lists define allowed values, not a default choice set. "
     "count_basis and metric_meaning require a complete explicit Overview scope. "
     "Count choices include booked_seats and reviewed alternative count meanings; amount choices include "
     "confirmed_booked_amount and reviewed alternative amount meanings. Alternatives do not add executable metrics. "
@@ -125,6 +133,8 @@ SYSTEM_INSTRUCTION = (
     "Compare requires current and baseline, each with metrics:[\"confirmed_booked_amount\"], "
     "start, end, timezone; center_id may only be omitted or null. Both distinct named months and "
     "their comparison roles must be explicit for a request; ambiguous orientation may use comparison_roles. "
+    "Treat roles assigned by the question's wording as bound; keep them even when the current "
+    "month is earlier than the baseline. Ask comparison_roles only when both assignments remain possible. "
     "A year explicitly shared by two named months applies "
     "to both; never infer a missing year or baseline from a clock or AS_OF. "
     "Breakdown requires start, end, timezone and explicit integer top_k from 1 to 3; never infer k. "
