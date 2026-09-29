@@ -76,7 +76,8 @@ route are restored; v11 archives stay readable. v7's recorded limitations carry
 over. By owner decision, ADR #125 Option A stops the count family. One
 authorized confirmation run on the 24-input control scored 20/24, as v7 did.
 Twenty-three per-input outcomes matched. `dev-BM6.zh-TW` failed differently on
-identical input tokens, so that input's failure mode is not stable. See the
+identical input tokens, so that input's failure mode is not stable. Raw output
+length varied on 4 of 24 inputs. See the
 [v10 restoration](docs/v10-restoration-v12.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a

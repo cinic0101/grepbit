@@ -212,6 +212,17 @@ reproduction.**
   cause is unknown. It may be drift, such as a serving change between runs,
   or nondeterminism in the model or serving; this data cannot tell them apart.
   The gateway policy is operator-attested only.
+- Raw output length also changed on three other inputs, with the same outcome
+  and parsed action. Completion tokens, v7 → v12:
+
+  | Input | v7 | v12 |
+  | --- | --- | --- |
+  | `dev-BM4.en` | 430 | 428 |
+  | `dev-BM4.ja` | 404 | 430 |
+  | `dev-BM7.ja` | 252 | 250 |
+
+  So the output varied on 4 of 24 identical inputs, and the parsed result
+  changed on 1.
 
 Pre-registered reading: **not reproduced**, one input. Per the proposal, this
 is drift or nondeterminism of unknown cause. It is not a v12 defect, and no
@@ -232,6 +243,14 @@ on identical bytes. v8's counted regression, `dev-BM2.en` (correct to
 `false_refusal`), is not contradicted: v12 answered it correctly, as v7 did.
 v9's `dev-BM6.en`/`dev-BM6.ja` changes were likewise one failure to another.
 
+Other v9 changes:
+- Step 1, on the mechanism probe with the v8 probe as baseline, shows the same
+  `dev-BM6.zh-TW` flip in reverse, from an answer to the four-choice
+  clarification.
+- Step 3's regressions are on inputs not on this panel, so this run gives no
+  evidence about them. They are `dev-A4` zh-TW/en and `dev-C1` in all three
+  languages.
+
 v11's step 1 (#124) ran on `p3-dev-mechanism-probe-v1`, with v9 as baseline.
 There, `dev-BM6.zh-TW` changed from the four-choice clarification to an answer
 (`missed_clarification`). That is the same flip seen here on v7's identical
@@ -240,11 +259,19 @@ observation. The typed reading v11 returned for that input, a bound
 `booked_seats` count ([count-cue-policy.md](count-cue-policy.md)), is what the
 model output under v11; whether v11 caused the answer is not established.
 
-This run does not weaken v11's other step-1 deltas:
+This run bears on v11's other step-1 correctness changes as follows:
 - `dev-BM6.en` and `dev-BM6.ja` were not correct on the v7, v8, v9 or v12 runs
-  of this panel. v11's fixes of them are outside the variation seen here.
-- The `dev-MN*` inputs are not on this panel. This run says nothing about
-  v11's `dev-MN1`/`dev-MN3` regressions or its `dev-MN2` fixes.
+  of this panel. `E02_compare.en` was a `false_clarification` on all four. So
+  v11's fixes of these three inputs are outside the variation seen here.
+- These inputs are not on this panel, so this run gives no evidence about their
+  changes:
+  - the `dev-MN*` inputs: v11's `dev-MN1`/`dev-MN3` regressions and its
+    `dev-MN2` fixes;
+  - `dev-MC4.en`, which v11 fixed;
+  - `dev-A3.en`, a v11 regression.
+
+  Because the cause may be drift, a change between runs cannot be ruled out
+  for them.
 
 Failure-mode comparisons on `dev-BM6` are not reliable from single
 observations. The correct/incorrect totals on this panel did reproduce once.
