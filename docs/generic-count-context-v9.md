@@ -173,15 +173,15 @@ input on exposed development data.
   alternatives: seats or booking accounts.
 
   The four-meaning menu is not new here. `dev-C1.zh-TW` and `dev-C1.en`
-  produced it on the frozen candidate, v3 and v5. v6 fixed that, and v7 kept
-  the fix.
+  produced it on the frozen candidate, v3 and v5. The v6 and v7 observations
+  no longer showed it.
 
   On v9 all three variants produced it, including `.ja`, which never had
   before. That is consistent with the new sentence weakening the rule that such
   a question "admits only its stated alternatives", but it is not established.
 
-  Either way, C1's stated-alternative choice set looks fragile under count
-  context changes. Choice sets are also failing on `dev-BM6` and `dev-MN2`.
+  Either way, C1's stated-alternative choice set has not been stable across
+  context candidates. Choice sets are also failing on `dev-BM6` and `dev-MN2`.
 - **A4.** The v9 Compare text is byte-identical to v7, which answered A4
   correctly, as v3, v5 and v6 did. The only context difference is the count
   sentence and the version string. So either v7's Compare role binding is
