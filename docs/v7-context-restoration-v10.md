@@ -14,10 +14,11 @@ v9 ([generic-count checkpoint](generic-count-context-v9.md)) failed its 54/54
 development gate at 49/54, and its bounded sequence stopped. v9 is not an
 accepted improvement, but it remained the registered current candidate.
 
-v7 is the last registered runtime that passed its development gate; v8 and v9
-both stopped at their thresholds. v7's recorded 31B observations are:
+v7's single 54-input development observation was 54/54, the bar v9 later
+failed; v8 and v9 both stopped at their thresholds. v7's recorded 31B
+observations are:
 
-- 54/54 on `p3-dev-matrix-compare-first-v2`, its development gate;
+- 54/54 on `p3-dev-matrix-compare-first-v2`;
 - 27/28 on `p33-formal-v2`, a regression-tier observation;
 - 17/18 on `p3-holdout-a-v2`, an observed regression against the frozen
   candidate's 18/18;
