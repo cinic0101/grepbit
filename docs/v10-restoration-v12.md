@@ -176,6 +176,12 @@ v11. Those are:
 - the `dev-MN2` wrong actions;
 - v11's step-1 regressions.
 
+Note (2026-09-29): this paragraph was written before v12 had a probe run.
+Four more authorized runs followed the confirmation run; see "Noise
+measurement" below. In both of v12's probe runs, `dev-MN1.en`, `dev-MN3.en`
+and `dev-MN2` in all three languages are wrong, so these failures are not
+specific to v8, v9 or v11.
+
 ## Confirmation run (2026-09-29)
 
 **Decision and authorization.** The owner adopted ADR #125 Option A, so the
