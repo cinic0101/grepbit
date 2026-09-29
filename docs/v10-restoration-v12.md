@@ -209,7 +209,9 @@ reproduction.**
   - all 24 question hashes and prompt-token counts equal v7's;
   - the runtime bytes are the same.
 - So on identical input and temperature 0, this input's output changed. The
-  cause, model or serving nondeterminism, cannot be told apart from this data.
+  cause is unknown. It may be drift, such as a serving change between runs,
+  or nondeterminism in the model or serving; this data cannot tell them apart.
+  The gateway policy is operator-attested only.
 
 Pre-registered reading: **not reproduced**, one input. Per the proposal, this
 is drift or nondeterminism of unknown cause. It is not a v12 defect, and no
@@ -229,6 +231,21 @@ v8's `dev-BM6.zh-TW` change against v7 is therefore within the variation seen
 on identical bytes. v8's counted regression, `dev-BM2.en` (correct to
 `false_refusal`), is not contradicted: v12 answered it correctly, as v7 did.
 v9's `dev-BM6.en`/`dev-BM6.ja` changes were likewise one failure to another.
+
+v11's step 1 (#124) ran on `p3-dev-mechanism-probe-v1`, with v9 as baseline.
+There, `dev-BM6.zh-TW` changed from the four-choice clarification to an answer
+(`missed_clarification`). That is the same flip seen here on v7's identical
+bytes, so this one change cannot be attributed to v11 from a single
+observation. The typed reading v11 returned for that input, a bound
+`booked_seats` count ([count-cue-policy.md](count-cue-policy.md)), is what the
+model output under v11; whether v11 caused the answer is not established.
+
+This run does not weaken v11's other step-1 deltas:
+- `dev-BM6.en` and `dev-BM6.ja` were not correct on the v7, v8, v9 or v12 runs
+  of this panel. v11's fixes of them are outside the variation seen here.
+- The `dev-MN*` inputs are not on this panel. This run says nothing about
+  v11's `dev-MN1`/`dev-MN3` regressions or its `dev-MN2` fixes.
+
 Failure-mode comparisons on `dev-BM6` are not reliable from single
 observations. The correct/incorrect totals on this panel did reproduce once.
 This is one observation on exposed development data, not generalization.
