@@ -281,6 +281,30 @@ exercising the unchanged compaction against a frozen copy of the v10 schema,
 compact separators, as `converse_schema` hashes it) must hash to the Bedrock
 pin.
 
+## Frozen source change (owner decision, #120)
+
+`tests/test_recipe_clarification.py` is an accepted source of the frozen
+baseline `20abb5592262c77c98f9cabeaf7cf4854edb6fbe`, pinned in
+`tests/test_p3_exposed.py`. Four of its tests encode the P2 behavior that
+Option C and `b2_absent_is_none` replace:
+- a model-authored `count_basis` clarification succeeds;
+- the default clarification payload is a model-authored `count_basis`;
+- the output schema has exactly five branches, the first four P2-exact.
+
+The owner approved amending the file in chat on 2026-09-29
+([#120 #issuecomment-5887377752](https://github.com/cinic0101/grepbit/issues/120#issuecomment-5887377752)):
+- `count_basis` is exercised through a policy-authored contrast cue, and a
+  model-authored `count_basis` is asserted to fail with `clarification_shape`;
+- the default payload becomes `metric_meaning`;
+- the schema test strips `overview_count: "none"` from the first four
+  branches, which must still hash to the P2 output contract and
+  response-format identities, and expects eight branches.
+
+`tests/test_p3_exposed.py` pins the new hash. It keeps the baseline hash
+`42b0ce5c…` as superseded ancestry, checked against the Git snapshot at
+`20abb55`, and cites the decision. The frozen evaluator files and P3 assets
+stay byte-identical.
+
 ## Semantic acceptance and readings
 
 The owner designated a fresh-context semantic reviewer (#120). Its steps:
@@ -351,6 +375,9 @@ It checks:
   - the caps are 4,096, 40,960 and 131,072 bytes, both in the gateway and in
     the evaluation settings;
   - a maximal 4,096-byte question is sent within the cap.
+- **Frozen source:**
+  - the amended `tests/test_recipe_clarification.py` matches its new pin;
+  - its superseded baseline hash equals the file at `20abb55`.
 - **Identity:**
   - v11 is registered and current;
   - the v10 registry entry is byte-identical.
