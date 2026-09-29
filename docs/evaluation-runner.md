@@ -13,7 +13,8 @@ inputs are registry entries:
 | `--candidate <id>` | `evals/candidates/` ([candidate registry](candidate-registry.md)) | the live runtime must `check()` as this id |
 | `--panel <id>` | `evals/panels/index.json` | path to a `p3-panel-v1` panel, tier (`dev`, `regression`, `holdout`), pinned asset digests, allocation policy or null, freeze reference for holdouts, authoring (`development`, `historical`, `independent`) |
 | `--route <id>` | `evals/routes/index.json` | provider (`litellm` or `bedrock_converse`), model alias or inference profile, region, call timeout, transport security |
-| `--baseline <report.json>` (optional) | a prior report of the same panel, read through its own reader (`evaluation-report-v1` or the P3.5 formal reader) | six-class comparison in the summary |
+| `--baseline <report.json>` (optional) | a prior report of the same panel, read through its own reader (`evaluation-report-v1`, `evaluation-report-v2` or the P3.5 formal reader) | six-class comparison in the summary |
+| `--repetition <N>` (optional, `--prepare` only) | integer 1..99, default 1 | a separately authorized repeated observation of the same bytes; the run id gains `--r<N>` |
 | `--owner-authorization-reference` | any issue comment URL | recorded on the envelope, not interpreted |
 
 `evals/runs/index.jsonl` is the append-only run index: one line per recorded
@@ -53,6 +54,19 @@ decides the client: LiteLLM default 31B, LiteLLM typed 12B candidate, or the
 Bedrock Converse client for the registered profile and region, all admitted
 before any send. `--report` reads an archive back offline. `--record` appends
 the run to the index.
+
+Since evaluation v2 ([replayable observations](replayable-observations.md)),
+packets, manifests and reports are `-v2` and persist the validated typed
+action per input; v1 archives still read back and serve as baselines but no
+longer run live. `--replay --report-path <v2 report> --db <db> --output
+<new file>` feeds the recorded actions through the current kernel and grader
+with zero model calls and refuses (`manifest_drift` with a closed
+`replay_refusal`) when the model-facing bytes, panel assets, inputs or
+database differ. `--aggregate --panel <id> --route <id> --candidate <id>`
+reads every indexed run of that panel and route whose candidate has the same
+`candidate_sha256` and classifies each input as `stable_correct`,
+`stable_wrong`, `flaky` or `insufficient`. Neither mode is a live run, a
+claim upgrade or promotion.
 
 ## Historical tools
 
