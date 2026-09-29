@@ -87,12 +87,18 @@ credential is read.
 ```
 
 1. The report is read through `read_report`. Only `evaluation-report-v2` is
-   replayable. Anything else stops with `replay_not_comparable`.
+   replayable. Anything else is refused (reason `report_version`).
 2. Comparability: the current `candidate_registry.check()` must pass. Its
    registered `candidate_sha256` (semantic surfaces and wire witnesses, that
-   is, the model-facing bytes) must equal the packet's. The registry panel
-   assets, the per-input question digests and the database digest must equal
-   the packet's. Any difference is `replay_not_comparable`.
+   is, the model-facing bytes) must equal the packet's (reason
+   `candidate_bytes`). The registry panel assets (`panel_assets`), the
+   per-input metadata and question digests (`inputs`) and the database
+   digest (`database`) must equal the packet's.
+
+   A refusal uses the existing safe code `manifest_drift` and carries one
+   closed reason from the list above. The CLI prints it as
+   `replay_refusal`. The safe-code vocabularies live in protected files, so
+   no new code is added. A refusal happens before the output is written.
 3. A row is replayable when it completed, has a `validated_action`, has no
    runner error, and its runtime evidence shows `transport` passed. For each
    replayable row, a mock transport returns exactly that action. The mock

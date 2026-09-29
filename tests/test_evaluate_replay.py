@@ -152,7 +152,7 @@ class ReplayableObservationTests(EvaluateHarness):
         with self.assertRaises(p3_assets.P3Error) as refused:
             await runner.replay(output / "report.json", self.database, self.root / "replay-v1.json",
                                 panels_path=self.panels)
-        self.assertEqual(refused.exception.code, "replay_not_comparable")
+        self.assertEqual((refused.exception.code, refused.exception.reason), ("manifest_drift", "report_version"))
         self.assertFalse((self.root / "replay-v1.json").exists())
         # The rebuild at validation is v2, so the archived v1 packet drifts before any credential.
         self.sent = []
@@ -216,8 +216,18 @@ class ReplayableObservationTests(EvaluateHarness):
             with self.assertRaises(p3_assets.P3Error) as refused:
                 await runner.replay(output / "report.json", self.database, self.root / "replay-other.json",
                                     panels_path=self.panels)
-        self.assertEqual(refused.exception.code, "replay_not_comparable")
+        self.assertEqual((refused.exception.code, refused.exception.reason), ("manifest_drift", "candidate_bytes"))
         self.assertFalse((self.root / "replay-other.json").exists())
+        # The CLI names the closed refusal reason next to the existing safe code.
+        stderr = io.StringIO()
+        with patch.object(registry, "check", return_value=checked), \
+                patch.object(registry, "current", return_value=other), \
+                patch("sys.stdout"), patch("sys.stderr", stderr):
+            code = runner.main(["--replay", "--report-path", str(output / "report.json"), "--db", str(self.database),
+                                "--output", str(self.root / "replay-cli.json")])
+        self.assertEqual(code, 2)
+        self.assertEqual(json.loads(stderr.getvalue()), {"status": "incomplete", "error_code": "manifest_drift",
+                                                         "replay_refusal": "candidate_bytes"})
 
     # ----------------------------------------------------------------- aggregate
     async def test_aggregate_includes_every_same_bytes_run_of_the_panel_and_route_and_classifies_inputs(self):
