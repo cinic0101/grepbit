@@ -41,7 +41,11 @@ The registered v9 candidate restores v7's context and adds one sentence: a
 generic people or count noun alone, with no stated basis, leaves the count
 meanings unresolved rather than requiring a decline. It withdraws the failed v8
 Compare text and does not target E02, which is recorded as a known Gemma 31B
-limitation. v9 is not yet live-observed. See the
+limitation. v9 fixed the English generic-count decline on the probe (12/22,
+up from 8/22 on v8) and matched v7 on the controls (20/24). It then failed the
+54/54 dev gate at 49/54: C1 lost its two stated count alternatives, and A4
+falsely clarified comparison roles. The sequence stopped before the formal and
+holdout runs. v9 is not an accepted improvement. See the
 [generic-count checkpoint](docs/generic-count-context-v9.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
