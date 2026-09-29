@@ -1,5 +1,9 @@
 # Bound count meanings candidate (#79)
 
+Subsequent [regression and denominator audit](v7-regression-audit.md): 27/28
+frozen regression and 17/18 holdout A regression; v7 has not converged. The
+historical dev observation below remains valid within its stated panel scope.
+
 ## Authorized scope and evidence
 
 Owner decision given in chat on 2026-09-29 Asia/Taipei: "授權，依此方案完成並測試一次"
