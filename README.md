@@ -22,9 +22,11 @@ regression. Its 54/54 dev result covers 51 unchanged cases plus three explicit
 C4 variants; the three original broad-revenue C4 variants remain unresolved and
 unmeasured on v7. See the [evidence and denominator audit](docs/v7-regression-audit.md).
 
-The new 24-input control baseline scored 20/24 on v7. The registered v8
-candidate narrows its repair to Compare context; count controls did not
-reproduce HA02's false decline. v8 is not yet live-observed. See the
+The 24-input control baseline scored 20/24 on v7. The registered v8
+Compare-only context candidate scored 19/24: zero fixed failures and one new
+regression. Its required control gate failed; the conditional 54/28/18 runs
+were not executed. Count controls did not reproduce HA02's false decline.
+v8 remains a failed development candidate, not an accepted improvement. See the
 [bounded comparison checkpoint](docs/bound-compare-context-v8.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
