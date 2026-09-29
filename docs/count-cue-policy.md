@@ -240,6 +240,26 @@ The historical statement of the old cap in
 `docs/clarification-action.md` is kept, with a dated amendment note. Baseline
 comparison checks only case order, so v7 and v10 baselines stay comparable.
 
+**Correction (2026-09-29, defect #122, owner decision A recorded there).** The
+last sentence above was wrong. Archive readers validate the whole archived
+packet, including its `settings`, not only case order. After the v11 merge
+(`6050dc0`), every archive prepared before it failed read-back as
+`invalid_manifest`, because it records `max_request_bytes` 32,768. That
+included all five baselines that grant #79 names. The fix records the cap per
+candidate:
+- `tools/p3_eval.settings(n, max_request_bytes=40960)` keeps 40,960 as the
+  current default. The known caps are exactly 32,768 and 40,960; any other
+  value is `invalid_manifest`.
+- `tools/evaluate.py` prepares a packet at the candidate's registered
+  `limits.request`: 32,768 for v7–v10 and 40,960 for v11. Archive read-back
+  stays registry-free and accepts an exact settings match at a known cap.
+- The `p3_eval` manifest reader and the `p3_admission` freeze validator accept
+  an exact match at the cap the archive recorded, if that cap is known.
+- The six `tools/history/*` readers validate at the historical 32,768. Every
+  archive they read predates v11; they are not the entry for new runs.
+
+The gateway cap, the v11 runtime, schema and ruler are unchanged.
+
 ## Compatibility (owner decision, #120)
 
 The owner decided both points in chat on 2026-09-29
