@@ -20,7 +20,7 @@ if str(ROOT) not in sys.path:
 
 import httpx
 
-from grepbit.gateway import GatewayClient, GatewayConfig, ModelError
+from grepbit.gateway import MAX_REQUEST_BYTES, GatewayClient, GatewayConfig, ModelError
 from grepbit.model import canonical_json, strict_json
 from grepbit.recipe_model import RecipeInterpretation, interpret_recipe_and_execute
 from tools import p3_assets, p3_expectations, p3_formal_policy, p3_grading, p3_scoring, recipe_smoke, smoke
@@ -33,7 +33,7 @@ POLICY_MANIFEST_VERSION = "p3-manifest-v2"
 POLICY_REPORT_VERSION = "p3-report-v2"
 SCRIPT_VERSION = "p3-fake-responses-v1"
 DEFAULT_PANEL = ROOT / "evals/p3/development-panel-v1.json"
-DEFAULT_RESPONSES = ROOT / "evals/p3/development-cued-responses-v1.json"
+DEFAULT_RESPONSES = ROOT / "evals/p3/development-responses-v1.json"
 MAX_REPORT_BYTES = 16 * 1024 * 1024
 NETWORK_CODES = frozenset({"transport_error", "gateway_error", "rate_limited"})
 _INTERNAL_ERRORS = recipe_smoke._INTERNAL_ERRORS
@@ -50,10 +50,10 @@ _MANIFEST_FIELDS = {
     "oracles", "upstream_inference_attempts",
 }
 _ATTEMPT_STATES = {"not_started", "not_returned", "matched", "missing", "invalid", "mismatch"}
-# Complete-request caps a manifest may record (#122): 32,768 before v11, 40,960 from v11 (#120 decision A).
+# Complete-request caps a manifest may record (#122): 32,768 except v11's 40,960 (#120 decision A, reversed
+# for v12 on #79). New manifests default to the gateway's current MAX_REQUEST_BYTES.
 HISTORICAL_MAX_REQUEST_BYTES = 32768
-MAX_REQUEST_BYTES = 40960
-REQUEST_CAPS = (HISTORICAL_MAX_REQUEST_BYTES, MAX_REQUEST_BYTES)
+REQUEST_CAPS = (HISTORICAL_MAX_REQUEST_BYTES, 40960)
 
 
 def settings(input_count: int, max_request_bytes: int = MAX_REQUEST_BYTES) -> dict:

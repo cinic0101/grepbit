@@ -157,6 +157,11 @@ that every combination fits the total cap; it is not silently raised.
 > output-token and call limits above are unchanged. The text above records the
 > cap at the time of this design.
 
+> **Amended again 2026-09-29.** By owner decision on #79
+> (#issuecomment-5891175175), candidate `p3-v10-restoration-v12` returns the
+> complete-request cap to 32,768 bytes (`docs/v10-restoration-v12.md`). v11
+> archives prepared at 40,960 bytes still read back.
+
 **P1:** source/protocol untouched. Actual before/after request bytes match:
 2,902 bytes, SHA-256
 `bd657d31b50a6cc19bdad954b0ad30f6772a05b0aba36ade880d860f7629e53a`.

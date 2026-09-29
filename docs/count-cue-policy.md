@@ -9,6 +9,13 @@ The standing grant for measurement is
 [#79 #issuecomment-5886058844](https://github.com/cinic0101/grepbit/issues/79#issuecomment-5886058844).
 This is the third count-family fix, and the owner approved it explicitly.
 
+> **Superseded 2026-09-29.** v11 failed step 1 of its sequence (#124). By owner
+> decision on #79 (#issuecomment-5891175175), candidate
+> `p3-v10-restoration-v12` restores v10's runtime, the frozen test, the
+> 32,768-byte cap and the Bedrock route ([v10 restoration](v10-restoration-v12.md)).
+> This document records v11 as designed and observed; statements below about
+> the current runtime, cap or route describe v11.
+
 ## Why
 
 Up to v10, the model authors every count decision directly as its action: the

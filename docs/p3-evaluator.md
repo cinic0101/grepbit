@@ -363,6 +363,11 @@ candidate cannot manufacture that acceptance.
 > `tests/test_p3_exposed.py` keeps its `20abb559` hash as superseded ancestry.
 > The frozen grading, scoring, expectation and asset sources are unchanged.
 
+> **Amended again 2026-09-29.** By owner decision on #79
+> (#issuecomment-5891175175), candidate `p3-v10-restoration-v12` restores
+> `tests/test_recipe_clarification.py` to its accepted frozen bytes and
+> `tests/test_p3_exposed.py` to its pin of them (`docs/v10-restoration-v12.md`).
+
 Examples below are future separately authorized owner-side operations, not
 permission to execute them now. Authoring/review is owner-declared complete,
 but exact sanitized fresh identity pins and an actual formal freeze are absent:

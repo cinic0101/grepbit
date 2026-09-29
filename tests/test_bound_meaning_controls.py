@@ -11,8 +11,7 @@ from tools import evaluate, fixture, p3_assets, p3_eval
 ROOT = p3_eval.ROOT
 PANEL_ID = "p3-dev-bound-meaning-v1"
 PANEL = ROOT / "evals/dev/bound-meaning-panel-v1.json"
-# v11 runs count cases from cued actions (docs/count-cue-policy.md).
-RESPONSES = ROOT / "evals/dev/bound-meaning-cued-responses-v1.json"
+RESPONSES = ROOT / "evals/dev/bound-meaning-responses-v1.json"
 
 
 class BoundMeaningControlsTests(unittest.TestCase):
