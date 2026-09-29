@@ -215,6 +215,31 @@ version, grader and scorer are unchanged.
   - cases, oracles, panels, gold, grader and scorer;
   - the P1/P2 paths.
 
+## Request size (owner decision A, #120)
+
+v11 does not fit within the complete-request cap of 32,768 bytes.
+- **v10:** 31,808 bytes with a maximal 4,096-byte question, leaving about
+  960 bytes of headroom.
+- **v11:** 36,888 bytes with a maximal question. Even a 73-byte question
+  exceeds 32,768 bytes.
+- **Why v11 is larger:**
+  - the three cue branches each carry the full Overview scope shape;
+  - the output schema is sent twice: once in the prompt context and once as
+    `response_format`.
+
+The owner chose in chat on 2026-09-29
+([#120 #issuecomment-5886754433](https://github.com/cinic0101/grepbit/issues/120#issuecomment-5886754433))
+to raise the complete-request cap:
+- `grepbit.gateway.MAX_REQUEST_BYTES` becomes 40,960 for every path.
+- The `tools/p3_eval.settings()` manifest value changes with it.
+- The question cap (4,096 bytes) and response cap (131,072 bytes) are
+  unchanged.
+- The model-visible prompt stays exactly as specified above.
+
+The historical statement of the old cap in
+`docs/clarification-action.md` is kept, with a dated amendment note. Baseline
+comparison checks only case order, so v7 and v10 baselines stay comparable.
+
 ## Compatibility (owner decision, #120)
 
 The owner decided both points in chat on 2026-09-29
@@ -322,6 +347,10 @@ It checks:
   - every cued file is graded correct end-to-end through the fake transport;
   - a Bedrock client fails closed on the v11 schema before transport;
   - the frozen v10 schema fixture hashes to the Bedrock pin.
+- **Request size:**
+  - the caps are 4,096, 40,960 and 131,072 bytes, both in the gateway and in
+    the evaluation settings;
+  - a maximal 4,096-byte question is sent within the cap.
 - **Identity:**
   - v11 is registered and current;
   - the v10 registry entry is byte-identical.

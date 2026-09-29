@@ -16,7 +16,7 @@ from unittest.mock import patch
 
 import httpx
 
-from grepbit import bedrock, model as protocol, provider, recipe_model
+from grepbit import bedrock, gateway, model as protocol, provider, recipe_model
 from grepbit.clarification import COUNT_BASES
 from grepbit.gateway import GatewayClient, GatewayConfig, ModelError
 from tools import candidate_registry as registry, fixture, p3_assets, p3_eval, p3_live_evidence as live
@@ -298,6 +298,17 @@ class CountCueRuntimeRulers(_Offline, unittest.IsolatedAsyncioTestCase):
         for reason, reading, data, question in cases:
             with self.subTest(reason=reason, data=data):
                 self.assert_rejected(await self.invoke(data, question=question), reason, reading)
+
+    async def test_request_cap_admits_a_maximal_question(self):
+        """Owner decision A (#120 #issuecomment-5886754433): only the complete-request cap is raised."""
+        self.assertEqual((gateway.MAX_INPUT_BYTES, gateway.MAX_REQUEST_BYTES, gateway.MAX_RESPONSE_BYTES),
+                         (4096, 40960, 131072))
+        settings = p3_eval.settings(1)
+        self.assertEqual((settings["max_input_bytes"], settings["max_request_bytes"], settings["max_response_bytes"]),
+                         (4096, 40960, 131072))
+        result = await self.invoke({"overview_count": "none", "outcome": "declined"}, question="x" * 4096)
+        self.assertLessEqual(len(self.sent[0].content), gateway.MAX_REQUEST_BYTES)
+        self.assertEqual(result.error.code, "model_declined")
 
     async def test_schema_order_is_published_and_on_the_wire(self):
         await self.invoke({"overview_count": "none", "outcome": "declined"})
