@@ -416,6 +416,41 @@ order, stopping at the first failed gate:
 A failed gate falls back to Option A (v10). No rerun, and no fourth
 count-family fix.
 
+## Result: step 1 failed, sequence stopped (2026-09-29)
+
+Step 1 ran from `dev` `43bf6d3`, after the #122 archive read-back fix (#123)
+and before any other step. Run
+`p3-dev-mechanism-probe-v1--litellm-gemma-4-31b--p3-count-cue-policy-v11--277108e76945`,
+report `5e51cd65…965d5d57`, recorded in `evals/runs/index.jsonl`; details are
+in #79 #issuecomment-5890680433.
+
+Execution was clean: 22/22 inputs, 22 client attempts, all HTTP 200 from
+`gemma-4-31b`, no operational error, 135.2 s. Overall 12/22 inputs (v9
+baseline 12/22), 8/14 families. Against v9: 7 fixed, **7 new regressions**.
+
+**The gate failed: 5/12 in the count group, not 12/12.**
+- `dev-BM6` en/ja and `dev-MN2` ×3 are now correct (`generic`, rule
+  `generic_booking`, three choices).
+- `dev-MN1` ×3 and `dev-MN3` ×3 regressed. Each got the three-choice booking
+  set (rule `generic_booking`) instead of all four meanings. The model set
+  `event = booking` in all three languages, though the questions ("…overview …
+  including the headcount", "What was the headcount…") contain no booking
+  wording. The kernel applied the table as reviewed. The evidence is
+  consistent with the Overview context's booking framing leaking into the
+  per-question `event` cue. That is not established causally.
+- `dev-BM6.zh-TW` was read as a bound `booked_seats` count and answered, a
+  missed clarification.
+
+On the ungated diagnostic Compare inputs, which the model still authors:
+- `E02_compare.en` and `dev-MC4.en` became complete correct;
+- `dev-A3.en` became a false `comparison_roles` clarification.
+
+This is exposed development data at temperature 0, one observation per input.
+
+Per the grant, the sequence stopped: no rerun and no fourth count-family fix.
+Steps 2–5 did not run, and 22 of 146 calls were used. The fallback to v10 is
+the owner's decision. v11 is not an accepted improvement.
+
 ## Limits and risks
 
 - **Cue errors still exist.** A wrong reading still gives a confident wrong
