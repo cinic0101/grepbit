@@ -1,6 +1,6 @@
 {
   "registry_version": "candidate-registry-v1",
-  "current": "p3-31b-instruction-v6",
+  "current": "p3-31b-count-context-v7",
   "entries": [
     {
       "candidate_id": "p33-frozen-20abb559",
@@ -31,6 +31,12 @@
       "path": "p3-31b-instruction-v6.json",
       "sha256": "362248a0e2ae0dc3f4f98f271b0db3e764c94b3620250b0b45aed429fce6d840",
       "ancestor": "p3-31b-instruction-v5"
+    },
+    {
+      "candidate_id": "p3-31b-count-context-v7",
+      "path": "p3-31b-count-context-v7.json",
+      "sha256": "ca7d033978af81ea573970beab4dbacfc6e740642d9c622e2a66d50b9a65bfb1",
+      "ancestor": "p3-31b-instruction-v6"
     }
   ]
 }
