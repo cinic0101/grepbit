@@ -552,6 +552,12 @@ stage enums and error codes, existing grading layers/outcome/checked-wrong,
 pack-status enum, semantic-signature hash and known missing-slot identifiers.
 No raw completion/reasoning, proposal/request, clarification content, presentation,
 facts/rows/SQL, arbitrary provider text, headers, keys or endpoint is persisted.
+
+Note (2026-09-29, #79): this boundary and the phase-specific statements below
+describe the P3 formal and phase archives. Evaluation v2 in `tools/evaluate.py`
+additionally persists the validated typed action per input for zero-call
+offline replay; see [replayable observations](replayable-observations.md).
+Raw completion, reasoning and presentation text remain unpersisted there.
 Offline archive inspection needs neither current sources nor credentials:
 
 ```bash

@@ -15,22 +15,27 @@ here is promotion. Preparation, binding, readback and recording are offline;
 from __future__ import annotations
 
 import asyncio
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import re
 import stat
 import sys
 import time
 
+import httpx
+
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from grepbit import model
+from grepbit import model, recipe_model
 from grepbit.bedrock import BedrockClient, BedrockConfig
 from grepbit.clarification import KINDS, MAX_CHOICES
+from grepbit.contracts import KernelError
 from grepbit.gateway import GEMMA_12B, MODEL, GatewayClient, GatewayConfig
 from grepbit.provider import client_from_env
 from tools import candidate_registry as registry, p3_admission as admission, p3_assets as assets
@@ -41,17 +46,33 @@ from tools import p3_live_evidence as live, p3_scoring as scoring
 from tools import recipe_smoke, smoke
 
 REGISTRY_VERSION = "evaluation-registries-v1"
-PACKET_VERSION = "evaluation-packet-v1"
+PACKET_V1 = "evaluation-packet-v1"
+PACKET_V2 = "evaluation-packet-v2"
+# The version new packets are prepared at; archives keep their own version.
+PACKET_VERSION = PACKET_V2
 AUTHORIZATION_VERSION = "evaluation-authorization-v1"
-MANIFEST_VERSION = "evaluation-manifest-v1"
-REPORT_VERSION = "evaluation-report-v1"
+MANIFEST_VERSIONS = {PACKET_V1: "evaluation-manifest-v1", PACKET_V2: "evaluation-manifest-v2"}
+REPORT_VERSIONS = {PACKET_V1: "evaluation-report-v1", PACKET_V2: "evaluation-report-v2"}
+MANIFEST_VERSION = MANIFEST_VERSIONS[PACKET_VERSION]
+REPORT_VERSION = REPORT_VERSIONS[PACKET_VERSION]
+REPLAY_VERSION = "evaluation-replay-v1"
+AGGREGATE_VERSION = "evaluation-aggregate-v1"
 STOP_VERSION = "evaluation-stops-v1"
 RUN_RECORD_VERSION = "evaluation-run-record-v1"
 PURPOSE = "one_tiered_evaluation_run_never_promotion"
 TIERS = ("dev", "regression", "holdout")
 CLAIMS = ("development_observation", "observed_regression", "fresh_holdout_observation")
 PROVIDERS = ("litellm", "bedrock_converse")
-OBSERVATION_FIELDS = ("clarification_kind", "clarification_choice_count")
+OBSERVATIONS = {PACKET_V1: ("clarification_kind", "clarification_choice_count"),
+                PACKET_V2: ("clarification_kind", "clarification_choice_count", "validated_action")}
+OBSERVATION_FIELDS = OBSERVATIONS[PACKET_VERSION]
+MAX_REPETITION = 99
+MAX_ACTION_BYTES = 16384
+# Archived action vocabulary is pinned here, not taken from the runtime, so old archives keep reading.
+_ACTION_RECIPES = ("overview", "compare", "breakdown")
+_CHOICE_ID = re.compile(r"[A-Za-z][A-Za-z0-9_-]{0,31}")
+_ACTION_DEPTH = 10
+_ACTION_STRING = 256
 # The owner's recorded grants attest retries, fallback and cache disabled on every route.
 ROUTE_POLICY = {"retries": "disabled", "fallback": "disabled", "cache": "disabled"}
 PANELS = ROOT / "evals/panels/index.json"
@@ -72,13 +93,14 @@ _ROUTE_FIELDS = {"route_id", "provider", "model", "region", "call_timeout_second
 _RUN_FIELDS = {"version", "run_id", "recorded_at", "candidate_id", "panel_id", "tier", "route_id", "claim",
                "report_sha256", "slot", "accepted_commit", "grant", "status", "inputs", "correct",
                "families", "families_correct", "outcomes"}
-_PACKET_FIELDS = {
+_PACKET_FIELDS_V1 = {
     "version", "state", "purpose", "tier", "claim", "evidence_class", "promotion_eligible", "run_id",
     "accepted_commit", "candidate", "panel", "route", "baseline", "observation_fields", "source_identity",
     "database_sha256", "inputs", "order", "run_index_sha256", "settings", "settings_sha256", "stop_policy",
     "stop_policy_sha256", "gateway_policy", "transport_security", "data_boundary",
     "upstream_inference_attempts", "command_template",
 }
+_PACKET_FIELDS = {PACKET_V1: _PACKET_FIELDS_V1, PACKET_V2: _PACKET_FIELDS_V1 | {"repetition"}}
 
 
 # --------------------------------------------------------------------------- registries
@@ -300,11 +322,18 @@ def stop_policy() -> dict:
             "replay": "No resume, retry, repair, fallback or automatic second run."}
 
 
-def data_boundary() -> dict:
-    return {"source": "synthetic_learningops_only", "wire": "individual_question_and_unchanged_runtime_only",
-            "evaluator_metadata_on_wire": False, "raw_completion_or_reasoning_persisted": False,
-            "observations": "closed clarification kind and choice count per clarify action; no text",
-            "quality_claim": "tier_and_index_derived_never_promotion"}
+def data_boundary(version: str) -> dict:
+    value = {"source": "synthetic_learningops_only", "wire": "individual_question_and_unchanged_runtime_only",
+             "evaluator_metadata_on_wire": False, "raw_completion_or_reasoning_persisted": False,
+             "observations": "closed clarification kind and choice count per clarify action; no text",
+             "quality_claim": "tier_and_index_derived_never_promotion"}
+    if version == PACKET_V2:
+        value.update(validated_action_persisted=True, observations=(
+            "closed clarification kind and choice count per clarify action; the runtime-validated typed "
+            "action as closed canonical JSON; no raw completion, reasoning or presentation text"))
+    elif version != PACKET_V1:
+        raise assets.P3Error("invalid_manifest")
+    return value
 
 
 def command_template(accepted_commit: str) -> list[str]:
@@ -316,20 +345,33 @@ def command_template(accepted_commit: str) -> list[str]:
             "--gateway-cache", ROUTE_POLICY["cache"], "--output-dir", "<BOUND_RUN_SLOT>"]
 
 
-def _baseline_projection(path: Path) -> dict:
-    """Per-input correctness of a prior report of the same panel; read through its own reader."""
+def _read_archived(path: Path) -> dict:
+    """A recorded report read through its own reader: evaluation v1/v2 or the P3.5 formal reader."""
     raw = evaluator._document(path, evaluator.MAX_REPORT_BYTES, "invalid_asset")
     version = raw.get("report_version")
-    report = read_report(path) if version == REPORT_VERSION else formal.read_report(path) if version == formal.REPORT_VERSION else None
-    if report is None or report["status"] != "complete":
+    if version in REPORT_VERSIONS.values():
+        return read_report(path)
+    if version == formal.REPORT_VERSION:
+        return formal.read_report(path)
+    raise assets.P3Error("invalid_asset")
+
+
+def _baseline_projection(path: Path) -> dict:
+    """Per-input correctness of a prior report of the same panel; read through its own reader."""
+    report = _read_archived(path)
+    if report["status"] != "complete":
         raise assets.P3Error("invalid_asset")
     rows = [{key: result[key] for key in ("case_id", "family_id", "outcome", "actual_action", "checked_wrong")}
             | {"correct": score["correct"]}
             for result, score in zip(report["results"], report["summary"]["per_input"])]
     families = {key: value["family_all_variants_correct"] for key, value in report["summary"]["per_family"].items()}
-    return {"reference": path.absolute().relative_to(ROOT).as_posix() if path.absolute().is_relative_to(ROOT) else str(path),
-            "sha256": _report_digest(path), "report_version": version,
+    return {"reference": _reference(path), "sha256": _report_digest(path), "report_version": report["report_version"],
             "inputs": rows, "family_correct": families}
+
+
+def _unassessed(result: dict) -> bool:
+    return (result["status"] != "completed" or result["outcome"] in ("operational_failure", "not_run")
+            or result.get("operational_error") is not None or result.get("runner_error_code") is not None)
 
 
 def _comparison(baseline: dict, results: list[dict], scored: dict) -> dict:
@@ -337,8 +379,7 @@ def _comparison(baseline: dict, results: list[dict], scored: dict) -> dict:
     if [row["case_id"] for row in baseline["inputs"]] != [row["case_id"] for row in results]:
         raise assets.P3Error("invalid_scoring")
     for old, result, current in zip(baseline["inputs"], results, scored["per_input"]):
-        unassessed = (result["status"] != "completed" or result["outcome"] in ("operational_failure", "not_run")
-                      or result.get("operational_error") is not None or result.get("runner_error_code") is not None)
+        unassessed = _unassessed(result)
         if unassessed:
             category = "UNASSESSED_OPERATIONAL"
         elif old["correct"] and current["correct"]:
@@ -381,15 +422,26 @@ def _observations(results: list[dict]) -> dict:
     return {"clarify_actions": sum(kinds.values()), "kinds": kinds, "false_clarification_kinds": false_kinds}
 
 
-def _run_id(candidate_id: str, panel_id: str, route_id: str, source_sha: str) -> str:
-    return f"{panel_id}--{route_id}--{candidate_id}--{source_sha[:12]}"
+def _run_id(candidate_id: str, panel_id: str, route_id: str, source_sha: str, repetition: int | None = None) -> str:
+    base = f"{panel_id}--{route_id}--{candidate_id}--{source_sha[:12]}"
+    return base if repetition is None else f"{base}--r{repetition}"
+
+
+def _repetition(value: object) -> int:
+    if type(value) is not int or not 1 <= value <= MAX_REPETITION:
+        raise assets.P3Error("invalid_manifest")
+    return value
 
 
 def _packet_contract(packet: dict) -> None:
     """Archived structural validation; never consults registries, credentials or the checkout."""
-    assets.object_fields(packet, _PACKET_FIELDS)
+    version = packet.get("version") if isinstance(packet, dict) else None
+    if version not in _PACKET_FIELDS:
+        raise assets.P3Error("invalid_manifest")
+    assets.object_fields(packet, _PACKET_FIELDS[version])
+    repetition = _repetition(packet["repetition"]) if version == PACKET_V2 else None
     source = packet["source_identity"]
-    if (packet["version"] != PACKET_VERSION or packet["state"] != "prepared_not_authorized"
+    if (packet["state"] != "prepared_not_authorized"
             or packet["purpose"] != PURPOSE or packet["tier"] not in TIERS or packet["claim"] not in CLAIMS
             or packet["evidence_class"] != packet["claim"] or packet["promotion_eligible"] is not False
             or (packet["tier"] == "dev") != (packet["claim"] == "development_observation")
@@ -398,10 +450,10 @@ def _packet_contract(packet: dict) -> None:
             or not isinstance(source, dict) or source.get("git_commit") != packet["accepted_commit"]
             or source.get("branch") != "dev" or source.get("worktree_dirty") is not False
             or not isinstance(source.get("files_sha256"), dict)
-            or packet["observation_fields"] != list(OBSERVATION_FIELDS)
+            or packet["observation_fields"] != list(OBSERVATIONS[version])
             or packet["gateway_policy"] != smoke.policy_attestation(ROUTE_POLICY, required=True)
             or packet["transport_security"] not in _TRANSPORT or packet["upstream_inference_attempts"] is not None
-            or packet["data_boundary"] != data_boundary()
+            or packet["data_boundary"] != data_boundary(version)
             or packet["command_template"] != command_template(packet["accepted_commit"])
             or not _same(packet["stop_policy"], stop_policy())
             or packet["stop_policy_sha256"] != assets.digest(stop_policy())
@@ -442,7 +494,7 @@ def _packet_contract(packet: dict) -> None:
             or not _same(packet["settings"], settings(route, len(packet["inputs"]), cap))):
         raise assets.P3Error("invalid_manifest")
     if packet["run_id"] != _run_id(candidate["candidate_id"], panel["panel_id"], route["route_id"],
-                                   assets.digest(source)):
+                                   assets.digest(source), repetition):
         raise assets.P3Error("invalid_manifest")
     if (not isinstance(packet["inputs"], list) or not 1 <= len(packet["inputs"]) <= assets.MAX_INPUTS
             or any(not isinstance(row, dict) for row in packet["inputs"])
@@ -460,7 +512,7 @@ def _packet_contract(packet: dict) -> None:
     if baseline is not None:
         assets.object_fields(baseline, {"reference", "sha256", "report_version", "inputs", "family_correct"})
         _hash(baseline["sha256"])
-        if (baseline["report_version"] not in (REPORT_VERSION, formal.REPORT_VERSION)
+        if (baseline["report_version"] not in (*REPORT_VERSIONS.values(), formal.REPORT_VERSION)
                 or [row.get("case_id") for row in baseline["inputs"]] != packet["order"]
                 or any(set(row) != {"case_id", "family_id", "outcome", "actual_action", "checked_wrong", "correct"}
                        or type(row["correct"]) is not bool for row in baseline["inputs"])
@@ -471,8 +523,11 @@ def _packet_contract(packet: dict) -> None:
 def build_packet(database: Path, *, candidate_id: str, panel_id: str, route_id: str, accepted_commit: str,
                  gateway_policies: dict, baseline_path: Path | None = None,
                  panels_path: Path | None = None, routes_path: Path | None = None,
-                 runs_path: Path | None = None, candidates_index: Path | None = None) -> tuple[dict, assets.Panel]:
-    if gateway_policies != ROUTE_POLICY:
+                 runs_path: Path | None = None, candidates_index: Path | None = None,
+                 repetition: int = 1) -> tuple[dict, assets.Panel]:
+    version = PACKET_VERSION
+    if (gateway_policies != ROUTE_POLICY or type(repetition) is not int or not 1 <= repetition <= MAX_REPETITION
+            or version == PACKET_V1 and repetition != 1):
         raise assets.P3Error("invalid_configuration")
     try:
         checked = registry.check(candidates_index)
@@ -492,9 +547,10 @@ def build_packet(database: Path, *, candidate_id: str, panel_id: str, route_id: 
     inputs = panel.inputs()
     limits = settings(route, len(inputs), candidate["limits"]["request"])
     packet = {
-        "version": PACKET_VERSION, "state": "prepared_not_authorized", "purpose": PURPOSE,
+        "version": version, "state": "prepared_not_authorized", "purpose": PURPOSE,
         "tier": entry["tier"], "claim": claim, "evidence_class": claim, "promotion_eligible": False,
-        "run_id": _run_id(candidate_id, panel_id, route_id, assets.digest(source)),
+        "run_id": _run_id(candidate_id, panel_id, route_id, assets.digest(source),
+                          repetition if version == PACKET_V2 else None),
         "accepted_commit": accepted_commit,
         "candidate": {"candidate_id": candidate_id, "candidate_sha256": candidate["candidate_sha256"],
                       "semantic_identity_sha256": candidate["semantic_identity_sha256"]},
@@ -504,15 +560,17 @@ def build_packet(database: Path, *, candidate_id: str, panel_id: str, route_id: 
                   "owner_review_reference": freeze_meta["owner_review_reference"], "input_count": len(inputs)},
         "route": dict(route),
         "baseline": _baseline_projection(baseline_path) if baseline_path is not None else None,
-        "observation_fields": list(OBSERVATION_FIELDS), "source_identity": source,
+        "observation_fields": list(OBSERVATIONS[version]), "source_identity": source,
         "database_sha256": smoke._fixture_identity(database), "inputs": inputs,
         "order": [case.case_id for case in panel.cases], "run_index_sha256": run_index_sha,
         "settings": limits, "settings_sha256": assets.digest(limits),
         "stop_policy": stop_policy(), "stop_policy_sha256": assets.digest(stop_policy()),
         "gateway_policy": smoke.policy_attestation(ROUTE_POLICY, required=True),
-        "transport_security": route["transport_security"], "data_boundary": data_boundary(),
+        "transport_security": route["transport_security"], "data_boundary": data_boundary(version),
         "upstream_inference_attempts": None, "command_template": command_template(accepted_commit),
     }
+    if version == PACKET_V2:
+        packet["repetition"] = repetition
     _packet_contract(packet)
     return packet, panel
 
@@ -523,10 +581,11 @@ def validate_packet(path: Path, database: Path, *, accepted_commit: str, **regis
     if packet["accepted_commit"] != accepted_commit:
         raise assets.P3Error("accepted_commit_required")
     baseline_path = None if packet["baseline"] is None else _location(packet["baseline"]["reference"])
+    # The rebuild is at the current packet version, so an archived older packet drifts before live.
     current, panel = build_packet(database, candidate_id=packet["candidate"]["candidate_id"],
                                   panel_id=packet["panel"]["panel_id"], route_id=packet["route"]["route_id"],
                                   accepted_commit=accepted_commit, gateway_policies=dict(ROUTE_POLICY),
-                                  baseline_path=baseline_path, **registries)
+                                  baseline_path=baseline_path, repetition=packet.get("repetition", 1), **registries)
     if not _same(current, packet):
         raise assets.P3Error("manifest_drift")
     return packet, panel
@@ -535,7 +594,7 @@ def validate_packet(path: Path, database: Path, *, accepted_commit: str, **regis
 def prepare(database: Path, output_dir: Path, **options) -> dict:
     packet, _ = build_packet(database, **options)
     artifacts = smoke._Artifacts(output_dir, packet)
-    report = {"version": PACKET_VERSION, "state": "incomplete", "packet_sha256": evaluator._pin(
+    report = {"version": packet["version"], "state": "incomplete", "packet_sha256": evaluator._pin(
         output_dir / "manifest.json")["sha256"], "client_http_attempts": 0, "live_model_attempts": 0}
     artifacts.persist(report)
     registries = {key: options[key] for key in ("panels_path", "routes_path", "runs_path", "candidates_index")
@@ -590,7 +649,8 @@ def bind_authorization(packet_path: Path, reference: str, output_path: Path, run
 
 def _manifest(packet: dict, packet_sha: str, authorization: dict, authorization_sha: str) -> dict:
     return {
-        "manifest_version": MANIFEST_VERSION, "packet_sha256": packet_sha, "authorization_sha256": authorization_sha,
+        "manifest_version": MANIFEST_VERSIONS[packet["version"]], "packet_sha256": packet_sha,
+        "authorization_sha256": authorization_sha,
         "owner_authorization_reference": authorization["owner_authorization_reference"],
         "run_slot": authorization["run_slot"], "run_id": packet["run_id"], "tier": packet["tier"],
         "claim": packet["claim"], "accepted_commit": packet["accepted_commit"], "candidate": packet["candidate"],
@@ -612,7 +672,7 @@ def _report(manifest: dict, packet: dict) -> dict:
                                              "stop_policy_sha256", "preparation")}
     report = evaluator._new_report(header, "live")
     report["allocation_policy"] = manifest["allocation_policy"]
-    report.update(report_version=REPORT_VERSION, runtime_invocations=0, transport_security=None,
+    report.update(report_version=REPORT_VERSIONS[packet["version"]], runtime_invocations=0, transport_security=None,
                   gateway_policy=packet["gateway_policy"],
                   owner_authorization_reference=manifest["owner_authorization_reference"],
                   run_slot=manifest["run_slot"], run_id=manifest["run_id"], tier=manifest["tier"],
@@ -624,7 +684,7 @@ def _report(manifest: dict, packet: dict) -> dict:
     report["manifest_sha256"] = assets.digest(manifest)
     for row in report["results"]:
         row["phase"] = "not_started"
-        row.update(dict.fromkeys(OBSERVATION_FIELDS))
+        row.update(dict.fromkeys(OBSERVATIONS[packet["version"]]))
     return report
 
 
@@ -632,9 +692,12 @@ def _summarize(report: dict) -> None:
     value = scoring.summarize(report["results"], report["results"], panel_kind="development",
                               run_status=report["status"])
     diagnostics = value.pop("promotion")["gates"]
+    observations = _observations(report["results"])
+    if report["report_version"] == REPORT_VERSIONS[PACKET_V2]:
+        observations["validated_actions"] = sum(row["validated_action"] is not None for row in report["results"])
     value.update(panel_kind="evaluation", tier=report["tier"], claim=report["claim"],
                  evidence_class=report["claim"], promotion_eligible=False, diagnostic_gates=diagnostics,
-                 observations=_observations(report["results"]),
+                 observations=observations,
                  comparison=(_comparison(report["baseline"], report["results"], value)
                              if report["baseline"] is not None else None))
     report["summary"] = value
@@ -652,6 +715,110 @@ def _check_observation(row: dict) -> None:
         raise assets.P3Error("invalid_asset")
 
 
+def _action_values(value: object, depth: int) -> bool:
+    if depth > _ACTION_DEPTH:
+        return False
+    if isinstance(value, dict):
+        return all(isinstance(key, str) and len(key) <= _ACTION_STRING and _action_values(item, depth + 1)
+                   for key, item in value.items())
+    if isinstance(value, list):
+        return all(_action_values(item, depth + 1) for item in value)
+    if isinstance(value, str):
+        return len(value) <= _ACTION_STRING
+    return value is None or type(value) in (int, bool)
+
+
+def _action_shape(action: object) -> bool:
+    """Closed structural shape of a persisted validated action; semantics stay with the runtime validators."""
+    if not isinstance(action, dict) or not _action_values(action, 1):
+        return False
+    outcome = action.get("outcome")
+    if outcome == "declined":
+        return action == {"outcome": "declined"}
+    if outcome == "request":
+        return (set(action) == {"outcome", "recipe_id", "recipe_version", "request"}
+                and isinstance(action["recipe_id"], str) and action["recipe_id"] in _ACTION_RECIPES
+                and action["recipe_version"] == "0.1" and isinstance(action["request"], dict))
+    if outcome != "clarify" or set(action) != {"outcome", "clarification"}:
+        return False
+    clarification = action["clarification"]
+    if (not isinstance(clarification, dict) or set(clarification) != {"kind", "choices"}
+            or not isinstance(clarification["kind"], str) or clarification["kind"] not in KINDS
+            or not isinstance(clarification["choices"], list)
+            or not 2 <= len(clarification["choices"]) <= MAX_CHOICES):
+        return False
+    return all(isinstance(choice, dict) and set(choice) == {"id", "semantic_value"}
+               and isinstance(choice["id"], str) and _CHOICE_ID.fullmatch(choice["id"]) is not None
+               and isinstance(choice["semantic_value"], dict) for choice in clarification["choices"])
+
+
+def _action_text(action: object) -> str | None:
+    """Canonical JSON of a closed action, or None when it does not fit the persisted shape."""
+    if not _action_shape(action):
+        return None
+    try:
+        text = model.canonical_json(action)
+    except (TypeError, ValueError):
+        return None
+    return text if len(text.encode("utf-8")) <= MAX_ACTION_BYTES else None
+
+
+def _validated_action(result) -> str | None:
+    """The action that passed the runtime validators, in the grader's priority order; never raw text."""
+    proposal = getattr(result, "proposal", None)
+    clarification = getattr(result, "clarification", None)
+    error = getattr(result, "error", None)
+    try:
+        if proposal is not None:
+            action = proposal.to_dict()
+        elif clarification is not None:
+            action = {"outcome": "clarify", "clarification": clarification.to_dict()}
+        elif error is not None and error.code == "model_declined":
+            action = {"outcome": "declined"}
+        else:
+            return None
+    except (AttributeError, TypeError, ValueError, KernelError):
+        return None
+    return _action_text(action)
+
+
+_ACTION_OUTCOMES = {"request": "answer", "clarify": "clarify", "declined": "decline"}
+
+
+def _check_action(row: dict, stop_reason: str | None = None) -> bool:
+    """Structural readback of one persisted action; True when the evidence checks were relaxed."""
+    text = row["validated_action"]
+    if text is None:
+        return False
+    if (not isinstance(text, str) or len(text.encode("utf-8")) > MAX_ACTION_BYTES
+            or row["status"] != "completed"):
+        raise assets.P3Error("invalid_asset")
+    try:
+        action = json.loads(text)
+    except (ValueError, RecursionError):
+        raise assets.P3Error("invalid_asset") from None
+    if _action_text(action) != text or _ACTION_OUTCOMES[action["outcome"]] != row["actual_action"]:
+        raise assets.P3Error("invalid_asset")
+    if action["outcome"] == "clarify" and (
+            action["clarification"]["kind"] != row["clarification_kind"]
+            or len(action["clarification"]["choices"]) != row["clarification_choice_count"]):
+        raise assets.P3Error("invalid_asset")
+    evidence = row["evidence"]
+    if evidence is None and stop_reason is not None and row["runner_error_code"] == stop_reason:
+        # The run stopped on this row before its evidence was projected; the stop is the evidence,
+        # and such a row is neither assessed nor replayable.
+        return True
+    evidence = evidence if isinstance(evidence, dict) else {}
+    stages = evidence.get("stages") if isinstance(evidence.get("stages"), dict) else {}
+    if action["outcome"] == "declined":
+        if evidence.get("error_code") != "model_declined":
+            raise assets.P3Error("invalid_asset")
+        return False
+    if stages.get("request_validation") != "passed":
+        raise assets.P3Error("invalid_asset")
+    return False
+
+
 @dataclass(frozen=True)
 class _Route:
     provider: str
@@ -659,6 +826,7 @@ class _Route:
     region: str | None
     call_timeout_seconds: float
     transport_security: str
+    packet_version: str = PACKET_V1
 
     @property
     def expected_model(self):
@@ -672,7 +840,7 @@ class _Route:
 def _route(packet: dict) -> _Route:
     route = packet["route"]
     return _Route(route["provider"], route["model"], route["region"], float(route["call_timeout_seconds"]),
-                  route["transport_security"])
+                  route["transport_security"], packet["version"])
 
 
 class _LiveEvidence(live._LiveEvidence):
@@ -680,23 +848,48 @@ class _LiveEvidence(live._LiveEvidence):
     observation_fields = OBSERVATION_FIELDS
 
     def __init__(self, route: _Route | None = None):
-        if not isinstance(route, _Route):
+        if not isinstance(route, _Route) or route.packet_version not in OBSERVATIONS:
             raise assets.P3Error("invalid_configuration")
         super().__init__(route.expected_model, requested_profile=route.requested_profile)
         self.route = route
         self.maximum = assets.MAX_INPUTS
+        self.observation_fields = OBSERVATIONS[route.packet_version]
+        self._admitted = None
 
-    @staticmethod
-    def observe_result(result) -> dict:
+    def invocation_client(self, client):
+        self._admitted = client
+        return super().invocation_client(client)
+
+    def _exportable(self, text: str) -> bool:
+        """The report's own leak check, applied before the value lands; without the admitted client, nothing lands."""
+        if self._admitted is None:
+            return False
+        try:
+            evaluator._safe({"validated_action": text}, self._admitted)
+        except assets.P3Error:
+            return False
+        return True
+
+    def observe_result(self, result) -> dict:
+        observed = dict.fromkeys(self.observation_fields)
         clarification = getattr(result, "clarification", None)
-        if clarification is None:
-            return dict.fromkeys(OBSERVATION_FIELDS)
-        return {"clarification_kind": clarification.kind, "clarification_choice_count": len(clarification.choices)}
+        if clarification is not None:
+            observed.update(clarification_kind=clarification.kind,
+                            clarification_choice_count=len(clarification.choices))
+        if "validated_action" in observed:
+            text = _validated_action(result)
+            observed["validated_action"] = text if text is not None and self._exportable(text) else None
+        return observed
 
     def check_report(self, report):
         super().check_report(report)
+        relaxed = 0
         for row in report["results"]:
             _check_observation(row)
+            if "validated_action" in self.observation_fields:
+                relaxed += _check_action(row, report["stop_reason"])
+        if relaxed > 1:
+            raise assets.P3Error("invalid_asset")
 
 
 def _entries(panel, packet):
@@ -802,6 +995,219 @@ def record(report_path: Path, *, runs_path: Path | None = None, now: str | None 
     return row
 
 
+# --------------------------------------------------------------------------- replay and aggregate
+
+REPLAY_REFUSALS = ("report_version", "candidate_bytes", "panel_assets", "inputs", "database")
+_REPLAY_BASE = "https://replay.invalid/v1"
+_REPLAY_TOKEN = "replay-synthetic-token"
+_REPLAY_CLASSES = ("replayed_same", "replayed_changed", "not_replayable")
+_AGGREGATE_CLASSES = ("stable_correct", "stable_wrong", "flaky", "insufficient")
+
+
+class ReplayRefused(assets.P3Error):
+    """Recorded actions are not representative of the current source: the existing safe code, one closed reason."""
+
+    def __init__(self, reason: str):
+        super().__init__("manifest_drift")
+        self.reason = reason if reason in REPLAY_REFUSALS else "unknown"
+
+
+def _reference(path: Path) -> str:
+    return path.absolute().relative_to(ROOT).as_posix() if path.absolute().is_relative_to(ROOT) else str(path)
+
+
+def _write_new(path: Path, value: dict) -> None:
+    smoke._no_symlinks(path)
+    try:
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            stream.write(json.dumps(value, indent=2, ensure_ascii=False, sort_keys=True) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+    except OSError as exc:
+        raise assets.P3Error("artifact_conflict" if isinstance(exc, FileExistsError) else "artifact_io") from None
+
+
+def _replayable(row: dict) -> bool:
+    evidence = row["evidence"] if isinstance(row["evidence"], dict) else {}
+    stages = evidence.get("stages") if isinstance(evidence.get("stages"), dict) else {}
+    return (row["status"] == "completed" and row["validated_action"] is not None
+            and row["runner_error_code"] is None and stages.get("transport") == "passed")
+
+
+def _replay_client(action_text: str, calls: list) -> GatewayClient:
+    """A mock transport returning exactly the recorded action; no credentials, environment or network."""
+    def respond(request):
+        calls.append(1)
+        return httpx.Response(200, json={"model": MODEL, "choices": [{
+            "index": 0, "finish_reason": "stop", "message": {"role": "assistant", "content": action_text}}]})
+
+    return GatewayClient(GatewayConfig(_REPLAY_BASE, _REPLAY_TOKEN, MODEL), transport=httpx.MockTransport(respond))
+
+
+@dataclass(frozen=True)
+class _ReplayPlan:
+    report_path: Path
+    report: dict
+    database: Path
+    database_sha: str
+    output_path: Path
+    checked: dict
+    current: dict
+    panel: object
+    entries: list
+
+
+async def replay(report_path: Path, database: Path, output_path: Path, *, candidates_index: Path | None = None,
+                 panels_path: Path | None = None) -> dict:
+    """Zero-call offline replay: recorded validated actions through the current kernel and grader."""
+    return await _replay_execute(_replay_plan(report_path, database, output_path, candidates_index=candidates_index,
+                                              panels_path=panels_path))
+
+
+def _replay_plan(report_path: Path, database: Path, output_path: Path, *, candidates_index: Path | None = None,
+                 panels_path: Path | None = None) -> _ReplayPlan:
+    """Every refusal is decided here, synchronously, before any replay work starts."""
+    report = read_report(report_path)
+    if report["report_version"] != REPORT_VERSIONS[PACKET_V2]:
+        raise ReplayRefused("report_version")
+    packet = assets.read_asset(report_path.parent / "packet.json")
+    try:
+        checked = registry.check(candidates_index)
+        current = registry.current(candidates_index)
+    except registry.RegistryError:
+        raise assets.P3Error("source_identity_failure") from None
+    if checked["candidate_id"] != current["candidate_id"]:
+        raise assets.P3Error("source_identity_failure")
+    if current["candidate_sha256"] != packet["candidate"]["candidate_sha256"]:
+        raise ReplayRefused("candidate_bytes")
+    entry, panel, _ = load_panel_entry(packet["panel"]["panel_id"], database, panels_path=panels_path)
+    if entry["assets"] != packet["panel"]["assets"]:
+        raise ReplayRefused("panel_assets")
+    entries = evaluator._panel_entries(panel)
+    if (not _same(panel.inputs(), packet["inputs"]) or not _same([item.metadata for item in entries], packet["inputs"])
+            or len(entries) != len(report["results"])):
+        raise ReplayRefused("inputs")
+    database_sha = smoke._fixture_identity(database)
+    if database_sha != packet["database_sha256"]:
+        raise ReplayRefused("database")
+    if output_path.exists() or output_path.is_symlink():
+        raise assets.P3Error("artifact_conflict")
+    return _ReplayPlan(report_path, report, database, database_sha, output_path, checked, current, panel, entries)
+
+
+async def _replay_execute(plan: _ReplayPlan) -> dict:
+    report_path, report, database, database_sha = plan.report_path, plan.report, plan.database, plan.database_sha
+    checked, current, panel, entries = plan.checked, plan.current, plan.panel, plan.entries
+    calls, classes, replayed = [], [], deepcopy(report["results"])
+    for row, item, target in zip(report["results"], entries, replayed):
+        if not _replayable(row):
+            classes.append("not_replayable")
+            continue
+        result = await recipe_model.interpret_recipe_and_execute(
+            item.case.question, database, _replay_client(row["validated_action"], calls))
+        graded = p3_grading.grade(result, item.oracle)
+        classes.append("replayed_same" if all(_same(graded[key], row[key]) for key in graded) else "replayed_changed")
+        target.update(graded)
+    scored = scoring.summarize(replayed, replayed, panel_kind="development", run_status=report["status"])
+    archived = report["summary"]["per_input"]
+    rows = []
+    for row, target, kind, old, new in zip(report["results"], replayed, classes, archived, scored["per_input"]):
+        rows.append({"case_id": row["case_id"], "class": kind,
+                     "archived": {"outcome": row["outcome"], "actual_action": row["actual_action"],
+                                  "correct": old["correct"]},
+                     "replayed": None if kind == "not_replayable" else {
+                         "outcome": target["outcome"], "actual_action": target["actual_action"],
+                         "correct": new["correct"]}})
+    value = {
+        "version": REPLAY_VERSION, "claim": "offline_replay_observation", "promotion_eligible": False,
+        "live_model_attempts": 0, "mock_transport_calls": len(calls),
+        "counts": {kind: classes.count(kind) for kind in _REPLAY_CLASSES}, "rows": rows,
+        "source": {"reference": _reference(report_path), "sha256": _report_digest(report_path),
+                   "run_id": report["run_id"], "report_version": report["report_version"],
+                   "candidate": report["candidate"]},
+        "replay_identity": {"candidate_id": checked["candidate_id"], "candidate_sha256": current["candidate_sha256"],
+                            "runtime_files_changed": checked["runtime_files_changed"],
+                            "source_identity": evaluator._source_identity(panel, None),
+                            "evaluator_version": p3_grading.VERSION, "database_sha256": database_sha},
+        "archived_correct": sum(item["correct"] for item in archived),
+        "replayed_correct": sum(item["correct"] for item in scored["per_input"]),
+        "comparison": (_comparison(_baseline_projection(report_path), replayed, scored)
+                       if report["status"] == "complete" else None),
+    }
+    _write_new(plan.output_path, value)
+    return value
+
+
+def aggregate(panel_id: str, route_id: str, candidate_id: str, *, runs_path: Path | None = None,
+              candidates_index: Path | None = None) -> dict:
+    """Every indexed run of the panel and route with the same model-facing bytes; selection by identity only."""
+    target = registry.load_entry(candidate_id, candidates_index)["candidate_sha256"]
+    runs_file = RUNS if runs_path is None else runs_path
+    runs = load_runs(runs_file)
+    identities, included = {}, []
+    for run in runs:
+        if run["panel_id"] != panel_id or run["route_id"] != route_id:
+            continue
+        if run["candidate_id"] not in identities:
+            identities[run["candidate_id"]] = registry.load_entry(run["candidate_id"], candidates_index)["candidate_sha256"]
+        if identities[run["candidate_id"]] == target:
+            included.append(run)
+    if not included:
+        raise assets.P3Error("invalid_manifest")
+    reports = []
+    for run in included:
+        path = _location(run["slot"] + "/report.json")
+        if _report_digest(path) != run["report_sha256"]:
+            raise assets.P3Error("manifest_drift")
+        report = _read_archived(path)
+        if report.get("run_id", run["run_id"]) != run["run_id"]:
+            raise assets.P3Error("manifest_drift")
+        reports.append(report)
+    order = [row["case_id"] for row in reports[0]["results"]]
+    if any([row["case_id"] for row in report["results"]] != order for report in reports):
+        raise assets.P3Error("invalid_scoring")
+    inputs = []
+    for index, case_id in enumerate(order):
+        rows = [report["results"][index] for report in reports]
+        scores = [report["summary"]["per_input"][index]["correct"] for report in reports]
+        assessed = [not _unassessed(row) for row in rows]
+        correct = sum(bool(score) for score, seen in zip(scores, assessed) if seen)
+        actions = [row.get("validated_action") for row in rows if row.get("validated_action") is not None]
+        count = sum(assessed)
+        kind = ("insufficient" if count < 2 else "stable_correct" if correct == count
+                else "stable_wrong" if correct == 0 else "flaky")
+        inputs.append({
+            "case_id": case_id, "family_id": rows[0]["family_id"], "observations": len(rows), "assessed": count,
+            "correct": correct, "unassessed": len(rows) - count,
+            "outcomes": _tally(row["outcome"] for row in rows),
+            "actions": _tally(row["actual_action"] for row in rows),
+            "distinct_signatures": len({row["actual_signature"] for row in rows
+                                        if row.get("actual_signature") is not None}),
+            "validated_actions": len(actions), "distinct_validated_actions": len(set(actions)), "class": kind})
+    return {
+        "version": AGGREGATE_VERSION, "promotion_eligible": False, "panel_id": panel_id, "route_id": route_id,
+        "candidate": {"candidate_id": candidate_id, "candidate_sha256": target},
+        "run_index_sha256": evaluator._pin(runs_file)["sha256"],
+        "runs": [{"run_id": run["run_id"], "candidate_id": run["candidate_id"],
+                  "report_sha256": run["report_sha256"], "report_version": report["report_version"],
+                  "accepted_commit": run["accepted_commit"], "evaluator_version": report.get("evaluator_version"),
+                  "status": report["status"],
+                  "correct": sum(bool(item["correct"]) for item in report["summary"]["per_input"])}
+                 for run, report in zip(included, reports)],
+        "inputs": inputs,
+        "class_counts": {kind: sum(row["class"] == kind for row in inputs) for kind in _AGGREGATE_CLASSES},
+    }
+
+
+def _tally(values) -> dict:
+    counts = {}
+    for value in values:
+        key = "none" if value is None else str(value)
+        counts[key] = counts.get(key, 0) + 1
+    return counts
+
+
 def main(argv=None) -> int:
     if argv is None:
         argv = sys.argv[1:]
@@ -813,13 +1219,14 @@ def main(argv=None) -> int:
         return p3_completion_diagnostic.main(argv[1:], profile=p3_completion_diagnostic.V2)
     parser = evaluator._Parser(description=__doc__)
     modes = parser.add_mutually_exclusive_group(required=True)
-    for mode in ("prepare", "bind-authorization", "live", "report", "record"):
+    for mode in ("prepare", "bind-authorization", "live", "report", "record", "replay", "aggregate"):
         modes.add_argument("--" + mode, action="store_true")
     for name in ("packet", "authorization", "db", "env-file", "output-dir", "output", "run-output-dir",
                  "baseline", "report-path"):
         parser.add_argument("--" + name, type=Path)
     for name in ("candidate", "panel", "route", "accepted-commit", "owner-authorization-reference"):
         parser.add_argument("--" + name)
+    parser.add_argument("--repetition", type=int)
     for name in smoke.POLICY_KEYS:
         parser.add_argument("--gateway-" + name, choices=("enabled", "disabled"))
     try:
@@ -827,21 +1234,29 @@ def main(argv=None) -> int:
         present = {key for key, value in vars(args).items() if value is not None and value is not False}
         common = {"db", "accepted_commit", "gateway_retries", "gateway_fallback", "gateway_cache", "output_dir"}
         allowed = ({"prepare", "candidate", "panel", "route"} | common | ({"baseline"} if args.baseline else set())
+                   | ({"repetition"} if args.repetition is not None else set())
                    if args.prepare else
                    {"bind_authorization", "packet", "owner_authorization_reference", "output", "run_output_dir"}
                    if args.bind_authorization else {"live", "packet", "authorization", "env_file"} | common
-                   if args.live else {"report", "report_path"} if args.report else {"record", "report_path"})
+                   if args.live else {"report", "report_path"} if args.report else
+                   {"replay", "report_path", "db", "output"} if args.replay else
+                   {"aggregate", "panel", "route", "candidate"} if args.aggregate else {"record", "report_path"})
         if present != allowed:
             raise assets.P3Error("invalid_arguments")
         policies = {key: getattr(args, "gateway_" + key) for key in smoke.POLICY_KEYS}
         if args.prepare:
+            repetition = {} if args.repetition is None else {"repetition": args.repetition}
             result = prepare(args.db, args.output_dir, candidate_id=args.candidate, panel_id=args.panel,
                              route_id=args.route, accepted_commit=args.accepted_commit, gateway_policies=policies,
-                             baseline_path=args.baseline)
+                             baseline_path=args.baseline, **repetition)
         elif args.bind_authorization:
             result = bind_authorization(args.packet, args.owner_authorization_reference, args.output, args.run_output_dir)
         elif args.record:
             result = record(args.report_path)
+        elif args.replay:
+            result = asyncio.run(_replay_execute(_replay_plan(args.report_path, args.db, args.output)))
+        elif args.aggregate:
+            result = aggregate(args.panel, args.route, args.candidate)
         else:
             if args.live:
                 asyncio.run(run_live(args.db, args.output_dir, packet_path=args.packet,
@@ -855,7 +1270,8 @@ def main(argv=None) -> int:
         print(model.canonical_json(result))
         return 0 if result.get("status") in (None, "complete") else 1
     except evaluator._SAFE_ERRORS as exc:
-        print(model.canonical_json({"status": "incomplete", "error_code": exc.code}), file=sys.stderr)
+        refusal = {"replay_refusal": exc.reason} if isinstance(exc, ReplayRefused) else {}
+        print(model.canonical_json({"status": "incomplete", "error_code": exc.code, **refusal}), file=sys.stderr)
         return 2
     except registry.RegistryError as exc:
         print(model.canonical_json({"status": "incomplete", "error_code": "source_identity_failure",
