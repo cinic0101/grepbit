@@ -20,7 +20,7 @@ from .overview import OverviewAnalysisPack, OverviewRequest, execute_overview
 from .presentation import ClarificationPresentation, PRESENTATION_VERSION, render_clarification
 from .provider import LLMClient, normalize_response, response_mode, wire_identity
 
-CONTEXT_VERSION = "learningops-recipe-context-v2"
+CONTEXT_VERSION = "learningops-recipe-context-v3"
 OUTPUT_CONTRACT = "recipe-request-json-v2"
 INSTRUCTION_VERSION = "recipe-selection-instruction-v6"
 STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v2"
@@ -240,10 +240,18 @@ def runtime_context() -> dict[str, object]:
                              "zero-filled/absent courses", "all boundary ties"]},
         ],
         "clarification": {
-            "count_basis": "One explicit Overview scope; booked_seats versus known_booking_accounts, "
-                           "attendance_visits or distinct_people. Seats are booked line quantities; "
-                           "accounts are distinct non-null booking-account IDs, excluding anonymous bookings; "
-                           "visits are attendance events, not distinct humans. Only booked_seats is available in this recipe.",
+            "count_basis": (
+                'Use count_basis only when the question leaves mutually exclusive count meanings unresolved. First '
+                'preserve any specified event or population: a count of actual attendance events is '
+                'attendance_visits, even when expressed using a generic people/count noun. If the question requires '
+                'attendance_visits, distinct_people or known_booking_accounts, decline the whole request, including '
+                'when it also requires a supported Overview. A question that explicitly leaves the count basis '
+                'undecided instead admits only its stated alternatives. Use one explicit Overview scope. The '
+                'available count meanings are booked_seats, known_booking_accounts, attendance_visits and '
+                'distinct_people. Seats are booked line quantities; accounts are distinct non-null booking-account '
+                'IDs, excluding anonymous bookings; visits are attendance events, not distinct humans. Only '
+                'booked_seats is executable through this recipe.'
+            ),
             "comparison_roles": "Two explicit months without orientation; preserve both months and offer both roles.",
             "center": "One explicit month and two to four supplied codes; offer a single center, never combine them.",
             "metric_meaning": "One explicit Overview scope; confirmed_booked_amount versus cash_received, "
