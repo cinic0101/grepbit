@@ -1,6 +1,6 @@
 {
   "registry_version": "candidate-registry-v1",
-  "current": "p3-bound-meaning-context-v8",
+  "current": "p3-generic-count-context-v9",
   "entries": [
     {
       "candidate_id": "p33-frozen-20abb559",
@@ -43,6 +43,12 @@
       "path": "p3-bound-meaning-context-v8.json",
       "sha256": "f675d4b927ca753b42daba5cd0f23ba87b02ef6a271f0201e6163d647343cb56",
       "ancestor": "p3-31b-count-context-v7"
+    },
+    {
+      "candidate_id": "p3-generic-count-context-v9",
+      "path": "p3-generic-count-context-v9.json",
+      "sha256": "d323341dfc2bf1e81d2a133ac50514542c41239d80763c8d6af4dc9da68e8ba1",
+      "ancestor": "p3-bound-meaning-context-v8"
     }
   ]
 }
