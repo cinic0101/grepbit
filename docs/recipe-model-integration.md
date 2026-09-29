@@ -162,6 +162,12 @@ gateway addresses and hostnames are rejected in schema values **and keys**.
 This is not a general secret detector; only the reviewed code-defined schema,
 not user/model-authored schemas or configuration, belongs in the recipe route.
 
+> **Amended 2026-09-29.** The owner decided in #120
+> (#issuecomment-5886754433) to raise the complete-request cap to 40,960 bytes
+> (`docs/count-cue-policy.md`, "Request size"). The same constant bounds the
+> incremental schema encoding. The text above records the cap at the time of
+> this design.
+
 `structured_output_identity()` and adapter `evidence.structured_output_identity`
 identify the constructed generation contract separately from semantic context:
 `recipe-structured-output-v2`, `mode=json_schema`, the fixed schema name,

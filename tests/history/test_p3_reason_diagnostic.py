@@ -14,6 +14,7 @@ from grepbit.gateway import ModelError
 from grepbit.recipe_model import RecipeInterpretation
 from tools import fixture, p3_assets, p3_eval
 from tools.history import p3_reason_diagnostic as diagnostic
+import frozen_recipe_schema
 
 GRANT = "https://github.com/cinic0101/grepbit/issues/74#issuecomment-"
 REAL_IDENTITIES = diagnostic._current_identities  # captured before setUp pins the v4 identities
@@ -46,6 +47,7 @@ def timeout_result(*_args, **_kwargs):
 
 class ReasonDiagnosticRulers(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
+        self.enterContext(frozen_recipe_schema.patched())  # v11 fails closed on Bedrock; test the frozen v10 schema
         for target in ("socket.socket.connect", "socket.socket.connect_ex", "socket.create_connection",
                        "socket.getaddrinfo", "httpx.AsyncHTTPTransport", "httpx.HTTPTransport"):
             self.enterContext(patch(target, side_effect=AssertionError("Network forbidden")))

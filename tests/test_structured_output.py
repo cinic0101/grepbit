@@ -316,12 +316,13 @@ class StructuredOutputTests(unittest.IsolatedAsyncioTestCase):
                 await self.rejected_constraint({"name": "valid", "schema": schema})
 
     async def test_schema_byte_cap_is_exact_and_separate_from_complete_request_cap(self):
-        self.assertEqual(gateway.MAX_REQUEST_BYTES, 32768)
+        cap = gateway.MAX_REQUEST_BYTES
+        self.assertEqual(cap, 40960)  # Owner decision A (#120); was 32768 before v11.
         schema = {"description": ""}
-        schema["description"] = "x" * (32768 - len(encoded(schema)))
+        schema["description"] = "x" * (cap - len(encoded(schema)))
         constraint = {"name": "valid", "schema": schema}
         result = gateway.json_schema_response_format(constraint)
-        self.assertEqual(len(encoded(result["json_schema"]["schema"])), 32768)
+        self.assertEqual(len(encoded(result["json_schema"]["schema"])), cap)
         await self.rejected_constraint(constraint, code="input_too_large")
         schema["description"] += "x"
         with self.assertRaises(ModelError) as caught:
@@ -330,24 +331,26 @@ class StructuredOutputTests(unittest.IsolatedAsyncioTestCase):
         await self.rejected_constraint(constraint, code="input_too_large")
 
     async def test_total_request_exact_boundary_includes_ascii_and_multibyte_schema(self):
+        cap = gateway.MAX_REQUEST_BYTES
         for character in ("x", "\u6e2c"):
             with self.subTest(utf8_width=len(character.encode())):
                 schema = {"type": "object", "description": ""}
                 expected = {**historical_payload(MESSAGES), "response_format": wrapper(schema, "boundary")}
-                room = 32768 - len(encoded(expected))
+                room = cap - len(encoded(expected))
                 count, remainder = divmod(room, len(character.encode()))
                 schema["description"] = character * count + "x" * remainder
-                self.assertEqual(len(encoded(expected)), 32768)
+                self.assertEqual(len(encoded(expected)), cap)
                 constraint = {"name": "boundary", "schema": schema}
                 client = self.client()
                 await client.complete(MESSAGES, json_schema_constraint=constraint)
-                self.assertEqual((client.http_attempts, len(self.sent), len(self.sent[0].content)), (1, 1, 32768))
+                self.assertEqual((client.http_attempts, len(self.sent), len(self.sent[0].content)), (1, 1, cap))
                 self.assertTrue(self.sent[0].content == encoded(expected), "Request boundary measured the wrong bytes")
                 schema["description"] += "x"
-                self.assertEqual(len(encoded(expected)), 32769)
+                self.assertEqual(len(encoded(expected)), cap + 1)
                 await self.rejected_constraint(constraint, code="input_too_large")
 
     async def test_shared_dag_expansion_stops_incrementally_at_the_byte_budget(self):
+        cap = gateway.MAX_REQUEST_BYTES
         schema = {"const": SCHEMA_CANARY}
         for _ in range(24):
             schema = {"anyOf": [schema, schema]}
@@ -359,15 +362,15 @@ class StructuredOutputTests(unittest.IsolatedAsyncioTestCase):
             self.assertFalse(_one_shot, "Schema expansion must not use the unbounded one-shot encoder")
             for chunk in original(encoder, value, _one_shot=False):
                 sizes.append(len(chunk.encode()))
-                self.assertLessEqual(len(sizes), 32769, "Incremental expansion did not stop")
+                self.assertLessEqual(len(sizes), cap + 1, "Incremental expansion did not stop")
                 yield chunk
 
         with patch.object(json.JSONEncoder, "iterencode", new=bounded), self.captured_output():
             with self.assertRaises(ModelError) as caught:
                 await client.complete(MESSAGES, json_schema_constraint={"name": "dag", "schema": schema})
         self.assertEqual(caught.exception.code, "input_too_large")
-        self.assertGreater(sum(sizes), 32768)
-        self.assertLessEqual(sum(sizes), 32768 + 64)
+        self.assertGreater(sum(sizes), cap)
+        self.assertLessEqual(sum(sizes), cap + 64)
         self.assertEqual((client.http_attempts, len(self.sent)), (0, 0))
         self.assert_private(str(caught.exception))
 
@@ -470,7 +473,7 @@ class StructuredOutputTests(unittest.IsolatedAsyncioTestCase):
         })
         self.assertEqual(runner.GRADING_STAGES, ("recipe", "request", "execution", "coverage", "value_agreement"))
         self.assertEqual((manifest["settings"]["max_request_bytes"], manifest["settings"]["max_client_http_attempts"]),
-                         (32768, 9))
+                         (40960, 9))
         self.assertFalse(self.sent)
         self.loader.assert_not_called()
 

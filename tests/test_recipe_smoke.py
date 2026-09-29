@@ -462,11 +462,12 @@ class RecipeSmokeTests(unittest.IsolatedAsyncioTestCase):
             candidate = self.wire(request)
             if len(self.sent) == 1:
                 self.assertEqual(candidate["recipe_id"], "overview")
+                # metric_meaning: v11 rejects a model-authored count_basis clarification.
                 candidate = {"outcome": "clarify", "clarification": {
-                    "kind": "count_basis", "choices": [
+                    "kind": "metric_meaning", "choices": [
                         {"id": f"c{index}", "semantic_value": {
-                            "type": "count_basis", "scope": candidate["request"], "value": value}}
-                        for index, value in enumerate(("booked_seats", "known_booking_accounts"), 1)]}}
+                            "type": "metric_meaning", "scope": candidate["request"], "value": value}}
+                        for index, value in enumerate(("confirmed_booked_amount", "cash_received"), 1)]}}
             return httpx.Response(200, json=envelope(candidate))
 
         report = await self.run_panel(respond)

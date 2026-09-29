@@ -9,7 +9,8 @@ import re
 
 from grepbit import model
 from grepbit.gateway import _ERRORS, _expected_alias
-from grepbit.recipe_model import INVALID_REQUEST_REASONS
+from grepbit.count_policy import RULES as COUNT_POLICY_RULES
+from grepbit.recipe_model import ACTION_SOURCES, COUNT_READINGS, INVALID_REQUEST_REASONS
 from tools import p3_assets as assets, p3_eval as evaluator, p3_grading, p3_admission as admission, smoke
 
 _TRANSPORT = ("unencrypted_http", "tls_verification_enabled")
@@ -19,7 +20,9 @@ _CODES = assets.SAFE_CODES | set(_ERRORS)
 _EVIDENCE_FIELDS = {
     "client_http_attempts", "elapsed_seconds", "requested_model", "returned_model", "http_status",
     "transport_security", "usage", "stages", "error_code", "stop_reason", "invalid_request_reason",
+    "count_reading", "action_source", "count_policy_rule",
 }
+_COUNT_FIELDS = ("count_reading", "action_source", "count_policy_rule")
 
 
 def _same(left, right):
@@ -70,6 +73,16 @@ def _evidence(value: dict, *, expected_model=None, requested_profile=None) -> di
                 or not isinstance(stages, dict) or stages.get("json_parse") != "passed"
                 or stages.get("request_validation") != "failed"
                 or stages.get("kernel_execution") != "not_run"):
+            raise assets.P3Error("invalid_asset")
+    # v11 count-cue fields are closed enumerations; historical evidence has none
+    # of them. A rule is present exactly when the kernel policy authored the
+    # action, which requires a bound, contrast or generic reading.
+    if any(key in result for key in _COUNT_FIELDS):
+        reading, source, rule = (result.get(key) for key in _COUNT_FIELDS)
+        if (not all(key in result for key in _COUNT_FIELDS) or reading not in (None, *COUNT_READINGS)
+                or source not in (None, *ACTION_SOURCES) or rule not in (None, *COUNT_POLICY_RULES)
+                or (rule is None) != (source != "count_policy")
+                or source == "count_policy" and reading not in ("bound", "contrast", "generic")):
             raise assets.P3Error("invalid_asset")
     if requested_profile is not None:
         if (expected_model is not None or type(requested_profile) is not str

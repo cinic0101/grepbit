@@ -18,6 +18,7 @@ from grepbit.bedrock import BedrockClient, BedrockConfig
 from tools import fixture, p3_assets as assets, p3_eval, recipe_smoke, smoke
 from tools.history import p3_bedrock_candidate_probe as runner
 from test_recipe_model import proposal
+import frozen_recipe_schema
 
 COMMIT = "1" * 40
 OWNER = "https://github.com/cinic0101/grepbit/issues/64#issuecomment-1"
@@ -27,6 +28,7 @@ RAW = "PRIVATE_PROVIDER_COMPLETION_CANARY"
 
 class BedrockCandidateProbeTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
+        self.enterContext(frozen_recipe_schema.patched())  # v11 fails closed on Bedrock; test the frozen v10 schema
         for target in ("socket.socket.connect", "socket.socket.connect_ex", "socket.create_connection",
                        "socket.getaddrinfo", "httpx.AsyncHTTPTransport", "httpx.HTTPTransport"):
             guard = self.enterContext(patch(target, side_effect=AssertionError("Real network forbidden")))

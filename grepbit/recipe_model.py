@@ -8,10 +8,10 @@ from pathlib import Path
 import time
 from typing import Literal
 
-from . import model as protocol
+from . import count_policy, model as protocol
 from .breakdown import BreakdownAnalysisPack, BreakdownRequest, execute_breakdown
 from .catalog import LEARNINGOPS, PROFILE_ID
-from .clarification import KINDS, MAX_CHOICES, Clarification, SemanticChoice, clarification_schema
+from .clarification import COUNT_BASES, KINDS, MAX_CHOICES, Clarification, SemanticChoice, clarification_schema
 from .compare import CompareAnalysisPack, CompareRequest, execute_compare
 from .contracts import ExecutionLimits, KernelError
 from .gateway import CALL_TIMEOUT_SECONDS, MODEL, GatewayClient, ModelError, json_schema_response_format
@@ -20,10 +20,10 @@ from .overview import OverviewAnalysisPack, OverviewRequest, execute_overview
 from .presentation import ClarificationPresentation, PRESENTATION_VERSION, render_clarification
 from .provider import LLMClient, normalize_response, response_mode, wire_identity
 
-CONTEXT_VERSION = "learningops-recipe-context-v3"
-OUTPUT_CONTRACT = "recipe-request-json-v2"
-INSTRUCTION_VERSION = "recipe-selection-instruction-v6"
-STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v2"
+CONTEXT_VERSION = "learningops-recipe-context-v6"
+OUTPUT_CONTRACT = "recipe-request-json-v3"
+INSTRUCTION_VERSION = "recipe-selection-instruction-v7"
+STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v3"
 STRUCTURED_OUTPUT_SCHEMA_NAME = "grepbit_recipe_request"
 _NativeRequest = OverviewRequest | CompareRequest | BreakdownRequest
 _NativePack = OverviewAnalysisPack | CompareAnalysisPack | BreakdownAnalysisPack
@@ -33,7 +33,10 @@ _NativePack = OverviewAnalysisPack | CompareAnalysisPack | BreakdownAnalysisPack
 _CLARIFICATION_REASONS = ("clarification_shape", "choice_count", "choice_shape", "choice_values",
                           "choice_consistency", "question_binding")
 INVALID_REQUEST_REASONS = ("root_shape", "unknown_recipe", "request_fields", "request_values",
-                           *_CLARIFICATION_REASONS, "export_drift")
+                           *_CLARIFICATION_REASONS, "export_drift", *count_policy.CUE_REASONS)
+# ``absent`` is a parsed object without ``overview_count``; it runs as ``none`` (#120, b2).
+COUNT_READINGS = ("absent", *count_policy.READINGS)
+ACTION_SOURCES = ("model", "count_policy")
 _REQUEST_FIELDS = {
     "overview": (OverviewRequest, {"center_code", "start", "end", "timezone"}),
     "compare": (CompareRequest, {"current", "baseline"}),
@@ -122,8 +125,13 @@ SYSTEM_INSTRUCTION = (
     'reopen alternatives excluded by the question or expand a contrast to fill the schema '
     'choice limit. The reviewed enum lists are a vocabulary for representing grounded choices, '
     'never a menu to offer in full. '
-    "count_basis and metric_meaning require a complete explicit Overview scope. "
-    "Count choices include booked_seats and reviewed alternative count meanings; amount choices include "
+    "Every JSON object begins with overview_count. Read the count first, report it, then act: using "
+    "count_cues, report whether the question asks for a count of seats, booking accounts, attendance or "
+    "people in one complete explicit Overview scope (bound, contrast or generic) or not (none). For bound, "
+    "contrast or generic, return only overview_count, its meaning, meanings or event, other_unsupported and "
+    "scope; the server derives the count action. For none, follow overview_count with one action described "
+    "here; never return a count_basis clarification. "
+    "metric_meaning requires a complete explicit Overview scope; amount choices include "
     "confirmed_booked_amount and reviewed alternative amount meanings. Alternatives do not add executable metrics. "
     "comparison_roles requires exactly two reversed assignments of the same two explicitly supplied full months. "
     "center requires distinct explicitly supplied center codes and one unchanged explicit month. "
@@ -191,17 +199,35 @@ def output_schema() -> dict[str, object]:
             }},
         },
     }
-    return {
-        "oneOf": [
-            {"type": "object", "additionalProperties": False,
-             "required": ["outcome", "recipe_id", "recipe_version", "request"],
-             "properties": {"outcome": {"const": "request"}, "recipe_id": {"const": recipe},
-                            "recipe_version": {"const": "0.1"}, "request": shape}}
-            for recipe, shape in shapes.items()
-        ] + [{"type": "object", "additionalProperties": False, "required": ["outcome"],
-              "properties": {"outcome": {"const": "declined"}}},
-             clarification_schema(shapes["overview"], shapes["compare"])],
+    clarify = clarification_schema(shapes["overview"], shapes["compare"])
+    kinds = clarify["properties"]["clarification"]["oneOf"]
+    # Model clarifications exclude count_basis; only the kernel count policy authors it.
+    clarify["properties"]["clarification"]["oneOf"] = [
+        kind for kind in kinds if kind["properties"]["kind"]["const"] != "count_basis"]
+    actions = [
+        {"type": "object", "additionalProperties": False,
+         "required": ["outcome", "recipe_id", "recipe_version", "request"],
+         "properties": {"outcome": {"const": "request"}, "recipe_id": {"const": recipe},
+                        "recipe_version": {"const": "0.1"}, "request": shape}}
+        for recipe, shape in shapes.items()
+    ] + [{"type": "object", "additionalProperties": False, "required": ["outcome"],
+          "properties": {"outcome": {"const": "declined"}}}, clarify]
+
+    def branch(reading: str, properties: dict[str, object]) -> dict[str, object]:
+        # overview_count is first so constrained decoding reads the count before any action.
+        properties = {"overview_count": {"const": reading}, **properties}
+        return {"type": "object", "additionalProperties": False, "required": list(properties),
+                "properties": properties}
+
+    cues = {
+        "bound": ("meaning", {"enum": list(COUNT_BASES)}),
+        "contrast": ("meanings", {"type": "array", "minItems": 2, "maxItems": len(COUNT_BASES),
+                                  "items": {"enum": list(COUNT_BASES)}}),
+        "generic": ("event", {"enum": list(count_policy.EVENTS)}),
     }
+    return {"oneOf": [branch("none", action["properties"]) for action in actions] + [
+        branch(reading, {name: value, "other_unsupported": {"type": "boolean"}, "scope": shapes["overview"]})
+        for reading, (name, value) in cues.items()]}
 
 
 def runtime_context() -> dict[str, object]:
@@ -225,7 +251,7 @@ def runtime_context() -> dict[str, object]:
              "required": ["amount", "bookings", "seats"],
              "optional": ["daily_amount", "category_amounts"],
              "views": "Full observed booking-day and category amounts, not filled calendars or forecasts.",
-             "unsupported": ["names/guessed IDs", "people counts", "custom metrics", "selectable slots"]},
+             "unsupported": ["names/guessed IDs", "custom metrics", "selectable slots"]},
             {"id": "compare", "version": "0.1", "purpose": "Compare all-center booked amount across two months.",
              "scope": "Distinct explicit current and baseline months; no center filter.",
              "required": ["current", "baseline", "delta", "growth"], "optional": [],
@@ -239,19 +265,29 @@ def runtime_context() -> dict[str, object]:
              "unsupported": ["other dimensions", "center filters", "denominator overrides", "inferred k",
                              "zero-filled/absent courses", "all boundary ties"]},
         ],
+        "count_cues": (
+            "overview_count reports what the question says about a count of seats, booking accounts, attendance "
+            "or people. Use bound, contrast or generic only with one complete explicit Overview scope: one "
+            "supplied center code and one explicit full month with its year; otherwise, and when the question "
+            "has no such count, use none with the usual action. Count meanings: booked_seats are booked line "
+            "quantities; known_booking_accounts are distinct non-null booking-account IDs, excluding anonymous "
+            "bookings; attendance_visits are attendance events, not distinct humans; distinct_people are "
+            "deduplicated actual persons. Attendance happens after a booking, and not every booking is attended. "
+            "A number of bookings or reservations is the Overview bookings output, not a count meaning. "
+            "bound: the question explicitly states one meaning: booked seats; booking accounts; an attendance "
+            "event (attended, showed up, checked in, visits) is attendance_visits, or distinct_people when "
+            "deduplicated persons are asked for; deduplicated, unique or individual actual persons are "
+            "distinct_people. contrast: the question explicitly contrasts two to four meanings as either/or; "
+            "list exactly those meanings, even after an earlier generic noun. generic: a generic count noun such "
+            "as headcount or how many people with no stated meaning or event; event is booking when the count is "
+            "tied to a booking event (booked, reserved, registered, signed up, a booking overview or booking "
+            "activity), otherwise none. other_unsupported is true when the question has any other requirement "
+            "that one Overview of that scope cannot satisfy (profit, cash, targets, another center or period, a "
+            "comparison or ranking, an unrelated question) or a second unresolved ambiguity. scope is the native "
+            "Overview request for that center and month. The server derives the action from these cues; only "
+            "booked_seats is executable through the Overview recipe."
+        ),
         "clarification": {
-            "count_basis": (
-                'Use count_basis only when the question leaves mutually exclusive count meanings unresolved. First '
-                'preserve any specified event or population: a count of actual attendance events is '
-                'attendance_visits, even when expressed using a generic people/count noun. If the question requires '
-                'attendance_visits, distinct_people or known_booking_accounts, decline the whole request, including '
-                'when it also requires a supported Overview. A question that explicitly leaves the count basis '
-                'undecided instead admits only its stated alternatives. Use one explicit Overview scope. The '
-                'available count meanings are booked_seats, known_booking_accounts, attendance_visits and '
-                'distinct_people. Seats are booked line quantities; accounts are distinct non-null booking-account '
-                'IDs, excluding anonymous bookings; visits are attendance events, not distinct humans. Only '
-                'booked_seats is executable through this recipe.'
-            ),
             "comparison_roles": "Two explicit months without orientation; preserve both months and offer both roles.",
             "center": "One explicit month and two to four supplied codes; offer a single center, never combine them.",
             "metric_meaning": "One explicit Overview scope; confirmed_booked_amount versus cash_received, "
@@ -366,6 +402,7 @@ async def interpret_recipe_and_execute(
     error: ModelError | None = None
     clarification: Clarification | None = None
     presentation: ClarificationPresentation | None = None
+    decision: count_policy.CountDecision | None = None
     stages = dict.fromkeys(protocol.STAGES, "not_run")
     context = runtime_context()
     evidence: dict[str, object] = {
@@ -375,6 +412,7 @@ async def interpret_recipe_and_execute(
         "transport_security": client.config.transport_security, "stages": stages,
         "kernel_error_code": None, "response_shape": None, "context_identity": _identity(context),
         "structured_output_identity": None, "invalid_request_reason": None,
+        "count_reading": None, "count_cue": None,
     }
     try:
         if (type(timeout_seconds) not in (int, float)
@@ -401,8 +439,35 @@ async def interpret_recipe_and_execute(
                 evidence["invalid_json_fingerprint"] = invalid_json_fingerprint(content)
             raise
         stages["json_parse"] = "passed"
-        if isinstance(data, dict) and data.get("outcome") == "clarify":
-            if set(data) != {"outcome", "clarification"}:
+        if isinstance(data, dict):
+            reading = data.get("overview_count", "absent")
+            if "overview_count" in data and (not isinstance(reading, str) or reading not in count_policy.READINGS):
+                raise _InvalidRequest("count_cue_shape")
+            evidence["count_reading"] = reading
+            if reading == "none":
+                data = {key: value for key, value in data.items() if key != "overview_count"}
+            elif reading != "absent":
+                try:
+                    cue = count_policy.parse_cue(data, question)
+                except count_policy.CueError as exc:
+                    raise _InvalidRequest(exc.reason) from None
+                evidence["count_cue"] = cue.to_dict()
+                decision = count_policy.decide(cue)
+        if decision is not None:
+            if decision.action == "declined":
+                raise ModelError("model_declined")
+            if decision.request is not None:
+                proposal = RecipeProposal("overview", decision.request)
+            else:
+                clarification = decision.clarification
+                presentation = render_clarification(clarification)
+                action = {"clarification": clarification.to_dict(), "presentation": presentation.to_dict()}
+                if client.safe_export(action) != action:
+                    raise _InvalidRequest("export_drift")
+        elif isinstance(data, dict) and data.get("outcome") == "clarify":
+            raw = data.get("clarification")
+            # Under a none or absent reading, count_basis is not a model-authored kind.
+            if set(data) != {"outcome", "clarification"} or isinstance(raw, dict) and raw.get("kind") == "count_basis":
                 raise _InvalidRequest("clarification_shape")
             try:
                 clarification = Clarification.from_mapping(data["clarification"])
@@ -458,6 +523,7 @@ async def interpret_recipe_and_execute(
         "transport_failure": error.transport_failure if error else False,
         "model_outcome": ("request" if proposal else "clarify" if clarification else
                           "declined" if error and error.code == "model_declined" else None),
+        "action_source": None, "count_policy_rule": None,
         "proposal": proposal.to_dict() if proposal else None,
         "analysis_pack": pack.to_dict() if pack else None, "pack_status": pack.status if pack else None,
         "clarification": clarification.to_dict() if clarification else None,
@@ -470,6 +536,9 @@ async def interpret_recipe_and_execute(
             "Client HTTP attempts and returned usage do not establish total upstream inference work.",
         ],
     })
+    if evidence["model_outcome"] is not None:
+        evidence["action_source"] = "count_policy" if decision else "model"
+        evidence["count_policy_rule"] = decision.rule if decision else None
     exported = client.safe_export(evidence)
     if clarification is not None and (
             exported["clarification"] != evidence["clarification"]
@@ -478,7 +547,7 @@ async def interpret_recipe_and_execute(
         error = ModelError("invalid_request")
         exported.update({
             "clarification": None, "presentation": None, "presentation_version": None, "model_outcome": None,
-            "error_code": error.code, "stop_reason": error.stop_reason,
+            "action_source": None, "count_policy_rule": None, "error_code": error.code, "stop_reason": error.stop_reason,
             "stages": {**stages, "request_validation": "failed"}, "invalid_request_reason": "export_drift",
         })
     elapsed = max(0.0, clock() - started)
@@ -490,6 +559,7 @@ async def interpret_recipe_and_execute(
             "analysis_pack": None, "pack_status": None, "error_code": error.code,
             "clarification": None, "presentation": None, "presentation_version": None,
             "model_outcome": "request" if proposal else None,
+            **({} if proposal else {"action_source": None, "count_policy_rule": None}),
             "stop_reason": error.stop_reason, "transport_failure": error.transport_failure,
             "stages": {**stages, "transport": "failed",
                        "kernel_execution": "failed" if proposal else "not_run"},

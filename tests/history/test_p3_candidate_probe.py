@@ -294,7 +294,8 @@ class CandidateProbeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(report["client_http_attempts"], 1)
 
     async def test_valid_clarification_does_not_claim_native_execution_compatibility(self):
-        report = await self.run_probe(client=self.client(content=json.dumps(clarify())))
+        # metric_meaning: v11 rejects a model-authored count_basis clarification.
+        report = await self.run_probe(client=self.client(content=json.dumps(clarify("metric_meaning"))))
         self.assertEqual(report["compatibility"]["typed_action"], "passed")
         self.assertEqual(report["compatibility"]["native_execution"], "not_run")
         self.assertEqual(report["error_code"], "invalid_probe")
