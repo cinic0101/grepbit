@@ -72,9 +72,13 @@ steps did not run, and v11 is not an accepted improvement. See the
 The current candidate, v12, returns to v10's exact runtime bytes, which are
 v7's, by owner decision after v11's stop. It is a restoration, not a new fix.
 The frozen clarification test, the 32,768-byte request cap and the Bedrock
-route are restored; v11 archives stay readable. v12 has no run of its own, and
-v7's recorded limitations carry over. The event-cue analysis is a separate
-proposal, ADR #125. See the [v10 restoration](docs/v10-restoration-v12.md).
+route are restored; v11 archives stay readable. v7's recorded limitations carry
+over. By owner decision, ADR #125 Option A stops the count family. One
+authorized confirmation run on the 24-input control scored 20/24, as v7 did.
+Twenty-three per-input outcomes matched. `dev-BM6.zh-TW` failed differently on
+identical input tokens, so that input's failure mode is not stable. Raw output
+length varied on 4 of 24 inputs. See the
+[v10 restoration](docs/v10-restoration-v12.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality

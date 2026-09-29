@@ -457,6 +457,10 @@ baseline 12/22), 8/14 families. Against v9: 7 fixed, **7 new regressions**.
   per-question `event` cue. That is not established causally.
 - `dev-BM6.zh-TW` was read as a bound `booked_seats` count and answered, a
   missed clarification.
+  (Note added 2026-09-29: v12's confirmation run, on v7's identical bytes,
+  also answered this input, where v7 had clarified. So the change cannot be
+  attributed to v11 from one observation. See
+  [v10 restoration, "Confirmation run"](v10-restoration-v12.md#confirmation-run-2026-09-29).)
 
 On the ungated diagnostic Compare inputs, which the model still authors:
 - `E02_compare.en` and `dev-MC4.en` became complete correct;
