@@ -290,7 +290,8 @@ def _policy_materials(intake_path: Path, panel_path: Path, allocation_policy: st
 
 
 def _freeze_payload(database: Path, intake_path: Path, panel_path: Path, *,
-                    accepted_commit: str, frozen_at: str, allocation_policy: str | None = None) -> dict:
+                    accepted_commit: str, frozen_at: str, allocation_policy: str | None = None,
+                    max_request_bytes: int = p3_eval.MAX_REQUEST_BYTES) -> dict:
     panel, intake = _policy_materials(intake_path, panel_path, allocation_policy)
     frozen_time = _timestamp(frozen_at)
     if frozen_time > datetime.now(timezone.utc) or any(
@@ -300,7 +301,7 @@ def _freeze_payload(database: Path, intake_path: Path, panel_path: Path, *,
     recipe_smoke._accepted(source, accepted_commit)
     inputs = panel.inputs()
     representatives = {item["family_id"]: item for item in inputs}
-    limits, policy = p3_eval.settings(len(inputs)), p3_eval.stop_policy()
+    limits, policy = p3_eval.settings(len(inputs), max_request_bytes), p3_eval.stop_policy()
     payload = {
         "version": FREEZE_VERSION if allocation_policy is None else POLICY_FREEZE_VERSION,
         "state": "frozen", "frozen_at": frozen_at,
@@ -416,10 +417,13 @@ def validate_freeze(path: Path, database: Path, panel_path: Path, *, accepted_co
                 raise assets.P3Error("manifest_drift")
         if p3_eval._pin(panel_path) != pins["panel"]:
             raise assets.P3Error("manifest_drift")
+        cap = payload["settings"]["max_request_bytes"]
+        if type(cap) is not int or cap not in p3_eval.REQUEST_CAPS:
+            raise assets.P3Error("invalid_manifest")
         expected = _freeze_payload(
             database, path.parent / pins["intake"]["reference"],
             path.parent / pins["panel"]["reference"], accepted_commit=accepted_commit,
-            frozen_at=payload["frozen_at"], allocation_policy=allocation_policy)
+            frozen_at=payload["frozen_at"], allocation_policy=allocation_policy, max_request_bytes=cap)
         if expected != payload:
             raise assets.P3Error("manifest_drift")
         result = {"version": payload["version"], "sha256": assets.digest(payload),

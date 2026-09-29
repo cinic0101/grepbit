@@ -71,7 +71,7 @@ _summarize = historical._summarize
 
 
 def settings() -> dict:
-    return {**evaluator.settings(28), "model": PROFILE,
+    return {**evaluator.settings(28, evaluator.HISTORICAL_MAX_REQUEST_BYTES), "model": PROFILE,
             "response_mode": "bedrock_converse_normalized",
             "call_timeout_seconds": 300.0, "panel_timeout_seconds": 8520.0,
             "execution": "owner_authorized_observed_candidate_regression_only",

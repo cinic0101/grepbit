@@ -46,7 +46,8 @@ _PACKET_FIELDS = (formal._PACKET_FIELDS - {"preparation_assets"}) | {"evidence_c
 
 
 def settings() -> dict:
-    return {**evaluator.settings(MAX_INPUTS), "execution": "owner_granted_holdout_observation_only",
+    return {**evaluator.settings(MAX_INPUTS, evaluator.HISTORICAL_MAX_REQUEST_BYTES),
+            "execution": "owner_granted_holdout_observation_only",
             "client_fallback": 0, "resend": 0, "continuation": 0, "best_of": 0}
 
 

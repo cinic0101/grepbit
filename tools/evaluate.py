@@ -281,8 +281,8 @@ def load_panel_entry(panel_id: str, database: Path, *, panels_path: Path | None 
 
 # --------------------------------------------------------------------------- packet
 
-def settings(route: dict, input_count: int) -> dict:
-    base = evaluator.settings(input_count)
+def settings(route: dict, input_count: int, max_request_bytes: int = evaluator.MAX_REQUEST_BYTES) -> dict:
+    base = evaluator.settings(input_count, max_request_bytes)
     timeout = float(route["call_timeout_seconds"])
     return {**base, "model": route["model"],
             "response_mode": "bedrock_converse_normalized" if route["provider"] == "bedrock_converse" else "json_content",
@@ -436,8 +436,10 @@ def _packet_contract(packet: dict) -> None:
     if (panel["allocation_policy"] is not None) != (panel["intake_sha256"] is not None):
         raise assets.P3Error("invalid_manifest")
     route = assets.object_fields(packet["route"], _ROUTE_FIELDS)
+    cap = packet["settings"].get("max_request_bytes") if isinstance(packet["settings"], dict) else None
     if (route["provider"] not in PROVIDERS or route["transport_security"] != packet["transport_security"]
-            or not _same(packet["settings"], settings(route, len(packet["inputs"])))):
+            or type(cap) is not int or cap not in evaluator.REQUEST_CAPS
+            or not _same(packet["settings"], settings(route, len(packet["inputs"]), cap))):
         raise assets.P3Error("invalid_manifest")
     if packet["run_id"] != _run_id(candidate["candidate_id"], panel["panel_id"], route["route_id"],
                                    assets.digest(source)):
@@ -488,6 +490,7 @@ def build_packet(database: Path, *, candidate_id: str, panel_id: str, route_id: 
     run_index_sha = evaluator._pin(runs_file)["sha256"] if runs_file.exists() else assets.digest([])
     claim = derive_claim(entry["tier"], panel_id, route_id, runs)
     inputs = panel.inputs()
+    limits = settings(route, len(inputs), candidate["limits"]["request"])
     packet = {
         "version": PACKET_VERSION, "state": "prepared_not_authorized", "purpose": PURPOSE,
         "tier": entry["tier"], "claim": claim, "evidence_class": claim, "promotion_eligible": False,
@@ -504,7 +507,7 @@ def build_packet(database: Path, *, candidate_id: str, panel_id: str, route_id: 
         "observation_fields": list(OBSERVATION_FIELDS), "source_identity": source,
         "database_sha256": smoke._fixture_identity(database), "inputs": inputs,
         "order": [case.case_id for case in panel.cases], "run_index_sha256": run_index_sha,
-        "settings": settings(route, len(inputs)), "settings_sha256": assets.digest(settings(route, len(inputs))),
+        "settings": limits, "settings_sha256": assets.digest(limits),
         "stop_policy": stop_policy(), "stop_policy_sha256": assets.digest(stop_policy()),
         "gateway_policy": smoke.policy_attestation(ROUTE_POLICY, required=True),
         "transport_security": route["transport_security"], "data_boundary": data_boundary(),
