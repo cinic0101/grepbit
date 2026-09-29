@@ -129,6 +129,21 @@
       "freeze": null,
       "authoring": "development",
       "note": "Versioned C4 explicit contrast with independent semantic acceptance; 51 unchanged inputs, 3 revised exposed C4 inputs. Report C4 separately; not fresh or an old-C4 model fix."
+    },
+    {
+      "panel_id": "p3-dev-bound-meaning-v1",
+      "tier": "dev",
+      "path": "evals/dev/bound-meaning-panel-v1.json",
+      "assets": {
+        "panel": "b4592197075efc99a8101d65451275c25aef90c3ef89d1e01814f6d0e4ca8bab",
+        "cases": "788d36bba89886d28c5d78d68ff947b2328b31d7109f597e0e291369b43b3d75",
+        "oracles": "6f8f9812a83f6f8de858f074afedabd4e5c4d89e90a02b3e39a6a18ce14d4815"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "24 exposed controls: exact E02 reuse plus directed/ambiguous Compare and bound/unresolved counts; independent semantic acceptance before v7 baseline."
     }
   ]
 }
