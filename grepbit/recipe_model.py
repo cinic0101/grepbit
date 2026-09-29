@@ -20,7 +20,7 @@ from .overview import OverviewAnalysisPack, OverviewRequest, execute_overview
 from .presentation import ClarificationPresentation, PRESENTATION_VERSION, render_clarification
 from .provider import LLMClient, normalize_response, response_mode, wire_identity
 
-CONTEXT_VERSION = "learningops-recipe-context-v5"
+CONTEXT_VERSION = "learningops-recipe-context-v3"
 OUTPUT_CONTRACT = "recipe-request-json-v2"
 INSTRUCTION_VERSION = "recipe-selection-instruction-v6"
 STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v2"
@@ -245,11 +245,9 @@ def runtime_context() -> dict[str, object]:
                 'preserve any specified event or population: a count of actual attendance events is '
                 'attendance_visits, even when expressed using a generic people/count noun. If the question requires '
                 'attendance_visits, distinct_people or known_booking_accounts, decline the whole request, including '
-                'when it also requires a supported Overview. A generic people or count noun alone, without a stated '
-                'attendance event, deduplication of actual persons or a booking-account basis, requires none of '
-                'those meanings and leaves the count meanings unresolved. A question that explicitly leaves the '
-                'count basis undecided instead admits only its stated alternatives. Use one explicit Overview scope. '
-                'The available count meanings are booked_seats, known_booking_accounts, attendance_visits and '
+                'when it also requires a supported Overview. A question that explicitly leaves the count basis '
+                'undecided instead admits only its stated alternatives. Use one explicit Overview scope. The '
+                'available count meanings are booked_seats, known_booking_accounts, attendance_visits and '
                 'distinct_people. Seats are booked line quantities; accounts are distinct non-null booking-account '
                 'IDs, excluding anonymous bookings; visits are attendance events, not distinct humans. Only '
                 'booked_seats is executable through this recipe.'

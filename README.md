@@ -49,6 +49,11 @@ clarified comparison roles. The sequence stopped before the formal and holdout
 runs. v9 is not an accepted improvement. See the
 [generic-count checkpoint](docs/generic-count-context-v9.md).
 
+The current candidate, v10, restores v7's exact runtime bytes by owner
+decision. Its semantic identity equals v7's; it is not a new fix. v10 has no
+run of its own, and v7's recorded results and limitations describe the same
+wire bytes. See the [v7 restoration](docs/v7-context-restoration-v10.md).
+
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
 remains open. Grounding, clarification resume, synthesis, PostgreSQL parity
