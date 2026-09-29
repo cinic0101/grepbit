@@ -277,3 +277,78 @@ Failure-mode comparisons on `dev-BM6` are not reliable from single
 observations. The correct/incorrect totals on this panel did reproduce once.
 This is one observation on exposed development data, not generalization.
 
+
+## Noise measurement (2026-09-29)
+
+**Decision and authorization.** The owner chose noise measurement plus
+offline replay tooling
+([#79 #issuecomment-5892696354](https://github.com/cinic0101/grepbit/issues/79#issuecomment-5892696354));
+the tooling is evaluation v2 ([replayable observations](replayable-observations.md), #129).
+The four runs were proposed at
+[#79 #issuecomment-5894206747](https://github.com/cinic0101/grepbit/issues/79#issuecomment-5894206747)
+and authorized, with the route, provider and profile confirmed unchanged, at
+[#79 #issuecomment-5899868983](https://github.com/cinic0101/grepbit/issues/79#issuecomment-5899868983).
+
+**Runs.**
+- Source is `af3a92d`. All four are evaluation v2 runs of v12's bytes
+  (`6d707b8d…`), tier `dev`, claim `development_observation`.
+- They ran in this order, each with its own packet, envelope and slot:
+
+  | Run | Panel | Result | Report |
+  | --- | --- | --- | --- |
+  | control `--r1` | `p3-dev-bound-meaning-v1` | 20/24 | `a78d2c68…` |
+  | probe `--r1` | `p3-dev-mechanism-probe-v1` | 11/22 | `e40babc9…` |
+  | control `--r2` | `p3-dev-bound-meaning-v1` | 20/24 | `51283dbf…` |
+  | probe `--r2` | `p3-dev-mechanism-probe-v1` | 11/22 | `432b797b…` |
+
+- There were 92 of 92 client attempts. No run stopped, and nothing was retried
+  or rerun. The requested and returned model was `gemma-4-31b` on every input.
+- Upstream inference attempts are unknown.
+
+**Result: no input varied within the window.**
+- The confirmation run and both control runs are identical on every one of
+  the 24 inputs. That covers the outcome, the parsed signature and the
+  completion-token count. For `--r1` and `--r2`, the persisted validated action
+  is identical too.
+- The two probe runs are identical on every one of the 22 inputs in the same
+  way.
+- `--aggregate` reports:
+
+  | Panel | Runs | stable_correct | stable_wrong | flaky | insufficient |
+  | --- | --- | --- | --- | --- | --- |
+  | control | 4 (v7, v12, `--r1`, `--r2`) | 20 | 4 | 0 | 0 |
+  | probe | 2 | 11 | 11 | 0 | 0 |
+
+- The only difference across the four control observations is still v7's
+  earlier `dev-BM6.zh-TW` clarification: one failure against another, with
+  completion-token changes on three other inputs. v7 ran before the other
+  three.
+- `--replay` of each v2 report at `af3a92d` made 0 model calls. It gave
+  `replayed_same` on all 92 rows and 0 comparison changes.
+- These are counts over 2–4 observations at temperature 0 on exposed
+  development data. They are not probabilities.
+
+**Reading.**
+- Within this window the route returned the same output for the same bytes.
+- The one observed change, v7 against later runs of identical bytes, came
+  between sessions. It is consistent with drift between runs, such as a serving
+  change, rather than per-call sampling. The cause remains unknown.
+- With this measured baseline, the per-input changes of earlier candidates are
+  as follows (a fix is wrong → correct, a regression is correct → wrong):
+
+  | Candidate and panel | Fixed | Broke |
+  | --- | --- | --- |
+  | v8, control | none | `dev-BM2.en` |
+  | v8, probe | none | `dev-MC3.en`, `dev-A3.en`, `dev-BM2.en` |
+  | v9, probe | `dev-MN1.en`, `dev-MN3.en` | `dev-MC3.en` |
+  | v11, probe | `E02_compare.en`, `dev-MC4.en`, `dev-BM6.en`/`.ja`, `dev-MN2` ×3 | `dev-MC3.en`, `dev-A3.en`, `dev-MN1.zh-TW`/`.ja`, `dev-MN3.zh-TW`/`.ja` |
+
+  v9 made no correctness change on the control.
+- These changes are far larger than the one between-session change seen on
+  identical bytes. They are therefore consistent with each candidate's byte
+  change. Cross-session drift still cannot be excluded for any single input,
+  because those runs were in earlier sessions.
+
+This supersedes the "Confirmation run" section's statement that the run
+gives no evidence about the `dev-MN*`, `dev-MC4.en` and `dev-A3.en` changes.
+It remains a development observation, not generalization.
