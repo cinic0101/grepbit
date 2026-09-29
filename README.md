@@ -78,10 +78,12 @@ authorized confirmation run on the 24-input control scored 20/24, as v7 did.
 Twenty-three per-input outcomes matched. `dev-BM6.zh-TW` failed differently on
 identical input tokens, so that input's failure mode is not stable. Raw output
 length varied on 4 of 24 inputs. Four later authorized noise runs of the same
-bytes, two on the control and two on the 22-input mechanism probe, matched the
-confirmation run input for input, with 0 flaky inputs. The earlier count
-fixes' trade-offs (v11: 7 fixed, 6 broken on the probe) are therefore larger
-than the within-session noise. See the
+bytes followed. Both control runs matched the confirmation run input for input,
+and the two 22-input mechanism-probe runs matched each other, with 0 flaky
+inputs. Against v12, the earlier count fixes changed many inputs: v11 fixed 7
+and broke 6 on the probe. That is consistent with their byte changes, but
+between-session drift was not measured on the probe and cannot be excluded per
+input. See the
 [v10 restoration](docs/v10-restoration-v12.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a

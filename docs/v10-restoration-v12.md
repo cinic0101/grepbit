@@ -305,13 +305,16 @@ and authorized, with the route, provider and profile confirmed unchanged, at
   or rerun. The requested and returned model was `gemma-4-31b` on every input.
 - Upstream inference attempts are unknown.
 
-**Result: no input varied within the window.**
-- The confirmation run and both control runs are identical on every one of
-  the 24 inputs. That covers the outcome, the parsed signature and the
-  completion-token count. For `--r1` and `--r2`, the persisted validated action
-  is identical too.
-- The two probe runs are identical on every one of the 22 inputs in the same
-  way.
+**Result: no input varied among the observations from the confirmation run
+onward.**
+- Control: the confirmation run (about 14:23Z, source `71d0354`) and both
+  control runs (about 22:00Z, source `af3a92d`) are identical on every one of
+  the 24 inputs, about 8 hours apart. That covers the outcome, the parsed
+  signature and the completion-token count. For `--r1` and `--r2`, the
+  persisted validated action is identical too.
+- Raw completions are not kept, so identical raw text is not established.
+- Probe: the two runs are identical on every one of the 22 inputs in the same
+  way. Both come from one window of about 13 minutes.
 - `--aggregate` reports:
 
   | Panel | Runs | stable_correct | stable_wrong | flaky | insufficient |
@@ -320,21 +323,25 @@ and authorized, with the route, provider and profile confirmed unchanged, at
   | probe | 2 | 11 | 11 | 0 | 0 |
 
 - The only difference across the four control observations is still v7's
-  earlier `dev-BM6.zh-TW` clarification: one failure against another, with
-  completion-token changes on three other inputs. v7 ran before the other
-  three.
+  `dev-BM6.zh-TW` clarification: one failure against another, with
+  completion-token changes on three other inputs. v7 ran at about 03:30Z,
+  about 11 hours before the confirmation run.
 - `--replay` of each v2 report at `af3a92d` made 0 model calls. It gave
   `replayed_same` on all 92 rows and 0 comparison changes.
 - These are counts over 2–4 observations at temperature 0 on exposed
   development data. They are not probabilities.
 
 **Reading.**
-- Within this window the route returned the same output for the same bytes.
-- The one observed change, v7 against later runs of identical bytes, came
-  between sessions. It is consistent with drift between runs, such as a serving
-  change, rather than per-call sampling. The cause remains unknown.
-- With this measured baseline, the per-input changes of earlier candidates are
-  as follows (a fix is wrong → correct, a regression is correct → wrong):
+- From the confirmation run onward, the same control bytes gave the same
+  graded results, parsed signatures and completion-token counts.
+- The one observed change, v7 against the later runs of identical bytes, came
+  between sessions. It is consistent with drift between sessions, such as a
+  serving change, rather than per-call sampling. The cause remains unknown.
+- Between-session variation was not measured on the probe.
+- Against v12's measured result as the baseline, the per-input changes of
+  earlier candidates are as follows (a fix is wrong → correct, a regression is
+  correct → wrong). The count cue policy reports v11 against v9 instead
+  (7 fixed, 7 new regressions), which is a different baseline.
 
   | Candidate and panel | Fixed | Broke |
   | --- | --- | --- |
@@ -345,9 +352,11 @@ and authorized, with the route, provider and profile confirmed unchanged, at
 
   v9 made no correctness change on the control.
 - These changes are far larger than the one between-session change seen on
-  identical bytes. They are therefore consistent with each candidate's byte
-  change. Cross-session drift still cannot be excluded for any single input,
-  because those runs were in earlier sessions.
+  identical control bytes. They are therefore consistent with each
+  candidate's byte change.
+- Between-session drift still cannot be excluded for any single input: those
+  candidates ran in earlier sessions, and probe drift between sessions was not
+  measured.
 
 This supersedes the "Confirmation run" section's statement that the run
 gives no evidence about the `dev-MN*`, `dev-MC4.en` and `dev-A3.en` changes.
