@@ -1,0 +1,553 @@
+{
+  "version": "p3-cases-v1",
+  "cases": [
+    {
+      "case_id": "E02_compare.en",
+      "family_id": "E02_compare",
+      "question": "How did the overall confirmed booking amount in March 2026 compare with February?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "anchor",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": [
+          "evals/cases/learningops-languages.json#E02_compare.en",
+          "evals/panels/p2-recipe-smoke-v1.json#order"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "compare|confirmed_booked_amount|all_centers|current=2026-03|baseline=2026-02|Asia/Taipei|delta,growth",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "E02_compare.v1"
+    },
+    {
+      "case_id": "dev-MC1.en",
+      "family_id": "dev-MC1",
+      "question": "How did the overall confirmed booking amount in March 2026 compare against February?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#A03",
+          "evals/p3/development-cases-v1.json#E02_compare.en"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MC1|A03|current=2026-03|baseline=2026-02|compare_against",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MC1.v1"
+    },
+    {
+      "case_id": "dev-MC2.en",
+      "family_id": "dev-MC2",
+      "question": "How does the overall confirmed booking amount in March 2026 compare with February?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#A03",
+          "evals/p3/development-cases-v1.json#E02_compare.en"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MC2|A03|current=2026-03|baseline=2026-02|present_tense",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MC2.v1"
+    },
+    {
+      "case_id": "dev-MC3.en",
+      "family_id": "dev-MC3",
+      "question": "How did the confirmed booking amount across all centers in March 2026 compare with February?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#A03",
+          "evals/p3/development-cases-v1.json#E02_compare.en"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MC3|A03|current=2026-03|baseline=2026-02|across_all_centers",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MC3.v1"
+    },
+    {
+      "case_id": "dev-MC4.en",
+      "family_id": "dev-MC4",
+      "question": "How did the overall confirmed booking amount in March 2026 compare with February 2026?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#A03",
+          "evals/p3/development-cases-v1.json#E02_compare.en"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MC4|A03|current=2026-03|baseline=2026-02|year_on_both_months",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MC4.v1"
+    },
+    {
+      "case_id": "dev-MC5.en",
+      "family_id": "dev-MC5",
+      "question": "How did the overall confirmed booking amount in March 2026 change from February?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#A03",
+          "evals/p3/development-cases-v1.json#E02_compare.en"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MC5|A03|current=2026-03|baseline=2026-02|change_from_no_compare_verb",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MC5.v1"
+    },
+    {
+      "case_id": "dev-A3.en",
+      "family_id": "dev-A3",
+      "question": "How does the confirmed booking amount across all centers for March 2026 compare against February?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/coverage-matrix.md#A3",
+          "evals/p3/development-cases-v1.json#E02_compare"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|A3|compare|current=2026-03|baseline=2026-02|bound_orientation",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-A3.v1"
+    },
+    {
+      "case_id": "dev-BM2.en",
+      "family_id": "dev-BM2",
+      "question": "Against February 2026 as the reference, how did the overall confirmed booking amount in March change?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#A03",
+          "evals/dev/dev-oracles-v2.json#dev-A3.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM2|A03|current=2026-03|baseline=2026-02|reference_first",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM2.v1"
+    },
+    {
+      "case_id": "dev-MY1.en",
+      "family_id": "dev-MY1",
+      "question": "Against February 2026 as the reference, how did the overall confirmed booking amount in March 2026 change?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#A03",
+          "evals/dev/bound-meaning-cases-v1.json#dev-BM2.en"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MY1|A03|current=2026-03|baseline=2026-02|reference_first|year_on_both_months",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MY1.v1"
+    },
+    {
+      "case_id": "dev-MY2.en",
+      "family_id": "dev-MY2",
+      "question": "Against February as the reference, how did the overall confirmed booking amount in March 2026 change?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#A03",
+          "evals/dev/bound-meaning-cases-v1.json#dev-BM2.en"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MY2|A03|current=2026-03|baseline=2026-02|reference_first|year_on_target_only",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MY2.v1"
+    },
+    {
+      "case_id": "dev-BM6.zh-TW",
+      "family_id": "dev-BM6",
+      "question": "請提供 CTR-A01 在 2026 年 3 月的報名概況，包含人數。",
+      "language": "zh-TW",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/dev-oracles-v2.json#dev-C1.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM6|C01|CTR-A01|2026-03|count_unresolved_no_options",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM6.v1"
+    },
+    {
+      "case_id": "dev-BM6.en",
+      "family_id": "dev-BM6",
+      "question": "Give me the March 2026 booking overview for CTR-A01, including the headcount.",
+      "language": "en",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/dev-oracles-v2.json#dev-C1.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM6|C01|CTR-A01|2026-03|count_unresolved_no_options",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM6.v1"
+    },
+    {
+      "case_id": "dev-BM6.ja",
+      "family_id": "dev-BM6",
+      "question": "CTR-A01の2026年3月の申込概況を、人数を含めて教えてください。",
+      "language": "ja",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/dev-oracles-v2.json#dev-C1.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM6|C01|CTR-A01|2026-03|count_unresolved_no_options",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM6.v1"
+    },
+    {
+      "case_id": "dev-MN1.zh-TW",
+      "family_id": "dev-MN1",
+      "question": "請提供 CTR-A01 在 2026 年 3 月的概況，包含人數。",
+      "language": "zh-TW",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/bound-meaning-oracles-v1.json#dev-BM6.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MN1|C01|CTR-A01|2026-03|overview_unframed_headcount",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MN1.v1"
+    },
+    {
+      "case_id": "dev-MN1.en",
+      "family_id": "dev-MN1",
+      "question": "Give me the March 2026 overview for CTR-A01, including the headcount.",
+      "language": "en",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/bound-meaning-oracles-v1.json#dev-BM6.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MN1|C01|CTR-A01|2026-03|overview_unframed_headcount",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MN1.v1"
+    },
+    {
+      "case_id": "dev-MN1.ja",
+      "family_id": "dev-MN1",
+      "question": "CTR-A01の2026年3月の概況を、人数を含めて教えてください。",
+      "language": "ja",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/bound-meaning-oracles-v1.json#dev-BM6.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MN1|C01|CTR-A01|2026-03|overview_unframed_headcount",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MN1.v1"
+    },
+    {
+      "case_id": "dev-MN2.zh-TW",
+      "family_id": "dev-MN2",
+      "question": "2026 年 3 月有多少人在 CTR-A01 報名？",
+      "language": "zh-TW",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/bound-meaning-oracles-v1.json#dev-BM6.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MN2|C01|CTR-A01|2026-03|booking_count_only",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MN2.v1"
+    },
+    {
+      "case_id": "dev-MN2.en",
+      "family_id": "dev-MN2",
+      "question": "How many people booked at CTR-A01 in March 2026?",
+      "language": "en",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/bound-meaning-oracles-v1.json#dev-BM6.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MN2|C01|CTR-A01|2026-03|booking_count_only",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MN2.v1"
+    },
+    {
+      "case_id": "dev-MN2.ja",
+      "family_id": "dev-MN2",
+      "question": "2026年3月にCTR-A01で申し込んだ人数は何人ですか？",
+      "language": "ja",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/bound-meaning-oracles-v1.json#dev-BM6.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MN2|C01|CTR-A01|2026-03|booking_count_only",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MN2.v1"
+    },
+    {
+      "case_id": "dev-MN3.zh-TW",
+      "family_id": "dev-MN3",
+      "question": "CTR-A01 在 2026 年 3 月的人數是多少？",
+      "language": "zh-TW",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/bound-meaning-oracles-v1.json#dev-BM6.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MN3|C01|CTR-A01|2026-03|bare_headcount_count_only",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MN3.v1"
+    },
+    {
+      "case_id": "dev-MN3.en",
+      "family_id": "dev-MN3",
+      "question": "What was the headcount at CTR-A01 in March 2026?",
+      "language": "en",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/bound-meaning-oracles-v1.json#dev-BM6.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MN3|C01|CTR-A01|2026-03|bare_headcount_count_only",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MN3.v1"
+    },
+    {
+      "case_id": "dev-MN3.ja",
+      "family_id": "dev-MN3",
+      "question": "CTR-A01の2026年3月の人数はどれくらいでしたか？",
+      "language": "ja",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/mechanism-probe-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/bound-meaning-oracles-v1.json#dev-BM6.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|mechanism-probe|MN3|C01|CTR-A01|2026-03|bare_headcount_count_only",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-MN3.v1"
+    }
+  ]
+}

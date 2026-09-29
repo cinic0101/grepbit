@@ -144,6 +144,21 @@
       "freeze": null,
       "authoring": "development",
       "note": "24 exposed controls: exact E02 reuse plus directed/ambiguous Compare and bound/unresolved counts; independent semantic acceptance before v7 baseline."
+    },
+    {
+      "panel_id": "p3-dev-mechanism-probe-v1",
+      "tier": "dev",
+      "path": "evals/dev/mechanism-probe-panel-v1.json",
+      "assets": {
+        "panel": "0fdbdd414c82c521516fc94c5b0e7112f6bdf33d281826a16de80977f57ebf0d",
+        "cases": "867299dd297bd42070a4495c38fba271dda29661f8e2f5237df316a3a759fdaf",
+        "oracles": "845298a603c53e7195ecf03a4432cc75b8664abc08a4b6db43057a4832a79179"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "22 exposed v8 mechanism probes (#79): E02 one-factor wording, BM2 year placement, generic count framing; independent semantic acceptance. Diagnostic, not a candidate."
     }
   ]
 }
