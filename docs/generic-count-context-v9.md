@@ -122,3 +122,82 @@ everywhere, and `dev-BM6` ×3 on step 2. They are reported but not gated.
   one sentence.
 - The restored v7 Compare text brings back v7's measured Compare behavior,
   including E02's failure; it does not repair it.
+
+## Observation and stop (2026-09-29)
+
+PR #117 was squash-merged at `2e663e76151960e088d7bebedf76e46b2f825576`
+after a fresh-context GitHub diff review found no blocker. Each step was
+prepared from that clean commit with the named baseline, bound to the grant
+and a unique slot, and preflighted on #79 before any call. Strict readback
+passed for every report.
+
+| Step | Panel | v9 | Baseline | Taxonomy | Gate |
+|---|---|---|---|---|---|
+| 1 | `p3-dev-mechanism-probe-v1` | 12/22, 8/14 fam | v8 8/22 | 8 unchanged correct, 4 fixed, 0 new regressions | passed |
+| 2 | `p3-dev-bound-meaning-v1` | 20/24, 6/8 fam | v7 20/24 | 20 unchanged correct, 0 new regressions | passed |
+| 3 | `p3-dev-matrix-compare-first-v2` | 49/54, 16/18 fam | v7 54/54 | 49 unchanged correct, 5 new regressions | **failed** |
+
+The three runs:
+- all were HTTP 200 and returned `gemma-4-31b`;
+- made 100 client attempts in total, one per input;
+- had no operational error, timeout or in-flight attempt;
+- took 707.1 s elapsed (sum of the unrounded per-run times).
+
+| Step | Report SHA256 | Packet SHA256 | Slot |
+|---|---|---|---|
+| 1 | `7c5f9603…9ae9e4` | `c7135de4…a20303` | `.artifacts/generic-count-v9-20260929/step1-run` |
+| 2 | `b988a0d7…4be421` | `3b0d07db…4e9b` | `step2-run` |
+| 3 | `bfcdee87…05e8d1` | `07aa0ff0…bdf7` | `step3-run` |
+
+Step 1 met its targeted gate: `dev-MN1.en` and `dev-MN3.en` went from decline to
+the correct `count_basis` clarification, and no MN1–MN3 input declined.
+`dev-A3.en` and `dev-BM2.en` were also correct again. That is consistent with
+restoring the v7 Compare text, but it is not attributed. `dev-BM6` ×3 now
+clarify `count_basis`, but with the wrong choice set, so they still fail.
+
+Step 2 kept all 20 v7-correct controls, including the `dev-BM8` declines and
+the `dev-BM5` answers. `E02_compare.en` and `dev-BM6` stayed failing. The grant
+listed C1 under step 2 by mistake; C1 is in step 3's panel.
+
+Step 3 regressed five inputs. `dev-D8` ×3 attendance declines stayed correct.
+
+| Input | v7 | v9 |
+|---|---|---|
+| `dev-C1` ×3 | correct `count_basis` clarification, 2 choices | `count_basis` clarification, 4 choices (`semantic_choices` failed) |
+| `dev-A4.zh-TW`, `dev-A4.en` | complete correct | false `comparison_roles` clarification |
+
+Readings: these are not causal. Each is one temperature-0 observation per
+input on exposed development data.
+
+- **C1.** C1 asks the generic "how many people booked" and then states two
+  alternatives: seats or booking accounts.
+
+  The four-meaning menu is not new here. `dev-C1.zh-TW` and `dev-C1.en`
+  produced it on the frozen candidate, v3 and v5. The v6 and v7 observations
+  no longer showed it.
+
+  On v9 all three variants produced it, including `.ja`, which never had
+  before. That is consistent with the new sentence weakening the rule that such
+  a question "admits only its stated alternatives", but it is not established.
+
+  Either way, C1's stated-alternative choice set has not been stable across
+  context candidates. Choice sets are also failing on `dev-BM6` and `dev-MN2`.
+- **A4.** The v9 Compare text is byte-identical to v7, which answered A4
+  correctly, as v3, v5 and v6 did. The only context difference is the count
+  sentence and the version string. So either v7's Compare role binding is
+  sensitive to unrelated context changes, or this is serving variance. No
+  rerun is permitted, so the two cannot be separated.
+
+**The 54/54 gate failed. The bounded sequence is stopped.**
+- Step 4 (formal 28) and step 5 (holdout 18) were not prepared or run.
+- The #79 formal balance stays at 2 of 4, and the supplemental holdout
+  observation was not consumed.
+- The grant consumed 100 of its 146-call ceiling. The remaining 46 calls are not
+  executable after the failed gate.
+- There was no rerun, no further count-family fix and no automatic next
+  candidate. Per the grant, the count surface is closed for this goal.
+
+v9 remains the registered current candidate for reproducibility. It is not an
+accepted improvement or promotion. Restoring v7 as the runtime would need a new
+registered identity and an owner decision. This evidence-only closeout does not
+imply one. Any further work needs a new owner decision.
