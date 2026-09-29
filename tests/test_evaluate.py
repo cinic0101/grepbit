@@ -362,42 +362,48 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
 
     # ----------------------------------------------------------------- request cap per candidate (#122)
     async def test_pre_v11_archive_with_the_historical_request_cap_reads_back_and_serves_as_baseline(self):
-        """#122: archives prepared before the v11 merge record 32,768 and must still read back."""
+        """#122: archives record 32,768 before v11 and 40,960 under v11; both must read back and serve as a
+        baseline for a packet at the current candidate's cap, including after the v12 fallback (#79)."""
         original = p3_eval.settings
-
-        def historical(input_count, *args, **kwargs):
-            return {**original(input_count), "max_request_bytes": 32768}
-
         cases = p3_assets.load_panel(self.root / "development-panel-v1.json").cases
-        with patch.object(p3_eval, "settings", side_effect=historical):
-            packet_path = self.prepare()
-            output = self.output()
-            report, _ = await self.run_mock(packet_path, output, self.bind(packet_path, output),
-                                            client=self.litellm_client(scripted=True, cases=cases))
-        self.assertEqual(report["status"], "complete")
-        self.assertEqual(json.loads((output / "packet.json").read_bytes())["settings"]["max_request_bytes"], 32768)
-        self.assertEqual(runner.read_report(output / "report.json"), report)
-        self.assertEqual(runner.record(output / "report.json", runs_path=self.runs,
-                                       now="2026-09-29T00:00:00Z")["correct"], 15)
-        baseline_packet = json.loads(self.prepare(baseline=output / "report.json").read_bytes())
-        self.assertEqual(baseline_packet["settings"]["max_request_bytes"], 40960)
-        self.assertEqual(len(baseline_packet["baseline"]["inputs"]), 15)
+        current_cap = registry.current()["limits"]["request"]
+        self.assertEqual(current_cap, 32768)
+        for cap in p3_eval.REQUEST_CAPS:
+            with self.subTest(cap=cap):
+                def archived(input_count, *args, recorded=cap, **kwargs):
+                    return {**original(input_count), "max_request_bytes": recorded}
+
+                with patch.object(p3_eval, "settings", side_effect=archived):
+                    packet_path = self.prepare()
+                    output = self.output()
+                    report, _ = await self.run_mock(packet_path, output, self.bind(packet_path, output),
+                                                    client=self.litellm_client(scripted=True, cases=cases))
+                self.assertEqual(report["status"], "complete")
+                self.assertEqual(json.loads((output / "packet.json").read_bytes())["settings"]["max_request_bytes"],
+                                 cap)
+                self.assertEqual(runner.read_report(output / "report.json"), report)
+                self.assertEqual(runner.record(output / "report.json", runs_path=self.root / f"runs-{cap}.jsonl",
+                                               now="2026-09-29T00:00:00Z")["correct"], 15)
+                baseline_packet = json.loads(self.prepare(baseline=output / "report.json").read_bytes())
+                self.assertEqual(baseline_packet["settings"]["max_request_bytes"], current_cap)
+                self.assertEqual(len(baseline_packet["baseline"]["inputs"]), 15)
 
     def test_preparation_binds_the_request_cap_to_the_registered_candidate(self):
-        """#122: v7-v10 register 32,768 and v11 registers 40,960; preparation records the candidate's own cap."""
+        """#122: v7-v10 and v12 register 32,768 and v11 registers 40,960; preparation records the candidate's
+        own cap."""
         current = json.loads(self.prepare().read_bytes())
         self.assertEqual(current["settings"]["max_request_bytes"], registry.current()["limits"]["request"])
-        self.assertEqual(current["settings"]["max_request_bytes"], 40960)
-        entry = registry.load_entry("p3-v7-context-restoration-v10")
-        self.assertEqual(entry["limits"]["request"], 32768)
+        self.assertEqual(current["settings"]["max_request_bytes"], 32768)
+        entry = registry.load_entry("p3-count-cue-policy-v11")
+        self.assertEqual(entry["limits"]["request"], 40960)
         checked = {"candidate_id": entry["candidate_id"],
                    "semantic_identity_sha256": entry["semantic_identity_sha256"], "runtime_files_changed": []}
         with patch.object(registry, "check", return_value=checked), \
                 patch.object(registry, "current", return_value=entry):
             self.candidate = entry["candidate_id"]
-            older = json.loads(self.prepare().read_bytes())
-        self.assertEqual(older["settings"]["max_request_bytes"], 32768)
-        self.assertEqual(older["settings"], {**current["settings"], "max_request_bytes": 32768})
+            other = json.loads(self.prepare().read_bytes())
+        self.assertEqual(other["settings"]["max_request_bytes"], 40960)
+        self.assertEqual(other["settings"], {**current["settings"], "max_request_bytes": 40960})
 
     # ----------------------------------------------------------------- holdout tier and claim drift
     async def test_holdout_is_fresh_once_per_route_then_regression_and_a_stale_claim_is_drift(self):
@@ -455,10 +461,7 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
             config_cls.from_env.assert_not_called()
 
     # ----------------------------------------------------------------- routes
-    async def test_bedrock_route_admits_the_converse_client_and_fails_closed_on_v11(self):
-        """v11 makes no Bedrock claim: the admitted client records the profile, then stops before
-        transport (docs/count-cue-policy.md). The send path is covered against the frozen v10 schema
-        by the Bedrock adapter tests."""
+    async def test_bedrock_route_uses_the_admitted_converse_client_and_records_the_profile(self):
         packet_path = self.prepare(route="bedrock-sonnet")
         packet = json.loads(packet_path.read_text())
         self.assertEqual(packet["transport_security"], "tls_verification_enabled")
@@ -475,13 +478,10 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
         report, loader = await self.run_mock(packet_path, output, self.bind(packet_path, output), client=client,
                                              route="bedrock")
         loader.assert_called_once_with(env_file=self.root / "unused.env")
-        self.assertEqual((report["status"], report["stop_reason"]), ("incomplete", "configuration_failure"))
-        self.assertEqual(self.sent, [])
-        first, *rest = report["results"]
-        self.assertEqual((first["outcome"], first["error_code"]), ("operational_failure", "invalid_input"))
-        self.assertEqual(first["evidence"]["requested_model"], "jp.anthropic.claude-sonnet-4-6")
-        self.assertIsNone(first["evidence"]["returned_model"])
-        self.assertEqual({row["outcome"] for row in rest}, {"not_run"})
+        self.assertEqual(report["status"], "complete")
+        self.assertEqual(len(self.sent), 15)
+        self.assertTrue(all(row["evidence"]["requested_model"] == "jp.anthropic.claude-sonnet-4-6"
+                            and row["evidence"]["returned_model"] is None for row in report["results"]))
         self.assertEqual(runner.read_report(output / "report.json"), report)
         # The wrong region or model never sends.
         wrong = BedrockClient(BedrockConfig("us-east-1", "jp.anthropic.claude-sonnet-4-6", "synthetic-key"),

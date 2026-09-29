@@ -168,6 +168,11 @@ not user/model-authored schemas or configuration, belongs in the recipe route.
 > incremental schema encoding. The text above records the cap at the time of
 > this design.
 
+> **Amended again 2026-09-29.** By owner decision on #79
+> (#issuecomment-5891175175), candidate `p3-v10-restoration-v12` returns the
+> complete-request cap to 32,768 bytes (`docs/v10-restoration-v12.md`). v11
+> archives prepared at 40,960 bytes still read back.
+
 `structured_output_identity()` and adapter `evidence.structured_output_identity`
 identify the constructed generation contract separately from semantic context:
 `recipe-structured-output-v2`, `mode=json_schema`, the fixed schema name,

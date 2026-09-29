@@ -1582,10 +1582,9 @@ class P3ExposedWrapperIsolationTests(unittest.IsolatedAsyncioTestCase):
         fixture.build(self.database)
         self.cases = json.loads((DEVELOPMENT / "development-cases-v1.json").read_bytes())
         self.oracles = json.loads((DEVELOPMENT / "development-oracles-v1.json").read_bytes())
-        # v11 count cases need cued actions; a model count_basis clarification is rejected.
         self.actions = {
             row["case_id"]: row["action"]
-            for row in json.loads((DEVELOPMENT / "development-cued-responses-v1.json").read_bytes())["responses"]
+            for row in json.loads((DEVELOPMENT / "development-responses-v1.json").read_bytes())["responses"]
         }
 
     def client(self, actions, sent):

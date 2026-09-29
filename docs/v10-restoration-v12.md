@@ -87,7 +87,14 @@ Bedrock run needs its own authorization.
   through the v11 runtime return to the v1 files, whose bytes never changed.
 - Test modules that v11 changed only to follow its runtime return to their
   bytes at `43116a7`, where no later commit changed them. `tests/test_evaluate.py`,
-  which #122 also changed, reverses only v11's hunks.
+  which #122 also changed, reverses only v11's hunks. Its two #122 request-cap
+  tests now take v12 at 32,768 as current and v11 at 40,960 as the other
+  registered cap, and read back archives at both known caps.
+- `tests/test_archive_request_cap.py` (#122) checks that the manifest default
+  follows the gateway; the known caps are unchanged.
+- The dated notes that v11 added to `docs/clarification-action.md`,
+  `docs/p3-evaluator.md` and `docs/recipe-model-integration.md` stay, each
+  followed by a dated v12 note. `docs/count-cue-policy.md` is marked superseded.
 - The v11 ruler `tests/test_count_cue_policy.py` keeps its runtime-free checks
   and skips its runtime checks once v11 is superseded, as v9's and v10's
   rulers do. The runtime-free checks are:

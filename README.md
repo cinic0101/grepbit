@@ -54,20 +54,27 @@ equals v7's; it is not a new fix. v10 has no run of its own, and v7's recorded
 results and limitations describe the same wire bytes. See the
 [v7 restoration](docs/v7-context-restoration-v10.md).
 
-The current candidate, v11, follows decision #120 (Option C). For an Overview
+v11 followed decision #120 (Option C). For an Overview
 count, the model reports only a typed count reading: none, a bound meaning, a
 contrast or a generic count. A deterministic kernel policy then chooses the
 action from a closed table. Bound booked seats execute. Other bound meanings,
 contrasts without booked seats and unsupported extra requirements decline.
 Other contrasts and generic counts clarify. The model can no longer author a
-count-basis clarification. By owner decision, the complete-request cap is now
-40,960 bytes, and the Bedrock route fails closed for v11. v11 failed its first
+count-basis clarification. By owner decision, the complete-request cap was
+40,960 bytes, and the Bedrock route failed closed for v11. v11 failed its first
 gate, the mechanism probe. The count group scored 5/12: `dev-BM6` en/ja and
 `dev-MN2` were fixed, but the model marked the unframed `dev-MN1` and `dev-MN3`
 headcount questions as booking-framed in every language. Those got three count
 choices instead of four. The sequence stopped after 22 calls, the remaining
 steps did not run, and v11 is not an accepted improvement. See the
 [count cue policy](docs/count-cue-policy.md).
+
+The current candidate, v12, returns to v10's exact runtime bytes, which are
+v7's, by owner decision after v11's stop. It is a restoration, not a new fix.
+The frozen clarification test, the 32,768-byte request cap and the Bedrock
+route are restored; v11 archives stay readable. v12 has no run of its own, and
+v7's recorded limitations carry over. The event-cue analysis is a separate
+proposal, ADR #125. See the [v10 restoration](docs/v10-restoration-v12.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
