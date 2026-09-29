@@ -1,0 +1,401 @@
+{
+ "provenance": {
+  "date": "2026-09-29",
+  "disclosure": "Read only the review packet file (one view call). Saw the contract rows' Branch/Oracle summary columns; no per-question branches, oracles, results, case IDs, runtime context or earlier readings.",
+  "keying": "question SHA-256 (UTF-8); readings are stored verbatim",
+  "packet_map_version": "count-cue-review-map-v1",
+  "packet_sha256": "b7ba170775d4431e34b6db14a6c34708323f275c3d7716b4d63b9ed649ab1334",
+  "reviewer": "owner-designated fresh-context semantic reviewer (#120 issuecomment-5886052261); independent agent session",
+  "verdict": "no blocker; no notes; no uncertain readings"
+ },
+ "readings": {
+  "00357d4ab62948c4e9807f472f30cf5dd14f9fadc2cc4b4a1a80a0ddcb774a11": {
+   "meanings": [
+    "booked_seats",
+    "known_booking_accounts"
+   ],
+   "note": "Explicit undecided choice between seats and booking accounts within booking overview.",
+   "other_unsupported": false,
+   "overview_count": "contrast"
+  },
+  "02d09b9305ba9aba9bb025a9ca9d2da16ba264ab89b9faf621523a8fc18a98ad": {
+   "event": "booking",
+   "note": "Headcount in a booking overview gives a generic booking-framed count.",
+   "other_unsupported": false,
+   "overview_count": "generic"
+  },
+  "039d24df62b07036f31d752f8a3237cdc2cdbb962e18ee663c5ef5e35e29a930": {
+   "overview_count": "none"
+  },
+  "04589433763a81d1c9247ad294d77ca21df65ce9868d77b16a65bf404e46b8b2": {
+   "overview_count": "none"
+  },
+  "04dd7de67bf16c2cd759dd70f6ee450d224f731c0a71d661fe25d1913d6d504c": {
+   "overview_count": "none"
+  },
+  "0565daf91dca2de26f3a1e458ca69da29cfbb43713ff1ea791b38aa715342938": {
+   "event": "booking",
+   "note": "People count is requested inside a booking overview.",
+   "other_unsupported": false,
+   "overview_count": "generic"
+  },
+  "07106a3426e82a758f9631068cd16b7b0ecb31a38b83b8cb00bfb7d2219595fb": {
+   "overview_count": "none"
+  },
+  "09ac101921e647a95fce96a2a8e3669b91dd4c1fc1e7ae5d2cac051f46b2d788": {
+   "overview_count": "none"
+  },
+  "0d7e0336c3a08ddcfeb4f3ea21ac3c8a1841515e155e03f6cfca1c99daa359e8": {
+   "overview_count": "none"
+  },
+  "12d7aca73fbe113d3b8bdfdf909c6772c8f16468c8ede23b675cfe9cd5d8fda1": {
+   "event": "none",
+   "note": "Generic people count with center/month; no booking or attendance event is stated.",
+   "other_unsupported": false,
+   "overview_count": "generic"
+  },
+  "155bd11ec29ef98f7310b2105a75ede582c725683988b7ad9c8a1795b5c6a288": {
+   "meanings": [
+    "booked_seats",
+    "known_booking_accounts"
+   ],
+   "note": "Explicit contrast asks whether people booked means seats or booking accounts.",
+   "other_unsupported": false,
+   "overview_count": "contrast"
+  },
+  "1a6662a46b04c25df0ac207f2132c4a33595cfbe33ba5e25bd84342beb89496b": {
+   "overview_count": "none"
+  },
+  "1da8100dafe6ea572ce31f1b958111ec5e88e9924d0cb42e192f45164a472d4f": {
+   "overview_count": "none"
+  },
+  "1dccfe1ad8513745e8d7ed3894b877acba12af4244b0d2bdc1f33b71a7fc46fa": {
+   "overview_count": "none"
+  },
+  "1ffcc1f23ade90409456dbf780eb425f78b7ae2950887c05ba3e9e6ca3e34bb6": {
+   "meaning": "booked_seats",
+   "note": "Confirmed booked seats explicitly bind the count to booked_seats.",
+   "other_unsupported": false,
+   "overview_count": "bound"
+  },
+  "220e3e2d5c7ca1f93a82f4ac720da0c5163f82714d35f3a671e6f6cdcf7055d2": {
+   "meaning": "booked_seats",
+   "note": "Seats is explicit; booking count is the normal Overview bookings output.",
+   "other_unsupported": false,
+   "overview_count": "bound"
+  },
+  "23186f29226b67f22c76b2e3030fb668e68cf112213cad5fea61eda15f1aa4cf": {
+   "overview_count": "none"
+  },
+  "2baa30be43c912f9f74de7610c7401b487ef16d168e8c9d5da9bf345920d5cab": {
+   "overview_count": "none"
+  },
+  "2d8fa25bf7e09c5360ab49093581db743a4cb6fab7c19ca8ab79f1d8256e1d36": {
+   "meaning": "booked_seats",
+   "note": "Seats is explicit; booking count is the normal Overview bookings output.",
+   "other_unsupported": false,
+   "overview_count": "bound"
+  },
+  "2d917550500441bcdf7bb25480a66bd31470737a38643d70771e917a306d5081": {
+   "meaning": "distinct_people",
+   "note": "Deduplicated same real person once explicitly binds distinct_people.",
+   "other_unsupported": false,
+   "overview_count": "bound"
+  },
+  "30e44eb3f915c9a9d56aee0697c26ef6a9896313bab885b9698bd345d8d35e15": {
+   "meaning": "distinct_people",
+   "note": "Deduplicated natural persons, each real person once, binds distinct_people.",
+   "other_unsupported": false,
+   "overview_count": "bound"
+  },
+  "321c3ce7cd3754aefd8bab864a56508ca1254f85a9d9c841c8695e589ca2c91d": {
+   "event": "booking",
+   "note": "How many people registered is a generic booking-event count.",
+   "other_unsupported": false,
+   "overview_count": "generic"
+  },
+  "32395a15cb3fb70ddc9e6fbd947ea5a86019b84d8182b1eaf42a5ba8561ccbb2": {
+   "event": "none",
+   "note": "Headcount has no stated booking or attendance event.",
+   "other_unsupported": false,
+   "overview_count": "generic"
+  },
+  "36af7b7c8c8599c0c9258a4060055f2479c29ea72ffd137c2659b41a0ae9e7d2": {
+   "overview_count": "none"
+  },
+  "3941ee1f030c0736d5f3247256eee1f4d52e84fa277a254d77ef875dc3bdc90e": {
+   "meaning": "booked_seats",
+   "note": "Seats is explicit; number of bookings is the normal Overview bookings output.",
+   "other_unsupported": false,
+   "overview_count": "bound"
+  },
+  "3ab360eb26a513c93d2024ff96165b6fd7dd0224f7dc8b2be7db4c3467b525a9": {
+   "overview_count": "none"
+  },
+  "3cb2effc6cdd50a18c208ae6046f8cb7177aefdf76ef71e3602b1bb0d279191b": {
+   "overview_count": "none"
+  },
+  "417cc59d2fb0079a7cd00ba0cc0ca988c124c0e1f9d4b2b0cf0104900256c403": {
+   "event": "none",
+   "note": "Generic people count with center/month; no booking or attendance event is stated.",
+   "other_unsupported": false,
+   "overview_count": "generic"
+  },
+  "49ceac59cc5518ed9e42f54e8b2cb605119982dca9fc6292b420a1801e820e36": {
+   "event": "booking",
+   "note": "How many people booked is a generic booking-event count.",
+   "other_unsupported": false,
+   "overview_count": "generic"
+  },
+  "4d19adb7458bb496690dc6dcd955f6764ec56ad827dff7685813286ae596fed8": {
+   "overview_count": "none"
+  },
+  "543047f99ee418fd6fd9c681cf09521a2259cb61b3543f1e2d8a5fdc163a7cd0": {
+   "overview_count": "none"
+  },
+  "54dbbcd7dd4939065d61449676e5b41b0b87d752ab166cb2f4468f58e9f80dbc": {
+   "overview_count": "none"
+  },
+  "55659954f3775868aaede7d10186ec7246b8f6c129e3fce68956e79abfe91ea9": {
+   "event": "booking",
+   "note": "How many people signed up is a generic booking-event count.",
+   "other_unsupported": false,
+   "overview_count": "generic"
+  },
+  "55e9b7acc78b145795507e1b8e4e1aedc845ff24465fbb993a3d7a73760494c4": {
+   "meanings": [
+    "booked_seats",
+    "known_booking_accounts"
+   ],
+   "note": "Explicit undecided choice between seats and booking accounts within booking overview.",
+   "other_unsupported": false,
+   "overview_count": "contrast"
+  },
+  "568189aa18c0a5fd0469562b8e7b87098232cd18f4aea0061b3ee0a40816a0b3": {
+   "meanings": [
+    "booked_seats",
+    "known_booking_accounts"
+   ],
+   "note": "Explicit undecided choice between seats and booking accounts within booking overview.",
+   "other_unsupported": false,
+   "overview_count": "contrast"
+  },
+  "58c5e9ce1ae7dbfac787125cc6aa816c9806adb48da064d71051cc5882a9fe53": {
+   "overview_count": "none"
+  },
+  "5946645cc74dfd647e51754d67b57253b1c0481832f6206d448ea89a76dc90d1": {
+   "overview_count": "none"
+  },
+  "59b2f5acdffa2c8cab87344019007f893195d525a808593deb00f3acd03d062b": {
+   "overview_count": "none"
+  },
+  "5a3f501024b72938cfe561be617caf6014699223ee7d6801484240f311358699": {
+   "overview_count": "none"
+  },
+  "5e88a3fb3ae64b4e95d1135bddef232a37b5dc33f54bb44d9f012a50d04c4223": {
+   "meaning": "distinct_people",
+   "note": "Deduplicated individual people, each actual person once, binds distinct_people.",
+   "other_unsupported": false,
+   "overview_count": "bound"
+  },
+  "60607a651882d05a12993c0807565a97e9a4247ff106b54ecddaff277fcb2e7b": {
+   "overview_count": "none"
+  },
+  "66b14c125639ae3ab3ab22871194234a45045e97d8f38d2c4bd13c8604a42b67": {
+   "overview_count": "none"
+  },
+  "672d9f444ea18df5f656a587f195d9b9e49adae181d56d64475d80bea400ce44": {
+   "overview_count": "none"
+  },
+  "6b9e6e3f4a4eeebceb2352f5d4914a5bbb508fde2c2ac5da7573bd21fb0c7eab": {
+   "event": "none",
+   "note": "Headcount is generic; the wording gives no booking or attendance event.",
+   "other_unsupported": false,
+   "overview_count": "generic"
+  },
+  "6c43952a8f050d0bb3c6054b7e1ac698e1aa329b7da1f6606faa71c46dc04568": {
+   "meaning": "booked_seats",
+   "note": "Confirmed booking seats explicitly bind the count to booked_seats.",
+   "other_unsupported": false,
+   "overview_count": "bound"
+  },
+  "6d5cd42b4c3f5e7a360f4814110d005c43234c1dfd051f2b5b9c087f8abaa0e4": {
+   "overview_count": "none"
+  },
+  "70ea408fb07bd19a12f85e86730f171635fa7f2aa9ba2013a0565d3164533df6": {
+   "overview_count": "none"
+  },
+  "721dfd17ff3194d5069b974c797bd553dcb38ceeade196fbd8fafed3997d4294": {
+   "meaning": "attendance_visits",
+   "note": "Actual on-site attendance visits explicitly bind attendance_visits.",
+   "other_unsupported": false,
+   "overview_count": "bound"
+  },
+  "76ef76e13ab4c1cfb32478b844cccb375cde395afb53511761eb0df5f9469093": {
+   "event": "none",
+   "note": "Generic people count with center/month; no booking or attendance event is stated.",
+   "other_unsupported": false,
+   "overview_count": "generic"
+  },
+  "77e765a710588d915dfdda6a9b874656c70921126dd6812f9b9d0bf264b9887d": {
+   "overview_count": "none"
+  },
+  "7832be685792550d996b8a9a21cb48bc12e4c258f41bade461ced6149cab3052": {
+   "overview_count": "none"
+  },
+  "7b6c7ef762b249ff214d67479ba88dc88c6a54f0f34fdccd3e8ca1ae3186c99e": {
+   "overview_count": "none"
+  },
+  "87e870ca65deec9602dcc43b7b6124a495e60a7a92193b29b45c826db3e899cb": {
+   "overview_count": "none"
+  },
+  "888c549d3467e4b5213162823290db742ff6a99789f8e63d1b73604fd9ed291b": {
+   "overview_count": "none"
+  },
+  "890f2fa4a742f6ed1e96dd73e2ad3be72bb12f4e7e1398f54d7d5ee5177d826a": {
+   "overview_count": "none"
+  },
+  "89e63e80f7453e1ff8956e653e80ac3b32f3a2f8b926c6d2f7a99a31161024ae": {
+   "overview_count": "none"
+  },
+  "924b1110c6a8a101af22c9b410afe07e1107cc664b92537816a067466c109ab9": {
+   "event": "none",
+   "note": "Generic people count with center/month; no booking or attendance event is stated.",
+   "other_unsupported": false,
+   "overview_count": "generic"
+  },
+  "97072d08fdb8fed392895e3ae80955d40497858ba04840415951dc867966c43b": {
+   "overview_count": "none"
+  },
+  "977a546d0173204a871c9c7d15568f95bf33b85e7164cf57b0b4afd919406cda": {
+   "overview_count": "none"
+  },
+  "9bd2bce49b19e916b63f9ebd21b98b2a02e635d05c41d08af238f40d21ce0dd8": {
+   "overview_count": "none"
+  },
+  "9f984c0d30e792df0d4ff07b9697b80faf78a138409e61070bb8309f874af868": {
+   "event": "booking",
+   "note": "People count is requested inside a booking overview.",
+   "other_unsupported": false,
+   "overview_count": "generic"
+  },
+  "a94d70f982771370e32aebd1f785f3975f842783c742f6df376870b3d4d2b181": {
+   "overview_count": "none"
+  },
+  "a99be07dc3f2842bb01d243c8fc9b881674fc4772c42e49aa324b309b2f51b2b": {
+   "overview_count": "none"
+  },
+  "ae127aefaa5a0f8a1d0ba2000d42482da6e0b3ffc07c2e85d0984a158da0fb2e": {
+   "overview_count": "none"
+  },
+  "b0fbe102fe0e0bd4a2e9d23ba95b628bbd69d70197f549be2ab8aba2b8acf559": {
+   "overview_count": "none"
+  },
+  "b2cbed7721cb09a601103f1da6bb451963d8460c1a122114b4ac4b9e72642d7d": {
+   "overview_count": "none"
+  },
+  "b5f97493858f1b95733c70ec2a549f8ebfbbc6d2ec654e70ca4aaff4cb69c29b": {
+   "overview_count": "none"
+  },
+  "b6a23bccb7b3cae08f2a8a11a8f0c8b1627deec4b2555d697c73d61f55a312ba": {
+   "overview_count": "none"
+  },
+  "b8ea84040f486d9699599bfa1474e1dd5aa87f555446208990e6ad609aab2db7": {
+   "overview_count": "none"
+  },
+  "bdbc7053ed7974c52dea588b5ada9fd820a15d22855bcac156792ddc65663ad2": {
+   "overview_count": "none"
+  },
+  "c1759c9382a611c923a6766355691845f51df877701d8fb20633161119f7e8c9": {
+   "meaning": "attendance_visits",
+   "note": "Actual attendance total visits explicitly bind attendance_visits.",
+   "other_unsupported": false,
+   "overview_count": "bound"
+  },
+  "c2aca0ded9dee6e1b931a4fcc78a9539904a8cc44f2651158491d8c412d3d7e5": {
+   "overview_count": "none"
+  },
+  "c6d8b1bbf7e355de67dbb514cbc29344204e3560d7511d4ee6aa0e297a11e031": {
+   "meanings": [
+    "booked_seats",
+    "known_booking_accounts"
+   ],
+   "note": "Explicit contrast asks whether people signed up means seats or booking accounts.",
+   "other_unsupported": false,
+   "overview_count": "contrast"
+  },
+  "c7a5d8053e8b886e1d414e9d78f3bff317c34664446bc3e18ed16c68819b2704": {
+   "meanings": [
+    "booked_seats",
+    "known_booking_accounts"
+   ],
+   "note": "Explicit contrast asks whether people registered means seats or booking accounts.",
+   "other_unsupported": false,
+   "overview_count": "contrast"
+  },
+  "ccd597c093d31df0c2270306e2c1e00c8a00bae0d569bd2349c6955024ad8ada": {
+   "overview_count": "none"
+  },
+  "d19b1051dd43bd146e412be83b5f32cd8a93a976dd553c0e431f7feae90c8098": {
+   "overview_count": "none"
+  },
+  "d3945cba266725c9f0981abf86e4631942bb45dd9c1126f4952fc7821a16fb10": {
+   "overview_count": "none"
+  },
+  "d43ba545af20439283a6f865426f31e40048be234bc67d8b4c968dfb3edf639c": {
+   "overview_count": "none"
+  },
+  "d6bdc3c07aed94430601be572a3cf9235e1de0cb3b60c2c33367bda743077764": {
+   "overview_count": "none"
+  },
+  "d8b1961a2f80c9a589a68498bdff83902aa40bd1e13de322e7f9a055d130e84a": {
+   "overview_count": "none"
+  },
+  "dd115cde88e9e303b97bba803ea08c3d89c6388653a9c6ec59084cd4f3af8972": {
+   "overview_count": "none"
+  },
+  "e2d0bf217f88bd6b47012172d0d73c10f9f168d4d0a3f2206142ad77c908b05e": {
+   "overview_count": "none"
+  },
+  "e3a64c7a5e053051919eda314b4533ddca03e8a2991bd69ccd2ccf5019a6ae41": {
+   "overview_count": "none"
+  },
+  "e3bffde71748aeadeadac9ed03a2d8696a59306e2aad9d4e6ec2ff793e7d4d8d": {
+   "overview_count": "none"
+  },
+  "e64735c171f5066f0bb53d48e3ea3c838b03e6a9610f15f82e4bdeb119abb6e5": {
+   "overview_count": "none"
+  },
+  "e7c4b62ab103cc9e4070ad84d75804a469fa58146d30b74415ef1ee2c9cb15f5": {
+   "overview_count": "none"
+  },
+  "e7d153fee6aeb21adeed48bdc32c964d6be222c989c84820f560a4b709a921e4": {
+   "overview_count": "none"
+  },
+  "ed2ac73a1b03f4304b6a37bdc82307d68dff5274495fe73ab02482f0040c3569": {
+   "meaning": "booked_seats",
+   "note": "Number of confirmed booked seats explicitly binds booked_seats.",
+   "other_unsupported": false,
+   "overview_count": "bound"
+  },
+  "ed36677ac55e28dd705e91d540fb34b83b47d6fc1a65c7f728818690e24f52d2": {
+   "overview_count": "none"
+  },
+  "ee794e85ab41ed4d4763b3215d1c9698368c08bfa1570ca522e5edaad6711f27": {
+   "overview_count": "none"
+  },
+  "f5f8cc9a859e25074c9cd08169b7c8f7761125976e572c569fec595b2fb99895": {
+   "overview_count": "none"
+  },
+  "f690d5d6519b308083f9491dd3b68305992a7c664d115da2f8b2f53cea98ac75": {
+   "overview_count": "none"
+  },
+  "fe6e0b064f44450cc0dbb8b2f85b5dec94000e3ea05cc258f4170a28a0cdf934": {
+   "meaning": "attendance_visits",
+   "note": "Number of attendance visits that took place explicitly binds attendance_visits.",
+   "other_unsupported": false,
+   "overview_count": "bound"
+  }
+ },
+ "version": "count-cue-readings-v1"
+}

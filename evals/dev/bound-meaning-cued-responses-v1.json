@@ -1,0 +1,599 @@
+{
+  "version": "p3-fake-responses-v1",
+  "responses": [
+    {
+      "case_id": "E02_compare.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "compare",
+        "recipe_version": "0.1",
+        "request": {
+          "current": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-03-01T00:00:00+08:00",
+            "end": "2026-04-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          },
+          "baseline": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-02-01T00:00:00+08:00",
+            "end": "2026-03-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          }
+        }
+      }
+    },
+    {
+      "case_id": "E02_compare.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "compare",
+        "recipe_version": "0.1",
+        "request": {
+          "current": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-03-01T00:00:00+08:00",
+            "end": "2026-04-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          },
+          "baseline": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-02-01T00:00:00+08:00",
+            "end": "2026-03-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          }
+        }
+      }
+    },
+    {
+      "case_id": "E02_compare.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "compare",
+        "recipe_version": "0.1",
+        "request": {
+          "current": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-03-01T00:00:00+08:00",
+            "end": "2026-04-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          },
+          "baseline": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-02-01T00:00:00+08:00",
+            "end": "2026-03-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          }
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM2.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "compare",
+        "recipe_version": "0.1",
+        "request": {
+          "current": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-03-01T00:00:00+08:00",
+            "end": "2026-04-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          },
+          "baseline": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-02-01T00:00:00+08:00",
+            "end": "2026-03-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          }
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM2.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "compare",
+        "recipe_version": "0.1",
+        "request": {
+          "current": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-03-01T00:00:00+08:00",
+            "end": "2026-04-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          },
+          "baseline": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-02-01T00:00:00+08:00",
+            "end": "2026-03-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          }
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM2.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "compare",
+        "recipe_version": "0.1",
+        "request": {
+          "current": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-03-01T00:00:00+08:00",
+            "end": "2026-04-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          },
+          "baseline": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-02-01T00:00:00+08:00",
+            "end": "2026-03-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          }
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM3.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "compare",
+        "recipe_version": "0.1",
+        "request": {
+          "current": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-02-01T00:00:00+08:00",
+            "end": "2026-03-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          },
+          "baseline": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-03-01T00:00:00+08:00",
+            "end": "2026-04-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          }
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM3.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "compare",
+        "recipe_version": "0.1",
+        "request": {
+          "current": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-02-01T00:00:00+08:00",
+            "end": "2026-03-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          },
+          "baseline": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-03-01T00:00:00+08:00",
+            "end": "2026-04-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          }
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM3.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "compare",
+        "recipe_version": "0.1",
+        "request": {
+          "current": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-02-01T00:00:00+08:00",
+            "end": "2026-03-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          },
+          "baseline": {
+            "metrics": [
+              "confirmed_booked_amount"
+            ],
+            "start": "2026-03-01T00:00:00+08:00",
+            "end": "2026-04-01T00:00:00+08:00",
+            "timezone": "Asia/Taipei",
+            "center_id": null
+          }
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM4.zh-TW",
+      "action": {
+        "outcome": "clarify",
+        "clarification": {
+          "kind": "comparison_roles",
+          "choices": [
+            {
+              "id": "c1",
+              "semantic_value": {
+                "type": "comparison_roles",
+                "request": {
+                  "current": {
+                    "metrics": [
+                      "confirmed_booked_amount"
+                    ],
+                    "start": "2026-03-01T00:00:00+08:00",
+                    "end": "2026-04-01T00:00:00+08:00",
+                    "timezone": "Asia/Taipei",
+                    "center_id": null
+                  },
+                  "baseline": {
+                    "metrics": [
+                      "confirmed_booked_amount"
+                    ],
+                    "start": "2026-02-01T00:00:00+08:00",
+                    "end": "2026-03-01T00:00:00+08:00",
+                    "timezone": "Asia/Taipei",
+                    "center_id": null
+                  }
+                }
+              }
+            },
+            {
+              "id": "c2",
+              "semantic_value": {
+                "type": "comparison_roles",
+                "request": {
+                  "current": {
+                    "metrics": [
+                      "confirmed_booked_amount"
+                    ],
+                    "start": "2026-02-01T00:00:00+08:00",
+                    "end": "2026-03-01T00:00:00+08:00",
+                    "timezone": "Asia/Taipei",
+                    "center_id": null
+                  },
+                  "baseline": {
+                    "metrics": [
+                      "confirmed_booked_amount"
+                    ],
+                    "start": "2026-03-01T00:00:00+08:00",
+                    "end": "2026-04-01T00:00:00+08:00",
+                    "timezone": "Asia/Taipei",
+                    "center_id": null
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM4.en",
+      "action": {
+        "outcome": "clarify",
+        "clarification": {
+          "kind": "comparison_roles",
+          "choices": [
+            {
+              "id": "c1",
+              "semantic_value": {
+                "type": "comparison_roles",
+                "request": {
+                  "current": {
+                    "metrics": [
+                      "confirmed_booked_amount"
+                    ],
+                    "start": "2026-03-01T00:00:00+08:00",
+                    "end": "2026-04-01T00:00:00+08:00",
+                    "timezone": "Asia/Taipei",
+                    "center_id": null
+                  },
+                  "baseline": {
+                    "metrics": [
+                      "confirmed_booked_amount"
+                    ],
+                    "start": "2026-02-01T00:00:00+08:00",
+                    "end": "2026-03-01T00:00:00+08:00",
+                    "timezone": "Asia/Taipei",
+                    "center_id": null
+                  }
+                }
+              }
+            },
+            {
+              "id": "c2",
+              "semantic_value": {
+                "type": "comparison_roles",
+                "request": {
+                  "current": {
+                    "metrics": [
+                      "confirmed_booked_amount"
+                    ],
+                    "start": "2026-02-01T00:00:00+08:00",
+                    "end": "2026-03-01T00:00:00+08:00",
+                    "timezone": "Asia/Taipei",
+                    "center_id": null
+                  },
+                  "baseline": {
+                    "metrics": [
+                      "confirmed_booked_amount"
+                    ],
+                    "start": "2026-03-01T00:00:00+08:00",
+                    "end": "2026-04-01T00:00:00+08:00",
+                    "timezone": "Asia/Taipei",
+                    "center_id": null
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM4.ja",
+      "action": {
+        "outcome": "clarify",
+        "clarification": {
+          "kind": "comparison_roles",
+          "choices": [
+            {
+              "id": "c1",
+              "semantic_value": {
+                "type": "comparison_roles",
+                "request": {
+                  "current": {
+                    "metrics": [
+                      "confirmed_booked_amount"
+                    ],
+                    "start": "2026-03-01T00:00:00+08:00",
+                    "end": "2026-04-01T00:00:00+08:00",
+                    "timezone": "Asia/Taipei",
+                    "center_id": null
+                  },
+                  "baseline": {
+                    "metrics": [
+                      "confirmed_booked_amount"
+                    ],
+                    "start": "2026-02-01T00:00:00+08:00",
+                    "end": "2026-03-01T00:00:00+08:00",
+                    "timezone": "Asia/Taipei",
+                    "center_id": null
+                  }
+                }
+              }
+            },
+            {
+              "id": "c2",
+              "semantic_value": {
+                "type": "comparison_roles",
+                "request": {
+                  "current": {
+                    "metrics": [
+                      "confirmed_booked_amount"
+                    ],
+                    "start": "2026-02-01T00:00:00+08:00",
+                    "end": "2026-03-01T00:00:00+08:00",
+                    "timezone": "Asia/Taipei",
+                    "center_id": null
+                  },
+                  "baseline": {
+                    "metrics": [
+                      "confirmed_booked_amount"
+                    ],
+                    "start": "2026-03-01T00:00:00+08:00",
+                    "end": "2026-04-01T00:00:00+08:00",
+                    "timezone": "Asia/Taipei",
+                    "center_id": null
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM5.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM5.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM5.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM6.zh-TW",
+      "action": {
+        "overview_count": "generic",
+        "event": "booking",
+        "other_unsupported": false,
+        "scope": {
+          "center_code": "CTR-A01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM6.en",
+      "action": {
+        "overview_count": "generic",
+        "event": "booking",
+        "other_unsupported": false,
+        "scope": {
+          "center_code": "CTR-A01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM6.ja",
+      "action": {
+        "overview_count": "generic",
+        "event": "booking",
+        "other_unsupported": false,
+        "scope": {
+          "center_code": "CTR-A01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM7.zh-TW",
+      "action": {
+        "overview_count": "contrast",
+        "meanings": [
+          "booked_seats",
+          "known_booking_accounts"
+        ],
+        "other_unsupported": false,
+        "scope": {
+          "center_code": "CTR-A01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM7.en",
+      "action": {
+        "overview_count": "contrast",
+        "meanings": [
+          "booked_seats",
+          "known_booking_accounts"
+        ],
+        "other_unsupported": false,
+        "scope": {
+          "center_code": "CTR-A01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM7.ja",
+      "action": {
+        "overview_count": "contrast",
+        "meanings": [
+          "booked_seats",
+          "known_booking_accounts"
+        ],
+        "other_unsupported": false,
+        "scope": {
+          "center_code": "CTR-A01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        }
+      }
+    },
+    {
+      "case_id": "dev-BM8.zh-TW",
+      "action": {
+        "outcome": "declined"
+      }
+    },
+    {
+      "case_id": "dev-BM8.en",
+      "action": {
+        "outcome": "declined"
+      }
+    },
+    {
+      "case_id": "dev-BM8.ja",
+      "action": {
+        "outcome": "declined"
+      }
+    }
+  ]
+}
