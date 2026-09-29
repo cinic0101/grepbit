@@ -37,6 +37,13 @@ supported a year-placement reading of the BM2 regression, and found a new v8
 false clarification of `dev-A3.en`. E02's wording sensitivity is not a robust
 lexical factor. See the [mechanism probe](docs/mechanism-probe-controls.md).
 
+The registered v9 candidate restores v7's context and adds one sentence: a
+generic people or count noun alone, with no stated basis, leaves the count
+meanings unresolved rather than requiring a decline. It withdraws the failed v8
+Compare text and does not target E02, which is recorded as a known Gemma 31B
+limitation. v9 is not yet live-observed. See the
+[generic-count checkpoint](docs/generic-count-context-v9.md).
+
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
 remains open. Grounding, clarification resume, synthesis, PostgreSQL parity

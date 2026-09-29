@@ -66,6 +66,23 @@ It also checks the invariant instruction, schema, P1 and limits identities, the
 v7 and v8 archive digests, and wire sizes. All of this is static identity
 evidence. It does not show whether the model follows the rule.
 
+## Registration and offline checks
+
+The candidate was registered from `b19809f` with only the production edit
+uncommitted:
+
+| Identity | Value |
+|---|---|
+| Semantic identity SHA256 | `38cba7bfa8969ba6ccbbfd04bfa8d2fc580b2c466f62749ba69dd67ee56211c4` |
+| Candidate SHA256 | `d101c8954f045d7da4d1d13f0775fb384f4d526d77f56010eb8bfac9da2acea9` |
+| Context SHA256 | `fda52fcf…` (as intended) |
+
+The recipe wire witnesses are 27,980 and 27,971 bytes, against 28,372 and
+28,363 on v8 and a 32,768-byte cap. The ruler failed before the edit and
+passes after it. The 15 focused registry and context tests pass. The full
+offline suite passed: 1,250 tests in 257 s. The change touches one production
+file and adds no operator or repair.
+
 ## Gates
 
 This is a strictly sequential live sequence. Each step runs only after the
