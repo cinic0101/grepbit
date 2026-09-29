@@ -6,6 +6,9 @@ The owner approved the lean diagnostic in chat, selecting
 acceptance, one v8 run of at most 24 calls"). The
 [recorded decision](https://github.com/cinic0101/grepbit/issues/79#issuecomment-5884332817)
 pins the [proposal](https://github.com/cinic0101/grepbit/issues/79#issuecomment-5884331188).
+A [recorded owner amendment](https://github.com/cinic0101/grepbit/issues/79#issuecomment-5884511443)
+keeps a fourth count family, `dev-MN2`, bringing the panel to 22 inputs;
+the 24-call cap is unchanged.
 This is a diagnostic of the registered current runtime, not a candidate.
 Runtime, context, instruction, schema, validators, kernel, serving profile,
 limits and every existing case, oracle, candidate and report stay unchanged.
@@ -83,7 +86,8 @@ Readings fixed before the run:
   separate, single-surface count repair proposal. If none decline, HA02 stays
   an observed regression with an unknown mechanism and that repair surface closes.
 - G3 answers and choice sets characterize seat-default and full-menu behavior;
-  no repair follows from this run alone.
+  `dev-MN2` separates booking framing from the overview request. No repair
+  follows from this run alone.
 
 Stops: any operational, credential, route or privacy anomaly. No rerun, no
 automatic candidate, no gold or oracle change, and no regression, holdout or
