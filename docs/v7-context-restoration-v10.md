@@ -14,11 +14,16 @@ v9 ([generic-count checkpoint](generic-count-context-v9.md)) failed its 54/54
 development gate at 49/54, and its bounded sequence stopped. v9 is not an
 accepted improvement, but it remained the registered current candidate.
 
-v7 is the best-observed 31B runtime on the current panels:
+v7 is the last registered runtime that passed its development gate; v8 and v9
+both stopped at their thresholds. v7's recorded 31B observations are:
 
-- 54/54 on `p3-dev-matrix-compare-first-v2`;
+- 54/54 on `p3-dev-matrix-compare-first-v2`, its development gate;
 - 27/28 on `p33-formal-v2`, a regression-tier observation;
-- 20/24 on `p3-dev-bound-meaning-v1`.
+- 17/18 on `p3-holdout-a-v2`, an observed regression against the frozen
+  candidate's 18/18;
+- 20/24 on `p3-dev-bound-meaning-v1`, the same count as v9.
+
+v7 has no run on `p3-dev-mechanism-probe-v1`.
 
 v10 returns the runtime to v7's exact bytes. It is a restoration, not a new
 fix, and makes no count, Compare or other repair.
@@ -70,13 +75,18 @@ repeated observations. So v10 is expected to reproduce v7's outputs while that
 route and serving profile are unchanged. That is an inference, not evidence:
 no run is recorded under v10, and STATE shows none.
 
-Any live observation of v10 needs separate owner authorization. Recorded v7
-limitations carry over unchanged, including:
+Any live observation of v10 needs separate owner authorization. Limitations
+recorded on v7's bytes carry over unchanged:
 
-- the English generic-count decline (`dev-MN1.en`, `dev-MN3.en`,
-  `HA02_C01_headcount_ctr_b01.en`);
-- `E02_compare.en`;
-- `dev-BM6` and `dev-MN2`.
+- `E02_compare.en`, a false clarification on `p33-formal-v2` and
+  `p3-dev-bound-meaning-v1`;
+- `HA02_C01_headcount_ctr_b01.en`, a wrong action on `p3-holdout-a-v2`;
+- `dev-BM6` in all three languages on `p3-dev-bound-meaning-v1`.
+
+Some failures on `p3-dev-mechanism-probe-v1` were observed only on v8 or v9,
+whose wire bytes differ from v7's, and are unobserved on v7's bytes. These are
+the `dev-MN1.en` and `dev-MN3.en` declines (v8) and the `dev-MN2` wrong actions
+(v8 and v9). v10 makes no claim about them.
 
 The structural proposal for count choice sets and comparison roles is a
 separate `decision` issue. v10 does not implement it.
