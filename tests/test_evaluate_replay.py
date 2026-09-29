@@ -167,6 +167,53 @@ class ReplayableObservationTests(EvaluateHarness):
                          "not_replayable")
         self.assertIsNone(replayed["comparison"])
 
+    async def test_a_validated_action_the_leak_check_would_redact_is_stored_as_null_and_never_stops_the_run(self):
+        """PR #129 re-review blocker: model-authored request strings pass the export check before they land."""
+        cases = self.cases()
+        leaky = next(case for case in cases if case.case_id == "E01_overview.en")
+        host = httpx.URL(BASE).host
+
+        def respond(request):
+            self.sent.append(request)
+            question = json.loads(request.content)["messages"][-1]["content"]
+            case = next(case for case in cases if case.question == question)
+            action = deepcopy(self.by_oracle[case.oracle_id])
+            if case is leaky:
+                action["request"]["center_code"] = host
+            return httpx.Response(200, json=envelope(json.dumps(action)))
+
+        client = GatewayClient(GatewayConfig(BASE, KEY, MODEL), transport=httpx.MockTransport(respond))
+        report, output = await self.scripted_run(client=client)
+        self.assertEqual((report["status"], report["stop_reason"]), ("complete", None))
+        row = next(row for row in report["results"] if row["case_id"] == leaky.case_id)
+        self.assertEqual(row["actual_action"], "answer")
+        self.assertIsNone(row["validated_action"])
+        self.assertNotIn(host, json.dumps(report))
+        self.assertEqual(runner.read_report(output / "report.json"), report)
+
+    async def test_readback_relaxes_the_evidence_checks_for_at_most_the_one_stopped_row(self):
+        original, calls = runner._LiveEvidence.project, []
+
+        def failing(policy, evidence, client):
+            calls.append(1)
+            if len(calls) == 3:
+                raise p3_assets.P3Error("leakage_risk")
+            return original(policy, evidence, client)
+
+        with patch.object(runner._LiveEvidence, "project", failing):
+            report, output = await self.scripted_run()
+        path = output / "report.json"
+        self.assertEqual(runner.read_report(path), report)
+        tampered = json.loads(path.read_bytes())
+        other = next(i for i, row in enumerate(tampered["results"])
+                     if row["runner_error_code"] is None and row["validated_action"] is not None)
+        tampered["results"][other].update(evidence=None, runner_error_code=tampered["stop_reason"],
+                                          attempt_evidence_status="not_returned")
+        runner._summarize(tampered)
+        path.write_text(json.dumps(tampered))
+        with self.assertRaises(p3_assets.P3Error):
+            runner.read_report(path)
+
     # ----------------------------------------------------------------- v1 archives
     async def test_v1_archives_read_back_serve_as_baseline_and_can_no_longer_run_live(self):
         with patch.object(runner, "PACKET_VERSION", runner.PACKET_V1):
