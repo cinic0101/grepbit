@@ -85,11 +85,37 @@ Bedrock run needs its own authorization.
 - The four `*-cued-responses-v1.json` files, the readings fixture and the
   frozen v10 schema fixture stay as immutable v11 assets. Tests that ran them
   through the v11 runtime return to the v1 files, whose bytes never changed.
-- Test modules that v11 changed only to follow its runtime return to their
-  bytes at `43116a7`, where no later commit changed them. `tests/test_evaluate.py`,
-  which #122 also changed, reverses only v11's hunks. Its two #122 request-cap
-  tests now take v12 at 32,768 as current and v11 at 40,960 as the other
-  registered cap, and read back archives at both known caps.
+- Ten test modules that v11 changed to follow its runtime, and that fail
+  against v12, return to their bytes at `43116a7`. No later commit changed
+  them. They are:
+  - `test_recipe_clarification` and `test_p3_exposed` (approval (a));
+  - `test_structured_output`, `test_smoke`, `test_p3_admission` and
+    `test_mechanism_probe_controls`;
+  - `test_gateway`, `test_dev_panel`, `test_bound_meaning_controls` and
+    `test_invalid_request_reason`.
+- `tests/test_evaluate.py`, which #122 also changed, reverses only v11's hunks.
+  That restores the Bedrock success-path test on the live schema. Its two #122
+  request-cap tests now:
+  - take v12 at 32,768 as the current cap;
+  - use v11 at 40,960 as the other registered cap;
+  - read back archives at both known caps.
+- Ten other modules keep v11's test-only adaptations, because they pass
+  unchanged against v12:
+  - `tests/test_recipe_smoke.py` and `tests/history/test_p3_candidate_probe.py`
+    use a `metric_meaning` clarification instead of `count_basis`.
+  - Eight modules patch `recipe_model.output_schema` with the frozen v10 schema
+    fixture:
+    - `test_bedrock_adapter`, `test_bedrock_complex_const_contract`,
+      `test_bedrock_grammar_budget_contract` and
+      `test_bedrock_wire_coupling_contract`;
+    - the history modules `test_p3_bedrock_candidate_contract`,
+      `test_p3_bedrock_candidate_probe`, `test_p3_bedrock_observed_regression`
+      and `test_p3_reason_diagnostic`.
+  - Under v12 that fixture equals the live schema. `grepbit/bedrock.py` pins
+    the same hash, so the patch is a no-op. Their comments that "v11 fails
+    closed on Bedrock" describe v11, not v12.
+  - `tools/p3_completion_diagnostic.py` keeps v11's import of the gateway cap,
+    which is again 32,768.
 - `tests/test_archive_request_cap.py` (#122) checks that the manifest default
   follows the gateway; the known caps are unchanged.
 - The dated notes that v11 added to `docs/clarification-action.md`,
