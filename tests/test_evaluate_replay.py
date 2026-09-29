@@ -132,6 +132,31 @@ class ReplayableObservationTests(EvaluateHarness):
         path.write_bytes(original)
         self.assertEqual(runner.read_report(path), report)
 
+    async def test_a_stop_after_the_action_lands_keeps_the_real_stop_reason_and_a_final_report(self):
+        """PR #129 review blocker: the engine's own action value never replaces a stop or its final report."""
+        original, calls = runner._LiveEvidence.project, []
+
+        def failing(policy, evidence, client):
+            calls.append(1)
+            if len(calls) == 2:
+                raise p3_assets.P3Error("leakage_risk")
+            return original(policy, evidence, client)
+
+        with patch.object(runner._LiveEvidence, "project", failing):
+            report, output = await self.scripted_run()
+        self.assertEqual((report["status"], report["stop_reason"]), ("incomplete", "leakage_risk"))
+        stopped = [row for row in report["results"] if row["runner_error_code"] is not None]
+        self.assertEqual(len(stopped), 1)
+        self.assertEqual(stopped[0]["runner_error_code"], "leakage_risk")
+        self.assertIsNone(stopped[0]["evidence"])
+        self.assertIsNotNone(stopped[0]["validated_action"])
+        self.assertEqual(runner.read_report(output / "report.json"), report)
+        replayed = await runner.replay(output / "report.json", self.database, self.root / "replay-stopped.json",
+                                       panels_path=self.panels)
+        self.assertEqual(next(row for row in replayed["rows"] if row["case_id"] == stopped[0]["case_id"])["class"],
+                         "not_replayable")
+        self.assertIsNone(replayed["comparison"])
+
     # ----------------------------------------------------------------- v1 archives
     async def test_v1_archives_read_back_serve_as_baseline_and_can_no_longer_run_live(self):
         with patch.object(runner, "PACKET_VERSION", runner.PACKET_V1):
