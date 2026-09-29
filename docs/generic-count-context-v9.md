@@ -141,7 +141,7 @@ The three runs:
 - all were HTTP 200 and returned `gemma-4-31b`;
 - made 100 client attempts in total, one per input;
 - had no operational error, timeout or in-flight attempt;
-- took 707.1 s elapsed.
+- took 707.1 s elapsed (sum of the unrounded per-run times).
 
 | Step | Report SHA256 | Packet SHA256 | Slot |
 |---|---|---|---|
@@ -149,11 +149,11 @@ The three runs:
 | 2 | `b988a0d7…4be421` | `3b0d07db…4e9b` | `step2-run` |
 | 3 | `bfcdee87…05e8d1` | `07aa0ff0…bdf7` | `step3-run` |
 
-Step 1 fixed the targeted English generic-count decline. `dev-MN1.en` and
-`dev-MN3.en` went from decline to the correct `count_basis` clarification, and
-no MN1–MN3 input declined. The restored v7 Compare text also answered
-`dev-A3.en` and `dev-BM2.en` correctly again. `dev-BM6` ×3 now clarify
-`count_basis`, but with the wrong choice set, so they still fail.
+Step 1 met its targeted gate: `dev-MN1.en` and `dev-MN3.en` went from decline to
+the correct `count_basis` clarification, and no MN1–MN3 input declined.
+`dev-A3.en` and `dev-BM2.en` were also correct again. That is consistent with
+restoring the v7 Compare text, but it is not attributed. `dev-BM6` ×3 now
+clarify `count_basis`, but with the wrong choice set, so they still fail.
 
 Step 2 kept all 20 v7-correct controls, including the `dev-BM8` declines and
 the `dev-BM5` answers. `E02_compare.en` and `dev-BM6` stayed failing. The grant
@@ -170,15 +170,18 @@ Readings: these are not causal. Each is one temperature-0 observation per
 input on exposed development data.
 
 - **C1.** C1 asks the generic "how many people booked" and then states two
-  alternatives: seats or booking accounts. The new sentence plausibly
-  overrode the rule that such a question "admits only its stated
-  alternatives". The model then emitted the same fixed four-meaning menu seen
-  on `dev-MN2`.
+  alternatives: seats or booking accounts.
 
-  So the one-sentence repair traded an English false decline for a
-  choice-set error on explicitly stated alternatives. Choice-set
-  discrimination, already failing on `dev-BM6` and `dev-MN2`, is a harder
-  problem than the decline this candidate targeted.
+  The four-meaning menu is not new here. `dev-C1.zh-TW` and `dev-C1.en`
+  produced it on the frozen candidate, v3 and v5. v6 fixed that, and v7 kept
+  the fix.
+
+  On v9 all three variants produced it, including `.ja`, which never had
+  before. That is consistent with the new sentence weakening the rule that such
+  a question "admits only its stated alternatives", but it is not established.
+
+  Either way, C1's stated-alternative choice set looks fragile under count
+  context changes. Choice sets are also failing on `dev-BM6` and `dev-MN2`.
 - **A4.** The v9 Compare text is byte-identical to v7, which answered A4
   correctly, as v3, v5 and v6 did. The only context difference is the count
   sentence and the version string. So either v7's Compare role binding is
