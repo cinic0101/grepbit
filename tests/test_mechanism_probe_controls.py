@@ -17,7 +17,7 @@ ORDER = ["E02_compare.en", *[f"dev-MC{i}.en" for i in range(1, 6)], "dev-A3.en",
          "dev-BM2.en", "dev-MY1.en", "dev-MY2.en",
          *[f"{family}.{lang}" for family in ("dev-BM6", "dev-MN1", "dev-MN2", "dev-MN3")
            for lang in ("zh-TW", "en", "ja")]]
-REUSED = {  # case id -> (source cases, source oracles, oracle id)
+REUSED = {  # case id -> (source cases, source oracles, oracle id); equal as parsed JSON, not bytes
     "E02_compare.en": ("evals/p3/development-cases-v1.json", "evals/p3/development-oracles-v1.json",
                        "E02_compare.v1"),
     "dev-A3.en": ("evals/dev/dev-cases-v2.json", "evals/dev/dev-oracles-v2.json", "dev-A3.v1"),

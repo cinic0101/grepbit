@@ -26,9 +26,11 @@ varies inputs instead of repeating them.
 ## Panel contract
 
 Register `p3-dev-mechanism-probe-v1`: 22 inputs, 14 families, one fixed order.
-All inputs are exposed development material. Five existing cases and their
-oracles are reused byte-for-byte: `E02_compare.en`, `dev-A3.en`, `dev-BM2.en`
-and `dev-BM6` in three languages. No holdout question text or oracle payload
+All inputs are exposed development material. Six existing cases and their
+four oracles are reused unchanged as parsed JSON objects: `E02_compare.en`,
+`dev-A3.en`, `dev-BM2.en` and `dev-BM6` in three languages. Serialization
+follows this panel's formatting, so object bytes may differ from the source
+file (E02's source uses compact arrays). No holdout question text or oracle payload
 is read; G3's attendance-compatible framing derives only from HA02's published
 choice-set metadata.
 
