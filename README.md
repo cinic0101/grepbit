@@ -16,6 +16,12 @@ latest recorded results. GitHub holds active decisions and evidence:
 [The collaboration model](docs/collaboration-model.md) explains the workflow;
 [AGENTS.md](AGENTS.md) is the authority.
 
+The current v7 evidence is 27/28 frozen regression and 17/18 holdout A
+re-observation, with one remaining Compare failure and one new count-clarification
+regression. Its 54/54 dev result covers 51 unchanged cases plus three explicit
+C4 variants; the three original broad-revenue C4 variants remain unresolved and
+unmeasured on v7. See the [evidence and denominator audit](docs/v7-regression-audit.md).
+
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
 remains open. Grounding, clarification resume, synthesis, PostgreSQL parity
