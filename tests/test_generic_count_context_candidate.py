@@ -28,6 +28,9 @@ def _sha(context: dict) -> str:
 
 class GenericCountContextCandidateTests(unittest.TestCase):
     def test_runtime_is_v7_context_plus_one_generic_count_sentence(self):
+        index = registry.load_index()
+        if CANDIDATE in [r["candidate_id"] for r in index["entries"]] and index["current"] != CANDIDATE:
+            self.skipTest("v9 superseded; its registered identity remains pinned below")
         context = recipe_model.runtime_context()
         self.assertEqual(context["version"], CONTEXT_VERSION)
         self.assertEqual(context["recipes"][1]["id"], "compare")

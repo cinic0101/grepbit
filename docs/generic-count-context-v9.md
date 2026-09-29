@@ -64,7 +64,9 @@ before the production edit. It checks four things:
 
 It also checks the invariant instruction, schema, P1 and limits identities, the
 v7 and v8 archive digests, and wire sizes. All of this is static identity
-evidence. It does not show whether the model follows the rule.
+evidence. It does not show whether the model follows the rule. The live-context
+test skips once a later candidate supersedes v9. The registry-pin test stays
+active.
 
 ## Registration and offline checks
 
