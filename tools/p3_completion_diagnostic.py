@@ -15,7 +15,7 @@ import time
 from typing import ClassVar
 
 from grepbit import model, recipe_model
-from grepbit.gateway import GatewayClient, GatewayConfig, ModelError, MODEL
+from grepbit.gateway import GatewayClient, GatewayConfig, MAX_REQUEST_BYTES, ModelError, MODEL
 from tools import evaluate, p3_assets as assets, p3_eval, p3_live_evidence as live, smoke
 
 ROOT = evaluate.ROOT
@@ -178,7 +178,7 @@ def build_packet(database: Path, accepted_commit: str, profile: DiagnosticProfil
         if _hash(question.encode()) != inputs[case_id]["question_sha256"]:
             _fail("manifest_drift")
         wire = _wire(question)
-        if len(question.encode()) > 4096 or len(wire) > 32768:
+        if len(question.encode()) > 4096 or len(wire) > MAX_REQUEST_BYTES:
             _fail("manifest_drift")
         selected.append({"case_id": case_id, "question_sha256": _hash(question.encode()),
                          "request_sha256": _hash(wire)})

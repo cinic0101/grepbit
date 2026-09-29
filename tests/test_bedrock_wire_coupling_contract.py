@@ -6,6 +6,7 @@ from grepbit import recipe_model
 from grepbit.bedrock import converse_schema
 from grepbit.gateway import ModelError
 from tools.history import p3_bedrock_candidate_probe as candidate
+import frozen_recipe_schema
 
 GRAMMAR_BUDGET_WIRE_SHA256 = "ea4e03d02732c0c45f9905ccd9b7c0010bedc87a190666e7b31895867c43e53b"
 GRAMMAR_BUDGET_EFFECTIVE_SHA256 = "4d1f27ded8138dbe9618c6f8c4b32ca4555d8a244ac5e7d94e1287f9de4fb2ed"
@@ -77,6 +78,9 @@ def wire():
 
 
 class BedrockWireCouplingRulers(unittest.TestCase):
+    def setUp(self):
+        self.enterContext(frozen_recipe_schema.patched())  # v11 fails closed on Bedrock; test the frozen v10 schema
+
     def test_root_has_two_closed_branches_and_clarify_requires_clarification(self):
         schema, _ = wire()
         self.assertEqual(set(schema), {"anyOf"})

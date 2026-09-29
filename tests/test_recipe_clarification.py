@@ -56,7 +56,8 @@ class RecipeClarificationTests(unittest.IsolatedAsyncioTestCase):
     async def invoke(self, data=None, *, content=None, question=QUESTION, status=200,
                      clock=None, client_patch=None):
         if content is None:
-            content = json.dumps(clarify() if data is None else data)
+            # A model count_basis clarification is rejected in v11, so the default is metric_meaning.
+            content = json.dumps(clarify("metric_meaning") if data is None else data)
 
         def respond(request):
             self.sent.append(request)
@@ -97,12 +98,16 @@ class RecipeClarificationTests(unittest.IsolatedAsyncioTestCase):
         return result
 
     async def test_all_kinds_are_distinct_successful_nonexecuting_actions(self):
+        # Only the kernel count policy authors count_basis (docs/count-cue-policy.md).
+        contrast = {"overview_count": "contrast", "meanings": ["booked_seats", "known_booking_accounts"],
+                    "other_unsupported": False, "scope": dict(period(), center_code="CTR-A01")}
         for kind in KINDS:
             with self.subTest(kind=kind):
-                result = await self.invoke(clarify(kind))
+                result = await self.invoke(contrast if kind == "count_basis" else clarify(kind))
                 self.assertIsNone(result.error)
                 self.assertEqual(result.clarification.kind, kind)
                 self.assertEqual(result.evidence["model_outcome"], "clarify")
+                self.assertEqual(result.evidence["action_source"], "count_policy" if kind == "count_basis" else "model")
                 self.assertEqual(result.evidence["clarification"], result.clarification.to_dict())
                 self.assertEqual(result.evidence["presentation"], result.presentation.to_dict())
                 self.assertEqual(result.evidence["presentation_version"], "clarification-presentation-v1")
@@ -111,6 +116,9 @@ class RecipeClarificationTests(unittest.IsolatedAsyncioTestCase):
                 wire = json.loads(self.sent[0].content)
                 self.assertEqual(wire["response_format"]["json_schema"]["schema"], recipe_model.output_schema())
                 self.assertEqual(set(wire), {"model", "messages", "temperature", "max_tokens", "stream", "response_format"})
+        rejected = await self.invoke(clarify("count_basis"))
+        self.assertEqual((rejected.error.code, rejected.evidence["invalid_request_reason"]),
+                         ("invalid_request", "clarification_shape"))
 
     async def test_languages_share_one_message_and_do_not_use_presentation_as_input(self):
         messages = []
@@ -264,14 +272,22 @@ class RecipeClarificationTests(unittest.IsolatedAsyncioTestCase):
                     self.assertLessEqual(len(calls[0].content), MAX_REQUEST_BYTES)
 
     def test_original_request_decline_schema_is_exact_and_new_sources_are_pinned(self):
+        """Under the v11 ``none`` reading, the P2 request/decline branches are byte-identical."""
         schema = recipe_model.output_schema()
-        old = {"oneOf": schema["oneOf"][:4]}
+
+        def without_count(branch):
+            properties = {key: value for key, value in branch["properties"].items() if key != "overview_count"}
+            self.assertEqual(branch["properties"]["overview_count"], {"const": "none"})
+            self.assertEqual(branch["required"][0], "overview_count")
+            return {**branch, "required": branch["required"][1:], "properties": properties}
+
+        old = {"oneOf": [without_count(branch) for branch in schema["oneOf"][:4]]}
         self.assertEqual(hashlib.sha256(model.canonical_json(old).encode()).hexdigest(),
                          P2_IDENTITY["output_contract_sha256"])
         old_wrapper = {"type": "json_schema", "json_schema": {"name": "grepbit_recipe_request", "schema": old}}
         self.assertEqual(hashlib.sha256(model.canonical_json(old_wrapper).encode()).hexdigest(),
                          P2_GENERATION["response_format_sha256"])
-        self.assertEqual(len(schema["oneOf"]), 5)
+        self.assertEqual(len(schema["oneOf"]), 8)
         identity = recipe_smoke._source_identity()
         for name in ("grepbit/clarification.py", "grepbit/presentation.py"):
             self.assertEqual(identity["files_sha256"][name], hashlib.sha256(Path(name).read_bytes()).hexdigest())

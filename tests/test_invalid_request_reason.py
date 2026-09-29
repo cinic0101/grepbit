@@ -14,6 +14,7 @@ from grepbit.bedrock import converse_schema
 from grepbit.contracts import KernelError
 from grepbit.gateway import GatewayClient, GatewayConfig
 from tools import fixture, p3_assets, p3_live_evidence
+import frozen_recipe_schema
 from test_recipe_clarification import clarify
 from test_recipe_model import envelope, period, proposal
 
@@ -50,42 +51,49 @@ def _request_cases():
 
 
 def _clarify_cases():
-    """(payload, reason) pairs for the clarify branch, one violated rule each."""
-    extra_root = {**clarify(), "recipe_id": "overview"}
-    missing_kind = clarify()
+    """(payload, reason) pairs for the clarify branch, one violated rule each.
+
+    The model-authored base is ``metric_meaning``: under a none or absent count
+    reading a model ``count_basis`` clarification is ``clarification_shape``
+    (docs/count-cue-policy.md), so it cannot reach the later rules.
+    """
+    base = "metric_meaning"
+    extra_root = {**clarify(base), "recipe_id": "overview"}
+    missing_kind = clarify(base)
     del missing_kind["clarification"]["kind"]
-    unknown_kind = clarify()
+    unknown_kind = clarify(base)
     unknown_kind["clarification"]["kind"] = "unknown"
+    model_count_basis = clarify()
     single = clarify("center")
     single["clarification"]["choices"] = single["clarification"]["choices"][:1]
     single_roles = clarify("comparison_roles")
     single_roles["clarification"]["choices"] = single_roles["clarification"]["choices"][:1]
-    many = clarify()
+    many = clarify(base)
     many["clarification"]["choices"] = [
         {**copy.deepcopy(many["clarification"]["choices"][0]), "id": f"c{i}"} for i in range(5)]
-    not_list = clarify()
+    not_list = clarify(base)
     not_list["clarification"]["choices"] = {"c1": {}}
-    missing_id = clarify()
+    missing_id = clarify(base)
     del missing_id["clarification"]["choices"][0]["id"]
-    unknown_type = clarify()
+    unknown_type = clarify(base)
     unknown_type["clarification"]["choices"][0]["semantic_value"]["type"] = "free_text"
-    extra_value_key = clarify()
-    extra_value_key["clarification"]["choices"][0]["semantic_value"]["label"] = "Seats"
-    bad_id = clarify()
+    extra_value_key = clarify(base)
+    extra_value_key["clarification"]["choices"][0]["semantic_value"]["label"] = "Amount"
+    bad_id = clarify(base)
     bad_id["clarification"]["choices"][0]["id"] = "1bad"
-    bad_value = clarify()
+    bad_value = clarify(base)
     bad_value["clarification"]["choices"][1]["semantic_value"]["value"] = "profit_after_tax"
-    bad_scope = clarify()
+    bad_scope = clarify(base)
     bad_scope["clarification"]["choices"][0]["semantic_value"]["scope"]["start"] = "2026-03-02T00:00:00+08:00"
-    duplicate_ids = clarify()
+    duplicate_ids = clarify(base)
     duplicate_ids["clarification"]["choices"][1]["id"] = duplicate_ids["clarification"]["choices"][0]["id"]
     not_reversed = clarify("comparison_roles")
     not_reversed["clarification"]["choices"][1]["semantic_value"]["request"] = copy.deepcopy(
         not_reversed["clarification"]["choices"][0]["semantic_value"]["request"])
     different_months = clarify("center")
     different_months["clarification"]["choices"][1]["semantic_value"]["request"].update(period(2))
-    without_required = clarify()
-    without_required["clarification"]["choices"][0]["semantic_value"]["value"] = "attendance_visits"
+    without_required = clarify(base)
+    without_required["clarification"]["choices"][0]["semantic_value"]["value"] = "posted_refunds"
     kind_mismatch = clarify()
     kind_mismatch["clarification"]["kind"] = "metric_meaning"
     unbound = clarify("center")
@@ -94,7 +102,7 @@ def _clarify_cases():
     drift["clarification"]["choices"][0]["id"] = KEY
     return (
         (extra_root, "clarification_shape"), (missing_kind, "clarification_shape"),
-        (unknown_kind, "clarification_shape"),
+        (unknown_kind, "clarification_shape"), (model_count_basis, "clarification_shape"),
         (single, "choice_count"), (single_roles, "choice_count"), (many, "choice_count"),
         (not_list, "choice_count"),
         (missing_id, "choice_shape"), (unknown_type, "choice_shape"), (extra_value_key, "choice_shape"),
@@ -103,6 +111,20 @@ def _clarify_cases():
         (different_months, "choice_consistency"), (without_required, "choice_consistency"),
         (kind_mismatch, "choice_consistency"),
         (unbound, "question_binding"), (drift, "export_drift"),
+    )
+
+
+def _cue_cases():
+    """(payload, reason) pairs for a rejected Overview count cue; no fallback action runs."""
+    def cue(**changes):
+        scope = dict(period(), center_code="CTR-A01")
+        return {"overview_count": "bound", "meaning": "booked_seats", "other_unsupported": False,
+                "scope": scope, **changes}
+    unbound = cue()
+    unbound["scope"]["center_code"] = "CTR-C01"
+    return (
+        ({**proposal(), "overview_count": 3}, "count_cue_shape"), (cue(extra=True), "count_cue_shape"),
+        (cue(meaning="revenue"), "count_cue_values"), (unbound, "count_cue_binding"),
     )
 
 
@@ -160,8 +182,13 @@ class InvalidRequestReasonTests(unittest.IsolatedAsyncioTestCase):
             with self.subTest(case=index, reason=reason):
                 self.assert_reason(await self.invoke(payload), reason)
 
+    async def test_cue_reasons_name_the_violated_cue_rule_only(self):
+        for index, (payload, reason) in enumerate(_cue_cases()):
+            with self.subTest(case=index, reason=reason):
+                self.assert_reason(await self.invoke(payload), reason)
+
     async def test_every_reason_is_reachable_and_the_enum_is_closed(self):
-        observed = {reason for _, reason in _request_cases()} | {reason for _, reason in _clarify_cases()}
+        observed = {reason for cases in (_request_cases(), _clarify_cases(), _cue_cases()) for _, reason in cases}
         self.assertEqual(observed, set(REASONS))
         self.assertEqual(len(set(REASONS)), len(REASONS))
         self.assertTrue(set(recipe_model._CLARIFICATION_REASONS) < set(REASONS))
@@ -177,7 +204,9 @@ class InvalidRequestReasonTests(unittest.IsolatedAsyncioTestCase):
             accepted.validate_question(QUESTION)
             self.assertIn(recipe_model._clarification_reason(raw, QUESTION), REASONS)
         for payload, reason in _clarify_cases():
-            if reason == "export_drift" or set(payload) != {"outcome", "clarification"}:
+            # The v11 count_basis guard precedes the frozen validators, which accept that payload.
+            if (reason == "export_drift" or set(payload) != {"outcome", "clarification"}
+                    or payload["clarification"].get("kind") == "count_basis"):
                 continue
             raw = payload["clarification"]
             with self.subTest(reason=reason):
@@ -203,6 +232,7 @@ class InvalidRequestReasonTests(unittest.IsolatedAsyncioTestCase):
 
     def test_bedrock_wire_permits_one_choice_that_native_rejects_as_choice_count(self):
         """The compact wire keeps ``minItems: 1``; only native validation enforces two choices."""
+        self.enterContext(frozen_recipe_schema.patched())
         constraint = recipe_model._structured_output(recipe_model.output_schema())[0]
         wire_format, _ = converse_schema(constraint)
         wire = json.loads(wire_format["structure"]["jsonSchema"]["schema"])

@@ -357,6 +357,12 @@ snapshot. The later accepted **tooling** commit is separately pinned and must
 be exact, clean and on dev for formal freeze/preparation. A feature-branch
 candidate cannot manufacture that acceptance.
 
+> **Amended 2026-09-29.** By owner decision in #120
+> (#issuecomment-5887377752), the pinned test `tests/test_recipe_clarification.py`
+> was amended for v11 (`docs/count-cue-policy.md`, "Frozen source change").
+> `tests/test_p3_exposed.py` keeps its `20abb559` hash as superseded ancestry.
+> The frozen grading, scoring, expectation and asset sources are unchanged.
+
 Examples below are future separately authorized owner-side operations, not
 permission to execute them now. Authoring/review is owner-declared complete,
 but exact sanitized fresh identity pins and an actual formal freeze are absent:

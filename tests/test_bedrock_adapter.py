@@ -12,6 +12,7 @@ import httpx
 from grepbit import model, recipe_model
 from grepbit.gateway import GatewayClient, GatewayConfig, ModelError
 from tools import fixture
+import frozen_recipe_schema
 
 
 REGION = "us-east-1"
@@ -25,6 +26,7 @@ MESSAGES = [{"role": "system", "content": "Shared semantic context."},
 
 class BedrockAdapterRulers(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
+        self.enterContext(frozen_recipe_schema.patched())  # v11 fails closed on Bedrock; test the frozen v10 schema
         for target in ("socket.socket.connect", "socket.socket.connect_ex",
                        "socket.create_connection", "socket.getaddrinfo"):
             guard = patch(target, side_effect=AssertionError("Network forbidden"))

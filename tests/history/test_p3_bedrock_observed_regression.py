@@ -17,6 +17,7 @@ from tools import fixture, p3_assets, p3_eval, p3_live_evidence
 from tools.history import p3_bedrock_observed_regression as runner
 from test_p3_admission import metadata_provenance
 from test_p3_formal_policy import revised_scaffolding
+import frozen_recipe_schema
 
 
 PROFILE = runner.PROFILE
@@ -31,6 +32,7 @@ def response(content='{"outcome":"declined"}'):
 
 class BedrockObservedRulers(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
+        self.enterContext(frozen_recipe_schema.patched())  # v11 fails closed on Bedrock; test the frozen v10 schema
         for target in ("socket.socket.connect", "socket.socket.connect_ex",
                        "socket.create_connection", "socket.getaddrinfo",
                        "httpx.AsyncHTTPTransport", "httpx.HTTPTransport"):

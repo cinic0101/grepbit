@@ -6,6 +6,7 @@ import unittest
 from grepbit import recipe_model
 from grepbit.bedrock import BedrockConfig, converse_schema
 from tools.history import p3_bedrock_candidate_probe as candidate, p3_probe as legacy
+import frozen_recipe_schema
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -15,6 +16,9 @@ WIRE_HASH = "0bd5db7c524215ba7e76a1423579510e8000efda80004dc7b17ce265d517efef"  
 
 
 class JPBedrockCandidateContract(unittest.TestCase):
+    def setUp(self):
+        self.enterContext(frozen_recipe_schema.patched())  # v11 fails closed on Bedrock; test the frozen v10 schema
+
     def test_existing_adapter_route_and_schema_identity(self):
         config = BedrockConfig(REGION, MODEL, "placeholder")
         self.assertEqual(config.model, MODEL)

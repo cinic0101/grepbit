@@ -1,6 +1,6 @@
 {
   "registry_version": "candidate-registry-v1",
-  "current": "p3-v7-context-restoration-v10",
+  "current": "p3-count-cue-policy-v11",
   "entries": [
     {
       "candidate_id": "p33-frozen-20abb559",
@@ -55,6 +55,12 @@
       "path": "p3-v7-context-restoration-v10.json",
       "sha256": "72124fe322213dd77977f90d386f49ed2c67bc5e6593a88fc5fd7aef8ed388e2",
       "ancestor": "p3-generic-count-context-v9"
+    },
+    {
+      "candidate_id": "p3-count-cue-policy-v11",
+      "path": "p3-count-cue-policy-v11.json",
+      "sha256": "1c1bdf0531ae39d84d179ced4e349e7f2c4e6f677ec31093936b2203fc237630",
+      "ancestor": "p3-v7-context-restoration-v10"
     }
   ]
 }

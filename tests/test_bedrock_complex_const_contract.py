@@ -6,6 +6,7 @@ from grepbit import recipe_model
 from grepbit.bedrock import converse_schema
 from grepbit.gateway import ModelError
 from tools.history import p3_bedrock_candidate_probe as candidate
+import frozen_recipe_schema
 
 
 OLD_WIRE_SHA256 = "d971f587cade56ed0096e102d5fdd12733f2fa52c038738a1da9e0f6517db21f"
@@ -22,6 +23,9 @@ def nodes(value):
 
 
 class BedrockComplexConstContract(unittest.TestCase):
+    def setUp(self):
+        self.enterContext(frozen_recipe_schema.patched())  # v11 fails closed on Bedrock; test the frozen v10 schema
+
     def test_recipe_wire_replaces_only_four_singleton_array_consts(self):
         canonical = recipe_model.output_schema()
         canonical_hash = recipe_model.structured_output_identity()["schema_sha256"]

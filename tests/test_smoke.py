@@ -208,7 +208,7 @@ class SmokeTests(unittest.IsolatedAsyncioTestCase):
             "max_client_http_attempts": 12, "concurrency": 1, "client_retries": 0,
             "repairs": 0, "stream": False, "temperature": 0, "max_tokens": 2048,
             "call_timeout_seconds": 60.0, "panel_timeout_seconds": 900.0,
-            "max_input_bytes": 4096, "max_request_bytes": 32768, "max_response_bytes": 131072,
+            "max_input_bytes": 4096, "max_request_bytes": 40960, "max_response_bytes": 131072,
             "max_database_bytes": 16 * 1024 * 1024,
             "constraints": None, "raw_diagnostics": False, "as_of": "2026-03-31T16:00:00Z",
             "business_timezone": "Asia/Taipei",

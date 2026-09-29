@@ -49,10 +49,20 @@ clarified comparison roles. The sequence stopped before the formal and holdout
 runs. v9 is not an accepted improvement. See the
 [generic-count checkpoint](docs/generic-count-context-v9.md).
 
-The current candidate, v10, restores v7's exact runtime bytes by owner
-decision. Its semantic identity equals v7's; it is not a new fix. v10 has no
-run of its own, and v7's recorded results and limitations describe the same
-wire bytes. See the [v7 restoration](docs/v7-context-restoration-v10.md).
+v10 restored v7's exact runtime bytes by owner decision. Its semantic identity
+equals v7's; it is not a new fix. v10 has no run of its own, and v7's recorded
+results and limitations describe the same wire bytes. See the
+[v7 restoration](docs/v7-context-restoration-v10.md).
+
+The current candidate, v11, follows decision #120 (Option C). For an Overview
+count, the model reports only a typed count reading: none, a bound meaning, a
+contrast or a generic count. A deterministic kernel policy then chooses the
+action from a closed table. Bound booked seats execute. Other bound meanings,
+contrasts without booked seats and unsupported extra requirements decline.
+Other contrasts and generic counts clarify. The model can no longer author a
+count-basis clarification. By owner decision, the complete-request cap is now
+40,960 bytes, and the Bedrock route fails closed for v11. v11 has no live run
+yet. See the [count cue policy](docs/count-cue-policy.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality

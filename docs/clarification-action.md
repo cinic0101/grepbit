@@ -151,6 +151,12 @@ ASCII question fits; a 4,096-byte all-quote question does not after JSON escapin
 and fails `input_too_large` **before HTTP**. Individual caps are not a promise
 that every combination fits the total cap; it is not silently raised.
 
+> **Amended 2026-09-29.** The owner decided in #120
+> (#issuecomment-5886754433) to raise the complete-request cap to 40,960 bytes
+> for v11 (`docs/count-cue-policy.md`, "Request size"). The question, response,
+> output-token and call limits above are unchanged. The text above records the
+> cap at the time of this design.
+
 **P1:** source/protocol untouched. Actual before/after request bytes match:
 2,902 bytes, SHA-256
 `bd657d31b50a6cc19bdad954b0ad30f6772a05b0aba36ade880d860f7629e53a`.

@@ -8,12 +8,16 @@ from grepbit.clarification import Clarification
 from grepbit.contracts import KernelError
 from grepbit.gateway import ModelError
 from tools.history import p3_bedrock_candidate_probe as candidate
+import frozen_recipe_schema
 
 
 OLD_WIRE_SHA256 = "93ab99c9162a43412d0588b3ded70cc41a25827582b4d11b8072e3348d201f68"
 
 
 class BedrockGrammarBudgetContract(unittest.TestCase):
+    def setUp(self):
+        self.enterContext(frozen_recipe_schema.patched())  # v11 fails closed on Bedrock; test the frozen v10 schema
+
     def test_pinned_recipe_wire_has_compact_action_and_clarification_shapes(self):
         canonical_before = recipe_model.structured_output_identity()
         constraint = recipe_model._structured_output(recipe_model.output_schema())[0]

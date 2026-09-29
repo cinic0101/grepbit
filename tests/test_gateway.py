@@ -99,7 +99,7 @@ class GatewayConfigTests(OfflineAssertions, unittest.TestCase):
     def test_fixed_model_and_resource_limits(self):
         self.assertEqual(MODEL, "gemma-4-31b")
         self.assertEqual(MAX_INPUT_BYTES, 4096)
-        self.assertEqual(MAX_REQUEST_BYTES, 32768)
+        self.assertEqual(MAX_REQUEST_BYTES, 40960)  # Owner decision A (#120).
         self.assertEqual(MAX_RESPONSE_BYTES, 131072)
         self.assertEqual(CALL_TIMEOUT_SECONDS, 60)
 
@@ -495,7 +495,7 @@ class GatewayTransportTests(OfflineAssertions, unittest.IsolatedAsyncioTestCase)
         probe, _ = self.client(handle)
         await probe.complete(messages)
         overhead = len(sent[0].content)
-        for size, allowed in ((32768, True), (32769, False)):
+        for size, allowed in ((MAX_REQUEST_BYTES, True), (MAX_REQUEST_BYTES + 1, False)):
             with self.subTest(size=size):
                 messages = [{"role": "system", "content": ""},
                             {"role": "user", "content": "short"}]

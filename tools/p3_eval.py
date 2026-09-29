@@ -33,7 +33,7 @@ POLICY_MANIFEST_VERSION = "p3-manifest-v2"
 POLICY_REPORT_VERSION = "p3-report-v2"
 SCRIPT_VERSION = "p3-fake-responses-v1"
 DEFAULT_PANEL = ROOT / "evals/p3/development-panel-v1.json"
-DEFAULT_RESPONSES = ROOT / "evals/p3/development-responses-v1.json"
+DEFAULT_RESPONSES = ROOT / "evals/p3/development-cued-responses-v1.json"
 MAX_REPORT_BYTES = 16 * 1024 * 1024
 NETWORK_CODES = frozenset({"transport_error", "gateway_error", "rate_limited"})
 _INTERNAL_ERRORS = recipe_smoke._INTERNAL_ERRORS
@@ -60,7 +60,7 @@ def settings(input_count: int) -> dict:
         "max_client_http_attempts": input_count, "concurrency": 1, "client_retries": 0,
         "repairs": 0, "stream": False, "temperature": 0, "max_tokens": 2048,
         "call_timeout_seconds": 60.0, "panel_timeout_seconds": 60.0 * input_count + 120.0,
-        "max_input_bytes": 4096, "max_request_bytes": 32768, "max_response_bytes": 131072,
+        "max_input_bytes": 4096, "max_request_bytes": 40960, "max_response_bytes": 131072,
         "max_database_bytes": 16 * 1024 * 1024, "raw_diagnostics": False,
         "execution": "explicit_mock_transport_only",
     }
