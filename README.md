@@ -16,6 +16,9 @@ latest recorded results. GitHub holds active decisions and evidence:
 [The collaboration model](docs/collaboration-model.md) explains the workflow;
 [AGENTS.md](AGENTS.md) is the authority.
 
+Continuing in a new session: read the [September 29 handoff](docs/handoff-2026-09-29.md)
+for the completed v8 attempt, evidence locations and failed-gate stop boundary.
+
 The latest measured v7 evidence is 27/28 frozen regression and 17/18 holdout A
 re-observation, with one remaining Compare failure and one new count-clarification
 regression. Its 54/54 dev result covers 51 unchanged cases plus three explicit
