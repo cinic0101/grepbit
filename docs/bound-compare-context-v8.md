@@ -68,3 +68,71 @@ remain unresolved and unmeasured on v7. No original C4 score is repaired here.
 Historical candidates and reports remain intact. Recovery from a failed
 candidate is to stop observation and retain its evidence; a later restoration
 of an earlier runtime requires a new registered identity, not erased history.
+
+## Completed observation and stop
+
+PR #112 merged at `ebabe42d9abf61d023dcdfd829feb30347b03664` after local and
+fresh-context GitHub reviews found no blockers. Before merge, 14 focused tests
+and the complete 1,246-test offline suite passed. Actual mock wire requests for
+all 24 controls fit within the 32,768-byte cap (maximum 28,497 bytes).
+The implementation changed one production file, added no operator or repair,
+and consumed one bounded candidate attempt. Offline acceptance establishes
+identity and contract compliance, not successful model behavior.
+
+The [bound preflight](https://github.com/cinic0101/grepbit/issues/79#issuecomment-5883203259)
+preceded one live observation, with the v7 control report as baseline.
+
+| Observation | v7 baseline | v8 candidate |
+| --- | --- | --- |
+| Correct inputs | 20/24 | 19/24 |
+| All-variants-correct families | 6/8 | 5/8 |
+| Client attempts | 24 | 24 |
+| Elapsed seconds | 163.605099 | 152.164486 |
+| Operational failures / timeouts | 0 / 0 | 0 / 0 |
+| Checked-wrong inputs | 2 | 3 |
+
+Strict offline report readback passed. The comparison taxonomy is:
+19 `UNCHANGED_CORRECT`, zero `FIXED_KNOWN_FAILURE`, one `NEW_REGRESSION`,
+three `UNCHANGED_FAILURE`, one `OUTCOME_CHANGED_OTHER`, zero operationally
+unassessed inputs. All 24 inputs remain in the denominator.
+
+| Case | v7 | v8 | Classification |
+| --- | --- | --- | --- |
+| E02_compare.en | False two-role clarification | Same false clarification | UNCHANGED_FAILURE |
+| dev-BM2.en | Correct directed comparison | False refusal (`model_declined`) | NEW_REGRESSION |
+| dev-BM6.zh-TW | Count clarification with wrong four-choice set | Answer instead of clarification | OUTCOME_CHANGED_OTHER |
+| dev-BM6.en | Answer instead of clarification | Same missed clarification | UNCHANGED_FAILURE |
+| dev-BM6.ja | Answer instead of clarification | Same missed clarification | UNCHANGED_FAILURE |
+
+The three BM6 answers are checked-wrong: they execute before the unresolved
+meaning is bound. The Chinese outcome changed between two failures; do not
+miscount it as a newly failing input. Supported-seat, explicit two-choice,
+explicit-unsupported and genuinely unoriented-comparison controls stayed
+correct in all three languages. These observations do not establish the cause
+of a single changed outcome or diagnose HA02's distinct false-decline mechanism.
+
+Candidate run ID:
+`p3-dev-bound-meaning-v1--litellm-gemma-4-31b--p3-bound-meaning-context-v8--654e467e96fc`.
+Report SHA256:
+`83922e4279aed0c23c68797d640cb0b6a19e7d1c138ac408881cd128edfd5e87`.
+Packet SHA256:
+`e5f59dc97adbd6535ebae7112152dc0106a826a1ddf3ed9853466e7cf7bbf5a8`.
+Slot: `.artifacts/bound-compare-context-v8-20260929/control-run`.
+Candidate semantic identity:
+`9dc0f3f0dd45ac3d26957503b910139593cd457ff846d468a52f19a692e37e54`.
+Both baseline and candidate are indexed `development_observation`; neither
+is a golden/fresh result. No raw completion or reasoning was retained.
+
+**The all-24 gate failed. The bounded sequence is stopped.** No 54-input dev,
+28-input regression or 18-input holdout follow-up was prepared or executed;
+no rerun or additional candidate was made. This grant consumed 48 of its
+148-call conditional ceiling. The remaining 100 calls are not independently
+executable after the failed gate. The standing formal budget remains 2/4
+available; this sequence's conditional holdout observation was not consumed.
+v8 is registered current for reproducibility, but is not an accepted improvement
+or promotion. No runtime restoration is implied by this evidence-only closeout.
+
+A further repair requires a new bounded proposal and owner decision under the
+attempt stop. It should distinguish the persistent directed-comparison failure
+from generic-count ambiguity and HA02's unreproduced false decline; this result
+does not justify another automatic context revision or changing accepted gold.
