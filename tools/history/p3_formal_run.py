@@ -37,7 +37,8 @@ _PACKET_FIELDS = {
 
 
 def settings() -> dict:
-    return {**evaluator.settings(28), "execution": "owner_authorized_formal_live_only",
+    return {**evaluator.settings(28, evaluator.HISTORICAL_MAX_REQUEST_BYTES),
+            "execution": "owner_authorized_formal_live_only",
             "client_fallback": 0, "resend": 0, "continuation": 0, "best_of": 0}
 
 

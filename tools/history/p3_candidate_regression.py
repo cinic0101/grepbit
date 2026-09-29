@@ -70,7 +70,7 @@ _PACKET_FIELDS = {
 
 
 def settings() -> dict:
-    return {**evaluator.settings(28), "model": GEMMA_12B.model_alias,
+    return {**evaluator.settings(28, evaluator.HISTORICAL_MAX_REQUEST_BYTES), "model": GEMMA_12B.model_alias,
             "execution": "owner_authorized_observed_candidate_regression_only",
             "max_runtime_invocations": 28, "client_fallback": 0, "resend": 0,
             "continuation": 0, "best_of": 0, "resume": False}

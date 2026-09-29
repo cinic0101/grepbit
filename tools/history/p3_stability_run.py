@@ -57,7 +57,8 @@ def historical_quality() -> dict:
 
 
 def settings() -> dict:
-    return {**evaluator.settings(18), "execution": "owner_authorized_stability_characterization_only",
+    return {**evaluator.settings(18, evaluator.HISTORICAL_MAX_REQUEST_BYTES),
+            "execution": "owner_authorized_stability_characterization_only",
             "selected_semantic_inputs": 6, "trials_per_input": 3, "max_runtime_invocations": 18,
             "client_fallback": 0, "resend": 0, "continuation": 0, "best_of": 0}
 

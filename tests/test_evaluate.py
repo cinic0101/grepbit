@@ -360,6 +360,45 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
                 runner.read_report(path)
         path.write_bytes(original)
 
+    # ----------------------------------------------------------------- request cap per candidate (#122)
+    async def test_pre_v11_archive_with_the_historical_request_cap_reads_back_and_serves_as_baseline(self):
+        """#122: archives prepared before the v11 merge record 32,768 and must still read back."""
+        original = p3_eval.settings
+
+        def historical(input_count, *args, **kwargs):
+            return {**original(input_count), "max_request_bytes": 32768}
+
+        cases = p3_assets.load_panel(self.root / "development-panel-v1.json").cases
+        with patch.object(p3_eval, "settings", side_effect=historical):
+            packet_path = self.prepare()
+            output = self.output()
+            report, _ = await self.run_mock(packet_path, output, self.bind(packet_path, output),
+                                            client=self.litellm_client(scripted=True, cases=cases))
+        self.assertEqual(report["status"], "complete")
+        self.assertEqual(json.loads((output / "packet.json").read_bytes())["settings"]["max_request_bytes"], 32768)
+        self.assertEqual(runner.read_report(output / "report.json"), report)
+        self.assertEqual(runner.record(output / "report.json", runs_path=self.runs,
+                                       now="2026-09-29T00:00:00Z")["correct"], 15)
+        baseline_packet = json.loads(self.prepare(baseline=output / "report.json").read_bytes())
+        self.assertEqual(baseline_packet["settings"]["max_request_bytes"], 40960)
+        self.assertEqual(len(baseline_packet["baseline"]["inputs"]), 15)
+
+    def test_preparation_binds_the_request_cap_to_the_registered_candidate(self):
+        """#122: v7-v10 register 32,768 and v11 registers 40,960; preparation records the candidate's own cap."""
+        current = json.loads(self.prepare().read_bytes())
+        self.assertEqual(current["settings"]["max_request_bytes"], registry.current()["limits"]["request"])
+        self.assertEqual(current["settings"]["max_request_bytes"], 40960)
+        entry = registry.load_entry("p3-v7-context-restoration-v10")
+        self.assertEqual(entry["limits"]["request"], 32768)
+        checked = {"candidate_id": entry["candidate_id"],
+                   "semantic_identity_sha256": entry["semantic_identity_sha256"], "runtime_files_changed": []}
+        with patch.object(registry, "check", return_value=checked), \
+                patch.object(registry, "current", return_value=entry):
+            self.candidate = entry["candidate_id"]
+            older = json.loads(self.prepare().read_bytes())
+        self.assertEqual(older["settings"]["max_request_bytes"], 32768)
+        self.assertEqual(older["settings"], {**current["settings"], "max_request_bytes": 32768})
+
     # ----------------------------------------------------------------- holdout tier and claim drift
     async def test_holdout_is_fresh_once_per_route_then_regression_and_a_stale_claim_is_drift(self):
         first_packet = self.prepare(panel="synthetic-holdout")

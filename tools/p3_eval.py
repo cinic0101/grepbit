@@ -50,20 +50,32 @@ _MANIFEST_FIELDS = {
     "oracles", "upstream_inference_attempts",
 }
 _ATTEMPT_STATES = {"not_started", "not_returned", "matched", "missing", "invalid", "mismatch"}
+# Complete-request caps a manifest may record (#122): 32,768 before v11, 40,960 from v11 (#120 decision A).
+HISTORICAL_MAX_REQUEST_BYTES = 32768
+MAX_REQUEST_BYTES = 40960
+REQUEST_CAPS = (HISTORICAL_MAX_REQUEST_BYTES, MAX_REQUEST_BYTES)
 
 
-def settings(input_count: int) -> dict:
+def settings(input_count: int, max_request_bytes: int = MAX_REQUEST_BYTES) -> dict:
     if type(input_count) is not int or not 1 <= input_count <= p3_assets.MAX_INPUTS:
         raise P3Error("invalid_panel")
+    if type(max_request_bytes) is not int or max_request_bytes not in REQUEST_CAPS:
+        raise P3Error("invalid_manifest")
     return {
         "model": smoke.MODEL, "response_mode": "json_content", "inputs": input_count,
         "max_client_http_attempts": input_count, "concurrency": 1, "client_retries": 0,
         "repairs": 0, "stream": False, "temperature": 0, "max_tokens": 2048,
         "call_timeout_seconds": 60.0, "panel_timeout_seconds": 60.0 * input_count + 120.0,
-        "max_input_bytes": 4096, "max_request_bytes": 40960, "max_response_bytes": 131072,
+        "max_input_bytes": 4096, "max_request_bytes": max_request_bytes, "max_response_bytes": 131072,
         "max_database_bytes": 16 * 1024 * 1024, "raw_diagnostics": False,
         "execution": "explicit_mock_transport_only",
     }
+
+
+def recorded_settings(value: object, input_count: int) -> bool:
+    """An archived settings object equals ``settings`` at the known cap it records."""
+    cap = value.get("max_request_bytes") if isinstance(value, dict) else None
+    return type(cap) is int and cap in REQUEST_CAPS and value == settings(input_count, cap)
 
 
 def stop_policy() -> dict:
@@ -657,7 +669,7 @@ def read_report(path: Path, *, manifest_path: Path | None = None) -> dict:
                 or manifest["evaluator_version"] != p3_grading.VERSION
                 or manifest["panel_kind"] not in ("development", "formal")
                 or manifest["upstream_inference_attempts"] is not None
-                or manifest["settings"] != settings(len(manifest["inputs"]))
+                or not recorded_settings(manifest["settings"], len(manifest["inputs"]))
                 or manifest["settings_sha256"] != p3_assets.digest(manifest["settings"])
                 or manifest["stop_policy_sha256"] != p3_assets.digest(manifest["stop_policy"])
                 or manifest["stop_policy"] != stop_policy()

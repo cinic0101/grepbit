@@ -241,6 +241,21 @@ No artifact produced by these plumbing tests is a real formal freeze.
         self.assertTrue(all(row["status"] == "not_run" and not row["runtime_invoked"] for row in report["results"]))
         self.assertEqual(self.read_prepared(), report)
 
+    def test_pre_v11_freeze_and_manifest_with_the_historical_request_cap_read_back(self):
+        """#122: freezes and manifests prepared before the v11 merge record 32,768 and must still validate."""
+        original = p3_eval.settings
+
+        def historical(input_count, *args, **kwargs):
+            return {**original(input_count), "max_request_bytes": 32768}
+
+        with patch.object(p3_eval, "settings", side_effect=historical):
+            report = self.prepare_policy()
+        for document in (json.loads((self.output / "report.json").read_bytes()),
+                         json.loads((self.prepared / "manifest.json").read_bytes())):
+            self.assertEqual(document["settings"]["max_request_bytes"], 32768)
+        self.assertEqual(self.read_prepared(), report)
+        self.assertEqual(self.validate_frozen()["version"], "p3-formal-freeze-v2")
+
     def test_v2_archive_is_offline_and_independent_of_current_checkout(self):
         report = self.prepare_policy()
         for target in ("tools.p3_eval._source_identity", "tools.p3_admission.validate_freeze",
