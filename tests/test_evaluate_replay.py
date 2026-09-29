@@ -151,6 +151,16 @@ class ReplayableObservationTests(EvaluateHarness):
         self.assertIsNone(stopped[0]["evidence"])
         self.assertIsNotNone(stopped[0]["validated_action"])
         self.assertEqual(runner.read_report(output / "report.json"), report)
+        path = output / "report.json"
+        original_bytes = path.read_bytes()
+        tampered = json.loads(original_bytes)
+        other = next(i for i, row in enumerate(tampered["results"])
+                     if row["runner_error_code"] is None and row["validated_action"] is not None)
+        tampered["results"][other]["evidence"] = None
+        path.write_text(json.dumps(tampered))
+        with self.assertRaises(p3_assets.P3Error):
+            runner.read_report(path)
+        path.write_bytes(original_bytes)
         replayed = await runner.replay(output / "report.json", self.database, self.root / "replay-stopped.json",
                                        panels_path=self.panels)
         self.assertEqual(next(row for row in replayed["rows"] if row["case_id"] == stopped[0]["case_id"])["class"],

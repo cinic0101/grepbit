@@ -62,7 +62,11 @@ old archives:
 - a clarification matches `clarification_kind` and
   `clarification_choice_count`;
 - a request or clarification implies that `request_validation` passed;
-- a decline implies `error_code` `model_declined`.
+- a decline implies `error_code` `model_declined`;
+- the two evidence checks above are skipped only for the row the run
+  stopped on before its evidence was projected (evidence null and
+  `runner_error_code` equal to the report's `stop_reason`). Such a row is
+  unassessed and not replayable.
 
 The summary adds `observations.validated_actions`, the count of persisted
 actions.

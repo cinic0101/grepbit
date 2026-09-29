@@ -785,7 +785,7 @@ def _validated_action(result) -> str | None:
 _ACTION_OUTCOMES = {"request": "answer", "clarify": "clarify", "declined": "decline"}
 
 
-def _check_action(row: dict) -> None:
+def _check_action(row: dict, stop_reason: str | None = None) -> None:
     text = row["validated_action"]
     if text is None:
         return
@@ -798,17 +798,22 @@ def _check_action(row: dict) -> None:
         raise assets.P3Error("invalid_asset") from None
     if _action_text(action) != text or _ACTION_OUTCOMES[action["outcome"]] != row["actual_action"]:
         raise assets.P3Error("invalid_asset")
-    evidence = row["evidence"] if isinstance(row["evidence"], dict) else {}
+    if action["outcome"] == "clarify" and (
+            action["clarification"]["kind"] != row["clarification_kind"]
+            or len(action["clarification"]["choices"]) != row["clarification_choice_count"]):
+        raise assets.P3Error("invalid_asset")
+    evidence = row["evidence"]
+    if evidence is None and stop_reason is not None and row["runner_error_code"] == stop_reason:
+        # The run stopped on this row before its evidence was projected; the stop is the evidence,
+        # and such a row is neither assessed nor replayable.
+        return
+    evidence = evidence if isinstance(evidence, dict) else {}
     stages = evidence.get("stages") if isinstance(evidence.get("stages"), dict) else {}
     if action["outcome"] == "declined":
         if evidence.get("error_code") != "model_declined":
             raise assets.P3Error("invalid_asset")
         return
     if stages.get("request_validation") != "passed":
-        raise assets.P3Error("invalid_asset")
-    if action["outcome"] == "clarify" and (
-            action["clarification"]["kind"] != row["clarification_kind"]
-            or len(action["clarification"]["choices"]) != row["clarification_choice_count"]):
         raise assets.P3Error("invalid_asset")
 
 
@@ -863,7 +868,7 @@ class _LiveEvidence(live._LiveEvidence):
         for row in report["results"]:
             _check_observation(row)
             if "validated_action" in self.observation_fields:
-                _check_action(row)
+                _check_action(row, report["stop_reason"])
 
 
 def _entries(panel, packet):
