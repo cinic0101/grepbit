@@ -785,10 +785,11 @@ def _validated_action(result) -> str | None:
 _ACTION_OUTCOMES = {"request": "answer", "clarify": "clarify", "declined": "decline"}
 
 
-def _check_action(row: dict, stop_reason: str | None = None) -> None:
+def _check_action(row: dict, stop_reason: str | None = None) -> bool:
+    """Structural readback of one persisted action; True when the evidence checks were relaxed."""
     text = row["validated_action"]
     if text is None:
-        return
+        return False
     if (not isinstance(text, str) or len(text.encode("utf-8")) > MAX_ACTION_BYTES
             or row["status"] != "completed"):
         raise assets.P3Error("invalid_asset")
@@ -806,15 +807,16 @@ def _check_action(row: dict, stop_reason: str | None = None) -> None:
     if evidence is None and stop_reason is not None and row["runner_error_code"] == stop_reason:
         # The run stopped on this row before its evidence was projected; the stop is the evidence,
         # and such a row is neither assessed nor replayable.
-        return
+        return True
     evidence = evidence if isinstance(evidence, dict) else {}
     stages = evidence.get("stages") if isinstance(evidence.get("stages"), dict) else {}
     if action["outcome"] == "declined":
         if evidence.get("error_code") != "model_declined":
             raise assets.P3Error("invalid_asset")
-        return
+        return False
     if stages.get("request_validation") != "passed":
         raise assets.P3Error("invalid_asset")
+    return False
 
 
 @dataclass(frozen=True)
@@ -852,6 +854,21 @@ class _LiveEvidence(live._LiveEvidence):
         self.route = route
         self.maximum = assets.MAX_INPUTS
         self.observation_fields = OBSERVATIONS[route.packet_version]
+        self._admitted = None
+
+    def invocation_client(self, client):
+        self._admitted = client
+        return super().invocation_client(client)
+
+    def _exportable(self, text: str) -> bool:
+        """The report's own leak check, applied before the value lands; without the admitted client, nothing lands."""
+        if self._admitted is None:
+            return False
+        try:
+            evaluator._safe({"validated_action": text}, self._admitted)
+        except assets.P3Error:
+            return False
+        return True
 
     def observe_result(self, result) -> dict:
         observed = dict.fromkeys(self.observation_fields)
@@ -860,15 +877,19 @@ class _LiveEvidence(live._LiveEvidence):
             observed.update(clarification_kind=clarification.kind,
                             clarification_choice_count=len(clarification.choices))
         if "validated_action" in observed:
-            observed["validated_action"] = _validated_action(result)
+            text = _validated_action(result)
+            observed["validated_action"] = text if text is not None and self._exportable(text) else None
         return observed
 
     def check_report(self, report):
         super().check_report(report)
+        relaxed = 0
         for row in report["results"]:
             _check_observation(row)
             if "validated_action" in self.observation_fields:
-                _check_action(row, report["stop_reason"])
+                relaxed += _check_action(row, report["stop_reason"])
+        if relaxed > 1:
+            raise assets.P3Error("invalid_asset")
 
 
 def _entries(panel, packet):

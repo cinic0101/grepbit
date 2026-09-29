@@ -65,15 +65,17 @@ old archives:
 - a decline implies `error_code` `model_declined`;
 - the two evidence checks above are skipped only for the row the run
   stopped on before its evidence was projected (evidence null and
-  `runner_error_code` equal to the report's `stop_reason`). Such a row is
-  unassessed and not replayable.
+  `runner_error_code` equal to the report's `stop_reason`); at most one
+  row per report qualifies. Such a row is unassessed and not replayable.
 
 The summary adds `observations.validated_actions`, the count of persisted
 actions.
 
-The engine applies the same check before a value lands, so a
-self-produced value never stops a live run. A value that fails it is stored
-as `null`.
+The engine applies the same structural check before a value lands, and
+the report's own leak check against the admitted client (a model-authored
+request string that would be redacted, such as an endpoint host or key, is
+not persisted). A self-produced value therefore never stops a live run; a
+value that fails either check is stored as `null`.
 
 ### Backward compatibility
 
