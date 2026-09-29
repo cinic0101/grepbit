@@ -31,6 +31,11 @@ regression. Its required control gate failed; the conditional 54/28/18 runs
 were not executed. Count controls did not reproduce HA02's false decline.
 v8 remains a failed development candidate, not an accepted improvement. See the
 [bounded comparison checkpoint](docs/bound-compare-context-v8.md).
+A 22-input mechanism probe on unchanged v8 scored 8/22. It reproduced an
+HA02-class English false decline for attendance-compatible generic counts,
+supported a year-placement reading of the BM2 regression, and found a new v8
+false clarification of `dev-A3.en`. E02's wording sensitivity is not a robust
+lexical factor. See the [mechanism probe](docs/mechanism-probe-controls.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
