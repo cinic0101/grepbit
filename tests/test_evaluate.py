@@ -39,7 +39,9 @@ def bedrock_response(content='{"outcome":"declined"}'):
             "stopReason": "end_turn", "usage": {"inputTokens": 10, "outputTokens": 5, "totalTokens": 15}}
 
 
-class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
+class EvaluateHarness(unittest.IsolatedAsyncioTestCase):
+    """Synthetic registries, panels and mock transports shared by the evaluation runner rulers."""
+
     def setUp(self):
         for target in ("socket.socket.connect", "socket.socket.connect_ex", "socket.create_connection",
                        "socket.getaddrinfo", "httpx.AsyncHTTPTransport", "httpx.HTTPTransport",
@@ -142,11 +144,14 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
         self.sent, self.serial = [], 0
 
     # ----------------------------------------------------------------- helpers
-    def prepare(self, panel="synthetic-dev", route="litellm-31b", baseline=None, name=None, commit=SHA):
+    def prepare(self, panel="synthetic-dev", route="litellm-31b", baseline=None, name=None, commit=SHA,
+                repetition=None):
         self.serial += 1
         packet_dir = self.root / (name or f"packet-{self.serial}")
+        extra = {} if repetition is None else {"repetition": repetition}
         runner.prepare(self.database, packet_dir, candidate_id=self.candidate, panel_id=panel, route_id=route,
-                       accepted_commit=commit, gateway_policies=dict(POLICY), baseline_path=baseline, **self.registries)
+                       accepted_commit=commit, gateway_policies=dict(POLICY), baseline_path=baseline,
+                       **extra, **self.registries)
         return packet_dir / "manifest.json"
 
     def bind(self, packet_path, output):
@@ -196,6 +201,8 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
                                                gateway_policies=policies or dict(POLICY))
             return report, config_cls
 
+
+class EvaluateRunnerTests(EvaluateHarness):
     # ----------------------------------------------------------------- registries and claims
     def test_repository_registries_load_and_the_seeded_run_index_consumes_holdout_a_for_31b(self):
         panels = runner.load_panels()
@@ -244,7 +251,7 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
 
     def test_packet_binds_candidate_panel_route_tier_and_claim_and_refuses_other_attestations(self):
         packet = json.loads(self.prepare().read_text())
-        self.assertEqual(packet["version"], "evaluation-packet-v1")
+        self.assertEqual(packet["version"], "evaluation-packet-v2")
         self.assertEqual((packet["tier"], packet["claim"], packet["evidence_class"]),
                          ("dev", "development_observation", "development_observation"))
         self.assertFalse(packet["promotion_eligible"])
@@ -255,7 +262,8 @@ class EvaluateRunnerTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(packet["settings"]["max_client_http_attempts"], 15)
         self.assertEqual(len(packet["inputs"]), 15)
         self.assertIsNone(packet["baseline"])
-        self.assertEqual(packet["observation_fields"], ["clarification_kind", "clarification_choice_count"])
+        self.assertEqual(packet["observation_fields"],
+                         ["clarification_kind", "clarification_choice_count", "validated_action"])
         self.assertTrue(packet["run_id"].startswith("synthetic-dev--litellm-31b--"))
         for field, bad in (("promotion_eligible", True), ("claim", "fresh_holdout_observation"),
                            ("tier", "holdout"), ("evidence_class", "formal_quality"),
