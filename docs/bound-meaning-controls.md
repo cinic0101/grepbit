@@ -22,7 +22,7 @@ tier, never fresh questions; no holdout question text is inspected or copied.
 | dev-BM3 | Earlier February target against later March reference | answer |
 | dev-BM4 | Two months with direction unresolved | clarify: exactly reversed roles |
 | dev-BM5 | Overview explicitly requiring supported booked seats | answer |
-| dev-BM6 | Complete Overview with generic count meaning, no listed alternatives | clarify: count meanings justified by independent review |
+| dev-BM6 | Complete booking Overview with generic count meaning, no listed alternatives | clarify: seats, booking accounts, distinct people |
 | dev-BM7 | Explicit seats/accounts alternative | clarify: exactly those two meanings |
 | dev-BM8 | Overview plus independently required distinct natural persons | decline |
 
@@ -65,5 +65,34 @@ regression follow. The grant's 148-call maximum is not a quota.
 
 ## Semantic acceptance
 
-Pending owner-designated independent review. No production registration or
-live baseline is accepted by this specification alone.
+The owner explicitly designated the new fresh-context semantic session in chat:
+"指定本次 fresh-context 語意 reviewer" ("Designate this new fresh-context semantic
+reviewer"), recorded in [#79](https://github.com/cinic0101/grepbit/issues/79#issuecomment-5882857450).
+Its [accepted disposition](https://github.com/cinic0101/grepbit/issues/79#issuecomment-5882915786)
+covers all 24 corrected inputs, before registration or any baseline call.
+
+The session read questions/contracts before oracles and rejected the initial
+BM6 four-choice set: attendance visits were not grounded by booking-only generic
+headcount wording. It accepted unchanged questions with only that alternative
+removed, leaving booked seats, known booking accounts and distinct people at
+the identical Overview scope. The concrete correction was independently checked;
+all other oracle content stayed identical. This is a pre-execution draft repair,
+not a change prompted by candidate output or a rewrite of historical gold.
+
+Question projection SHA256:
+`470ddaf1122d5ce1d60befbeeb771739b642aa69459da9427df0a5a1bae4634e`.
+Accepted draft-oracle SHA256:
+`aac9c61dc406079e3edf596b4a12ee0dd0dbe11b1b9e3d73c7e59861d7a4fd55`.
+Original draft retained locally with SHA256:
+`17f8ccfdf2e19e5e06dff36e9799dcaafcff891bedd800711495862760a3cea9`.
+Production oracle provenance cites the acceptance; semantic payloads are
+unchanged from the accepted draft. E02's entire original oracle is preserved.
+
+The reviewer independently recomputed fixture values without native recipe code
+and found no translation discrepancy. Disclosure: task/repository/general
+context, questions and contracts before oracles, fixture/catalog definitions,
+exposed E02 and the corrected artifacts; no model results, candidate prompt,
+implementing conversation, frozen/holdout payloads, network, edits or subagents.
+An earlier code-QA session's findings were not treated as semantic acceptance.
+Root accepts the checkpoint under the approved plan; code review and merged-source
+execution remain separate gates.

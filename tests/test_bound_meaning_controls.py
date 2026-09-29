@@ -35,6 +35,9 @@ class BoundMeaningControlsTests(unittest.TestCase):
                             and c.must_pass and not c.observational for c in panel.cases))
         old_cases = json.loads((ROOT / "evals/p3/development-cases-v1.json").read_text())["cases"]
         new_cases = json.loads(panel.cases_path.read_text())["cases"]
+        questions = [{key: c[key] for key in ("case_id", "language", "question")} for c in new_cases]
+        self.assertEqual(hashlib.sha256((json.dumps(questions, ensure_ascii=False, indent=2) + "\n").encode()).hexdigest(),
+                         "470ddaf1122d5ce1d60befbeeb771739b642aa69459da9427df0a5a1bae4634e")
         self.assertEqual({c["case_id"]: c for c in new_cases if c["family_id"] == "E02_compare"},
                          {c["case_id"]: c for c in old_cases if c["family_id"] == "E02_compare"})
         old_oracles = json.loads((ROOT / "evals/p3/development-oracles-v1.json").read_text())["oracles"]
@@ -49,6 +52,9 @@ class BoundMeaningControlsTests(unittest.TestCase):
         self.assertEqual({c["semantic_value"]["value"] for c in
                           new_oracles["dev-BM7.v1"]["clarification"]["choices"]},
                          {"booked_seats", "known_booking_accounts"})
+        self.assertEqual({c["semantic_value"]["value"] for c in
+                          new_oracles["dev-BM6.v1"]["clarification"]["choices"]},
+                         {"booked_seats", "known_booking_accounts", "distinct_people"})
 
     def test_scripted_actions_match_fixture_values_and_all_branches(self):
         with tempfile.TemporaryDirectory(prefix="bound-controls-", dir=ROOT / ".artifacts") as tmp:
