@@ -20,7 +20,7 @@ from .overview import OverviewAnalysisPack, OverviewRequest, execute_overview
 from .presentation import ClarificationPresentation, PRESENTATION_VERSION, render_clarification
 from .provider import LLMClient, normalize_response, response_mode, wire_identity
 
-CONTEXT_VERSION = "learningops-recipe-context-v3"
+CONTEXT_VERSION = "learningops-recipe-context-v4"
 OUTPUT_CONTRACT = "recipe-request-json-v2"
 INSTRUCTION_VERSION = "recipe-selection-instruction-v6"
 STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v2"
@@ -227,7 +227,10 @@ def runtime_context() -> dict[str, object]:
              "views": "Full observed booking-day and category amounts, not filled calendars or forecasts.",
              "unsupported": ["names/guessed IDs", "people counts", "custom metrics", "selectable slots"]},
             {"id": "compare", "version": "0.1", "purpose": "Compare all-center booked amount across two months.",
-             "scope": "Distinct explicit current and baseline months; no center filter.",
+             "scope": (
+                 'Two distinct explicitly supplied full months, with target and reference bound by the question; '
+                 'grammatical binding is sufficient and does not require role labels. All centers; no center filter.'
+             ),
              "required": ["current", "baseline", "delta", "growth"], "optional": [],
              "arithmetic": "Server difference and exact relative change, not per-day normalization.",
              "unsupported": ["implicit baseline/year", "other metrics", "grouped or center-filtered comparison"]},
@@ -252,7 +255,14 @@ def runtime_context() -> dict[str, object]:
                 'IDs, excluding anonymous bookings; visits are attendance events, not distinct humans. Only '
                 'booked_seats is executable through this recipe.'
             ),
-            "comparison_roles": "Two explicit months without orientation; preserve both months and offer both roles.",
+            "comparison_roles": (
+                'Determine whether the question identifies an evaluated period and a reference period. If it does, '
+                'bind the evaluated period to current and the reference period to baseline and submit the supported '
+                'Compare request. Reversing these roles changes a directed question and is not another admissible '
+                'interpretation. Offer exactly the two reversed assignments only when the question leaves that '
+                'direction unresolved. Neither chronological order nor mention order alone binds direction. Preserve'
+                ' an explicitly shared year; do not infer a missing year or period.'
+            ),
             "center": "One explicit month and two to four supplied codes; offer a single center, never combine them.",
             "metric_meaning": "One explicit Overview scope; confirmed_booked_amount versus cash_received, "
                               "posted_refunds or profit. Only confirmed_booked_amount is available in this recipe.",

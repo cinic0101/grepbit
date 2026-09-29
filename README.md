@@ -16,11 +16,16 @@ latest recorded results. GitHub holds active decisions and evidence:
 [The collaboration model](docs/collaboration-model.md) explains the workflow;
 [AGENTS.md](AGENTS.md) is the authority.
 
-The current v7 evidence is 27/28 frozen regression and 17/18 holdout A
+The latest measured v7 evidence is 27/28 frozen regression and 17/18 holdout A
 re-observation, with one remaining Compare failure and one new count-clarification
 regression. Its 54/54 dev result covers 51 unchanged cases plus three explicit
 C4 variants; the three original broad-revenue C4 variants remain unresolved and
 unmeasured on v7. See the [evidence and denominator audit](docs/v7-regression-audit.md).
+
+The new 24-input control baseline scored 20/24 on v7. The registered v8
+candidate narrows its repair to Compare context; count controls did not
+reproduce HA02's false decline. v8 is not yet live-observed. See the
+[bounded comparison checkpoint](docs/bound-compare-context-v8.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
