@@ -159,11 +159,10 @@ re-read after the change.
 
 ## Claims and limits
 
-v12 has **no observation of its own**. v7's recorded runs used the same wire
-bytes, and v10 has no run. The claim that v12 reproduces v7's outputs on the
-unchanged route and serving profile is an inference from #79's repeatability
-analysis, not evidence. Any live observation of v12 needs separate owner
-authorization.
+At registration v12 had no observation of its own; v7's recorded runs used
+the same wire bytes, and v10 has no run. One confirmation run followed. See
+"Confirmation run" below. Any further live observation of v12 needs separate
+owner authorization.
 
 The limitations recorded on v7's bytes carry over unchanged:
 - `E02_compare.en`: a false clarification on `p33-formal-v2` and
@@ -176,3 +175,61 @@ v11. Those are:
 - the `dev-MN1.en` and `dev-MN3.en` declines;
 - the `dev-MN2` wrong actions;
 - v11's step-1 regressions.
+
+## Confirmation run (2026-09-29)
+
+**Decision and authorization.** The owner adopted ADR #125 Option A, so the
+count family stops ([#125 #issuecomment-5892107834](https://github.com/cinic0101/grepbit/issues/125#issuecomment-5892107834)).
+The owner then authorized one confirmation run on the 24-input control, as
+proposed at [#79 #issuecomment-5892145439](https://github.com/cinic0101/grepbit/issues/79#issuecomment-5892145439).
+The owner confirmed that the route and serving profile were unchanged. The
+agent recorded both at
+[#79 #issuecomment-5892176486](https://github.com/cinic0101/grepbit/issues/79#issuecomment-5892176486).
+
+**Run.**
+- Run ID:
+  `p3-dev-bound-meaning-v1--litellm-gemma-4-31b--p3-v10-restoration-v12--a0316317df34`.
+- Source `71d0354`; packet `11be0e6a…`; report `b94d628f…`.
+- Tier `dev`, claim `development_observation`.
+- The baseline was v7's report on the same panel and route (`d9216e88…`, 20/24).
+- The run completed with 24 of 24 client attempts. The requested and returned
+  model was `gemma-4-31b` on all 24 inputs.
+- Tokens: 93,054 prompt and 4,806 completion. Total call time was 148 s.
+
+**Result: 20/24, the same total as v7, but not an exact per-input
+reproduction.**
+- 23 of 24 per-input outcomes, actions and clarification shapes equal v7's.
+  The non-correct inputs are `E02_compare.en` (`false_clarification`) and
+  `dev-BM6` in all three languages.
+- `dev-BM6.zh-TW` differs:
+  - v7 clarified `count_basis` with four choices (`wrong_action`);
+  - v12 answered (`missed_clarification`), using 109 completion tokens where
+    v7 used 478.
+- The input was the same:
+  - all 24 question hashes and prompt-token counts equal v7's;
+  - the runtime bytes are the same.
+- So on identical input and temperature 0, this input's output changed. The
+  cause, model or serving nondeterminism, cannot be told apart from this data.
+
+Pre-registered reading: **not reproduced**, one input. Per the proposal, this
+is drift or nondeterminism of unknown cause. It is not a v12 defect, and no
+repair follows.
+
+**Comparability.** On this panel, `dev-BM6.zh-TW` has alternated between the
+same two failures:
+
+| Candidate | `dev-BM6.zh-TW` outcome |
+| --- | --- |
+| v7 | four-choice clarification |
+| v8 | answered |
+| v9 | four-choice clarification |
+| v12 | answered |
+
+v8's `dev-BM6.zh-TW` change against v7 is therefore within the variation seen
+on identical bytes. v8's counted regression, `dev-BM2.en` (correct to
+`false_refusal`), is not contradicted: v12 answered it correctly, as v7 did.
+v9's `dev-BM6.en`/`dev-BM6.ja` changes were likewise one failure to another.
+Failure-mode comparisons on `dev-BM6` are not reliable from single
+observations. The correct/incorrect totals on this panel did reproduce once.
+This is one observation on exposed development data, not generalization.
+
