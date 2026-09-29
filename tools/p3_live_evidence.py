@@ -9,8 +9,6 @@ import re
 
 from grepbit import model
 from grepbit.gateway import _ERRORS, _expected_alias
-from grepbit.count_policy import RULES as COUNT_POLICY_RULES
-from grepbit.recipe_model import ACTION_SOURCES, COUNT_READINGS, INVALID_REQUEST_REASONS
 from tools import p3_assets as assets, p3_eval as evaluator, p3_grading, p3_admission as admission, smoke
 
 _TRANSPORT = ("unencrypted_http", "tls_verification_enabled")
@@ -23,6 +21,16 @@ _EVIDENCE_FIELDS = {
     "count_reading", "action_source", "count_policy_rule",
 }
 _COUNT_FIELDS = ("count_reading", "action_source", "count_policy_rule")
+# Archived evidence vocabulary, pinned rather than imported from the runtime so
+# reports stay readable under any later candidate (docs/count-cue-policy.md).
+ARCHIVED_INVALID_REQUEST_REASONS = (
+    "root_shape", "unknown_recipe", "request_fields", "request_values", "clarification_shape", "choice_count",
+    "choice_shape", "choice_values", "choice_consistency", "question_binding", "export_drift",
+    "count_cue_shape", "count_cue_values", "count_cue_binding")
+ARCHIVED_COUNT_READINGS = ("absent", "none", "bound", "contrast", "generic")
+ARCHIVED_ACTION_SOURCES = ("model", "count_policy")
+ARCHIVED_COUNT_POLICY_RULES = ("other_unsupported", "bound_seats", "bound_unsupported", "contrast_unexecutable",
+                               "contrast", "generic_booking", "generic_unframed")
 
 
 def _same(left, right):
@@ -69,7 +77,7 @@ def _evidence(value: dict, *, expected_model=None, requested_profile=None) -> di
     reason = result.get("invalid_request_reason")
     if reason is not None:
         stages = result.get("stages")
-        if (reason not in INVALID_REQUEST_REASONS or result.get("error_code") != "invalid_request"
+        if (reason not in ARCHIVED_INVALID_REQUEST_REASONS or result.get("error_code") != "invalid_request"
                 or not isinstance(stages, dict) or stages.get("json_parse") != "passed"
                 or stages.get("request_validation") != "failed"
                 or stages.get("kernel_execution") != "not_run"):
@@ -79,8 +87,8 @@ def _evidence(value: dict, *, expected_model=None, requested_profile=None) -> di
     # action, which requires a bound, contrast or generic reading.
     if any(key in result for key in _COUNT_FIELDS):
         reading, source, rule = (result.get(key) for key in _COUNT_FIELDS)
-        if (not all(key in result for key in _COUNT_FIELDS) or reading not in (None, *COUNT_READINGS)
-                or source not in (None, *ACTION_SOURCES) or rule not in (None, *COUNT_POLICY_RULES)
+        if (not all(key in result for key in _COUNT_FIELDS) or reading not in (None, *ARCHIVED_COUNT_READINGS)
+                or source not in (None, *ARCHIVED_ACTION_SOURCES) or rule not in (None, *ARCHIVED_COUNT_POLICY_RULES)
                 or (rule is None) != (source != "count_policy")
                 or source == "count_policy" and reading not in ("bound", "contrast", "generic")):
             raise assets.P3Error("invalid_asset")

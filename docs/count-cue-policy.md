@@ -193,6 +193,16 @@ reading. `count_cue` is not projected, because it carries the scope. Historical
 reports lack the three fields and stay valid. The observation fields, report
 version, grader and scorer are unchanged.
 
+**Archived vocabulary (2026-09-29, #79).** This was added after step 1 and before the v10 fallback. The report reader no longer imports these enumerations from the runtime. It pins the vocabulary v11 emits, so that v11 reports stay readable under a candidate without `grepbit/count_policy.py`. The pinned values in `tools/p3_live_evidence.py` are:
+- `ARCHIVED_COUNT_READINGS`: `absent none bound contrast generic`.
+- `ARCHIVED_ACTION_SOURCES`: `model count_policy`.
+- `ARCHIVED_COUNT_POLICY_RULES`: the seven rule IDs of the table above.
+- `ARCHIVED_INVALID_REQUEST_REASONS`: v10's eleven reasons plus `count_cue_shape`, `count_cue_values` and `count_cue_binding`.
+
+The current runtime's vocabulary must be a subset of the pinned one. A runtime that adds a value extends the pin in the same change. Validation rules are unchanged.
+
+The ruler is `tests/test_archived_evidence_vocabulary.py`. It reads v11-shaped evidence back in a process where `grepbit.count_policy` is unavailable and the runtime has only v10's reasons.
+
 ## Runtime context and identity
 
 - **Context `learningops-recipe-context-v6` and instruction
