@@ -123,7 +123,7 @@ The current candidate, v15, implements ADR #142:
   - it fixed the three stable-wrong Compare inputs (`E02_compare.en`,
     `dev-MC2.en` and `dev-MC4.en`) and broke none;
   - all 22 Compare inputs are correct;
-  - the count inputs stay wrong, as on v12.
+  - v12's 12 wrong count inputs stay wrong.
 
   This is a development observation, not promotion.
 
