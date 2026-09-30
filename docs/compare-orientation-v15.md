@@ -169,6 +169,8 @@ restored.
 
 ## Evaluation (the grant's steps 3 and 4)
 
+**Result:** the verdict is `passed`. See `docs/compare-orientation-v15-result.md`.
+
 - **Runs.** One v15 run on each of `p3-dev-bound-meaning-v2` and
   `p3-dev-mechanism-probe-v2`, 46 calls, after the v14 sentinels of step 1.
 - **Gate.** `tools/evaluate.py --gate --candidate p3-compare-orientation-v15
