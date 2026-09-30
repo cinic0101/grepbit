@@ -197,6 +197,25 @@
         "path": "evals/dev/mechanism-probe-annex-v2.json",
         "sha256": "afcfc8496b750c054e25d096cc9a5120963197388dd33ccc4b67e7e9a1928eb9"
       }
+    },
+    {
+      "panel_id": "p3-dev-matrix-compare-first-v3",
+      "tier": "dev",
+      "path": "evals/dev/dev-panel-compare-first-v3.json",
+      "assets": {
+        "panel": "0dd5ecd76b498927a859fab0b0ae31f8397503a6b4bacc25457b8337b87dd8b2",
+        "cases": "0cbb5b04e74328e5089b7026730f46d9b7c6f9c2df27890649b3946d89f2d06e",
+        "oracles": "ce1006a917cddfef1e72b233b0e1a725c1cab87f6111898fda38526ed1392f72"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "compare-first v2 cases and oracles with an empty annex (ADR #146): no input expects a count assumption; independent semantic acceptance on the adding PR.",
+      "annex": {
+        "path": "evals/dev/compare-first-annex-v3.json",
+        "sha256": "c426b33ac9f3ccb7a58173db0440bf0a36df775157b2fe43694224650de94c31"
+      }
     }
   ]
 }

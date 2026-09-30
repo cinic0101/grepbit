@@ -216,10 +216,12 @@ def load_routes(path: Path | None = None) -> dict:
 
 
 def _read_annex(path: Path) -> dict:
-    """The closed annex document: each listed oracle expects the one stated count assumption."""
+    """The closed annex document: each listed oracle expects the one stated count assumption.
+
+    An empty listing is admitted: no oracle of the panel expects one (docs/count-assumption.md)."""
     data = assets.read_asset(path)
     if (not isinstance(data, dict) or set(data) != {"version", "expectations"} or data["version"] != ANNEX_VERSION
-            or not isinstance(data["expectations"], dict) or not data["expectations"]
+            or not isinstance(data["expectations"], dict)
             or any(not isinstance(key, str) or value != ASSUMPTION for key, value in data["expectations"].items())):
         raise assets.P3Error("invalid_asset")
     return data["expectations"]
