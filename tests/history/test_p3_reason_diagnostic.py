@@ -22,7 +22,9 @@ SINGLE_CHOICE = ('{"outcome":"clarify","clarification":{"kind":"center","choices
                  '"semantic_value":{"type":"center","request":{"center_code":"CTR-A01",'
                  '"start":"2026-03-01T00:00:00+08:00","end":"2026-04-01T00:00:00+08:00",'
                  '"timezone":"Asia/Taipei"}}}]}}')
-EXTRA_FIELD = ('{"outcome":"request","recipe_id":"compare","recipe_version":"0.1","request":{'
+# v15: a model Compare request carries a typed orientation (docs/compare-orientation-v15.md), so the
+# extra scope field still reaches the native value validator.
+EXTRA_FIELD = ('{"outcome":"request","recipe_id":"compare","recipe_version":"0.1","orientation":"stated","request":{'
                '"current":{"metrics":["confirmed_booked_amount"],"start":"2026-03-01T00:00:00+08:00",'
                '"end":"2026-04-01T00:00:00+08:00","timezone":"Asia/Taipei","center_id":null,"label":"x"},'
                '"baseline":{"metrics":["confirmed_booked_amount"],"start":"2026-02-01T00:00:00+08:00",'

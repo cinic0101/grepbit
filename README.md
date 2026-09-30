@@ -105,12 +105,23 @@ grant that is a stop with no rerun. See the
 [evaluation side](docs/count-assumption.md) and the
 [gate result](docs/count-assumption-v13-result.md).
 
-The current candidate, v14, reverts v13 by owner decision: it returns to
+v14 reverted v13 by owner decision: it returns to
 v12's exact runtime bytes (v10's and v7's) and restores the frozen
 clarification test, which also reopens the Bedrock route. It is a
 restoration, not a new fix, and v12's results are its results. The next change is ADR #142: the model reads a typed Compare
 orientation and code decides whether to clarify the roles. See the
 [v12 restoration](docs/v12-restoration-v14.md).
+
+The current candidate, v15, implements ADR #142:
+- The model returns every two-month comparison as a Compare request with a
+  typed `orientation`, `stated` or `unresolved`.
+- The code executes a `stated` request. For `unresolved` it builds the
+  `comparison_roles` clarification, so the model no longer emits that kind.
+- Count behaviour is v12's. The kernel is unchanged, and Bedrock fails closed.
+- v15 has no live result yet. It is measured against v14's same-bytes sentinels
+  on the two v2 dev panels.
+
+See the [v15 contract](docs/compare-orientation-v15.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality

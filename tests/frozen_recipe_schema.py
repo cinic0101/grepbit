@@ -1,7 +1,7 @@
 """The frozen v10 recipe output schema, restored by v12, that `grepbit/bedrock.py` pins.
 
-v11 and v13 fail closed on `bedrock_converse` (docs/count-cue-policy.md,
-docs/count-assumption-v13.md). Tests of the Bedrock adapter and of historical
+v11, v13 and v15 fail closed on `bedrock_converse` (docs/count-cue-policy.md,
+docs/count-assumption-v13.md, docs/compare-orientation-v15.md). Tests of the Bedrock adapter and of historical
 Bedrock tools keep exercising the unchanged compaction against this frozen copy
 instead of the current schema.
 """

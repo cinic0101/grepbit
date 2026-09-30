@@ -113,6 +113,46 @@ approved:
 superseded ancestry, verified against Git. If v15 is reverted, both are
 restored.
 
+## Test and tool changes
+
+- **Offline scripts.** The four v1 fake-response scripts stay immutable, and the
+  P3 development one is pinned by `tests/test_p3_exposed.py`. Each gets a
+  derived sibling, `*-oriented-responses-v1.json`:
+  - The derivation is `tests/oriented_actions.py` `orient()`. A Compare request
+    gains `orientation: "stated"`, and a `comparison_roles` clarification
+    becomes the Compare request of its first choice with `"unresolved"`, from
+    which the server rebuilds the same two choices. Every other action is
+    unchanged.
+  - The ruler checks that each sibling equals the derivation of its v1 script,
+    byte for byte.
+  - `tools/p3_eval.DEFAULT_RESPONSES` and the dev-panel, bound-meaning,
+    mechanism-probe and admission tests use the siblings, as v11 used its cued
+    siblings.
+- **Shared helpers.** `proposal("compare")` in `tests/test_recipe_model.py` and
+  in `tests/test_json_diagnostics.py`, and the oracle-derived action in
+  `tests/test_recipe_smoke.py`, carry the orientation. The asset test parses
+  the immutable v1 script through `orient()`.
+- **Tools.** `tools/reading_diagnostic.py` and `tools/routing_upper_bound.py`
+  read a persisted Compare request with `"unresolved"` as a `comparison_roles`
+  clarification, as `tools/evaluate.py` does. The routing narrowed-context
+  test expects only the kinds the model may emit.
+- **Assertions adapted to the new shape:**
+  - The replay rulers: the persisted-action shape, and the kernel-change rows,
+    which are only the executed Compare requests.
+  - The history reason-diagnostic and Bedrock wire-coupling tests: their
+    Compare values gain the orientation, so they still reach the native
+    validator they test.
+- **Bedrock** (the v11 and v13 pattern): the runner's Bedrock route test asserts
+  the fail-closed stop, and the wire test of
+  `tests/test_invalid_request_reason.py` uses the frozen v12 schema.
+- **Earlier rulers:**
+  - The v12 ruler again checks its frozen-source restoration through Git at
+    #127 and the recorded ancestry, the v13 pattern. Its offline-script default
+    applies only while v12 is current.
+  - The v13 and v14 rulers skip their runtime checks once superseded.
+- **Registry pins.** `tests/test_candidate_registry.py` names v15 as current,
+  with 14 entries.
+
 ## Routes and limits
 
 - **LiteLLM 31B** is the route under evaluation.
@@ -120,8 +160,10 @@ restored.
   schema digest, so the changed schema is refused before any send, as with v11
   and v13.
 - **Request size.** Removing the model's `comparison_roles` branch shrinks the
-  schema. The ruler checks that every dev-tier question and a full 4,096-byte
-  input fit the unchanged 32,768-byte cap.
+  schema.
+  - On the 31B route, a full 4,096-byte input gives a 28,762-byte request (v12:
+    31,826), under the unchanged 32,768-byte cap.
+  - The ruler checks every dev-tier question and that input.
 
 ## Evaluation (the grant's steps 3 and 4)
 

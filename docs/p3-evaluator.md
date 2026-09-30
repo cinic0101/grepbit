@@ -382,6 +382,18 @@ candidate cannot manufacture that acceptance.
 > `tests/test_recipe_clarification.py` to its accepted frozen bytes and
 > `tests/test_p3_exposed.py` to its pin of them (`docs/v12-restoration-v14.md`).
 
+> **Amended 2026-09-30, for v15.** By owner decision on #142
+> (#issuecomment-5911691344), the pinned test `tests/test_recipe_clarification.py`
+> is amended for candidate `p3-compare-orientation-v15`:
+> - its P2 schema pin is checked after removing the required Compare
+>   `orientation`, whose exact form it asserts;
+> - the `comparison_roles` kind is exercised through the server-built path, and
+>   a model-emitted one is asserted refused (`docs/compare-orientation-v15.md`,
+>   "Frozen source change").
+>
+> `tests/test_p3_exposed.py` keeps the `20abb559` hash as superseded ancestry.
+> The frozen grading, scoring, expectation and asset sources are unchanged.
+
 Examples below are future separately authorized owner-side operations, not
 permission to execute them now. Authoring/review is owner-declared complete,
 but exact sanitized fresh identity pins and an actual formal freeze are absent:

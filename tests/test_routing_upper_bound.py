@@ -48,6 +48,10 @@ class RouterAndContextTests(EvaluateHarness):
         branches = {_canonical(branch) for branch in production["output_schema"]["oneOf"]}
         kinds = {"overview": {"count_basis", "center", "metric_meaning"}, "compare": {"comparison_roles"},
                  "breakdown": set()}
+        # The kinds a model may emit; v15 builds comparison_roles on the server (docs/compare-orientation-v15.md).
+        emitted = {kind["properties"]["kind"]["const"] for branch in production["output_schema"]["oneOf"]
+                   if branch["properties"]["outcome"]["const"] == "clarify"
+                   for kind in branch["properties"]["clarification"]["oneOf"]}
         for scenario in routing.SCENARIOS:
             with self.subTest(scenario=scenario):
                 narrowed = routing.narrowed_context(scenario)
@@ -67,8 +71,8 @@ class RouterAndContextTests(EvaluateHarness):
                 clarify = [b for b in schema["oneOf"] if b["properties"]["outcome"]["const"] == "clarify"]
                 found = {k["properties"]["kind"]["const"]
                          for b in clarify for k in b["properties"]["clarification"]["oneOf"]}
-                self.assertEqual(found, kinds[scenario])
-                self.assertEqual(len(clarify), 0 if not kinds[scenario] else 1)
+                self.assertEqual(found, kinds[scenario] & emitted)
+                self.assertEqual(len(clarify), 0 if not kinds[scenario] & emitted else 1)
                 # Every kept branch is a production branch, or the production clarify branch with fewer kinds.
                 production_kinds = {_canonical(k) for b in production["output_schema"]["oneOf"]
                                     if b["properties"]["outcome"]["const"] == "clarify"

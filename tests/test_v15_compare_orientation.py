@@ -20,12 +20,13 @@ OVERVIEW = {"center_code": "CTR-A01", "start": "2026-03-01T00:00:00+08:00", "end
             "timezone": "Asia/Taipei"}
 
 
-def _compare(orientation="stated", current=MARCH, baseline=FEBRUARY, **extra):
+def _compare(value="stated", current=MARCH, baseline=FEBRUARY, **extra):
+    """A Compare action; ``value`` None omits orientation, and ``extra`` may set any raw key."""
     action = {"outcome": "request", "recipe_id": "compare", "recipe_version": "0.1",
-              "request": {"current": dict(current), "baseline": dict(baseline)}, **extra}
-    if orientation is not None:
-        action["orientation"] = orientation
-    return action
+              "request": {"current": dict(current), "baseline": dict(baseline)}}
+    if value is not None:
+        action["orientation"] = value
+    return {**action, **extra}
 
 
 def _panel(panel_id):
@@ -93,11 +94,11 @@ class ContractTextTests(unittest.TestCase):
         text = recipe_model.SYSTEM_INSTRUCTION
         for phrase in ('orientation:"stated"', 'orientation:"unresolved"',
                        "whether the question states which period is evaluated and which is the reference",
-                       "the server offers both assignments", "never return comparison_roles"):
+                       "the server offers both assignments", "Never return comparison_roles"):
             self.assertIn(phrase, text)
         self.assertNotIn("use comparison_roles only when", text)
         context = recipe_model.runtime_context()
-        self.assertIn("server-built", context["clarification"]["comparison_roles"])
+        self.assertIn("Server-built", context["clarification"]["comparison_roles"])
         self.assertEqual((recipe_model.INSTRUCTION_VERSION, recipe_model.CONTEXT_VERSION,
                           recipe_model.OUTPUT_CONTRACT, recipe_model.STRUCTURED_OUTPUT_VERSION),
                          ("recipe-selection-instruction-v8", "learningops-recipe-context-v5",
@@ -219,6 +220,31 @@ class RuntimeAndEvaluationTests(unittest.TestCase):
         self.assertFalse(evaluate._check_action(stated))
         with self.assertRaises(p3_assets.P3Error):
             evaluate._check_action({**stated, "actual_action": "clarify"})
+
+
+class OrientedScriptTests(unittest.TestCase):
+    def test_each_oriented_script_is_derived_byte_for_byte_from_its_immutable_v1_script(self):
+        import oriented_actions
+        self.assertEqual(len(oriented_actions.SIBLINGS), 4)
+        for source, target in oriented_actions.SIBLINGS.items():
+            with self.subTest(target=target):
+                self.assertEqual((ROOT / target).read_text(encoding="utf-8"),
+                                 oriented_actions.render(oriented_actions.oriented_script(source)))
+
+    def test_the_derivation_changes_only_compare_requests_and_roles_clarifications(self):
+        from oriented_actions import orient
+        roles = {"outcome": "clarify", "clarification": {"kind": "comparison_roles", "choices": [
+            {"id": "c1", "semantic_value": {"type": "comparison_roles",
+                                            "request": {"current": FEBRUARY, "baseline": MARCH}}},
+            {"id": "c2", "semantic_value": {"type": "comparison_roles",
+                                            "request": {"current": MARCH, "baseline": FEBRUARY}}}]}}
+        self.assertEqual(orient(_compare(None)), _compare("stated"))
+        self.assertEqual(orient(_compare("unresolved")), _compare("unresolved"))
+        self.assertEqual(orient(roles), _compare("unresolved", FEBRUARY, MARCH))
+        for unchanged in ({"outcome": "declined"},
+                          {"outcome": "request", "recipe_id": "overview", "recipe_version": "0.1", "request": OVERVIEW},
+                          {"outcome": "clarify", "clarification": {"kind": "center", "choices": []}}):
+            self.assertEqual(orient(unchanged), unchanged)
 
 
 class RegistryTests(unittest.TestCase):

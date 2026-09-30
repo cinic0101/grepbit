@@ -11,7 +11,7 @@ from typing import Literal
 from . import model as protocol
 from .breakdown import BreakdownAnalysisPack, BreakdownRequest, execute_breakdown
 from .catalog import LEARNINGOPS, PROFILE_ID
-from .clarification import KINDS, MAX_CHOICES, Clarification, SemanticChoice, clarification_schema
+from .clarification import KINDS, MAX_CHOICES, Clarification, ComparisonRoles, SemanticChoice, clarification_schema
 from .compare import CompareAnalysisPack, CompareRequest, execute_compare
 from .contracts import ExecutionLimits, KernelError
 from .gateway import CALL_TIMEOUT_SECONDS, MODEL, GatewayClient, ModelError, json_schema_response_format
@@ -20,11 +20,13 @@ from .overview import OverviewAnalysisPack, OverviewRequest, execute_overview
 from .presentation import ClarificationPresentation, PRESENTATION_VERSION, render_clarification
 from .provider import LLMClient, normalize_response, response_mode, wire_identity
 
-CONTEXT_VERSION = "learningops-recipe-context-v3"
-OUTPUT_CONTRACT = "recipe-request-json-v2"
-INSTRUCTION_VERSION = "recipe-selection-instruction-v6"
-STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v2"
+CONTEXT_VERSION = "learningops-recipe-context-v5"
+OUTPUT_CONTRACT = "recipe-request-json-v4"
+INSTRUCTION_VERSION = "recipe-selection-instruction-v8"
+STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v4"
 STRUCTURED_OUTPUT_SCHEMA_NAME = "grepbit_recipe_request"
+# The typed Compare reading (ADR #142, docs/compare-orientation-v15.md): the model reads, code decides.
+ORIENTATIONS = ("stated", "unresolved")
 _NativeRequest = OverviewRequest | CompareRequest | BreakdownRequest
 _NativePack = OverviewAnalysisPack | CompareAnalysisPack | BreakdownAnalysisPack
 # Closed request-validation reasons for evidence; the failure stays one fixed
@@ -100,7 +102,7 @@ SYSTEM_INSTRUCTION = (
     "using only the shared runtime meanings and closed output schema. "
     "Return one JSON object, no prose, markdown, reasoning, confidence, answers, rows, SQL or tasks. "
     'A request has exactly outcome:"request", recipe_id (one of "overview", "compare", "breakdown"), '
-    'recipe_version:"0.1" and request (the selected native object). '
+    'recipe_version:"0.1" and request (the selected native object); Compare also has orientation. '
     'Read the entire question before selecting an action. Collect its requested outputs and '
     'explicit qualifiers. Outputs requested together or in addition are cumulative '
     'requirements, not competing interpretations. An explicitly named event or population binds '
@@ -125,7 +127,9 @@ SYSTEM_INSTRUCTION = (
     "count_basis and metric_meaning require a complete explicit Overview scope. "
     "Count choices include booked_seats and reviewed alternative count meanings; amount choices include "
     "confirmed_booked_amount and reviewed alternative amount meanings. Alternatives do not add executable metrics. "
-    "comparison_roles requires exactly two reversed assignments of the same two explicitly supplied full months. "
+    'Every Compare request carries orientation:"stated" or orientation:"unresolved": whether the question '
+    'states which period is evaluated and which is the reference. Never return comparison_roles; with '
+    'orientation:"unresolved" the server offers both assignments. '
     "center requires distinct explicitly supplied center codes and one unchanged explicit month. "
     "Use only information in this question and reviewed meanings; do not invent candidate codes, years or periods. "
     "If semantics are unambiguous and supported, answer with the existing request, not a clarification. "
@@ -140,7 +144,7 @@ SYSTEM_INSTRUCTION = (
     "exactly; do not trim, case-fold, resolve a name, invent a canonical center_id or provide a mapping. "
     "Compare requires current and baseline, each with metrics:[\"confirmed_booked_amount\"], "
     "start, end, timezone; center_id may only be omitted or null. "
-    "Both distinct named months must be supplied. Bind comparison roles from the question's grammatical target and reference: the period being assessed is current, and the period it is assessed against is baseline. A stated reference binds the roles without requiring the literal labels current or baseline. Keep those roles even when current is earlier than baseline. A symmetric comparison that merely names two months supplies no direction: use comparison_roles only when both reversed assignments remain compatible with the wording. Never use chronological order or first mention alone to assign the roles. "
+    "Both distinct named months must be supplied. Bind comparison roles from the question's grammatical target and reference: the period being assessed is current, and the period it is assessed against is baseline. A stated reference binds the roles without requiring the literal labels current or baseline. Keep those roles even when current is earlier than baseline. A symmetric comparison that merely names two months supplies no direction: its orientation is unresolved when both reversed assignments remain compatible with the wording. Never use chronological order or first mention alone as a stated orientation. "
     "A year explicitly shared by two named months applies "
     "to both; never infer a missing year or baseline from a clock or AS_OF. "
     "Breakdown requires start, end, timezone and explicit integer top_k from 1 to 3; never infer k. "
@@ -191,16 +195,23 @@ def output_schema() -> dict[str, object]:
             }},
         },
     }
+    clarify = clarification_schema(shapes["overview"], shapes["compare"])
+    # comparison_roles is server-built from an unresolved Compare orientation, never a model action.
+    kinds = clarify["properties"]["clarification"]["oneOf"]
+    clarify["properties"]["clarification"]["oneOf"] = [
+        kind for kind in kinds if kind["properties"]["kind"]["const"] != "comparison_roles"]
     return {
         "oneOf": [
             {"type": "object", "additionalProperties": False,
-             "required": ["outcome", "recipe_id", "recipe_version", "request"],
+             "required": ["outcome", "recipe_id", "recipe_version", "request",
+                          *(["orientation"] if recipe == "compare" else [])],
              "properties": {"outcome": {"const": "request"}, "recipe_id": {"const": recipe},
-                            "recipe_version": {"const": "0.1"}, "request": shape}}
+                            "recipe_version": {"const": "0.1"}, "request": shape,
+                            **({"orientation": {"enum": list(ORIENTATIONS)}} if recipe == "compare" else {})}}
             for recipe, shape in shapes.items()
         ] + [{"type": "object", "additionalProperties": False, "required": ["outcome"],
               "properties": {"outcome": {"const": "declined"}}},
-             clarification_schema(shapes["overview"], shapes["compare"])],
+             clarify],
     }
 
 
@@ -252,7 +263,7 @@ def runtime_context() -> dict[str, object]:
                 'IDs, excluding anonymous bookings; visits are attendance events, not distinct humans. Only '
                 'booked_seats is executable through this recipe.'
             ),
-            "comparison_roles": "Two explicit months without orientation; preserve both months and offer both roles.",
+            "comparison_roles": "Server-built from a Compare request with orientation unresolved; not a model action.",
             "center": "One explicit month and two to four supplied codes; offer a single center, never combine them.",
             "metric_meaning": "One explicit Overview scope; confirmed_booked_amount versus cash_received, "
                               "posted_refunds or profit. Only confirmed_booked_amount is available in this recipe.",
@@ -315,11 +326,27 @@ def messages_for(question: str) -> list[dict[str, str]]:
 class RecipeProposal:
     recipe_id: Literal["overview", "compare", "breakdown"]
     request: _NativeRequest
+    orientation: Literal["stated", "unresolved"] | None = None
     recipe_version: str = field(default="0.1", init=False)
 
+    def __post_init__(self) -> None:
+        # Directly constructed legacy proposals may omit it; only model output must carry it (_proposal).
+        if self.orientation is not None and (self.recipe_id != "compare" or self.orientation not in ORIENTATIONS):
+            raise ValueError("only a Compare proposal carries one of the typed orientations")
+
     def to_dict(self) -> dict[str, object]:
-        return {"outcome": "request", "recipe_id": self.recipe_id,
-                "recipe_version": self.recipe_version, "request": self.request.to_dict()}
+        result = {"outcome": "request", "recipe_id": self.recipe_id,
+                  "recipe_version": self.recipe_version, "request": self.request.to_dict()}
+        if self.orientation is not None:
+            result["orientation"] = self.orientation
+        return result
+
+
+def _roles_clarification(request: CompareRequest) -> Clarification:
+    """The two reversed role assignments of an unresolved Compare request, in a fixed order."""
+    return Clarification("comparison_roles", (
+        SemanticChoice("as_proposed", ComparisonRoles(request)),
+        SemanticChoice("reversed", ComparisonRoles(CompareRequest(request.baseline, request.current)))))
 
 
 def _proposal(data: object) -> RecipeProposal:
@@ -327,8 +354,11 @@ def _proposal(data: object) -> RecipeProposal:
         raise _InvalidRequest("root_shape")
     if data == {"outcome": "declined"}:
         raise ModelError("model_declined")
-    if (set(data) != {"outcome", "recipe_id", "recipe_version", "request"}
-            or data["outcome"] != "request" or data["recipe_version"] != "0.1"):
+    keys = {"outcome", "recipe_id", "recipe_version", "request"}
+    oriented = data.get("recipe_id") == "compare"
+    if (set(data) != (keys | {"orientation"} if oriented else keys)
+            or data["outcome"] != "request" or data["recipe_version"] != "0.1"
+            or oriented and data["orientation"] not in ORIENTATIONS):
         raise _InvalidRequest("root_shape")
     recipe, request = data["recipe_id"], data["request"]
     if not isinstance(recipe, str) or recipe not in _REQUEST_FIELDS:
@@ -339,7 +369,7 @@ def _proposal(data: object) -> RecipeProposal:
     if not isinstance(request, dict) or set(request) != fields:
         raise _InvalidRequest("request_fields")
     try:
-        return RecipeProposal(recipe, native.from_mapping(request))
+        return RecipeProposal(recipe, native.from_mapping(request), data["orientation"] if oriented else None)
     except KernelError:
         raise _InvalidRequest("request_values") from None
 
@@ -352,6 +382,7 @@ class RecipeInterpretation:
     evidence: dict[str, object]
     clarification: Clarification | None = None
     presentation: ClarificationPresentation | None = None
+    source_proposal: RecipeProposal | None = None
 
 
 async def interpret_recipe_and_execute(
@@ -366,6 +397,7 @@ async def interpret_recipe_and_execute(
     error: ModelError | None = None
     clarification: Clarification | None = None
     presentation: ClarificationPresentation | None = None
+    source_proposal: RecipeProposal | None = None
     stages = dict.fromkeys(protocol.STAGES, "not_run")
     context = runtime_context()
     evidence: dict[str, object] = {
@@ -406,6 +438,8 @@ async def interpret_recipe_and_execute(
                 raise _InvalidRequest("clarification_shape")
             try:
                 clarification = Clarification.from_mapping(data["clarification"])
+                if clarification.kind == "comparison_roles":
+                    raise _InvalidRequest("clarification_shape")
                 clarification.validate_question(question)
                 presentation = render_clarification(clarification)
             except KernelError:
@@ -415,6 +449,14 @@ async def interpret_recipe_and_execute(
                 raise _InvalidRequest("export_drift")
         else:
             proposal = _proposal(data)
+            if proposal.orientation == "unresolved":
+                # The model read no stated orientation; the code, not the model, offers both assignments.
+                source_proposal, proposal = proposal, None
+                clarification = _roles_clarification(source_proposal.request)
+                presentation = render_clarification(clarification)
+                action = {"clarification": clarification.to_dict(), "presentation": presentation.to_dict()}
+                if client.safe_export(action) != action:
+                    raise _InvalidRequest("export_drift")
         stages["request_validation"] = "passed"
         remaining = timeout_seconds - (clock() - started)
         if remaining <= 0:
@@ -441,7 +483,7 @@ async def interpret_recipe_and_execute(
         if pack is not None:
             stages["kernel_execution"] = "failed"
         pack = None
-        clarification, presentation = None, None
+        clarification, presentation, source_proposal = None, None, None
         error = ModelError(exc.code, http_status=exc.http_status)
         stages[error.stage] = "failed"
         if isinstance(exc, _InvalidRequest):
@@ -459,6 +501,8 @@ async def interpret_recipe_and_execute(
         "model_outcome": ("request" if proposal else "clarify" if clarification else
                           "declined" if error and error.code == "model_declined" else None),
         "proposal": proposal.to_dict() if proposal else None,
+        "compare_orientation": (proposal or source_proposal).orientation if (proposal or source_proposal) else None,
+        "source_proposal": source_proposal.to_dict() if source_proposal else None,
         "analysis_pack": pack.to_dict() if pack else None, "pack_status": pack.status if pack else None,
         "clarification": clarification.to_dict() if clarification else None,
         "presentation": presentation.to_dict() if presentation else None,
@@ -473,26 +517,29 @@ async def interpret_recipe_and_execute(
     exported = client.safe_export(evidence)
     if clarification is not None and (
             exported["clarification"] != evidence["clarification"]
-            or exported["presentation"] != evidence["presentation"]):
-        clarification, presentation = None, None
+            or exported["presentation"] != evidence["presentation"]
+            or exported["source_proposal"] != evidence["source_proposal"]):
+        clarification, presentation, source_proposal = None, None, None
         error = ModelError("invalid_request")
         exported.update({
             "clarification": None, "presentation": None, "presentation_version": None, "model_outcome": None,
+            "compare_orientation": None, "source_proposal": None,
             "error_code": error.code, "stop_reason": error.stop_reason,
             "stages": {**stages, "request_validation": "failed"}, "invalid_request_reason": "export_drift",
         })
     elapsed = max(0.0, clock() - started)
     if error is None and elapsed >= timeout_seconds:
         pack = None
-        clarification, presentation = None, None
+        clarification, presentation, source_proposal = None, None, None
         error = ModelError("timeout", http_status=response.status_code)
         exported.update({
             "analysis_pack": None, "pack_status": None, "error_code": error.code,
             "clarification": None, "presentation": None, "presentation_version": None,
+            "compare_orientation": exported["compare_orientation"] if proposal else None, "source_proposal": None,
             "model_outcome": "request" if proposal else None,
             "stop_reason": error.stop_reason, "transport_failure": error.transport_failure,
             "stages": {**stages, "transport": "failed",
                        "kernel_execution": "failed" if proposal else "not_run"},
         })
     exported["elapsed_seconds"] = round(elapsed, 6)
-    return RecipeInterpretation(proposal, pack, error, exported, clarification, presentation)
+    return RecipeInterpretation(proposal, pack, error, exported, clarification, presentation, source_proposal)

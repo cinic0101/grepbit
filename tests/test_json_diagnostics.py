@@ -65,7 +65,9 @@ def proposal(recipe="overview"):
                     for role, number in (("current", 3), ("baseline", 2))},
         "breakdown": {**month(3), "top_k": 2},
     }
-    return {"outcome": "request", "recipe_id": recipe, "recipe_version": "0.1", "request": requests[recipe]}
+    # v15: every model Compare request carries a typed orientation (docs/compare-orientation-v15.md).
+    return {"outcome": "request", "recipe_id": recipe, "recipe_version": "0.1", "request": requests[recipe],
+            **({"orientation": "stated"} if recipe == "compare" else {})}
 
 
 def invalid_cases():

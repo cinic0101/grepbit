@@ -157,6 +157,10 @@ def _recorded(action: object) -> tuple[str | None, str | None]:
     if outcome not in _ACTIONS:
         raise assets.P3Error("invalid_asset")
     kind = value["clarification"]["kind"] if outcome == "clarify" else None
+    # A v15 Compare request with an unresolved orientation is the model's action behind a server-built
+    # roles clarification (docs/compare-orientation-v15.md), so the recorded decision is a clarification.
+    if outcome == "request" and value.get("orientation") == "unresolved":
+        return "clarify", "comparison_roles"
     return _ACTIONS[outcome], kind
 
 

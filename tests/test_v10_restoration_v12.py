@@ -1,5 +1,6 @@
 """v12 identity ruler: v10's exact runtime restored after the failed v11 step 1 (#79), not a model claim."""
 import hashlib
+import subprocess
 import unittest
 
 from grepbit import gateway
@@ -13,6 +14,8 @@ V10_RECIPE_MODEL = "90f7fd578361e17fcdf9fc1ebf6acbd963095b1394be73b11c7147fef55a
 V10_GATEWAY = "5739e79d9e3c1eaf828eb347e4c5930dfdeb41fd157e9e3c68cc5b61da8e526f"
 # Accepted frozen bytes at 20abb55, amended for v11 under #120 and restored here by owner approval (#79).
 FROZEN_RECIPE_CLARIFICATION = "42b0ce5ca722422540deb8ef46517da78c8ff558098fc6d81b6948602b3f0c11"
+# The merge of the v12 restoration (#127); later candidates may amend the file only with recorded ancestry.
+V12_MERGE = "71d0354b7b15995789ec7a8fa88ea920725de1aa"
 IDENTITY = ("recipe_context", "structured_output", "p1_context", "limits", "semantic_identity_sha256",
             "candidate_sha256", "wire_witnesses", "runtime_files_sha256")
 ARCHIVE = {"p3-31b-count-context-v7": "ca7d033978af81ea573970beab4dbacfc6e740642d9c622e2a66d50b9a65bfb1",
@@ -43,10 +46,22 @@ class V10RestorationV12Tests(unittest.TestCase):
         self.assertEqual(p3_eval.MAX_REQUEST_BYTES, gateway.MAX_REQUEST_BYTES)
         self.assertEqual(p3_eval.settings(1)["max_request_bytes"], gateway.MAX_REQUEST_BYTES)
         self.assertEqual(p3_eval.REQUEST_CAPS, (32768, 40960))
-        self.assertEqual(p3_eval.DEFAULT_RESPONSES, registry.ROOT / "evals/p3/development-responses-v1.json")
+        index = registry.load_index()
+        if not (CANDIDATE in [r["candidate_id"] for r in index["entries"]] and index["current"] != CANDIDATE):
+            # A later candidate may script its offline cases differently (v15: docs/compare-orientation-v15.md).
+            self.assertEqual(p3_eval.DEFAULT_RESPONSES, registry.ROOT / "evals/p3/development-responses-v1.json")
 
-    def test_frozen_recipe_clarification_source_is_restored(self):
-        self.assertEqual(sha("tests/test_recipe_clarification.py"), FROZEN_RECIPE_CLARIFICATION)
+    def test_frozen_recipe_clarification_source_was_restored_and_later_amendments_keep_its_ancestry(self):
+        restored = subprocess.check_output(
+            ["git", "--no-optional-locks", "show", f"{V12_MERGE}:tests/test_recipe_clarification.py"],
+            cwd=registry.ROOT, timeout=5)
+        self.assertEqual(hashlib.sha256(restored).hexdigest(), FROZEN_RECIPE_CLARIFICATION)
+        from test_p3_exposed import SOURCE_SHA256, SUPERSEDED_SOURCE_SHA256
+        current = sha("tests/test_recipe_clarification.py")
+        self.assertEqual(SOURCE_SHA256["tests/test_recipe_clarification.py"], current)
+        if current != FROZEN_RECIPE_CLARIFICATION:
+            self.assertEqual(SUPERSEDED_SOURCE_SHA256["tests/test_recipe_clarification.py"][0],
+                             FROZEN_RECIPE_CLARIFICATION)
 
     def test_v12_registration_equals_v10_identity_and_preserves_archive(self):
         ids = [r["candidate_id"] for r in registry.load_index()["entries"]]

@@ -391,9 +391,12 @@ def _check_validated_action(text: str | None, graded: dict | None) -> None:
         action = protocol.strict_json(text)
     except ModelError:
         raise assets.P3Error("invalid_asset") from None
-    if (not evaluate._action_shape(action) or protocol.canonical_json(action) != text or graded is None
-            or {"request": "answer", "clarify": "clarify", "declined": "decline"}[action["outcome"]]
-            != graded["actual_action"]):
+    if not evaluate._action_shape(action) or protocol.canonical_json(action) != text or graded is None:
+        raise assets.P3Error("invalid_asset")
+    # A v15 unresolved Compare orientation is the model's request behind a server-built roles clarification.
+    derived = action["outcome"] == "request" and action.get("orientation") == "unresolved"
+    if ("clarify" if derived else {"request": "answer", "clarify": "clarify", "declined": "decline"}[action["outcome"]]
+            ) != graded["actual_action"]:
         raise assets.P3Error("invalid_asset")
 
 

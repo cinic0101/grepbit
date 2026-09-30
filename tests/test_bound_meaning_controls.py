@@ -11,7 +11,8 @@ from tools import evaluate, fixture, p3_assets, p3_eval
 ROOT = p3_eval.ROOT
 PANEL_ID = "p3-dev-bound-meaning-v1"
 PANEL = ROOT / "evals/dev/bound-meaning-panel-v1.json"
-RESPONSES = ROOT / "evals/dev/bound-meaning-responses-v1.json"
+# v15 needs a typed Compare orientation; the derived script is tests/oriented_actions.py (ADR #142).
+RESPONSES = ROOT / "evals/dev/bound-meaning-oriented-responses-v1.json"
 
 
 class BoundMeaningControlsTests(unittest.TestCase):

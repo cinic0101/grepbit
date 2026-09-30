@@ -86,13 +86,20 @@ class ReplayableObservationTests(EvaluateHarness):
             action = json.loads(row["validated_action"])
             self.assertEqual(row["validated_action"], json.dumps(action, sort_keys=True, ensure_ascii=False,
                                                                  separators=(",", ":")))
-            self.assertEqual(_OUTCOME_ACTION[action["outcome"]], row["actual_action"])
+            # v15: an unresolved Compare orientation is persisted as the model's request behind the
+            # server-built roles clarification (docs/compare-orientation-v15.md).
+            derived = action["outcome"] == "request" and action.get("orientation") == "unresolved"
+            self.assertEqual("clarify" if derived else _OUTCOME_ACTION[action["outcome"]], row["actual_action"])
+            if derived:
+                self.assertEqual((row["clarification_kind"], row["clarification_choice_count"]),
+                                 ("comparison_roles", 2))
             if action["outcome"] == "clarify":
                 self.assertEqual(set(action), {"outcome", "clarification"})
                 self.assertEqual(action["clarification"]["kind"], row["clarification_kind"])
                 self.assertEqual(len(action["clarification"]["choices"]), row["clarification_choice_count"])
             elif action["outcome"] == "request":
-                self.assertEqual(set(action), {"outcome", "recipe_id", "recipe_version", "request"})
+                self.assertEqual(set(action), {"outcome", "recipe_id", "recipe_version", "request",
+                                               *(["orientation"] if action["recipe_id"] == "compare" else [])})
         serialized = json.dumps(report)
         self.assertNotIn("PRIVATE_REASONING_CANARY", serialized)
         self.assertNotIn(KEY, serialized)
@@ -275,8 +282,10 @@ class ReplayableObservationTests(EvaluateHarness):
 
     async def test_replay_shows_a_kernel_change_and_refuses_different_model_facing_bytes(self):
         report, output = await self.scripted_run()
+        # Only executed Compare requests move with the kernel; an unresolved orientation executes nothing.
         compare_rows = [row["case_id"] for row in report["results"] if row["validated_action"] is not None
-                        and json.loads(row["validated_action"]).get("recipe_id") == "compare"]
+                        and json.loads(row["validated_action"]).get("recipe_id") == "compare"
+                        and json.loads(row["validated_action"]).get("orientation") != "unresolved"]
         self.assertTrue(compare_rows)
         with patch.object(recipe_model, "execute_compare",
                           side_effect=KernelError("execution_failure", "synthetic kernel change")):
