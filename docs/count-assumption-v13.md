@@ -92,6 +92,30 @@ evaluator stay byte-identical.
   does not use that, so the limits stay part of the unchanged identity. A later
   candidate that adds model-facing text will need it.
 
+## Test changes
+
+- **Frozen source change**, by owner decision on #136
+  ([#issuecomment-5905969011](https://github.com/cinic0101/grepbit/issues/136#issuecomment-5905969011),
+  "照 A 做，核准", "Do it as A; approved"):
+  - `tests/test_recipe_clarification.py` checks its P2 schema pin after
+    removing the optional Overview `assumption`. It asserts that property's
+    exact closed form, and that it is not required. The rest of the file is
+    unchanged.
+  - `tests/test_p3_exposed.py` pins the new hash and keeps the `20abb559` hash
+    as superseded ancestry, verified against Git. This is the v11 pattern (#120).
+  - The frozen grading, scoring, expectation and asset sources are unchanged.
+- **Bedrock.**
+  - The runner's Bedrock route test asserts the fail-closed stop: zero sends.
+  - The wire test of `tests/test_invalid_request_reason.py` uses the frozen v12
+    schema of `tests/frozen_recipe_schema.py`, as the adapter tests do.
+- **Same-bytes rulers.** The gate's `same_bytes` refusal and the aggregate's
+  same-bytes inclusion used v7, which shares v12's bytes. They now build a
+  registry copy in which the current candidate has a twin
+  (`tests/registry_twin.py`), so they no longer depend on which candidate is
+  current.
+- **Registry pins.** `tests/test_candidate_registry.py` names v13 as current,
+  with 12 entries.
+
 ## Evaluation (the grant's steps 4 and 5)
 
 - **Runs.** One v13 run on each v2 dev panel under the grant, 46 calls.
