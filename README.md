@@ -118,10 +118,17 @@ The current candidate, v15, implements ADR #142:
 - The code executes a `stated` request. For `unresolved` it builds the
   `comparison_roles` clarification, so the model no longer emits that kind.
 - Count behaviour is v12's. The kernel is unchanged, and Bedrock fails closed.
-- v15 has no live result yet. It is measured against v14's same-bytes sentinels
-  on the two v2 dev panels.
+- The pre-registered gate against v12's bytes on the two v2 dev panels is
+  **passed**, with one run per panel:
+  - it fixed the three stable-wrong Compare inputs (`E02_compare.en`,
+    `dev-MC2.en` and `dev-MC4.en`) and broke none;
+  - all 22 Compare inputs are correct;
+  - the count inputs stay wrong, as on v12.
 
-See the [v15 contract](docs/compare-orientation-v15.md).
+  This is a development observation, not promotion.
+
+See the [v15 contract](docs/compare-orientation-v15.md) and the
+[gate result](docs/compare-orientation-v15-result.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
