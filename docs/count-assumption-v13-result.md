@@ -13,11 +13,17 @@ is no rerun, and v13 is reverted by a further PR.
 | Item | Value |
 | --- | --- |
 | Tool and runtime commit | `dev@6c34efd` (the #140 merge), clean checkout |
-| Route | `litellm-gemma-4-31b`; retry, fallback and cache disabled |
-| `p3-dev-bound-meaning-v2` | run `…p3-count-assumption-v13--201d4711ee20--r1`, 24/24 calls, complete, report `7c615645` |
-| `p3-dev-mechanism-probe-v2` | run `…p3-count-assumption-v13--9a48a6804639--r1`, 22/22 calls, complete, report `c64fd90d` |
+| Route | `litellm-gemma-4-31b`; retry, fallback and cache attested disabled (#79 #issuecomment-5857155780; the reports record `operator_cli_attestation_not_independently_verified`) |
+| Candidate | `p3-count-assumption-v13`, candidate SHA256 `23e3de1ae955aa4638f206026d79b1079a681000f75e6ab7a06162c5824122d0` |
+| `p3-dev-bound-meaning-v2` | run `…p3-count-assumption-v13--201d4711ee20--r1`, 24/24 calls, complete |
+| `p3-dev-mechanism-probe-v2` | run `…p3-count-assumption-v13--9a48a6804639--r1`, 22/22 calls, complete |
 | Possible in-flight attempts | 0 |
 | Grant use | 138 of 160 calls: 92 in step 2, 46 here; no repeat |
+
+| Run | Packet manifest SHA256 | Report SHA256 |
+| --- | --- | --- |
+| bound-meaning | `ba59a3d1a1ecf8038f0157d031a7cbe53725e6dbb82e694130b1e88a15840ee0` | `7c615645257018aeb4e7fb8c58137ff8838b86776549dd5ef79ff6ff5bbac782` |
+| mechanism-probe | `2263b72cd9003b20c9aa70fc5d1705ee980a0281804cb51bd4dfec8eea59d362` | `c64fd90db3496b89663b70118da414109d5ea56f93d4f87402ac971ec551a707` |
 
 Annex-aware index counts:
 
@@ -76,13 +82,31 @@ stated assumption:
   question names booked seats. The round-2 review had flagged this risk
   (#140, F2). The stated assumption there is redundant and true, but the
   accepted annex expects none on an unlisted oracle.
-- **Compare moved.** v13 changed only count text, yet three Compare inputs that
-  v12 answered correctly in both baseline runs of their panel became
-  `comparison_roles` clarifications.
-  The v12 instruction's Compare orientation text is unchanged, so this is
-  consistent with the byte change perturbing a decision already known to be
-  unstable (`E02_compare.en`, `dev-MC2`, `dev-MC4`). One v13 run cannot
-  separate that from between-session drift. The gate counts them by design.
+- **Compare moved.** Three Compare inputs became `comparison_roles`
+  clarifications. v12's bytes had answered them correctly in every recorded
+  run, across several authorizations: `E02_compare.zh-TW` in 7 of 7 (bound
+  meaning v1 and v2), and `dev-MC3.en` and `dev-A3.en` in 5 of 5 (mechanism
+  probe v1 and v2).
+  - **What v13 changed.** It left the Compare orientation text unchanged. But
+    besides the count text it changed two things every question sees:
+    - the shared structured-output schema: the Overview branch gained the
+      optional `assumption`, and the output-contract and structured-output
+      versions moved to v3;
+    - the generic request-shape sentence, which now ends "Overview may add
+      assumption".
+
+    On this constrained-decoding route, either could move the decision.
+  - **Earlier byte changes broke the same inputs:**
+    - `dev-MC3.en` under v8, v9 and v11, and `dev-A3.en` under v8 and v11
+      (`docs/v10-restoration-v12.md`);
+    - all three in the routing upper-bound run
+      (`docs/reading-and-routing-evidence.md`).
+
+    So these are the inputs whose decision moves when the bytes move.
+  - **What one run cannot rule out:** a route change in the roughly two hours
+    between the sentinel runs (recorded 06:28Z) and the v13 runs (recorded
+    08:24Z), or variation of v13's own
+    output between sessions. The gate counts the rows by design.
 
 ## Claims and limits
 
@@ -94,7 +118,12 @@ stated assumption:
   - Whether a redundant, true assumption on a question that names booked seats
     should count as wrong is a semantic question. It would need an explicit
     rationale, independent acceptance and a new annex identity.
-  - It cannot change this verdict.
+  - It cannot change this verdict, for two reasons:
+    - even with `dev-BM5` counted correct, each panel keeps a break
+      (`E02_compare.zh-TW`; `dev-MC3.en` and `dev-A3.en`), so the gate's
+      rule 1 still gives `regression`;
+    - a new annex identity changes `panel.annex_sha256`, so these runs could
+      not be re-gated under it.
 - The unmeasured near-misses and limits recorded in
   `docs/count-assumption-v13.md` stay unmeasured:
   - `dev-C1` and `dev-D8` on `p3-dev-matrix-compare-first-v2`;
