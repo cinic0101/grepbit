@@ -12,8 +12,8 @@ from tools import evaluate, fixture, p3_assets, p3_eval
 ROOT = p3_eval.ROOT
 PANEL_ID = "p3-dev-mechanism-probe-v1"
 PANEL = ROOT / "evals/dev/mechanism-probe-panel-v1.json"
-# v15 needs a typed Compare orientation; the derived script is tests/oriented_actions.py (ADR #142).
-RESPONSES = ROOT / "evals/dev/mechanism-probe-oriented-responses-v1.json"
+# v16 needs typed Compare and count readings; the derived script is tests/oriented_actions.py (ADR #146).
+RESPONSES = ROOT / "evals/dev/mechanism-probe-read-responses-v1.json"
 ORDER = ["E02_compare.en", *[f"dev-MC{i}.en" for i in range(1, 6)], "dev-A3.en",
          "dev-BM2.en", "dev-MY1.en", "dev-MY2.en",
          *[f"{family}.{lang}" for family in ("dev-BM6", "dev-MN1", "dev-MN2", "dev-MN3")

@@ -99,7 +99,8 @@ class ReplayableObservationTests(EvaluateHarness):
                 self.assertEqual(len(action["clarification"]["choices"]), row["clarification_choice_count"])
             elif action["outcome"] == "request":
                 self.assertEqual(set(action), {"outcome", "recipe_id", "recipe_version", "request",
-                                               *(["orientation"] if action["recipe_id"] == "compare" else [])})
+                                               *(["orientation"] if action["recipe_id"] == "compare" else []),
+                                               *(["count_request"] if action["recipe_id"] == "overview" else [])})
         serialized = json.dumps(report)
         self.assertNotIn("PRIVATE_REASONING_CANARY", serialized)
         self.assertNotIn(KEY, serialized)

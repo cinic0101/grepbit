@@ -395,7 +395,10 @@ def _check_validated_action(text: str | None, graded: dict | None) -> None:
         raise assets.P3Error("invalid_asset")
     # A v15 unresolved Compare orientation is the model's request behind a server-built roles clarification.
     derived = action["outcome"] == "request" and action.get("orientation") == "unresolved"
-    if ("clarify" if derived else {"request": "answer", "clarify": "clarify", "declined": "decline"}[action["outcome"]]
+    # A v16 named unavailable count reading is the model's action behind a server decline.
+    declined = action["outcome"] == "request" and action.get("count_request") in evaluate.UNAVAILABLE_COUNTS
+    if ("clarify" if derived else "decline" if declined else
+            {"request": "answer", "clarify": "clarify", "declined": "decline"}[action["outcome"]]
             ) != graded["actual_action"]:
         raise assets.P3Error("invalid_asset")
 

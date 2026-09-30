@@ -12,8 +12,8 @@ from tools import evaluate as runner, fixture, p3_assets, p3_eval
 
 ROOT = p3_eval.ROOT
 PANEL = ROOT / "evals/dev/dev-panel-v1.json"
-# v15 needs a typed Compare orientation; the derived script is tests/oriented_actions.py (ADR #142).
-RESPONSES = ROOT / "evals/dev/dev-oriented-responses-v1.json"
+# v16 needs typed Compare and count readings; the derived script is tests/oriented_actions.py (ADR #146).
+RESPONSES = ROOT / "evals/dev/dev-read-responses-v1.json"
 ROWS = ("A1", "A2", "A3", "A4", "A5", "A6", "C1", "C2", "C3", "C4",
         "D1", "D2", "D3", "D4", "D6", "D7", "D8", "D9")
 EXPOSED = {"dev-A1", "dev-A3", "dev-A5", "dev-A6", "dev-C1", "dev-C2", "dev-C3", "dev-C4", "dev-D1", "dev-D2"}

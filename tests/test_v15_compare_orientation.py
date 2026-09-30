@@ -20,6 +20,20 @@ OVERVIEW = {"center_code": "CTR-A01", "start": "2026-03-01T00:00:00+08:00", "end
             "timezone": "Asia/Taipei"}
 
 
+def superseded():
+    """v15 is registered but no longer current (v16, ADR #146): its runtime checks no longer apply."""
+    index = registry.load_index()
+    return V15 in [r["candidate_id"] for r in index["entries"]] and index["current"] != V15
+
+
+class _LiveV15:
+    @classmethod
+    def setUpClass(cls):
+        if superseded():
+            raise unittest.SkipTest("v15 superseded; its runtime is no longer live")
+        super().setUpClass()
+
+
 def _compare(value="stated", current=MARCH, baseline=FEBRUARY, **extra):
     """A Compare action; ``value`` None omits orientation, and ``extra`` may set any raw key."""
     action = {"outcome": "request", "recipe_id": "compare", "recipe_version": "0.1",
@@ -44,7 +58,7 @@ def _run(question, action, database):
         question, database, evaluate._replay_client(model.canonical_json(action), [])))
 
 
-class ProposalTests(unittest.TestCase):
+class ProposalTests(_LiveV15, unittest.TestCase):
     def test_compare_requires_one_typed_orientation_and_no_other_recipe_takes_it(self):
         for orientation in ("stated", "unresolved"):
             parsed = recipe_model._proposal(_compare(orientation))
@@ -75,7 +89,7 @@ class ProposalTests(unittest.TestCase):
                 recipe_model.RecipeProposal(recipe, native, orientation)
 
 
-class ContractTextTests(unittest.TestCase):
+class ContractTextTests(_LiveV15, unittest.TestCase):
     def test_the_schema_requires_orientation_on_compare_and_drops_model_comparison_roles(self):
         branches = recipe_model.output_schema()["oneOf"]
         requests = {branch["properties"]["recipe_id"]["const"]: branch for branch in branches
@@ -135,9 +149,11 @@ class ContractTextTests(unittest.TestCase):
         self.assertEqual(refused.exception.code, "invalid_input")
 
 
-class RuntimeAndEvaluationTests(unittest.TestCase):
+class RuntimeAndEvaluationTests(_LiveV15, unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        if superseded():
+            raise unittest.SkipTest("v15 superseded; its runtime is no longer live")
         cls._tmp = tempfile.TemporaryDirectory(prefix="v15-", dir=ROOT / ".artifacts")
         cls.database = Path(cls._tmp.name) / "fixture.sqlite"
         fixture.build(cls.database)
@@ -271,7 +287,7 @@ class OrientedScriptTests(unittest.TestCase):
             self.assertEqual(orient(unchanged), unchanged)
 
 
-class RegistryTests(unittest.TestCase):
+class RegistryTests(_LiveV15, unittest.TestCase):
     def test_v15_is_the_registered_current_candidate(self):
         current = registry.current()
         self.assertEqual((current["candidate_id"], current["ancestor"]), (V15, "p3-v12-restoration-v14"))

@@ -29,9 +29,11 @@ def _request_cases():
     """(payload, reason) pairs for the request branch; nested failures stay ``request_values``."""
     extra_root = {**proposal(), "sql": "SELECT 1"}
     old_version = {**proposal(), "recipe_version": "0.2"}
-    unknown = {**proposal(), "recipe_id": "unknown"}
-    unhashable = {**proposal(), "recipe_id": ["overview"]}
-    mismatched = {**proposal(), "recipe_id": "breakdown"}
+    # v16's count_request belongs to Overview; drop it so each case violates only the recipe id (ADR #146).
+    bare = {key: value for key, value in proposal().items() if key != "count_request"}
+    unknown = {**bare, "recipe_id": "unknown"}
+    unhashable = {**bare, "recipe_id": ["overview"]}
+    mismatched = {**bare, "recipe_id": "breakdown"}
     listed = {**proposal(), "request": []}
     extra_field = proposal()
     extra_field["request"]["center_id"] = None

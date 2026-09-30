@@ -270,17 +270,25 @@ class RecipeClarificationTests(unittest.IsolatedAsyncioTestCase):
                     self.assertLessEqual(len(calls[0].content), MAX_REQUEST_BYTES)
 
     def test_original_request_decline_schema_is_exact_and_new_sources_are_pinned(self):
-        """Without v15's required Compare orientation, the P2 request/decline branches are byte-identical."""
+        """Without v15's Compare orientation and v16's Overview count reading, the P2 branches are byte-identical."""
         schema = recipe_model.output_schema()
+        readings = {"compare": ("orientation", {"enum": ["stated", "unresolved"]}),
+                    "overview": ("count_request", {"enum": ["none", "booked_seats", "unresolved",
+                                                            "known_booking_accounts", "attendance_visits",
+                                                            "distinct_people"]})}
 
         def without_orientation(branch):
-            if branch["properties"]["recipe_id"] != {"const": "compare"}:
-                self.assertNotIn("orientation", branch["properties"])
+            recipe = branch["properties"]["recipe_id"]["const"]
+            for other, (key, _) in readings.items():
+                if other != recipe:
+                    self.assertNotIn(key, branch["properties"])
+            if recipe not in readings:
                 return branch
-            self.assertEqual(branch["properties"]["orientation"], {"enum": ["stated", "unresolved"]})
-            self.assertEqual(branch["required"][-1], "orientation")
+            key, form = readings[recipe]
+            self.assertEqual(branch["properties"][key], form)
+            self.assertEqual(branch["required"][-1], key)
             return {**branch, "required": branch["required"][:-1],
-                    "properties": {key: value for key, value in branch["properties"].items() if key != "orientation"}}
+                    "properties": {name: value for name, value in branch["properties"].items() if name != key}}
 
         old = {"oneOf": [without_orientation(branch) for branch in schema["oneOf"][:3]] + schema["oneOf"][3:4]}
         self.assertEqual(hashlib.sha256(model.canonical_json(old).encode()).hexdigest(),

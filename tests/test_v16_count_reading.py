@@ -150,22 +150,29 @@ class RuntimeAndEvaluationTests(unittest.TestCase):
         cls._tmp = tempfile.TemporaryDirectory(prefix="v16-", dir=ROOT / ".artifacts")
         cls.database = Path(cls._tmp.name) / "fixture.sqlite"
         fixture.build(cls.database)
-        cls.panel, cls.expectations = _panel("p3-dev-mechanism-probe-v2")
+        # dev-BM5/6/8 are on the bound-meaning panel; dev-MN1-3 on the mechanism probe.
+        cls.panels = {"bound-meaning": _panel("p3-dev-bound-meaning-v2"),
+                      "mechanism-probe": _panel("p3-dev-mechanism-probe-v2")}
 
     @classmethod
     def tearDownClass(cls):
         cls._tmp.cleanup()
 
-    def graded(self, case_id, action):
-        case, oracle = _case(self.panel, case_id)
+    def graded(self, case_id, action, panel="bound-meaning"):
+        panel, expectations = self.panels[panel]
+        case, oracle = _case(panel, case_id)
         result = _run(case.question, action, self.database)
         grade = p3_grading.grade(result, oracle)
         row = {"oracle_id": oracle.oracle_id, "validated_action": evaluate._validated_action(result)}
         annex = evaluate.annexed(row, grade["outcome"] in ("complete_correct", "correct_clarification",
-                                                            "correct_decline"), self.expectations)
+                                                            "correct_decline"), expectations)
         return result, grade, row, annex
 
     def test_a_generic_count_is_answered_with_the_stated_assumption(self):
+        for case_id, panel in (("dev-MN2.en", "mechanism-probe"), ("dev-MN3.ja", "mechanism-probe")):
+            with self.subTest(case_id=case_id):
+                _, grade, _, annex = self.graded(case_id, _overview("unresolved"), panel)
+                self.assertEqual((grade["outcome"], annex), ("complete_correct", "correct"))
         result, grade, row, annex = self.graded("dev-BM6.en", _overview("unresolved"))
         self.assertIsNone(result.error)
         self.assertEqual(result.analysis_pack.recipe_id, "overview")
@@ -198,7 +205,7 @@ class RuntimeAndEvaluationTests(unittest.TestCase):
                                  ("declined", value))
                 self.assertEqual((grade["outcome"], annex), ("correct_decline", "correct"))
                 self.assertEqual(row["validated_action"], model.canonical_json(action))
-                case, _ = _case(self.panel, "dev-BM8.en")
+                case, _ = _case(self.panels["bound-meaning"][0], "dev-BM8.en")
                 replayed = _run(case.question, json.loads(row["validated_action"]), self.database)
                 self.assertEqual((replayed.error.code, replayed.source_proposal.to_dict()), ("model_declined", action))
 

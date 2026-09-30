@@ -89,10 +89,9 @@ evaluator stay byte-identical.
 - `tools/reading_diagnostic.py` and `tools/routing_upper_bound.py` read the
   derived decline the same way.
 
-## Frozen source change (needs the owner's approval, #146)
+## Frozen source change (owner decision #146 #issuecomment-5914114297, "A，核准")
 
-This change is made only after the owner approves it and the approval is
-recorded:
+Approved and recorded before the change was made:
 - `tests/test_recipe_clarification.py`'s P2 schema pin is checked after
   removing the Overview `count_request` property and its `required` entry,
   whose exact form it asserts.
@@ -109,6 +108,29 @@ Each gets a derived v16 sibling, `*-read-responses-v1.json`:
   `orient()`: an Overview request gains `count_request: "none"`, which executes
   exactly as before. Every other action is unchanged.
 - The ruler checks each sibling byte for byte.
+
+## Test and tool changes
+
+- **Offline scripts.** Each v1 script gets a derived v16 sibling,
+  `*-read-responses-v1.json`, equal to `read(orient(v1))`. The v15 siblings
+  stay immutable. `tools/p3_eval.DEFAULT_RESPONSES` and the dev-panel,
+  controls, admission and asset tests use the v16 siblings.
+- **Shared helpers.** `proposal("overview")` in `tests/test_recipe_model.py`
+  and `tests/test_json_diagnostics.py`, and the oracle-derived action in
+  `tests/test_recipe_smoke.py`, carry `count_request: "none"`.
+- **Fixture adaptations**, each keeping the tested property:
+  - The history 12B contract and Bedrock adapter Overview proposals carry the
+    reading.
+  - The replay rulers' shape check admits `count_request`.
+  - In `tests/test_invalid_request_reason.py`, the unknown, unhashable and
+    mismatched recipe-id cases drop the Overview-only reading, so each still
+    violates one rule.
+- **Tools.** `tools/reading_diagnostic.py` and `tools/routing_upper_bound.py`
+  read a named unavailable count as a decline.
+- **Earlier rulers.** The v15 ruler skips its runtime checks once superseded,
+  and its derived-script checks still run.
+- **Registry pins.** `tests/test_candidate_registry.py` names v16 as current,
+  with 15 entries.
 
 ## Routes and limits
 
