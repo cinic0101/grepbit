@@ -8,6 +8,7 @@ from pathlib import Path
 import httpx
 
 from grepbit import bedrock, gateway, model, recipe_model
+from grepbit.overview import OverviewRequest
 from grepbit.gateway import GatewayClient, GatewayConfig, ModelError, MAX_INPUT_BYTES, MAX_REQUEST_BYTES
 from tools import candidate_registry as registry, evaluate, fixture, p3_assets, p3_grading
 
@@ -78,15 +79,13 @@ class ProposalTests(unittest.TestCase):
             self.assertEqual((refused.exception.code, refused.exception.reason), ("invalid_request", "root_shape"))
 
     def test_direct_construction_keeps_the_legacy_shape_and_refuses_other_values(self):
-        if superseded():
-            self.skipTest("v15 superseded; a later candidate may require more on the Overview it parses here")
         request = recipe_model._proposal(_compare()).request
         legacy = recipe_model.RecipeProposal("compare", request)
         self.assertIsNone(legacy.orientation)
         self.assertNotIn("orientation", legacy.to_dict())
         hash(legacy)
-        overview = recipe_model._proposal({"outcome": "request", "recipe_id": "overview", "recipe_version": "0.1",
-                                           "request": OVERVIEW}).request
+        # The native request directly, so this check does not depend on what a later candidate parses.
+        overview = OverviewRequest.from_mapping(OVERVIEW)
         for recipe, native, orientation in (("compare", request, "sideways"), ("overview", overview, "stated")):
             with self.subTest(recipe=recipe, orientation=orientation), self.assertRaises(ValueError):
                 recipe_model.RecipeProposal(recipe, native, orientation)

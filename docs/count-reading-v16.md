@@ -139,9 +139,9 @@ Each gets a derived v16 sibling, `*-read-responses-v1.json`:
 - **Tools.** `tools/reading_diagnostic.py` and `tools/routing_upper_bound.py`
   read a named unavailable count as a decline.
 - **Earlier rulers.** The v15 ruler skips only its identity-bound checks once
-  superseded: the registry, the version text, and a legacy Overview parse. Its
-  Compare orientation behaviour checks and derived-script checks still run,
-  because v16 keeps that behaviour.
+  superseded: the registry and the version text. Its Compare orientation
+  behaviour checks, including direct construction, and its derived-script
+  checks still run, because v16 keeps that behaviour.
 - **Registry pins.** `tests/test_candidate_registry.py` names v16 as current,
   with 15 entries.
 
@@ -167,9 +167,18 @@ Each gets a derived v16 sibling, `*-read-responses-v1.json`:
 
 - **The hypothesis under test.** 31B's accurate diagnostic `count_request`
   reading carries over to the production call. And with the assumption
-  decided in code, a named-seats question can no longer gain one.
+  decided in code, a question read as `booked_seats` or `none` states none. A
+  named-seats question gains one only if the model reads it as `unresolved`.
 - **The model's `count_basis` clarification remains prose-decided.** The v12
   failure was false clarifications on generic counts, and it may persist.
+- **The bookings clause may move the targeted inputs.** Questions such as
+  `dev-MN2` ("How many people booked") and `dev-BM6` ("booking overview …
+  including the headcount") could be read as a bookings count and so as `none`:
+  no assumption is stated, and the annex verdict is wrong. "Never
+  known_booking_accounts" could also leak into `dev-BM7`'s clarification. The
+  diagnostic's readings were made without this clause. All three are on the
+  gate panels, so the gate measures them. A mixed "bookings and headcount"
+  question is undefined, and no dev case has one.
 - **Bookings questions are unmeasured.** The two gate panels have no question
   that asks for a bookings count, such as `dev-A2` on the unrun
   `p3-dev-matrix-compare-first-v2`. So the bookings clause is not tested live.

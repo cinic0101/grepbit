@@ -216,7 +216,7 @@ class RuntimeAndEvaluationTests(unittest.TestCase):
             self.assertTrue(evaluate._action_shape(_overview(value)))
         self.assertTrue(evaluate._action_shape(_overview(None, assumption=dict(ASSUMPTION))))
         for action in (_overview("people"), _overview(None, count_request=None),
-                       _overview("unresolved", assumption=dict(ASSUMPTION)),
+                       _overview("unresolved", assumption=dict(ASSUMPTION)), _overview("none", orientation="stated"),
                        {"outcome": "request", "recipe_id": "compare", "recipe_version": "0.1", "request": COMPARE,
                         "orientation": "stated", "count_request": "none"}):
             with self.subTest(action=action):
