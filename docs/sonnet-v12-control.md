@@ -21,6 +21,7 @@ oracle, gold or case text.
   - The system message and runtime are those of the 31B runs.
   - The output constraint is provider-specific:
     - Bedrock receives the recipe schema compacted by `grepbit/bedrock.py`, with its `description` strings removed. Those strings carry format hints only: ISO instants, code length and integers.
+    - The compaction also removes the length, pattern, count and range keywords and the per-branch coupling. For example, the compacted schema requires at least one clarification choice, where the native contract requires two to four, and exactly two for `comparison_roles`. Native validation still enforces these after decoding, but the decoding space on Bedrock is looser.
     - The 31B route sends the full schema as LiteLLM `response_format` to an xgrammar server.
 - **Route:** `bedrock-jp-sonnet-4-6` (`jp.anthropic.claude-sonnet-4-6`, `ap-northeast-1`).
 - **Execution:** complete, 22 of 22 calls, with no stop, retry or rerun.
