@@ -13,6 +13,9 @@ V12_CANDIDATE = "6d707b8dc2d58915f2a794d97404faf85be72ab5ac7e27545bd2d9d0c428e53
 V12_RECIPE_MODEL = "90f7fd578361e17fcdf9fc1ebf6acbd963095b1394be73b11c7147fef55ab457"
 # Accepted frozen bytes at 20abb55, amended for v13 under #136 and restored here by owner approval (#79).
 FROZEN_RECIPE_CLARIFICATION = "42b0ce5ca722422540deb8ef46517da78c8ff558098fc6d81b6948602b3f0c11"
+# Registry entry files that v14 must leave byte-unchanged (the v12 ruler's ARCHIVE pattern).
+ARCHIVE = {V12: "8eabfef7dbf08f7c82892ae4be5041d8bc93c400dcf74c5e2ec4af4557f761f8",
+           V13: "8f29d043fe4e78d3afc9b70caa71d5e0622791c24d1f9e747d3fb545d4d2bbf6"}
 IDENTITY = ("recipe_context", "structured_output", "p1_context", "limits", "semantic_identity_sha256",
             "candidate_sha256", "wire_witnesses", "runtime_files_sha256")
 
@@ -40,7 +43,7 @@ class V12RestorationV14Tests(unittest.TestCase):
 
     def test_frozen_recipe_clarification_source_is_restored(self):
         if superseded():
-            self.skipTest("v14 superseded; a later candidate may amend the frozen test with recorded ancestry")
+            self.skipTest("v14 superseded; the frozen test is pinned by tests/test_p3_exposed.py")
         self.assertEqual(sha("tests/test_recipe_clarification.py"), FROZEN_RECIPE_CLARIFICATION)
 
     def test_v14_registration_equals_v12_identity_after_v13(self):
@@ -54,6 +57,9 @@ class V12RestorationV14Tests(unittest.TestCase):
             self.assertEqual(new[key], v12[key], key)
         self.assertEqual(new["limits"]["request"], 32768)
         self.assertNotEqual(new["candidate_sha256"], v13["candidate_sha256"])
+        for candidate, digest in ARCHIVE.items():
+            self.assertEqual(hashlib.sha256((registry.DIRECTORY / f"{candidate}.json").read_bytes()).hexdigest(),
+                             digest, candidate)
 
 
 if __name__ == "__main__":

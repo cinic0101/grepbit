@@ -107,8 +107,8 @@ grant that is a stop with no rerun. See the
 
 The current candidate, v14, reverts v13 by owner decision: it returns to
 v12's exact runtime bytes (v10's and v7's) and restores the frozen
-clarification test. It is a restoration, not a new fix, and v12's results are
-its results. The next change is ADR #142: the model reads a typed Compare
+clarification test, which also reopens the Bedrock route. It is a
+restoration, not a new fix, and v12's results are its results. The next change is ADR #142: the model reads a typed Compare
 orientation and code decides whether to clarify the roles. See the
 [v12 restoration](docs/v12-restoration-v14.md).
 
