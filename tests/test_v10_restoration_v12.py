@@ -15,7 +15,7 @@ V10_GATEWAY = "5739e79d9e3c1eaf828eb347e4c5930dfdeb41fd157e9e3c68cc5b61da8e526f"
 # Accepted frozen bytes at 20abb55, amended for v11 under #120 and restored here by owner approval (#79).
 FROZEN_RECIPE_CLARIFICATION = "42b0ce5ca722422540deb8ef46517da78c8ff558098fc6d81b6948602b3f0c11"
 # The merge of the v12 restoration (#127); later candidates may amend the file only with recorded ancestry.
-V12_MERGE = "71d0354"
+V12_MERGE = "71d0354b7b15995789ec7a8fa88ea920725de1aa"
 IDENTITY = ("recipe_context", "structured_output", "p1_context", "limits", "semantic_identity_sha256",
             "candidate_sha256", "wire_witnesses", "runtime_files_sha256")
 ARCHIVE = {"p3-31b-count-context-v7": "ca7d033978af81ea573970beab4dbacfc6e740642d9c622e2a66d50b9a65bfb1",

@@ -42,6 +42,18 @@ class ProposalTests(unittest.TestCase):
                 recipe_model._proposal(bad)
             self.assertEqual((refused.exception.code, refused.exception.reason), ("invalid_request", "root_shape"))
 
+    def test_a_stated_proposal_is_immutable_hashable_and_cannot_be_built_on_another_recipe(self):
+        stated = recipe_model._proposal(_overview(assumption=dict(ASSUMPTION)))
+        hash(stated)
+        stated.assumption["count_basis"] = "distinct_people"
+        self.assertEqual(stated.to_dict()["assumption"], ASSUMPTION)
+        compare = recipe_model._proposal({"outcome": "request", "recipe_id": "compare", "recipe_version": "0.1",
+                                          "request": COMPARE})
+        for recipe, request, basis in (("compare", compare.request, "booked_seats"),
+                                       ("overview", stated.request, "distinct_people")):
+            with self.subTest(recipe=recipe, basis=basis), self.assertRaises(ValueError):
+                recipe_model.RecipeProposal(recipe, request, basis)
+
     def test_the_persisted_action_carries_the_assumption_in_the_closed_shape(self):
         stated = recipe_model._proposal(_overview(assumption=dict(ASSUMPTION))).to_dict()
         self.assertTrue(evaluate._action_shape(stated))
@@ -76,7 +88,8 @@ class ContractTextTests(unittest.TestCase):
 
     def test_the_instruction_and_context_state_the_rule(self):
         text = recipe_model.SYSTEM_INSTRUCTION
-        for phrase in ('assumption:{"count_basis":"booked_seats"}', "headcount",
+        for phrase in ('assumption:{"count_basis":"booked_seats"}', "In a supported Overview question",
+                       "including people who booked", "names no seats, accounts, attendance or distinct individuals",
                        "undecided between named meanings"):
             self.assertIn(phrase, text)
         context = recipe_model.runtime_context()
@@ -96,8 +109,9 @@ class ContractTextTests(unittest.TestCase):
     def test_every_dev_question_and_a_full_input_fit_the_unchanged_request_cap(self):
         self.assertEqual((MAX_INPUT_BYTES, MAX_REQUEST_BYTES), (4096, 32768))
         questions = ["x" * MAX_INPUT_BYTES]
-        for panel_id in ("p3-dev-bound-meaning-v2", "p3-dev-mechanism-probe-v2", "p3-dev-matrix-v1"):
-            entry = next(row for row in evaluate.load_panels()["panels"] if row["panel_id"] == panel_id)
+        panels = [row for row in evaluate.load_panels()["panels"] if row["tier"] == "dev"]
+        self.assertGreaterEqual(len(panels), 9)
+        for entry in panels:
             questions += [case.question for case in p3_assets.load_panel(ROOT / entry["path"]).cases]
         for question in questions:
             sent = []

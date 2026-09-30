@@ -3,8 +3,8 @@
   "candidate_id": "p3-count-assumption-v13",
   "ancestor": "p3-v10-restoration-v12",
   "ancestor_sha256": "8eabfef7dbf08f7c82892ae4be5041d8bc93c400dcf74c5e2ec4af4557f761f8",
-  "registered_commit": "2e861df8c2b4d53cc2467b6160b3eec0a7d3ac47+dirty",
-  "registered_at": "2026-09-30T06:43:52.122007Z",
+  "registered_commit": "5f80ca641e060d4761b80818b074bd4e799b3ff3+dirty",
+  "registered_at": "2026-09-30T07:40:13.120831Z",
   "note": "Stated count assumption on Overview (ADR #136, route A runtime half): optional assumption booked_seats; narrowed count_basis; Bedrock fails closed; cap unchanged.",
   "recipe_context": {
     "context_version": "learningops-recipe-context-v4",
@@ -13,8 +13,8 @@
     "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5",
     "context_sha256": "203d342568478e3d9caabb29b8a7df6c04797aa2b083c8a643789be10c685e64",
     "output_contract_sha256": "428d53c6964565e0a8bec5c43b2bb9535aaf2883fc37df79c2e971c88d6268e7",
-    "instruction_sha256": "b8e48ff1f30500160850a34d44c14b36cbef59d144c02e0ae63aa90849f207d7",
-    "system_message_sha256": "bc4eb01fde3a98aef69b754f967060dbe956cd3847aebed4c93aed754afab956"
+    "instruction_sha256": "530ae1d4f02dc0064832622d4c11852b952f6ddabbdaa3d9396387e4f59e8441",
+    "system_message_sha256": "dacf86a8a0c18291ce730c793335b5cb5eb0159702f856b1ec5733f0f1dfb28f"
   },
   "structured_output": {
     "version": "recipe-structured-output-v3",
@@ -36,22 +36,22 @@
     "response": 131072,
     "timeout": 60.0
   },
-  "semantic_identity_sha256": "4dd322780c2f23614fa19ca768154f371598dd67a2526cd46882da34e5b39e97",
-  "candidate_sha256": "a1be26b8169e70f8109948cdff184fb0ba519408e2915b9414945ed0fcf8b5e5",
+  "semantic_identity_sha256": "d9a7dd3961612cb45d518197260404265f948de77e1d98a09340ab4d5422d7fa",
+  "candidate_sha256": "06ca91f23b7c177c93c46159211d772c7f3c6f933ea1c0ab0844fd1e47c8e944",
   "wire_witnesses": [
     {
       "label": "p310_e01_en",
       "question_sha256": "634a6e868a355af50ee7ca122282776aab6159573b16b5bd19f0277b4c67e57a",
-      "recipe_body_sha256": "5aa4d3d1615d2d00c132fd7d6cad7458a0d2e6ecfa89a825078f546fa3f4c9de",
-      "recipe_body_bytes": 28618,
+      "recipe_body_sha256": "2ded053d34740d931cb849ed62405e6c6e20bf4097b9c274728a817d5bb516a5",
+      "recipe_body_bytes": 28667,
       "p1_body_sha256": "bce2e680673e0a0227ceddfbab44bb23cc4a1da5e724e548861f658a6745431d",
       "p1_body_bytes": 2911
     },
     {
       "label": "development_wire",
       "question_sha256": "64d49690bc4bf021865c874d7916902361dd92439386435a80b830452307f37b",
-      "recipe_body_sha256": "884c9905e63c628497f2e0c73ce654bef407d05f55d7c35d13a8b76bc3bb529e",
-      "recipe_body_bytes": 28609
+      "recipe_body_sha256": "a92e3b1736f6a90d3e2443cbacb1bbd7e057e5485db342d64079ff6f2753390b",
+      "recipe_body_bytes": 28658
     }
   ],
   "runtime_files_sha256": {
@@ -72,6 +72,6 @@
     "grepbit/overview.py": "751c33bb2bf9ebf16217cd9c3b47fadf5c5a88c40e3f77d9acc7d1308884178f",
     "grepbit/presentation.py": "bfa2427e02ae8b21c020bd9ce09574a8d86448a3bd73ff447e68576cb8fe44aa",
     "grepbit/provider.py": "0d1a2867a81216417b0e34ebb2cf1223364307bd29a946fcaa92bf22544bd836",
-    "grepbit/recipe_model.py": "367083f08e15da78fab47f77d6553505f3a5925d03cf8b4df232e9d3eeb26115"
+    "grepbit/recipe_model.py": "f17a3647f78ae228751d0b922cd592dac8762ba0ec3d418c808d55cc8cf3010c"
   }
 }

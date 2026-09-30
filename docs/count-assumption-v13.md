@@ -40,12 +40,21 @@ evaluator stay byte-identical.
    `count_basis`, is the constant `booked_seats`. It is not required. No other
    branch changes.
 3. **Instruction.** `SYSTEM_INSTRUCTION` states the rule:
-   - a generic people or count noun (headcount, number of people, how many
-     people) with no named event, population or basis is answered with the
-     Overview request and `assumption`;
-   - `count_basis` is used only when the question itself leaves the basis
-     undecided between named meanings, and then offers exactly those meanings;
-   - an explicitly required unsupported meaning still declines.
+   - in a supported Overview question, a generic people count (headcount, how
+     many people, including people who booked) that names no seats, accounts,
+     attendance or distinct individuals is answered with the request and
+     `assumption`;
+   - `count_basis` is used only when the question itself is undecided between
+     named meanings, and then offers exactly those meanings;
+   - an explicitly required unsupported meaning still declines. The existing
+     decline rules are unchanged.
+
+   The rule names the four count meanings instead of an "event" framing:
+   under v11, 31B read booking wording as event framing even on unframed
+   headcount questions (`docs/count-cue-policy.md`). "Including people who
+   booked" keeps booking wording on a people count from counting as a basis.
+   The rule is scoped to supported Overview questions, so a count noun does not
+   turn a Compare, Breakdown or multi-month question into a narrowed Overview.
 4. **Context.**
    - The `count_basis` clarification text is narrowed the same way.
    - A new context entry, `count_assumption`, gives the assumed basis, what
@@ -61,9 +70,12 @@ evaluator stay byte-identical.
 - **Parsing.** `_proposal` accepts the optional `assumption` only on an
   Overview request and only with the exact value above. Anything else is
   `invalid_request`, with reason `root_shape`.
-- **The proposal object.** `RecipeProposal` keeps the assumption, and
-  `to_dict()` includes it only when present. So the persisted validated action
-  carries it, in the closed shape that `docs/count-assumption.md` admits.
+- **The proposal object.** `RecipeProposal` keeps the stated basis as an
+  immutable `count_basis` string, and `assumption` returns a fresh object.
+  Constructing a proposal with a basis on another recipe, or with another
+  basis, raises. `to_dict()` includes the assumption only when present. So the
+  persisted validated action carries it, in the closed shape that
+  `docs/count-assumption.md` admits.
 - **Execution** is unchanged: the native `OverviewRequest` and the kernel see
   the same request, and the pack already carries seats.
 - **Statement.** `assumption_statement(proposal)` returns the closed statement
@@ -85,12 +97,17 @@ evaluator stay byte-identical.
   schema digest, so the changed schema is refused before any send. This is as
   v11 did. The Bedrock tests keep exercising the frozen v12 schema.
 - **Request size.** The complete request stays within the unchanged
-  32,768-byte cap for every question on the dev panels and for a full
-  4,096-byte input. The ruler checks this through the gateway client. For the
-  4,096-byte input the request grows from 31,826 bytes (v12) to 32,671 bytes,
-  so the headroom is now 97 bytes. The owner said the cap may be raised; v13
-  does not use that, so the limits stay part of the unchanged identity. A later
-  candidate that adds model-facing text will need it.
+  32,768-byte cap for every question on the registered dev-tier panels and for
+  a full 4,096-byte input without JSON escapes. The ruler checks this through
+  the gateway client.
+  - For that input the request grows from 31,826 bytes (v12) to 32,720 bytes,
+    so the headroom is 48 bytes.
+  - A 4,096-byte input whose JSON escapes (newlines, quotes, backslashes) add
+    more than 48 bytes is now refused as `input_too_large` before any send; v12
+    tolerated 942. It fails closed.
+  - The owner said the cap may be raised. v13 does not use that, so the limits
+    stay part of the unchanged identity. A later candidate that adds
+    model-facing text will need it.
 
 ## Test changes
 
@@ -108,6 +125,11 @@ evaluator stay byte-identical.
   - The runner's Bedrock route test asserts the fail-closed stop: zero sends.
   - The wire test of `tests/test_invalid_request_reason.py` uses the frozen v12
     schema of `tests/frozen_recipe_schema.py`, as the adapter tests do.
+- **The v12 ruler.** `tests/test_v10_restoration_v12.py` asserted that the
+  frozen test holds its accepted bytes in the working tree. It now checks that
+  v12's merge (#127, `71d0354b`) held them, through Git, and that a later
+  amendment keeps them as superseded ancestry. The ruler is not frozen. The
+  owner's option A named the frozen test, its pin and `docs/p3-evaluator.md`.
 - **Same-bytes rulers.** The gate's `same_bytes` refusal and the aggregate's
   same-bytes inclusion used v7, which shares v12's bytes. They now build a
   registry copy in which the current candidate has a twin
@@ -131,8 +153,10 @@ evaluator stay byte-identical.
 ## Claims and limits
 
 - The rule is checked on the typed assumption only (`docs/count-assumption.md`).
-  The statement function is tested offline, and no user-facing UI renders it
-  yet.
+  The statement function is tested offline. The runtime does not yet surface it:
+  `RecipeInterpretation` and the evidence do not carry it, and no user-facing UI
+  renders it. So ADR #136's consequence that the user sees seats labelled as
+  seats is not implemented yet.
 - This is a single instruction change on one route, one run per panel. It may
   also move unrelated decisions. The gate measures that against v12's stable
   classes.

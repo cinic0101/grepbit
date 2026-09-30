@@ -127,8 +127,9 @@ SYSTEM_INSTRUCTION = (
     'choice limit. The reviewed enum lists are a vocabulary for representing grounded choices, '
     'never a menu to offer in full. '
     "count_basis and metric_meaning require a complete explicit Overview scope. "
-    'A generic people or count noun (headcount, how many people) with no named event, population or basis '
-    'is answered with the Overview request plus assumption:{"count_basis":"booked_seats"}; the server states it. '
+    'In a supported Overview question, a generic people count (headcount, how many people, including people who '
+    'booked) that names no seats, accounts, attendance or distinct individuals is answered with the request plus '
+    'assumption:{"count_basis":"booked_seats"}. '
     "Use count_basis only when the question itself is undecided between named meanings. "
     "Count choices include booked_seats and reviewed alternative count meanings; amount choices include "
     "confirmed_booked_amount and reviewed alternative amount meanings. Alternatives do not add executable metrics. "
@@ -328,20 +329,29 @@ def messages_for(question: str) -> list[dict[str, str]]:
 class RecipeProposal:
     recipe_id: Literal["overview", "compare", "breakdown"]
     request: _NativeRequest
-    assumption: dict[str, str] | None = None
+    count_basis: Literal["booked_seats"] | None = None
     recipe_version: str = field(default="0.1", init=False)
+
+    def __post_init__(self) -> None:
+        if self.count_basis is not None and (self.recipe_id != "overview"
+                                             or self.count_basis != ASSUMPTION["count_basis"]):
+            raise ValueError("only an Overview proposal may state the one count assumption")
+
+    @property
+    def assumption(self) -> dict[str, str] | None:
+        return None if self.count_basis is None else {"count_basis": self.count_basis}
 
     def to_dict(self) -> dict[str, object]:
         result = {"outcome": "request", "recipe_id": self.recipe_id,
                   "recipe_version": self.recipe_version, "request": self.request.to_dict()}
-        if self.assumption is not None:
-            result["assumption"] = dict(self.assumption)
+        if self.count_basis is not None:
+            result["assumption"] = self.assumption
         return result
 
 
 def assumption_statement(proposal: RecipeProposal | None) -> dict[str, object] | None:
     """The closed statement a product shows for a stated count assumption; not graded."""
-    if proposal is None or proposal.assumption is None:
+    if proposal is None or proposal.count_basis is None:
         return None
     return {"count_basis": ASSUMPTION["count_basis"], "reported_as": ASSUMPTION_REPORTED_AS,
             "unavailable": list(UNAVAILABLE_COUNT_BASES)}
@@ -367,7 +377,7 @@ def _proposal(data: object) -> RecipeProposal:
     if not isinstance(request, dict) or set(request) != fields:
         raise _InvalidRequest("request_fields")
     try:
-        return RecipeProposal(recipe, native.from_mapping(request), dict(ASSUMPTION) if stated else None)
+        return RecipeProposal(recipe, native.from_mapping(request), ASSUMPTION["count_basis"] if stated else None)
     except KernelError:
         raise _InvalidRequest("request_values") from None
 
