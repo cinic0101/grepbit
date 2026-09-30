@@ -1584,7 +1584,8 @@ class P3ExposedWrapperIsolationTests(unittest.IsolatedAsyncioTestCase):
         self.oracles = json.loads((DEVELOPMENT / "development-oracles-v1.json").read_bytes())
         self.actions = {
             row["case_id"]: row["action"]
-            for row in json.loads((DEVELOPMENT / "development-responses-v1.json").read_bytes())["responses"]
+            # v15 Compare cases need a typed orientation (tests/oriented_actions.py, ADR #142).
+            for row in json.loads((DEVELOPMENT / "development-oriented-responses-v1.json").read_bytes())["responses"]
         }
 
     def client(self, actions, sent):

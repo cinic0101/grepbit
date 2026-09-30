@@ -99,7 +99,10 @@ class RecipeClarificationTests(unittest.IsolatedAsyncioTestCase):
     async def test_all_kinds_are_distinct_successful_nonexecuting_actions(self):
         for kind in KINDS:
             with self.subTest(kind=kind):
-                result = await self.invoke(clarify(kind))
+                # v15 builds comparison_roles on the server from an unresolved Compare orientation (ADR #142).
+                action = dict(proposal("compare"), orientation="unresolved") if kind == "comparison_roles" else (
+                    clarify(kind))
+                result = await self.invoke(action)
                 self.assertIsNone(result.error)
                 self.assertEqual(result.clarification.kind, kind)
                 self.assertEqual(result.evidence["model_outcome"], "clarify")
@@ -111,6 +114,9 @@ class RecipeClarificationTests(unittest.IsolatedAsyncioTestCase):
                 wire = json.loads(self.sent[0].content)
                 self.assertEqual(wire["response_format"]["json_schema"]["schema"], recipe_model.output_schema())
                 self.assertEqual(set(wire), {"model", "messages", "temperature", "max_tokens", "stream", "response_format"})
+        refused = await self.invoke(clarify("comparison_roles"))
+        self.assertEqual((refused.error.code, refused.evidence["invalid_request_reason"]),
+                         ("invalid_request", "clarification_shape"))
 
     async def test_languages_share_one_message_and_do_not_use_presentation_as_input(self):
         messages = []
@@ -264,8 +270,19 @@ class RecipeClarificationTests(unittest.IsolatedAsyncioTestCase):
                     self.assertLessEqual(len(calls[0].content), MAX_REQUEST_BYTES)
 
     def test_original_request_decline_schema_is_exact_and_new_sources_are_pinned(self):
+        """Without v15's required Compare orientation, the P2 request/decline branches are byte-identical."""
         schema = recipe_model.output_schema()
-        old = {"oneOf": schema["oneOf"][:4]}
+
+        def without_orientation(branch):
+            if branch["properties"]["recipe_id"] != {"const": "compare"}:
+                self.assertNotIn("orientation", branch["properties"])
+                return branch
+            self.assertEqual(branch["properties"]["orientation"], {"enum": ["stated", "unresolved"]})
+            self.assertEqual(branch["required"][-1], "orientation")
+            return {**branch, "required": branch["required"][:-1],
+                    "properties": {key: value for key, value in branch["properties"].items() if key != "orientation"}}
+
+        old = {"oneOf": [without_orientation(branch) for branch in schema["oneOf"][:3]] + schema["oneOf"][3:4]}
         self.assertEqual(hashlib.sha256(model.canonical_json(old).encode()).hexdigest(),
                          P2_IDENTITY["output_contract_sha256"])
         old_wrapper = {"type": "json_schema", "json_schema": {"name": "grepbit_recipe_request", "schema": old}}

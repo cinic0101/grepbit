@@ -12,6 +12,7 @@ from unittest.mock import patch
 from grepbit.clarification import Clarification
 from grepbit.recipe_model import _proposal
 from tools import p3_assets, recipe_smoke
+from oriented_actions import orient
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -145,7 +146,8 @@ class P3AssetTests(unittest.TestCase):
             self.assertNotIn("expected", action)
             if case.expected_branch == "answer":
                 self.assertEqual(set(action), {"outcome", "recipe_id", "recipe_version", "request"})
-                proposal = _proposal(action)
+                # The v1 script stays immutable; v15's parser needs the derived orientation (ADR #142).
+                proposal = _proposal(orient(action))
                 self.assertEqual(recipe_smoke.canonical_request(proposal.request),
                                  oracle.to_dict()["request"])
             elif case.expected_branch == "clarify":

@@ -94,6 +94,9 @@ _PANEL_FIELDS = {"panel_id", "tier", "path", "assets", "allocation_policy", "int
 # docs/count-assumption.md: an optional, pinned annex of stated-assumption expectations for dev panels.
 ANNEX_VERSION = "count-assumption-annex-v1"
 ASSUMPTION = {"count_basis": "booked_seats"}
+# The typed Compare orientation of v15 archives (docs/compare-orientation-v15.md), pinned so archives stay
+# readable under any later candidate.
+ORIENTATIONS = ("stated", "unresolved")
 _ROUTE_FIELDS = {"route_id", "provider", "model", "region", "call_timeout_seconds", "transport_security", "note"}
 _RUN_FIELDS = {"version", "run_id", "recorded_at", "candidate_id", "panel_id", "tier", "route_id", "claim",
                "report_sha256", "slot", "accepted_commit", "grant", "status", "inputs", "correct",
@@ -811,13 +814,16 @@ def _action_shape(action: object) -> bool:
     if outcome == "declined":
         return action == {"outcome": "declined"}
     if outcome == "request":
-        # An Overview proposal may carry the one stated count assumption (docs/count-assumption.md).
-        return (set(action) in ({"outcome", "recipe_id", "recipe_version", "request"},
-                                {"outcome", "recipe_id", "recipe_version", "request", "assumption"})
+        # An Overview proposal may carry the one stated count assumption (docs/count-assumption.md), and a
+        # Compare proposal one typed orientation (docs/compare-orientation-v15.md).
+        base = {"outcome", "recipe_id", "recipe_version", "request"}
+        return (set(action) in (base, base | {"assumption"}, base | {"orientation"})
                 and isinstance(action["recipe_id"], str) and action["recipe_id"] in _ACTION_RECIPES
                 and action["recipe_version"] == "0.1" and isinstance(action["request"], dict)
                 and ("assumption" not in action
-                     or action["recipe_id"] == "overview" and action["assumption"] == ASSUMPTION))
+                     or action["recipe_id"] == "overview" and action["assumption"] == ASSUMPTION)
+                and ("orientation" not in action
+                     or action["recipe_id"] == "compare" and action["orientation"] in ORIENTATIONS))
     if outcome != "clarify" or set(action) != {"outcome", "clarification"}:
         return False
     clarification = action["clarification"]
@@ -846,10 +852,14 @@ def _validated_action(result) -> str | None:
     """The action that passed the runtime validators, in the grader's priority order; never raw text."""
     proposal = getattr(result, "proposal", None)
     clarification = getattr(result, "clarification", None)
+    source = getattr(result, "source_proposal", None)
     error = getattr(result, "error", None)
     try:
         if proposal is not None:
             action = proposal.to_dict()
+        elif clarification is not None and source is not None:
+            # A server-built clarification persists the model's own action, so replay rebuilds it.
+            action = source.to_dict()
         elif clarification is not None:
             action = {"outcome": "clarify", "clarification": clarification.to_dict()}
         elif error is not None and error.code == "model_declined":
@@ -876,11 +886,17 @@ def _check_action(row: dict, stop_reason: str | None = None) -> bool:
         action = json.loads(text)
     except (ValueError, RecursionError):
         raise assets.P3Error("invalid_asset") from None
-    if _action_text(action) != text or _ACTION_OUTCOMES[action["outcome"]] != row["actual_action"]:
+    # An unresolved Compare orientation is the model's action behind a server-built roles clarification.
+    derived = (isinstance(action, dict) and action.get("outcome") == "request"
+               and action.get("orientation") == "unresolved")
+    if (_action_text(action) != text
+            or ("clarify" if derived else _ACTION_OUTCOMES[action["outcome"]]) != row["actual_action"]):
         raise assets.P3Error("invalid_asset")
     if action["outcome"] == "clarify" and (
             action["clarification"]["kind"] != row["clarification_kind"]
             or len(action["clarification"]["choices"]) != row["clarification_choice_count"]):
+        raise assets.P3Error("invalid_asset")
+    if derived and (row["clarification_kind"], row["clarification_choice_count"]) != ("comparison_roles", 2):
         raise assets.P3Error("invalid_asset")
     evidence = row["evidence"]
     if evidence is None and stop_reason is not None and row["runner_error_code"] == stop_reason:

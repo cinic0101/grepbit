@@ -24,6 +24,7 @@ from grepbit import (
     OverviewAnalysisPack, OverviewRequest,
 )
 from grepbit import model, recipe_model
+from oriented_actions import orient
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL, ModelError
 from grepbit.recipe_model import RecipeInterpretation, RecipeProposal
 from test_json_diagnostics import RECIPE_IDENTITY
@@ -100,8 +101,9 @@ class RecipeSmokeTests(unittest.IsolatedAsyncioTestCase):
     def wire(self, request):
         question = json.loads(request.content)["messages"][1]["content"]
         oracle = self.oracle[self.by_question[question]["family"]]
-        return {"outcome": "request", **{key: copy.deepcopy(oracle[key])
-                                        for key in ("recipe_id", "recipe_version", "request")}}
+        # v15 Compare requests carry a typed orientation (tests/oriented_actions.py, ADR #142).
+        return orient({"outcome": "request", **{key: copy.deepcopy(oracle[key])
+                                               for key in ("recipe_id", "recipe_version", "request")}})
 
     def client(self, handler=None):
         def respond(request):

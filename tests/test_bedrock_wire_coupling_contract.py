@@ -136,8 +136,9 @@ class BedrockWireCouplingRulers(unittest.TestCase):
                 with self.assertRaises(ModelError) as caught:
                     recipe_model._proposal(value)
                 self.assertEqual(caught.exception.code, "invalid_request")
+        # v15 refuses a Compare without orientation at the root; with one, the pairing is still native.
         with self.assertRaises(ModelError) as caught:
-            recipe_model._proposal(GRAMMAR_ADMITTED_NATIVE_REJECTED[2])
+            recipe_model._proposal(dict(GRAMMAR_ADMITTED_NATIVE_REJECTED[2], orientation="stated"))
         self.assertEqual(caught.exception.reason, "request_fields")
 
     def test_the_v4_wire_admitted_the_diagnostic_shapes(self):
