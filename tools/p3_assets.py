@@ -29,7 +29,6 @@ OUTCOMES = (
     "wrong_request", "wrong_coverage", "wrong_fact_selection", "wrong_value",
     "partial", "invalid_output", "operational_failure", "not_run", "synthesis_error",
 )
-ASSUMPTION = {"count_basis": "booked_seats"}
 ROLES = {
     "overview": ("amount", "bookings", "seats", "daily_amount", "category_amounts"),
     "compare": ("current", "baseline", "delta", "growth"),
@@ -307,12 +306,9 @@ def parse_oracle(data: object) -> Oracle:
         object_fields(data, common | {
             "recipe_id", "recipe_version", "request", "coverage", "values", "required_slots",
             "auxiliary_slots", "auxiliary_values", "slot_states", "units", "catalog_sha256",
-        } | ({"assumption"} if "assumption" in data else set()), "invalid_oracle")
+        }, "invalid_oracle")
         recipe = data["recipe_id"]
         if not isinstance(recipe, str) or recipe not in ROLES or data["recipe_version"] != "0.1":
-            invalid("invalid_oracle")
-        # docs/count-assumption.md: an Overview answer may expect one closed, stated count assumption.
-        if "assumption" in data and (recipe != "overview" or data["assumption"] != ASSUMPTION):
             invalid("invalid_oracle")
         request = recipe_smoke._expected_request(recipe, data["request"])
         expected = {**data, "request": recipe_smoke.canonical_request(request)}

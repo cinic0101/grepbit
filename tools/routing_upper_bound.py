@@ -495,7 +495,7 @@ def _compare(report: dict, packet: dict, panels_path: Path | None, runs_path: Pa
     reports = evaluate._archived_reports(baseline)
     # The candidate gate's integrity checks, in its order: bytes, inputs, then index agreement.
     target = canonical["candidate"]["candidate_sha256"]
-    expected_inputs = (panel_id, canonical["panel"]["assets"],
+    expected_inputs = (panel_id, canonical["panel"]["assets"], canonical["panel"].get("annex_sha256"),
                        [(item["case_id"], item["question_sha256"]) for item in packet["inputs"]])
     views = [evaluate._gate_view(archived) for archived in reports]
     if any(sha != target for sha, _ in views):

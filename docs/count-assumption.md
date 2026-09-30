@@ -12,96 +12,115 @@ rule table approved at
 > with booked seats, the only executable count, with the assumption stated and
 > the unavailable meanings named.
 
-This contract changes the oracle format, the grader and the dev panels. It
-changes no `grepbit/` runtime file, so the current candidate (v12) stays
-current and can still be evaluated on the new panels. The runtime half, where
-the model emits the assumption, is candidate v13 in a later PR.
+**No protected file changes, by the owner's choice of route A**
+([#79](https://github.com/cinic0101/grepbit/issues/79), "按照你建議的做 = A").
+- The frozen P3.3 evaluator is unchanged: `tools/p3_assets.py`,
+  `tools/p3_grading.py` and `tools/p3_scoring.py`, and every other file in
+  `tests/fixtures/p310_identity_baseline.json`.
+- The runtime is unchanged, so the current candidate (v12) stays current and can
+  be evaluated on the new panels. The runtime half, where the model emits the
+  assumption, is candidate v13 in a later PR.
 
-## Oracle field
+## The annex
 
-An **answer** oracle for the **Overview** recipe may carry one optional field:
+The expected assumption is kept **outside** the oracle, in a closed annex file:
 
 ```json
-"assumption": {"count_basis": "booked_seats"}
+{"version": "count-assumption-annex-v1",
+ "expectations": {"dev-BM6.v2": {"count_basis": "booked_seats"}, "...": {"count_basis": "booked_seats"}}}
 ```
 
-- The object is closed: exactly the key `count_basis`, with the value
-  `booked_seats`.
-- An oracle for any other recipe, or any other shape or value, is
-  `invalid_oracle`.
-- An oracle without the field is unchanged: it expects no assumption.
+- Every listed oracle expects exactly the assumption
+  `{"count_basis": "booked_seats"}`. Every oracle of the panel that is not
+  listed expects none.
+- A listed oracle must be one of the panel's Overview answer oracles.
+- A `dev`-tier panel registry entry may carry an optional `annex`
+  `{path, sha256}`, like `intake` and `freeze`. The loader pins the file, and
+  `evaluate.build_packet` records its digest as the packet's
+  `panel.annex_sha256`.
+- So the annex is part of every packet's and report's panel identity. The
+  candidate gate's `inputs_differ` check also compares it.
+- A panel without an annex is unchanged. Its packets carry no `annex_sha256`
+  and read back as before.
 
-## Grading
+## The annex verdict
 
-The grader's existing `request` layer compares the proposal's assumption
-together with its native request:
-
-- **passed** when the canonical native request equals the oracle's and the
-  proposal's assumption equals the oracle's `assumption`.
-- A proposal without an `assumption` attribute, which is every v12 proposal,
-  counts as having none. So does an oracle without the field.
-- **A missing assumption** (the oracle has one, the proposal does not) fails
-  the layer. That is a silent substitution: the count was answered without
-  saying what it means.
-- **A spurious assumption** (the proposal has one, the oracle does not) also
-  fails the layer.
-- No layer is added and no report field changes. For every existing oracle and
-  every existing proposal the layer's result is unchanged, so the grader keeps
-  its version, `p3-evaluator-v1`. Bumping it would make every archived
-  evaluation report fail readback, because the manifest pins
-  `evaluator_version`. The oracle digests in each panel identity pin the new
-  rule instead.
+- **The frozen grade is recorded unchanged.** On an annex panel, the runner
+  derives a verdict per row from that grade and the row's persisted
+  `validated_action`:
+  - a frozen-wrong row is `wrong`;
+  - a frozen-correct row is `correct` only if its validated action is a
+    request whose `assumption` equals the oracle's expectation, where
+    "absent" is the expectation for an unlisted oracle. Otherwise it is
+    `wrong`: a missing assumption is a silent substitution, and a spurious one
+    an unwanted assumption;
+  - a frozen-correct row without a persisted action is `unassessed`, because
+    the assumption cannot be checked.
+- **Where the verdict is used:**
+  - the counts `tools/evaluate.py --record` writes to the run index, and so
+    `STATE.md`;
+  - the aggregate classes (`--aggregate`);
+  - the candidate gate: the baseline classes, the candidate rows and the
+    sentinel's assessment of an input.
+- **Where the frozen grade is kept:**
+  - the report rows themselves;
+  - `--replay`, which compares frozen grades only;
+  - the reading diagnostic and the routing upper bound. The routing tool
+    refuses the new panels: its router table covers only the v1 panels.
+- **Persisted actions.** A persisted validated action may carry the assumption
+  on an Overview request, with exactly the value above. The closed shape
+  rejects any other value, and an assumption on any other recipe.
 
 ## Revised oracles and new panels
 
 The four count families that the rule table changes get new oracle revisions:
 `dev-BM6.v2`, `dev-MN1.v2`, `dev-MN2.v2` and `dev-MN3.v2`.
-- Each is an Overview answer for `CTR-A01`, 2026-03-01 to 2026-04-01
-  `+08:00`, `Asia/Taipei`.
-- Each carries the assumption, plus the coverage, values, slots, states and
-  units of the accepted `dev-BM5.v1`. Those are kernel-derived; the scope is
-  the same.
+- Each is a plain Overview answer for `CTR-A01`, 2026-03-01 to 2026-04-01
+  `+08:00`, `Asia/Taipei`. It equals the accepted `dev-BM5.v1` except for its
+  id, revision and provenance. The expected assumption is in the annex.
 - Each case of these families is re-pointed to its v2 oracle, with
   `expected_branch` and `cohort` set to `answer` and a new
   `semantic_signature`.
-- The question text, language, exposure, provenance history and every other
-  case are unchanged.
+- The question text and every other case are unchanged.
 
 | New panel | Cases file | Oracles file | Changed cases |
 | --- | --- | --- | --- |
 | `p3-dev-bound-meaning-v2` | `bound-meaning-cases-v2.json` | `bound-meaning-oracles-v2.json` | `dev-BM6` ×3 |
 | `p3-dev-mechanism-probe-v2` | `mechanism-probe-cases-v2.json` | `mechanism-probe-oracles-v2.json` | `dev-BM6` ×3, `dev-MN1` ×3, `dev-MN2` ×3, `dev-MN3` ×3 |
 
-The v2 oracles files contain exactly the oracles the v2 cases reference: every
-unchanged v1 oracle byte-for-byte, with the four families' v1 oracles replaced
-by their v2 revisions. The v1 panels, files and archived results are
-unchanged. Both new panels are registered as `dev` tier with `development`
-authoring.
-
-The families the rule table leaves unchanged keep their oracles: `dev-BM5`
-(answer), `dev-BM7` (clarify with the stated meanings) and `dev-BM8`
-(decline).
+- Each panel pins its own annex, which lists exactly its v2 oracles. Every
+  listed oracle must be one of that panel's Overview answers.
+  - `bound-meaning-annex-v2.json` lists `dev-BM6.v2`.
+  - `mechanism-probe-annex-v2.json` lists `dev-BM6.v2`, `dev-MN1.v2`,
+    `dev-MN2.v2` and `dev-MN3.v2`.
+- The v1 panels, files and archived results are unchanged.
+- Contract row C01 of `docs/p3-evaluation-contract.md` keeps its accepted v1
+  text. Its note points here for the v2 panels.
+- The families the rule table leaves unchanged keep their oracles:
+  `dev-BM5` (answer), `dev-BM7` (clarify with the stated meanings) and
+  `dev-BM8` (decline).
 
 ## Acceptance
 
-The v2 oracles and cases need independent semantic acceptance. It is given
-by the owner-designated fresh-context reviewer, which sees only:
-- the questions;
-- the approved rule table;
-- the proposed v2 oracles and case metadata.
-
-It sees no model output, run result or implementing conversation. Its prompt,
-disclosure and verdict are recorded on the PR, and the implementing agent does
-not accept the oracles.
+- **Semantics.** The owner-designated independent reviewer accepted the v2
+  expectations on #138. The acceptance covers the expected results, which are
+  the same under route A: an Overview answer with the stated assumption.
+- **Code.** The implementation of route A has its own independent code review
+  on #138.
 
 ## Claims and limits
 
-- The new panels measure the owner's rule on exposed development inputs. Any
-  result on them is a development observation.
-- v12 cannot emit an assumption. On the new panels it is expected to fail
-  every changed case: a silent answer fails the `request` layer, and a
-  clarification or decline has the wrong action. That is the baseline v13
-  must improve on under the candidate gate.
-- Holdout and formal oracles are untouched. `HA02` and any other held-out
-  count case keep their accepted expectations until their own independent
-  process revises them.
+- **Only the typed assumption is checked.** Whether a product shows the
+  assumption, says "confirmed booked seats" rather than bookings, and names
+  the unavailable meanings is not graded here. Candidate v13 must render
+  and test that. A pass on these panels shows only the typed part of the
+  rule.
+- **Readers of raw reports must apply the annex.** A raw report row on an annex
+  panel shows the frozen grade. For example, v12's silent answer to `dev-BM6`
+  is `complete_correct` there, while its annex verdict is `wrong`. The index,
+  `STATE.md`, the aggregate and the gate use the annex verdict.
+- **Signatures and distinct-action counts.** `actual_signature` comes from the
+  frozen grader and does not include the assumption. The aggregate's
+  distinct-action counts come from the validated actions, which do include it.
+- **Scope.** The new panels measure the owner's rule on exposed development
+  inputs. Holdout and formal oracles are untouched.

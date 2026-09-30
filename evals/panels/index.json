@@ -167,13 +167,17 @@
       "assets": {
         "panel": "b791b89c6953cf3281e4e5a0673bc1bd8b4a2d98b75f2ffde689c86fca0edc60",
         "cases": "3324685d34232b2d58d279e1fb157faa157a3d07cf33ab2d84fdd47dd3309a11",
-        "oracles": "4c78ba1ffd77ebcaf0787c205716f994243415dbf3ae21a47d607a742fc095db"
+        "oracles": "a740f12e79bb0cbaf5ac166b56f32e8df1f84f1057aa0ebc0cafd92de02021f5"
       },
       "allocation_policy": null,
       "intake": null,
       "freeze": null,
       "authoring": "development",
-      "note": "v1 with dev-BM6 revised by ADR #136: generic unresolved counts answer with booked seats and a stated assumption; independent semantic acceptance on the adding PR."
+      "note": "v1 with dev-BM6 revised by ADR #136: generic unresolved counts answer with booked seats and a stated assumption; independent semantic acceptance on the adding PR.",
+      "annex": {
+        "path": "evals/dev/bound-meaning-annex-v2.json",
+        "sha256": "0c72e5cdfffe50d491f8d185f54b73b1388177040d82be99a54502c902cddf8f"
+      }
     },
     {
       "panel_id": "p3-dev-mechanism-probe-v2",
@@ -182,13 +186,17 @@
       "assets": {
         "panel": "91fcdf3102446c337326c305dbd16ae4a9e096f8d226c9728950707af7ecd951",
         "cases": "3d89c22c2a37a027b40adcf2c1e9c39e3c1fbd3275d566a2907c3347afaa571b",
-        "oracles": "f7bbca371fa810a9c692377b5fe69a75e9c4c107932d2b4a5e2c48c33b8c2ed9"
+        "oracles": "a8a7b8276a5db015e5ae66d7410ae616627491d538cd3e7bf3277ffeecdb49b4"
       },
       "allocation_policy": null,
       "intake": null,
       "freeze": null,
       "authoring": "development",
-      "note": "v1 with dev-BM6, dev-MN1, dev-MN2, dev-MN3 revised by ADR #136: generic unresolved counts answer with booked seats and a stated assumption; independent semantic acceptance on the adding PR."
+      "note": "v1 with dev-BM6, dev-MN1, dev-MN2, dev-MN3 revised by ADR #136: generic unresolved counts answer with booked seats and a stated assumption; independent semantic acceptance on the adding PR.",
+      "annex": {
+        "path": "evals/dev/mechanism-probe-annex-v2.json",
+        "sha256": "afcfc8496b750c054e25d096cc9a5120963197388dd33ccc4b67e7e9a1928eb9"
+      }
     }
   ]
 }

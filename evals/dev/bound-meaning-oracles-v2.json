@@ -389,9 +389,9 @@
       "revision": 2,
       "branch": "answer",
       "provenance": [
-        "Revision of dev-BM6.v1 under ADR #136: owner decision #79 issuecomment-5903677393 and approved rule table issuecomment-5903712127. A generic count whose meaning is unresolved is answered with booked seats and the stated assumption. Never derived from candidate output.",
+        "Revision of dev-BM6.v1 under ADR #136: owner decision #79 issuecomment-5903677393 and approved rule table issuecomment-5903712127. A generic count whose meaning is unresolved is answered with booked seats and the stated assumption. The expected assumption is in evals/dev/bound-meaning-annex-v2.json (docs/count-assumption.md); this oracle is otherwise a plain Overview answer. Never derived from candidate output.",
         "Request, coverage, values, slots, states and units copied from the independently accepted dev-BM5.v1 (the same CTR-A01 March 2026 Overview scope; kernel-derived through the synthetic fixture).",
-        "Independent semantic acceptance by the owner-designated fresh-context reviewer is recorded on the pull request that adds this file (docs/count-assumption.md, Acceptance)."
+        "Independent semantic acceptance by the owner-designated fresh-context reviewer: ACCEPTED on PR #138 (docs/count-assumption.md, Acceptance)."
       ],
       "recipe_id": "overview",
       "recipe_version": "0.1",
@@ -473,10 +473,7 @@
         "daily_amount": "TWD_minor",
         "category_amounts": "TWD_minor"
       },
-      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5",
-      "assumption": {
-        "count_basis": "booked_seats"
-      }
+      "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5"
     },
     {
       "oracle_id": "dev-BM7.v1",

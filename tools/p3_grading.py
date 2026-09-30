@@ -283,10 +283,7 @@ def grade(result: RecipeInterpretation | None, oracle: Oracle, *, attempted: boo
         expected = oracle.to_dict()
         observe("recipe", lambda: (proposal.recipe_id, proposal.recipe_version) == (
             expected["recipe_id"], expected["recipe_version"]))
-        # A stated count assumption is part of the request an answer must match (docs/count-assumption.md);
-        # a proposal without one, and an oracle without one, both mean none.
-        observe("request", lambda: recipe_smoke.canonical_request(proposal.request) == expected["request"]
-                and getattr(proposal, "assumption", None) == expected.get("assumption"))
+        observe("request", lambda: recipe_smoke.canonical_request(proposal.request) == expected["request"])
         observe("execution", lambda: error is None and isinstance(pack, _PACKS)
                 and (pack.recipe_id, pack.recipe_version) == (proposal.recipe_id, proposal.recipe_version)
                 and recipe_smoke.canonical_request(pack.request) == recipe_smoke.canonical_request(proposal.request))

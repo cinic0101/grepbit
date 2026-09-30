@@ -161,6 +161,14 @@ No real private problem/source confirmation is claimed.
 | C05 | Bare ambiguous entity name or several material ambiguities | Deferred clarification/grounding design | Invented choices, unsafe lookup or multiple hidden repairs | clarify target; deferred | Requires grounded candidates or successive semantic choices not admitted in the first slice | none | HIST E04/E05/E06, original expectations retained | O | A/C/H | Not implemented; decline is not target success | Later P3 grounding/ambiguity chains; no field-priority rules |
 | X01 | Partial native pack under injected optional failure | Offline operational control | Omitted required fact called complete | not a model action | E10, fixed required/optional native roles | none | HIST E10, exposed_regression | O, offline only | F | Accepted offline injection | Real cancel/deadline and PG lifecycle remain P4 |
 
+> **Note on C01 (ADR #136, owner decision of 2026-09-30).** On the v2 dev
+> panels (`p3-dev-bound-meaning-v2`, `p3-dev-mechanism-probe-v2`), a generic
+> people or count noun whose meaning is unresolved is answered with booked
+> seats and a stated assumption instead of a `count_basis` clarification. See
+> `docs/count-assumption.md`. The row above keeps its accepted text for the v1
+> panels and for the formal and holdout evidence, which this note does not
+> change.
+
 Required wrong-valid traps are covered by A01-A06, C01/C04 and D01-D06:
 metric, count unit, population, scope, grain, comparison roles, month/year,
 center, k, denominator and booked/cash/refund/profit distinctions. They are
