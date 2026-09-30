@@ -35,8 +35,10 @@ class CandidateGateTests(EvaluateHarness):
         self.repetitions, self.recorded = {}, 0
 
     # ----------------------------------------------------------------- helpers
-    def client(self, broken=(), failing=()):
-        """Scripted answers; raw invalid JSON (assessed, wrong) or a transport error (unassessed) per case id."""
+    def client(self, broken=(), failing=(), wrong=()):
+        """Scripted answers per case id: a valid decline (assessed and wrong: every chosen input expects an
+        answer), raw invalid JSON (graded invalid_output: the candidate's answer, but unassessed in a
+        baseline's aggregate class) or a transport error (unassessed)."""
         cases = self.inputs
 
         def respond(request):
@@ -45,7 +47,8 @@ class CandidateGateTests(EvaluateHarness):
             case = next(case for case in cases if case.question == question)
             if case.case_id in failing:
                 raise httpx.ConnectError("synthetic transport failure", request=request)
-            content = "{not json" if case.case_id in broken else json.dumps(self.by_oracle[case.oracle_id])
+            content = ("{not json" if case.case_id in broken else json.dumps({"outcome": "declined"})
+                       if case.case_id in wrong else json.dumps(self.by_oracle[case.oracle_id]))
             return httpx.Response(200, json=envelope(content))
 
         return GatewayClient(GatewayConfig(BASE, KEY, MODEL), transport=httpx.MockTransport(respond))
@@ -63,7 +66,7 @@ class CandidateGateTests(EvaluateHarness):
                 patch.object(registry, "current", return_value=entry), patch.object(self, "candidate", candidate_id):
             yield
 
-    async def observe(self, grant, *, candidate=None, panel="synthetic-dev", broken=(), failing=()):
+    async def observe(self, grant, *, candidate=None, panel="synthetic-dev", broken=(), failing=(), wrong=()):
         candidate = candidate or self.baseline
         key = (candidate, panel)
         self.repetitions[key] = self.repetitions.get(key, 0) + 1
@@ -72,7 +75,7 @@ class CandidateGateTests(EvaluateHarness):
             output = self.output()
             authorization = self.root / f"authorization-{output.name}.json"
             runner.bind_authorization(packet, f"{GRANT}{grant}", authorization, output)
-            await self.run_mock(packet, output, authorization, client=self.client(broken, failing))
+            await self.run_mock(packet, output, authorization, client=self.client(broken, failing, wrong))
         self.recorded += 1
         return runner.record(output / "report.json", runs_path=self.runs,
                              now=f"2026-09-29T00:{self.recorded:02d}:00Z")
@@ -91,10 +94,12 @@ class CandidateGateTests(EvaluateHarness):
     async def test_gate_classifies_each_input_against_the_measured_baseline_and_applies_the_verdict_in_order(self):
         ids = [case.case_id for case in self.inputs]
         x, y, z, w = ids[0], ids[1], ids[2], ids[-1]
-        # Baseline: x wrong in every session, y wrong in one (flaky), every other input right.
-        baseline = [await self.observe(901, broken={x}), await self.observe(902, broken={x, y}),
-                    await self.observe(903, broken={x}), await self.observe(904, broken={x}),
-                    await self.observe(905, broken={x})]
+        self.assertEqual([case.expected_branch for case in self.inputs[:3]], ["answer"] * 3)
+        # Baseline: x wrong in every session, y wrong in one (flaky), every other input right. A baseline
+        # "wrong" is a valid, graded decline; malformed output would leave the row unassessed.
+        baseline = [await self.observe(901, wrong={x}), await self.observe(902, wrong={x, y}),
+                    await self.observe(903, wrong={x}), await self.observe(904, wrong={x}),
+                    await self.observe(905, wrong={x})]
         regression = await self.observe(902, candidate=OTHER, broken={y, z})
         passed = await self.observe(903, candidate=OTHER, broken={y})
         no_fix = await self.observe(904, candidate=OTHER, broken={x})
@@ -126,6 +131,9 @@ class CandidateGateTests(EvaluateHarness):
         self.assertEqual((rows[z]["baseline_class"], rows[z]["candidate"], rows[z]["class"]),
                          ("stable_correct", "wrong", "broke"))
         self.assertEqual({rows[i]["class"] for i in ids if i not in (x, y, z)}, {"unchanged_correct"})
+        # Malformed candidate output on an input the baseline always got right is a break, not unassessed.
+        self.assertEqual((rows[x]["outcome"], rows[y]["outcome"], rows[z]["outcome"]),
+                         ("complete_correct", "invalid_output", "invalid_output"))
         self.assertEqual((panel["fixed"], panel["broke"], panel["excluded"], panel["unassessed"]), ([x], [z], [y], []))
         self.assertEqual(panel["counts"], {"fixed": 1, "broke": 1, "unchanged_correct": 12, "unchanged_wrong": 0,
                                            "excluded": 1, "unassessed": 0})
@@ -144,6 +152,7 @@ class CandidateGateTests(EvaluateHarness):
         self.assertEqual(panel["candidate_run"], no_fix["run_id"])
         self.assertEqual((rows[x]["class"], rows[y]["candidate"], rows[y]["class"]),
                          ("unchanged_wrong", "correct", "excluded"))
+        self.assertEqual((rows[x]["candidate"], rows[x]["outcome"]), ("wrong", "invalid_output"))
         self.assertEqual((panel["fixed"], panel["broke"], panel["verdict"]), ([], [], "no_fix"))
 
         # An unassessed candidate row makes the gate inconclusive, even next to a fix.
@@ -169,8 +178,8 @@ class CandidateGateTests(EvaluateHarness):
     # ----------------------------------------------------------------- refusals
     async def test_gate_refuses_by_identity_with_one_closed_reason_before_any_verdict(self):
         x = self.inputs[0].case_id
-        earlier = [await self.observe(901, broken={x}), await self.observe(901, broken={x})]
-        sentinel = await self.observe(902, broken={x})
+        earlier = [await self.observe(901, wrong={x}), await self.observe(901, wrong={x})]
+        sentinel = await self.observe(902, wrong={x})
         candidate = await self.observe(902, candidate=OTHER)
         rerun = await self.observe(902, candidate=OTHER)
         other_panel = await self.observe(901, candidate=OTHER, panel="synthetic-dev-b")
@@ -230,8 +239,8 @@ class CandidateGateTests(EvaluateHarness):
     # ----------------------------------------------------------------- CLI
     async def test_cli_gate_prints_the_verdict_names_a_refusal_and_its_arguments_are_closed(self):
         x = self.inputs[0].case_id
-        await self.observe(901, broken={x})
-        await self.observe(902, broken={x})
+        await self.observe(901, wrong={x})
+        await self.observe(902, wrong={x})
         await self.observe(902, candidate=OTHER)
         expected = self.gate(902)
         argv = ["--gate", "--candidate", OTHER, "--baseline-candidate", self.baseline, "--route", "litellm-31b",
