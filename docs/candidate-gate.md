@@ -57,10 +57,25 @@ For each named panel, on the named route:
 
 The baseline class of each input comes from `--aggregate` over all baseline
 runs, the sentinel included: `stable_correct`, `stable_wrong`, `flaky` or
-`insufficient`. The candidate row is correct, wrong or unassessed. Unassessed
-means not run, or an operational or runner failure; `invalid_output` is
-assessed and wrong. The first matching row applies, so an unassessed
-candidate row is `unassessed` whatever the baseline class.
+`insufficient`.
+
+The candidate row is `correct` or `wrong` as graded, or `unassessed`.
+Unassessed means that no model result was usable: the row did not complete,
+is `not_run` or `operational_failure`, or has a runner error. A graded row
+with an error is the model's answer and counts as wrong. For example,
+`invalid_output` (malformed model content) on an input the baseline
+consistently got right is a break, not an inconclusive gate.
+
+The baseline classes keep the aggregate taxonomy, which also counts a graded
+row with an operational error as unassessed. That difference only makes a pass
+harder:
+- An input with such a row in one baseline run and correct answers in the
+  others is `stable_correct`, so a wrong candidate row counts as a break.
+- An input with too few assessed baseline rows is `insufficient`, so a correct
+  candidate row is not counted as a fix.
+
+The first matching row of the table applies, so an unassessed candidate row
+is `unassessed` whatever the baseline class.
 
 | Baseline class | Candidate row | Gate class |
 | --- | --- | --- |
@@ -98,7 +113,8 @@ The gate prints one canonical JSON object and exits 0 whatever the verdict:
 - `panels`, in the order named. Each entry has:
   - `panel_id`, `baseline_runs`, `sentinel_runs` and `candidate_run`;
   - `inputs`, in panel order: `case_id`, `family_id`, `baseline_class`,
-    `candidate` (`correct`, `wrong` or `unassessed`) and the gate `class`;
+    `candidate` (`correct`, `wrong` or `unassessed`), the candidate row's
+    graded `outcome` and the gate `class`;
   - `counts` per gate class;
   - the case-id lists `fixed`, `broke`, `excluded` and `unassessed`;
   - `verdict`;
