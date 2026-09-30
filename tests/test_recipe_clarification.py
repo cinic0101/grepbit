@@ -264,21 +264,8 @@ class RecipeClarificationTests(unittest.IsolatedAsyncioTestCase):
                     self.assertLessEqual(len(calls[0].content), MAX_REQUEST_BYTES)
 
     def test_original_request_decline_schema_is_exact_and_new_sources_are_pinned(self):
-        """Without v13's optional Overview assumption, the P2 request/decline branches are byte-identical."""
         schema = recipe_model.output_schema()
-
-        def without_assumption(branch):
-            if branch["properties"]["recipe_id"] != {"const": "overview"}:
-                self.assertNotIn("assumption", branch["properties"])
-                return branch
-            self.assertEqual(branch["properties"]["assumption"], {
-                "type": "object", "additionalProperties": False, "required": ["count_basis"],
-                "properties": {"count_basis": {"const": "booked_seats"}}})
-            self.assertNotIn("assumption", branch["required"])
-            return {**branch, "properties": {key: value for key, value in branch["properties"].items()
-                                             if key != "assumption"}}
-
-        old = {"oneOf": [without_assumption(branch) for branch in schema["oneOf"][:3]] + schema["oneOf"][3:4]}
+        old = {"oneOf": schema["oneOf"][:4]}
         self.assertEqual(hashlib.sha256(model.canonical_json(old).encode()).hexdigest(),
                          P2_IDENTITY["output_contract_sha256"])
         old_wrapper = {"type": "json_schema", "json_schema": {"name": "grepbit_recipe_request", "schema": old}}

@@ -1,5 +1,10 @@
 # Candidate v13: stated count assumption (#136)
 
+> **Superseded.** v13's gate verdict was `regression`
+> (`docs/count-assumption-v13-result.md`, #141). By owner decision, candidate
+> `p3-v12-restoration-v14` restores v12's runtime (`docs/v12-restoration-v14.md`).
+> This document records v13 as it was.
+
 Candidate `p3-count-assumption-v13`, whose ancestor is `p3-v10-restoration-v12`. It is
 the runtime half of ADR #136, as amended in
 [#136 #issuecomment-5904225044](https://github.com/cinic0101/grepbit/issues/136#issuecomment-5904225044),

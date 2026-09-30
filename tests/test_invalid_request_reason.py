@@ -14,7 +14,6 @@ from grepbit.bedrock import converse_schema
 from grepbit.contracts import KernelError
 from grepbit.gateway import GatewayClient, GatewayConfig
 from tools import fixture, p3_assets, p3_live_evidence
-import frozen_recipe_schema
 from test_recipe_clarification import clarify
 from test_recipe_model import envelope, period, proposal
 
@@ -204,7 +203,6 @@ class InvalidRequestReasonTests(unittest.IsolatedAsyncioTestCase):
 
     def test_bedrock_wire_permits_one_choice_that_native_rejects_as_choice_count(self):
         """The compact wire keeps ``minItems: 1``; only native validation enforces two choices."""
-        self.enterContext(frozen_recipe_schema.patched())
         constraint = recipe_model._structured_output(recipe_model.output_schema())[0]
         wire_format, _ = converse_schema(constraint)
         wire = json.loads(wire_format["structure"]["jsonSchema"]["schema"])

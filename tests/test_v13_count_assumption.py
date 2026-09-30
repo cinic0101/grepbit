@@ -21,11 +21,28 @@ COMPARE = {"current": {**COMPARE_SCOPE, "start": "2026-03-01T00:00:00+08:00", "e
            "baseline": {**COMPARE_SCOPE, "start": "2026-02-01T00:00:00+08:00", "end": "2026-03-01T00:00:00+08:00"}}
 
 
+V13 = "p3-count-assumption-v13"
+V13_SEMANTIC = "0290b399e082f5f0f2070c42184fb2ae9c06be53dea30104e171f657dbe5dd11"
+
+
+def superseded():
+    """v13 is registered but no longer current (v14 restored v12, #136): runtime checks no longer apply."""
+    index = registry.load_index()
+    return V13 in [r["candidate_id"] for r in index["entries"]] and index["current"] != V13
+
+
+class _LiveV13:
+    @classmethod
+    def setUpClass(cls):
+        if superseded():
+            raise unittest.SkipTest("v13 superseded; its runtime is no longer live")
+
+
 def _overview(**extra):
     return {"outcome": "request", "recipe_id": "overview", "recipe_version": "0.1", "request": dict(OVERVIEW), **extra}
 
 
-class ProposalTests(unittest.TestCase):
+class ProposalTests(_LiveV13, unittest.TestCase):
     def test_only_an_overview_proposal_may_state_the_one_assumption(self):
         stated = recipe_model._proposal(_overview(assumption=dict(ASSUMPTION)))
         self.assertEqual(stated.assumption, ASSUMPTION)
@@ -70,7 +87,7 @@ class ProposalTests(unittest.TestCase):
         self.assertIsNone(recipe_model.assumption_statement(None))
 
 
-class ContractTextTests(unittest.TestCase):
+class ContractTextTests(_LiveV13, unittest.TestCase):
     def test_the_schema_admits_the_assumption_only_on_the_overview_branch(self):
         branches = recipe_model.output_schema()["oneOf"]
         requests = {branch["properties"]["recipe_id"]["const"]: branch for branch in branches
@@ -138,7 +155,7 @@ class ContractTextTests(unittest.TestCase):
         self.assertEqual(refused.exception.code, "invalid_input")
 
 
-class RegistryAndPipelineTests(unittest.TestCase):
+class RegistryAndPipelineTests(_LiveV13, unittest.TestCase):
     def test_v13_is_the_registered_current_candidate(self):
         current = registry.current()
         self.assertEqual((current["candidate_id"], current["ancestor"]),
@@ -160,6 +177,15 @@ class RegistryAndPipelineTests(unittest.TestCase):
         self.assertEqual(seats.state, "checked")
         row = {"oracle_id": "dev-MN1.v2", "validated_action": evaluate._validated_action(result)}
         self.assertEqual(evaluate.annexed(row, True, {"dev-MN1.v2": ASSUMPTION}), "correct")
+
+
+class RegisteredIdentityTests(unittest.TestCase):
+    def test_v13_stays_registered_after_v12(self):
+        ids = [r["candidate_id"] for r in registry.load_index()["entries"]]
+        self.assertEqual(ids.index(V13), ids.index("p3-v10-restoration-v12") + 1)
+        entry = registry.load_entry(V13)
+        self.assertEqual((entry["ancestor"], entry["semantic_identity_sha256"]),
+                         ("p3-v10-restoration-v12", V13_SEMANTIC))
 
 
 if __name__ == "__main__":

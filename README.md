@@ -88,7 +88,7 @@ between-session drift was not measured on the probe and cannot be excluded per
 input. See the
 [v10 restoration](docs/v10-restoration-v12.md).
 
-The current candidate, v13, implements the owner's count rule (ADR #136): a
+v13 implemented the owner's count rule (ADR #136): a
 generic people count that names no count meaning is answered with booked
 seats and the assumption stated, not clarified. An Overview answer may carry the typed
 `assumption` `{"count_basis": "booked_seats"}`, and `count_basis` clarification
@@ -100,10 +100,17 @@ check the assumption, the pre-registered gate verdict is **regression**. One
 run per panel fixed all 12 distinct generic people-count inputs, but it broke
 6 stable-correct ones: `dev-BM5` in three languages gained a spurious
 assumption, and three Compare inputs became false clarifications. Under the
-grant that is a stop with no rerun, and v13 is to be reverted. See the
+grant that is a stop with no rerun. See the
 [v13 contract](docs/count-assumption-v13.md), the
 [evaluation side](docs/count-assumption.md) and the
 [gate result](docs/count-assumption-v13-result.md).
+
+The current candidate, v14, reverts v13 by owner decision: it returns to
+v12's exact runtime bytes (v10's and v7's) and restores the frozen
+clarification test, which also reopens the Bedrock route. It is a
+restoration, not a new fix, and v12's results are its results. The next change is ADR #142: the model reads a typed Compare
+orientation and code decides whether to clarify the roles. See the
+[v12 restoration](docs/v12-restoration-v14.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
