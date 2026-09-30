@@ -19,6 +19,12 @@ The owner's rule, approved at
 | The user says the basis is undecided between named meanings | Clarify with the stated meanings |
 | An unsupported meaning is required | Decline |
 
+The instruction implements the first row for a generic **people** count, as the
+grant's goal words it ("answers generic people counts"), and every approved
+example is a people noun. A generic count noun that is not about people ("how
+many were booked", "the count") falls under "otherwise omit assumption". No v2
+dev case has that wording, so it is unmeasured.
+
 Only the identity plumbing files of `tests/fixtures/p310_identity_baseline.json`
 (`grepbit/recipe_model.py`, and `grepbit/gateway.py` and `grepbit/model.py` if
 needed) may change. The kernel, the presentation module and the frozen
@@ -55,8 +61,9 @@ evaluator stay byte-identical.
    booked" keeps booking wording on a people count from counting as a basis.
    The rule reuses the instruction's existing term "complete explicit Overview
    scope", so a question that asks only for a count (`dev-MN2`, `dev-MN3`) is
-   covered, and a count noun does not turn a Compare, Breakdown or multi-month
-   question into a narrowed Overview. "Otherwise omit assumption" closes the
+   covered, and a count noun is not meant to turn a Compare, Breakdown or
+   multi-month question into a narrowed Overview. No run-panel question
+   combines a count noun with those. "Otherwise omit assumption" closes the
    rule for questions bound to seats (`dev-BM5`) and for questions without a
    people count.
 4. **Context.**
@@ -177,5 +184,20 @@ evaluator stay byte-identical.
   which the grant does not run and which has no annex. So neither a wrong
   answer there nor a spurious assumption on that panel's Overview answers
   (`dev-A1`, `dev-A2`) is measured. `dev-BM7` covers the "undecided between
-  named meanings" row without the "people booked" wording. Measuring `dev-C1`
-  needs its own owner authorization.
+  named meanings" row without the "people booked" wording; its zh-TW and ja
+  forms do contain 人數 and 人数. Measuring `dev-C1` needs its own owner
+  authorization.
+- **A second unmeasured near-miss.** `dev-D8`, on the same unrun panel, expects
+  a decline. Its zh-TW 「實際到場的人次」 and ja 「実際に出席した延べ人数」 contain
+  the people noun and are excluded only because they name attendance. The run
+  panels have no decline for a required attendance or account count. The
+  "unsupported meaning is required" row is measured there only by `dev-BM8`
+  (distinct people). That row matters more now that "people counts" has left
+  Overview's unsupported list.
+- **Precedence with another unsupported requirement.** The new sentence
+  matches a question with a complete Overview scope, a generic people count and
+  a different unsupported requirement, for example "CTR-A01 March 2026
+  headcount and profit". The earlier general rule ("If any required output …
+  is unsupported … decline the whole request") still governs, but the new
+  sentence does not restate it. No v2 dev case combines the two, so this is a
+  known, unmeasured limit. With 24 bytes of headroom it is not restated.

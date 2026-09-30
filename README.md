@@ -94,8 +94,9 @@ seats and the assumption stated, not clarified. An Overview answer may carry the
 `assumption` `{"count_basis": "booked_seats"}`, and `count_basis` clarification
 is kept for questions that are themselves undecided between named meanings.
 The kernel is unchanged, Bedrock fails closed and the 32,768-byte request cap
-is kept. v13 has no live result yet; it is measured against v12 on the v2 dev
-panels, whose annex checks the assumption. See the
+is kept. v13 has no live result yet; it will be measured against v12 on the
+two new v2 dev panels of #138 (`p3-dev-bound-meaning-v2` and
+`p3-dev-mechanism-probe-v2`), whose annexes check the assumption. See the
 [v13 contract](docs/count-assumption-v13.md) and the
 [evaluation side](docs/count-assumption.md).
 
