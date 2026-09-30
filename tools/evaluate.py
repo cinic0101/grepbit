@@ -1352,6 +1352,9 @@ def gate(candidate_id: str, baseline_id: str, route_id: str, reference: str, pan
 def main(argv=None) -> int:
     if argv is None:
         argv = sys.argv[1:]
+    if argv and argv[0] == "--routing-upper-bound":
+        from tools import routing_upper_bound
+        return routing_upper_bound.main(argv[1:])
     if argv and argv[0] == "--reading-diagnostic":
         from tools import reading_diagnostic
         return reading_diagnostic.main(argv[1:])
