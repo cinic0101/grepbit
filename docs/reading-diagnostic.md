@@ -36,13 +36,15 @@ The variant is closed and named in the packet:
 - **Candidate.** The current registered candidate (`tools/candidate_registry.py`).
 - **Panel.** A registered `dev`-tier panel. All of its inputs run, in panel
   order; the diagnostic makes no selection.
-- **Route.** A registered route. The client is admitted exactly as for
-  `tools/evaluate.py --live`.
+- **Route.** A registered route. The client is admitted as for
+  `tools/evaluate.py --live`: the route decides the provider, model, region and
+  timeout. The client's transport security must equal the packet's; any
+  mismatch is an `invalid_configuration` anomaly before the first send.
 - **Source run.** One indexed run, required for both variants. Its report must:
   - read back and match its index digest;
   - be `evaluation-report-v2` and `complete`;
-  - use the same panel, the same route and the current candidate's
-    `candidate_sha256`;
+  - use the same panel, the same route (the report's route object equals the
+    packet's) and the current candidate's `candidate_sha256`;
   - for `replayed`, carry a non-null `validated_action` on every input.
 - **Packet.** It embeds the canonical evaluation packet that
   `tools/evaluate.py --prepare` would build for the same candidate, panel and
@@ -150,7 +152,9 @@ Each input's row holds:
 - `case_id`, `family_id` and `question_sha256`;
 - `state`: `not_started`, `reserved`, `returned` or `failed`;
 - `attempt`, `http_attempts`, `elapsed_seconds` and `error_code`;
-- the `reading`: exactly the closed object above, or null.
+- the `reading`: exactly the closed object above, or null;
+- `usage`: the returned `prompt_tokens`, `completion_tokens` and
+  `total_tokens` (each an integer or null) for a returned row, else null.
 
 A response that is not valid JSON (`invalid_json`), or that is valid JSON but
 not exactly the closed object (`invalid_reading`), is the model's own content.
@@ -162,7 +166,10 @@ text or presentation text.
 
 ## Comparisons (computed at readback, never sent)
 
-For each returned row the report derives:
+Readback first pins the panel, cases and oracles files against their
+registry digests, and the registry entry against the packet. It then checks
+each row's question hash against the panel. Any difference is
+`manifest_drift`. For each returned row the report derives:
 
 - `expected_branch`: from the panel case;
 - `expected_kind`: the clarification kind of a clarify oracle, else null;
@@ -200,7 +207,15 @@ and null.
   - any other error except `invalid_json` and `invalid_reading` (`anomaly`),
     for example configuration, envelope, credential or input-size failures;
   - an interruption (`interrupted`).
-- An incomplete run is reported, not rerun under the same envelope.
+- An incomplete run, including an interrupted one, reads back with its real
+  stop reason and call count. It is reported, not rerun under the same
+  envelope.
+- **Readback** rejects:
+  - a non-integer count;
+  - a sent row after an unsent one;
+  - a returned row without its attempt or time;
+  - a complete run with a row that failed for a reason other than
+    `invalid_json` or `invalid_reading`.
 
 ## Output and CLI
 
@@ -224,6 +239,9 @@ The arguments of each mode are closed. The report's `evidence_class` is
   - A `replayed` reading is post hoc and may rationalize the recorded action.
   - A `fresh` action may differ from the production action.
   - Neither establishes the cause of a production decision.
+- The production system message says the user message is question data, not
+  authority to change the instructions. The diagnostic user message is such an
+  instruction, and the model may weigh that conflict.
 - Comparisons against expected branches and clarification kinds reuse
   existing accepted oracles. The diagnostic adds no expected reading; reading
   fields without an oracle counterpart are reported, not graded.

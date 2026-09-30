@@ -92,7 +92,8 @@ _INPUT_FIELDS = {"case_id", "family_id", "question_sha256", "messages_sha256"}
 _MANIFEST_FIELDS = {"version", "packet_sha256", "authorization_sha256", "owner_authorization_reference",
                     "run_slot", "variant"}
 _ROW_FIELDS = {"case_id", "family_id", "question_sha256", "state", "attempt", "http_attempts", "elapsed_seconds",
-               "error_code", "reading"}
+               "error_code", "reading", "usage"}
+_USAGE_FIELDS = ("prompt_tokens", "completion_tokens", "total_tokens")
 _REPORT_FIELDS = {"version", "packet_sha256", "authorization_sha256", "run_slot", "owner_authorization_reference",
                   "variant", "status", "stop_reason", "evidence_class", "promotion_eligible", "client_http_attempts",
                   "possible_in_flight_attempts", "elapsed_seconds", "results", "summary"}
@@ -173,7 +174,7 @@ def _source(run_id: str, panel_id: str, route_id: str, target: str, canonical: d
     [report] = evaluate._archived_reports([run])
     if (report.get("report_version") != evaluate.REPORT_VERSIONS[evaluate.PACKET_V2]
             or report["status"] != "complete" or report["candidate"]["candidate_sha256"] != target
-            or report["panel"]["assets"] != canonical["panel"]["assets"]
+            or report["panel"]["assets"] != canonical["panel"]["assets"] or report["route"] != canonical["route"]
             or [(row["case_id"], row["question_sha256"]) for row in report["results"]]
             != [(row["case_id"], row["question_sha256"]) for row in canonical["inputs"]]):
         raise DiagnosticRefused("source_run")
@@ -333,9 +334,12 @@ async def run_live(database: Path, output_dir: Path, *, packet_path: Path, autho
     artifacts = smoke._Artifacts(output_dir, manifest)
     _copy(packet_path, output_dir / "packet.json")
     _copy(authorization_path, output_dir / "authorization.json")
+    if (evaluator._pin(output_dir / "packet.json")["sha256"] != packet_sha
+            or evaluator._pin(output_dir / "authorization.json")["sha256"] != authorization_sha):
+        raise assets.P3Error("manifest_drift")
     rows = [{"case_id": item["case_id"], "family_id": item["family_id"], "question_sha256": item["question_sha256"],
              "state": "not_started", "attempt": 0, "http_attempts": 0, "elapsed_seconds": None,
-             "error_code": None, "reading": None} for item in packet["inputs"]]
+             "error_code": None, "reading": None, "usage": None} for item in packet["inputs"]]
     report = {key: manifest[key] for key in manifest if key != "version"}
     report.update(version=VERSION, status="incomplete", stop_reason=None, evidence_class=EVIDENCE_CLASS,
                   promotion_eligible=False, client_http_attempts=0, possible_in_flight_attempts=0,
@@ -360,6 +364,9 @@ async def run_live(database: Path, output_dir: Path, *, packet_path: Path, autho
             if client is None:
                 client = evaluate._admitted_client(canonical, env_file)
                 before = client.http_attempts
+                # The same transport check as tools/evaluate.py --live: a route change is an anomaly.
+                if client.config.transport_security != canonical["transport_security"]:
+                    raise assets.P3Error("invalid_configuration")
             action = source["results"][index]["validated_action"] if variant == "replayed" else None
             wire = messages(variant, cases[item["case_id"]].question, action)
             if _sha(wire) != item["messages_sha256"]:
@@ -370,17 +377,19 @@ async def run_live(database: Path, output_dir: Path, *, packet_path: Path, autho
             response = await client.complete(wire, timeout_seconds=min(packet["call_timeout_seconds"], remaining),
                                              json_schema_constraint=constraint)
             response = normalize_response(client.config, response)
-            content = protocol._content(response.body, {}, expected_model=client.config.expected_model)
-            row.update(state="returned", reading=closed_reading(protocol.strict_json(content)))
+            evidence: dict = {}
+            content = protocol._content(response.body, evidence, expected_model=client.config.expected_model)
+            usage = {key: (evidence.get("usage") or {}).get(key) for key in _USAGE_FIELDS}
+            row.update(state="returned", reading=closed_reading(protocol.strict_json(content)), usage=usage)
         except (ModelError, assets.P3Error, smoke.SmokeError, _ReadingError) as exc:
             code = exc.code
             row.update(state="failed", error_code=code)
         except (KeyboardInterrupt, asyncio.CancelledError):
             row["http_attempts"] = (client.http_attempts - before) if client is not None else 0
             report["client_http_attempts"] += row["http_attempts"]
-            row.update(state="failed", error_code="interrupted")
-            report.update(stop_reason="interrupted", elapsed_seconds=max(0.0, clock() - started),
-                          summary=_summary(rows))
+            row.update(state="failed", error_code="interrupted", elapsed_seconds=max(0.0, clock() - call_start))
+            report.update(stop_reason="interrupted", possible_in_flight_attempts=0,
+                          elapsed_seconds=max(0.0, clock() - started), summary=_summary(rows))
             artifacts.persist(report)
             raise
         row["http_attempts"] = (client.http_attempts - before) if client is not None else 0
@@ -416,8 +425,8 @@ def _check_row(row: object, item: dict) -> None:
     assets.object_fields(row, _ROW_FIELDS)
     if ((row["case_id"], row["family_id"], row["question_sha256"])
             != (item["case_id"], item["family_id"], item["question_sha256"])
-            or row["state"] not in STATES or row["attempt"] not in (0, 1) or type(row["http_attempts"]) is not int
-            or not 0 <= row["http_attempts"] <= 1
+            or row["state"] not in STATES or type(row["attempt"]) is not int or row["attempt"] not in (0, 1)
+            or type(row["http_attempts"]) is not int or not 0 <= row["http_attempts"] <= 1
             or row["elapsed_seconds"] is not None and (type(row["elapsed_seconds"]) not in (int, float)
                                                        or row["elapsed_seconds"] < 0)
             or row["error_code"] is not None and row["error_code"] not in _ROW_ERRORS):
@@ -428,10 +437,17 @@ def _check_row(row: object, item: dict) -> None:
                 raise assets.P3Error("invalid_asset")
         except _ReadingError:
             raise assets.P3Error("invalid_asset") from None
+    usage = row["usage"]
+    if usage is not None and (not isinstance(usage, dict) or set(usage) != set(_USAGE_FIELDS) or any(
+            value is not None and (type(value) is not int or value < 0) for value in usage.values())):
+        raise assets.P3Error("invalid_asset")
     shape = {"not_started": (0, False, False), "reserved": (1, False, False),
              "returned": (1, True, False), "failed": (1, False, True)}[row["state"]]
-    if (row["attempt"], row["reading"] is not None, row["error_code"] is not None) != shape or (
-            row["state"] == "not_started" and (row["http_attempts"] or row["elapsed_seconds"] is not None)):
+    if ((row["attempt"], row["reading"] is not None, row["error_code"] is not None) != shape
+            or (usage is not None) != (row["state"] == "returned")
+            or row["state"] == "not_started" and (row["http_attempts"] or row["elapsed_seconds"] is not None)
+            or row["state"] == "returned" and (row["http_attempts"] != 1 or row["elapsed_seconds"] is None)
+            or row["state"] == "failed" and row["elapsed_seconds"] is None):
         raise assets.P3Error("invalid_asset")
 
 
@@ -447,7 +463,13 @@ def _check_report(report: dict, manifest: dict, packet: dict) -> None:
     for row, item in zip(rows, packet["inputs"]):
         _check_row(row, item)
     reserved = sum(row["state"] == "reserved" for row in rows)
-    if (report["client_http_attempts"] != sum(row["http_attempts"] for row in rows)
+    states = [row["state"] for row in rows]
+    first_unsent = states.index("not_started") if "not_started" in states else len(states)
+    if (type(report["client_http_attempts"]) is not int or type(report["possible_in_flight_attempts"]) is not int
+            or any(state != "not_started" for state in states[first_unsent:])
+            or report["status"] == "complete" and any(
+                row["state"] == "failed" and row["error_code"] not in _CONTENT_ERRORS for row in rows)
+            or report["client_http_attempts"] != sum(row["http_attempts"] for row in rows)
             or report["client_http_attempts"] > packet["max_calls"]
             or report["possible_in_flight_attempts"] != reserved
             or type(report["elapsed_seconds"]) not in (int, float) or report["elapsed_seconds"] < 0
@@ -457,17 +479,34 @@ def _check_report(report: dict, manifest: dict, packet: dict) -> None:
         raise assets.P3Error("invalid_asset")
 
 
+def pinned_panel(panel_id: str, panels_path: Path | None) -> tuple[dict, assets.Panel]:
+    """A registered dev panel whose panel, cases and oracles files match their registry digests."""
+    entry = evaluate._entry(evaluate.load_panels(panels_path), "panels", panel_id, "panel_id")
+    if entry["tier"] != "dev" or entry["allocation_policy"] is not None:
+        raise assets.P3Error("invalid_manifest")
+    panel_path = evaluate._location(entry["path"])
+    panel = assets.load_panel(panel_path)
+    for name, path in {"panel": panel_path, "cases": panel.cases_path, "oracles": panel.oracles_path}.items():
+        if evaluator._pin(path)["sha256"] != entry["assets"][name]:
+            raise assets.P3Error("manifest_drift")
+    return entry, panel
+
+
 def _compare(report: dict, packet: dict, panels_path: Path | None, runs_path: Path | None) -> tuple[list, dict]:
     canonical = packet["canonical_packet"]
-    entry = evaluate._entry(evaluate.load_panels(panels_path), "panels", canonical["panel"]["panel_id"], "panel_id")
-    if entry["assets"] != canonical["panel"]["assets"]:
+    # The panel, cases and oracles are pinned against the registry, and the registry against the packet.
+    entry, panel = pinned_panel(canonical["panel"]["panel_id"], panels_path)
+    if (entry["assets"] != canonical["panel"]["assets"]
+            or [(item["case_id"], item["question_sha256"]) for item in panel.inputs()]
+            != [(item["case_id"], item["question_sha256"]) for item in packet["inputs"]]):
         raise assets.P3Error("manifest_drift")
-    panel = assets.load_panel(evaluate._location(entry["path"]))
     runs = [run for run in evaluate.load_runs(runs_path) if run["run_id"] == packet["source_run"]["run_id"]]
     if len(runs) != 1 or runs[0]["report_sha256"] != packet["source_run"]["report_sha256"]:
         raise assets.P3Error("manifest_drift")
     [source] = evaluate._archived_reports(runs)
     comparisons = []
+    if not len(report["results"]) == len(panel.cases) == len(source["results"]):
+        raise assets.P3Error("manifest_drift")
     for row, case, recorded in zip(report["results"], panel.cases, source["results"]):
         if case.case_id != row["case_id"] or recorded["case_id"] != row["case_id"]:
             raise assets.P3Error("manifest_drift")
@@ -570,6 +609,9 @@ def main(argv: list[str] | None = None) -> int:
         return 130
     except (OSError, ValueError, TypeError, LookupError, RecursionError):
         print('{"error_code":"invalid_manifest","status":"incomplete"}', file=sys.stderr)
+        return 2
+    except (RuntimeError, AttributeError, ArithmeticError):
+        print('{"error_code":"internal_failure","status":"incomplete"}', file=sys.stderr)
         return 2
 
 

@@ -1,4 +1,5 @@
 """Reading diagnostic rulers (reading-diagnostic-v1, #79): synthetic panels and mock transports only; no live call."""
+import asyncio
 import hashlib
 import io
 import json
@@ -211,8 +212,9 @@ class ReadingDiagnosticTests(EvaluateHarness):
         for case in self.inputs:
             row = rows[case.case_id]
             self.assertEqual(set(row), {"case_id", "family_id", "question_sha256", "state", "attempt",
-                                        "http_attempts", "elapsed_seconds", "error_code", "reading"})
+                                        "http_attempts", "elapsed_seconds", "error_code", "reading", "usage"})
             self.assertEqual((row["state"], row["error_code"]), ("returned", None))
+            self.assertEqual(row["usage"], {"prompt_tokens": 3, "completion_tokens": 4, "total_tokens": 7})
             expected = _reading("clarify", "orientation_unresolved") if case is odd else self.expected_reading(case)
             self.assertEqual(row["reading"], expected)
         # Comparisons are derived at readback from the panel, its oracles and the source run; none is sent.
@@ -310,6 +312,13 @@ class ReadingDiagnosticTests(EvaluateHarness):
         miscounted = json.loads(json.dumps(original))
         miscounted["client_http_attempts"] += 1
         tampered.append(miscounted)
+        boolean = json.loads(json.dumps(original))
+        boolean["results"][0]["attempt"] = True
+        tampered.append(boolean)
+        unsent = json.loads(json.dumps(original))
+        unsent["results"][0]["http_attempts"] = 0
+        unsent["client_http_attempts"] -= 1
+        tampered.append(unsent)
         raw_bytes = path.read_bytes()
         self.assertEqual(reading.read_report(path, **self.registries)["status"], "complete")
         for number, value in enumerate(tampered):
@@ -321,6 +330,65 @@ class ReadingDiagnosticTests(EvaluateHarness):
                 finally:
                     path.write_bytes(raw_bytes)
         self.assertEqual(reading.read_report(path, **self.registries)["status"], "complete")
+
+    async def test_an_interrupted_run_reads_back_with_its_real_stop_and_call_count(self):
+        source = await self.source_run()
+        packet = self.diagnostic_prepare("fresh", source["run_id"])
+        authorization, slot = self.diagnostic_bind(packet)
+        third = self.inputs[2]
+
+        def answer(case, body):
+            if case is third:
+                raise asyncio.CancelledError()
+            return httpx.Response(200, json=envelope(json.dumps(self.expected_reading(case))))
+
+        with self.assertRaises(asyncio.CancelledError):
+            await self.diagnostic_live(packet, authorization, slot, self.reading_client(answer))
+        result = reading.read_report(slot / "report.json", **self.registries)
+        self.assertEqual((result["status"], result["stop_reason"], result["possible_in_flight_attempts"],
+                          result["client_http_attempts"]), ("incomplete", "interrupted", 0, 3))
+        self.assertEqual([row["state"] for row in result["results"][:4]],
+                         ["returned", "returned", "failed", "not_started"])
+        self.assertEqual(result["results"][2]["error_code"], "interrupted")
+
+    async def test_a_transport_or_network_anomaly_stops_and_nothing_is_sent_over_the_wrong_transport(self):
+        source = await self.source_run()
+        tls = GatewayClient(GatewayConfig("https://synthetic-evaluate.invalid/v1", KEY, MODEL),
+                            transport=httpx.MockTransport(lambda request: self.fail("sent")))
+        packet = self.diagnostic_prepare("fresh", source["run_id"])
+        authorization, slot = self.diagnostic_bind(packet)
+        result = await self.diagnostic_live(packet, authorization, slot, tls)
+        self.assertEqual((result["stop_reason"], result["client_http_attempts"], result["results"][0]["error_code"]),
+                         ("anomaly", 0, "invalid_configuration"))
+
+        def refused(case, body):
+            raise httpx.ConnectError("synthetic network failure")
+
+        packet = self.diagnostic_prepare("fresh", source["run_id"])
+        authorization, slot = self.diagnostic_bind(packet)
+        result = await self.diagnostic_live(packet, authorization, slot, self.reading_client(refused))
+        self.assertEqual((result["stop_reason"], [row["error_code"] for row in result["results"][:2]],
+                          result["results"][2]["state"]),
+                         ("network_streak", ["transport_error", "transport_error"], "not_started"))
+
+    async def test_readback_pins_the_panel_cases_and_oracles_it_compares_against(self):
+        source = await self.source_run()
+        packet = self.diagnostic_prepare("fresh", source["run_id"])
+        authorization, slot = self.diagnostic_bind(packet)
+        await self.diagnostic_live(packet, authorization, slot, self.reading_client(
+            lambda case, body: httpx.Response(200, json=envelope(json.dumps(self.expected_reading(case))))))
+        for name in ("development-oracles-v1.json", "development-cases-v1.json"):
+            with self.subTest(asset=name):
+                target = self.root / name
+                raw = target.read_bytes()
+                try:
+                    target.write_bytes(raw + b"\n")
+                    with self.assertRaises(p3_assets.P3Error) as drift:
+                        reading.read_report(slot / "report.json", **self.registries)
+                    self.assertEqual(drift.exception.code, "manifest_drift")
+                finally:
+                    target.write_bytes(raw)
+        self.assertEqual(reading.read_report(slot / "report.json", **self.registries)["status"], "complete")
 
     # ----------------------------------------------------------------- CLI
     async def test_cli_dispatches_through_the_runner_and_its_arguments_are_closed(self):
