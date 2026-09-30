@@ -168,8 +168,8 @@ text or presentation text.
 
 Readback first pins the panel, cases and oracles files against their
 registry digests, and the registry entry against the packet. It then checks
-each row's question hash against the panel. Any difference is
-`manifest_drift`. For each returned row the report derives:
+each row's question hash against the panel. A digest or hash difference is
+`manifest_drift`; a file that no longer parses fails as `invalid_asset`. For each returned row the report derives:
 
 - `expected_branch`: from the panel case;
 - `expected_kind`: the clarification kind of a clarify oracle, else null;
@@ -214,8 +214,9 @@ and null.
   - a non-integer count;
   - a sent row after an unsent one;
   - a returned row without its attempt or time;
-  - a complete run with a row that failed for a reason other than
-    `invalid_json` or `invalid_reading`.
+  - a complete run with a row that failed for a reason that stops a run. A
+    content error, or one timeout or network error without a streak, lets the
+    run continue, so it can appear in a complete run.
 
 ## Output and CLI
 

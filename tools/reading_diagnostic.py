@@ -468,7 +468,8 @@ def _check_report(report: dict, manifest: dict, packet: dict) -> None:
     if (type(report["client_http_attempts"]) is not int or type(report["possible_in_flight_attempts"]) is not int
             or any(state != "not_started" for state in states[first_unsent:])
             or report["status"] == "complete" and any(
-                row["state"] == "failed" and row["error_code"] not in _CONTENT_ERRORS for row in rows)
+                row["state"] == "failed" and row["error_code"] not in _CONTENT_ERRORS + ("timeout",) + _NETWORK_ERRORS
+                for row in rows)
             or report["client_http_attempts"] != sum(row["http_attempts"] for row in rows)
             or report["client_http_attempts"] > packet["max_calls"]
             or report["possible_in_flight_attempts"] != reserved

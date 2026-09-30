@@ -371,6 +371,26 @@ class ReadingDiagnosticTests(EvaluateHarness):
                           result["results"][2]["state"]),
                          ("network_streak", ["transport_error", "transport_error"], "not_started"))
 
+    async def test_an_isolated_timeout_or_network_error_does_not_stop_and_the_complete_run_reads_back(self):
+        source = await self.source_run()
+        slow, refused = self.inputs[1], self.inputs[4]
+
+        def answer(case, body):
+            if case is slow:
+                raise httpx.ReadTimeout("synthetic timeout")
+            if case is refused:
+                raise httpx.ConnectError("synthetic network failure")
+            return httpx.Response(200, json=envelope(json.dumps(self.expected_reading(case))))
+
+        packet = self.diagnostic_prepare("fresh", source["run_id"])
+        authorization, slot = self.diagnostic_bind(packet)
+        result = await self.diagnostic_live(packet, authorization, slot, self.reading_client(answer))
+        self.assertEqual((result["status"], result["stop_reason"], result["client_http_attempts"]),
+                         ("complete", "complete", len(self.inputs)))
+        self.assertEqual((result["results"][1]["error_code"], result["results"][4]["error_code"]),
+                         ("timeout", "transport_error"))
+        self.assertEqual(reading.read_report(slot / "report.json", **self.registries), result)
+
     async def test_readback_pins_the_panel_cases_and_oracles_it_compares_against(self):
         source = await self.source_run()
         packet = self.diagnostic_prepare("fresh", source["run_id"])
