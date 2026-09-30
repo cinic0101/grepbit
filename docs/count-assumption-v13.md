@@ -153,6 +153,8 @@ evaluator stay byte-identical.
 
 ## Evaluation (the grant's steps 4 and 5)
 
+**Result:** the verdict is `regression`. See `docs/count-assumption-v13-result.md`.
+
 - **Runs.** One v13 run on each of the two new v2 panels of #138,
   `p3-dev-bound-meaning-v2` and `p3-dev-mechanism-probe-v2`, under the grant:
   46 calls. The other registered dev panels, including
