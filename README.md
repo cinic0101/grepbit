@@ -143,7 +143,7 @@ read-then-decide split to counts:
   with one run per panel:
   - it fixed `dev-BM6` (all languages) and `dev-MN1.en`, and broke none;
   - `p3-dev-bound-meaning-v2` is 24/24;
-  - the seven remaining count inputs (`dev-MN1` zh/ja, `dev-MN2`, `dev-MN3`)
+  - the eight remaining count inputs (`dev-MN1` zh-TW/ja, `dev-MN2`, `dev-MN3`)
     are the model's own four-meaning `count_basis` clarifications.
 
   This is a development observation, not promotion.

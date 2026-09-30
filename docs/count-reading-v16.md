@@ -154,7 +154,7 @@ Each gets a derived v16 sibling, `*-read-responses-v1.json`:
 
 ## Evaluation (the grant's steps 3 and 4)
 
-**Result:** the verdict is `passed`. See `docs/count-reading-v16-result.md`.
+**Result:** the verdict is `passed`. See the [gate result](count-reading-v16-result.md).
 
 - **Runs.** One v16 run on each of `p3-dev-bound-meaning-v2` and
   `p3-dev-mechanism-probe-v2`, 46 calls, after the v15 sentinels of step 1.
