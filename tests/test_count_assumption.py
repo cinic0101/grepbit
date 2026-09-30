@@ -1,6 +1,8 @@
 """Count-assumption evaluation rulers (count-assumption-eval-v1, ADR #136, route A): offline, synthetic registries."""
+import copy
 import hashlib
 import json
+import tempfile
 import unittest
 from contextlib import contextmanager
 from pathlib import Path
@@ -113,13 +115,46 @@ class VerdictTests(unittest.TestCase):
         self.assertFalse(runner._action_shape(dict(compare, assumption=ASSUMPTION)))
 
     def test_the_annex_document_is_closed(self):
-        for bad in ({"version": "count-assumption-annex-v1", "expectations": {}},
-                    {"version": "count-assumption-annex-v2", "expectations": {"a.v2": ASSUMPTION}},
-                    {"version": "count-assumption-annex-v1", "expectations": {"a.v2": {"count_basis": "x"}}},
-                    {"version": "count-assumption-annex-v1", "expectations": {"a.v2": ASSUMPTION}, "note": ""}):
-            with self.subTest(bad=bad), patch.object(runner, "_read_json", return_value=bad), \
-                    self.assertRaises(p3_assets.P3Error):
-                runner._read_annex(Path("unused"))
+        with tempfile.TemporaryDirectory(dir=ROOT / ".artifacts") as tmp:
+            good = Path(tmp) / "good.json"
+            good.write_text(json.dumps({"version": "count-assumption-annex-v1", "expectations": {"a.v2": ASSUMPTION}}))
+            self.assertEqual(runner._read_annex(good), {"a.v2": ASSUMPTION})
+            bad_documents = (
+                {"version": "count-assumption-annex-v1", "expectations": {}},
+                {"version": "count-assumption-annex-v2", "expectations": {"a.v2": ASSUMPTION}},
+                {"version": "count-assumption-annex-v1", "expectations": {"a.v2": {"count_basis": "x"}}},
+                {"version": "count-assumption-annex-v1", "expectations": {"a.v2": ASSUMPTION}, "note": ""})
+            for number, bad in enumerate(bad_documents):
+                path = Path(tmp) / f"bad-{number}.json"
+                path.write_text(json.dumps(bad))
+                with self.subTest(bad=bad), self.assertRaises(p3_assets.P3Error):
+                    runner._read_annex(path)
+            duplicate = Path(tmp) / "duplicate.json"
+            duplicate.write_text('{"version": "count-assumption-annex-v1", "expectations": '
+                                 '{"a.v2": {"count_basis": "booked_seats"}, "a.v2": {"count_basis": "booked_seats"}}}')
+            with self.assertRaises(p3_assets.P3Error):
+                runner._read_annex(duplicate)
+
+    def test_a_persisted_assumption_reads_back(self):
+        row = {"validated_action": self.action(assumption=ASSUMPTION), "status": "completed",
+               "actual_action": "answer", "evidence": {"stages": {"request_validation": "passed"}},
+               "runner_error_code": None}
+        self.assertFalse(runner._check_action(row))
+        with self.assertRaises(p3_assets.P3Error):
+            runner._check_action(dict(row, validated_action=self.action(assumption={"count_basis": "x"})))
+
+    def test_an_annex_is_dev_only_in_the_registry_and_the_packet(self):
+        index = runner.load_panels()
+        entry = next(row for row in index["panels"] if row["panel_id"] == "p3-dev-bound-meaning-v2")
+        formal = copy.deepcopy(next(row for row in index["panels"] if row["tier"] == "regression"))
+        formal["annex"] = dict(entry["annex"])
+        with tempfile.TemporaryDirectory(dir=ROOT / ".artifacts") as tmp:
+            path = Path(tmp) / "panels.json"
+            path.write_text(json.dumps({**index, "panels": [row if row["panel_id"] != formal["panel_id"] else formal
+                                                            for row in index["panels"]]}))
+            with self.assertRaises(p3_assets.P3Error) as refused:
+                runner.load_panels(path)
+            self.assertEqual(refused.exception.code, "invalid_manifest")
 
 
 class AnnexRunTests(EvaluateHarness):
@@ -206,6 +241,103 @@ class AnnexRunTests(EvaluateHarness):
             runner._panel_annex(packet["panel"], self.panels)
         self.assertEqual(drift.exception.code, "manifest_drift")
 
+    async def test_the_packet_contract_and_the_annex_listing_are_checked(self):
+        _, output = await self.observe(901)
+        packet = json.loads((output / "packet.json").read_text())
+        runner._packet_contract(packet)
+        # A regression packet validates without an annex digest and is refused with one: annexes are dev-only.
+        regression = json.loads(self.prepare(panel="synthetic-regression").read_text())
+        runner._packet_contract(regression)
+        with self.assertRaises(p3_assets.P3Error) as refused:
+            runner._packet_contract({**regression, "panel": {**regression["panel"],
+                                                             "annex_sha256": packet["panel"]["annex_sha256"]}})
+        self.assertEqual(refused.exception.code, "invalid_manifest")
+        entry = next(row for row in runner.load_panels(self.panels)["panels"] if row["panel_id"] == "synthetic-dev")
+        panel = p3_assets.load_panel(self.root / "development-panel-v1.json")
+        self.assertEqual(runner.annex_expectations(entry, panel), {"E01_overview.v1": ASSUMPTION})
+        for listed in ("E02_compare.v1", "C01_count_basis.v1", "no-such-oracle.v1"):
+            with self.subTest(listed=listed):
+                (self.root / "annex.json").write_text(json.dumps({"version": "count-assumption-annex-v1",
+                                                                 "expectations": {listed: ASSUMPTION}}))
+                changed = {**entry, "annex": {**entry["annex"], "sha256": hashlib.sha256(
+                    (self.root / "annex.json").read_bytes()).hexdigest()}}
+                with self.assertRaises(p3_assets.P3Error) as refused:
+                    runner.annex_expectations(changed, panel)
+                self.assertEqual(refused.exception.code, "invalid_asset")
+
+    async def test_pooled_reports_must_pin_the_same_annex(self):
+        first, second = await self.observe(901), await self.observe(902)
+        reports = [runner._read_archived(first[1] / "report.json"), runner._read_archived(second[1] / "report.json")]
+        self.assertEqual(runner._shared_annex(reports, self.panels), {"E01_overview.v1": ASSUMPTION})
+        reports[1]["panel"] = {key: value for key, value in reports[1]["panel"].items() if key != "annex_sha256"}
+        with self.assertRaises(p3_assets.P3Error) as refused:
+            runner._shared_annex(reports, self.panels)
+        self.assertEqual(refused.exception.code, "invalid_scoring")
+
+    async def test_the_gate_checks_the_annex_identity_and_the_sentinels_annex_assessment(self):
+        await self.observe(901)
+        await self.observe(902)
+        sentinel = await self.observe(950)
+        candidate = await self.observe(950, candidate=OTHER)
+        original = runner._read_archived
+
+        def without_annex(path):
+            report = original(path)
+            if path.parent == sentinel[1]:
+                report["panel"] = {key: value for key, value in report["panel"].items() if key != "annex_sha256"}
+            return report
+
+        with patch.object(runner, "_read_archived", side_effect=without_annex), \
+                self.assertRaises(runner.GateRefused) as refused:
+            runner.gate(OTHER, self.candidate, "litellm-31b", f"{GRANT}950", ["synthetic-dev"],
+                        runs_path=self.runs, panels_path=self.panels)
+        self.assertEqual(refused.exception.reason, "inputs_differ")
+
+        def unrecorded_sentinel(path):
+            report = original(path)
+            if path.parent == sentinel[1]:
+                for row in report["results"]:
+                    if row["case_id"] in self.listed:
+                        row["validated_action"] = None
+            if path.parent == candidate[1]:
+                for row in report["results"]:
+                    if row["case_id"] in self.listed:
+                        action = json.loads(row["validated_action"])
+                        row["validated_action"] = model.canonical_json({**action, "assumption": ASSUMPTION})
+            return report
+
+        with patch.object(runner, "_read_archived", side_effect=unrecorded_sentinel):
+            [panel] = runner.gate(OTHER, self.candidate, "litellm-31b", f"{GRANT}950", ["synthetic-dev"],
+                                  runs_path=self.runs, panels_path=self.panels)["panels"]
+        # The sentinel could not check the assumption on the listed inputs: no same-session evidence, no fix.
+        self.assertEqual((panel["fixed"], sorted(panel["excluded"])), ([], sorted(self.listed)))
+
+    async def test_replay_compares_the_annex_verdict(self):
+        _, output = await self.observe(901)
+        with patch.object(runner, "PANELS", self.panels), patch.object(runner, "RUNS", self.runs):
+            same = await runner._replay_execute(runner._replay_plan(
+                output / "report.json", self.database, self.root / "replay-same.json"))
+            listed_rows = [row for row in same["rows"] if row["case_id"] in self.listed]
+            self.assertEqual({row["class"] for row in same["rows"]}, {"replayed_same"})
+            self.assertEqual({(row["annex"]["archived"], row["annex"]["replayed"]) for row in listed_rows},
+                             {("wrong", "wrong")})
+            original = runner._validated_action
+
+            def stated(result):
+                text = original(result)
+                action = json.loads(text)
+                if action.get("recipe_id") == "overview":
+                    action["assumption"] = ASSUMPTION
+                return model.canonical_json(action)
+
+            with patch.object(runner, "_validated_action", side_effect=stated):
+                changed = await runner._replay_execute(runner._replay_plan(
+                    output / "report.json", self.database, self.root / "replay-changed.json"))
+        rows = {row["case_id"]: row for row in changed["rows"]}
+        for case in self.listed:
+            self.assertEqual((rows[case]["class"], rows[case]["annex"]), ("replayed_changed",
+                                                                          {"archived": "wrong", "replayed": "correct"}))
+
     async def test_aggregate_and_gate_use_the_annex_verdict(self):
         baseline = [await self.observe(901), await self.observe(902)]
         sentinel = await self.observe(950)
@@ -213,6 +345,7 @@ class AnnexRunTests(EvaluateHarness):
         classes = runner.aggregate("synthetic-dev", "litellm-31b", self.candidate, runs_path=self.runs,
                                    panels_path=self.panels)
         by_case = {row["case_id"]: row["class"] for row in classes["inputs"]}
+        self.assertEqual({run["correct"] for run in classes["runs"]}, {len(self.inputs) - len(self.listed)})
         self.assertEqual({by_case[case] for case in self.listed}, {"stable_wrong"})
         self.assertEqual({kind for case, kind in by_case.items() if case not in self.listed}, {"stable_correct"})
         with self.stating({candidate[1]}):

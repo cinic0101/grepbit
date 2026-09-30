@@ -49,9 +49,9 @@ The expected assumption is kept **outside** the oracle, in a closed annex file:
   derives a verdict per row from that grade and the row's persisted
   `validated_action`:
   - a frozen-wrong row is `wrong`;
-  - a frozen-correct row is `correct` only if its validated action is a
-    request whose `assumption` equals the oracle's expectation, where
-    "absent" is the expectation for an unlisted oracle. Otherwise it is
+  - a frozen-correct row is `correct` only if the assumption its validated
+    action states equals the oracle's expectation. A clarification or decline
+    states none. An unlisted oracle expects none. Otherwise the row is
     `wrong`: a missing assumption is a silent substitution, and a spurious one
     an unwanted assumption;
   - a frozen-correct row without a persisted action is `unassessed`, because
@@ -62,9 +62,17 @@ The expected assumption is kept **outside** the oracle, in a closed annex file:
   - the aggregate classes (`--aggregate`);
   - the candidate gate: the baseline classes, the candidate rows and the
     sentinel's assessment of an input.
+  - `--replay`: a row is `replayed_same` only if both its frozen grade and
+    its annex verdict are unchanged. Each replay row also reports the annex
+    verdict before and after.
+  - the aggregate's per-run `correct`.
 - **Where the frozen grade is kept:**
-  - the report rows themselves;
-  - `--replay`, which compares frozen grades only;
+  - the report rows written by the live run. The live path records the frozen
+    grade, and the annex is applied where the rows are read. This is narrower
+    than the route-A proposal's wording, which named the live grading path
+    too.
+  - the run index's `outcomes` tally, so `outcomes.complete_correct` can
+    exceed the index `correct` on an annex panel;
   - the reading diagnostic and the routing upper bound. The routing tool
     refuses the new panels: its router table covers only the v1 panels.
 - **Persisted actions.** A persisted validated action may carry the assumption
@@ -115,6 +123,8 @@ The four count families that the rule table changes get new oracle revisions:
   the unavailable meanings is not graded here. Candidate v13 must render
   and test that. A pass on these panels shows only the typed part of the
   rule.
+- **An annex-unassessed row counts as not correct** in the index count and
+  `STATE.md`, and as unassessed in the aggregate and the gate.
 - **Readers of raw reports must apply the annex.** A raw report row on an annex
   panel shows the frozen grade. For example, v12's silent answer to `dev-BM6`
   is `complete_correct` there, while its annex verdict is `wrong`. The index,

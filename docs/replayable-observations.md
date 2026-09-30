@@ -38,7 +38,9 @@ repetition, so `--record` can index repeated observations of the same bytes.
 The engine records, per completed input, the action that passed the runtime
 validators, as canonical JSON text (at most 16,384 bytes):
 
-- a recipe proposal: `{"outcome":"request","recipe_id":...,"recipe_version":"0.1","request":{...}}`;
+- a recipe proposal: `{"outcome":"request","recipe_id":...,"recipe_version":"0.1","request":{...}}`.
+  An Overview proposal may also carry exactly `"assumption":{"count_basis":"booked_seats"}`
+  (`docs/count-assumption.md`). The key is absent, never null, when there is no assumption;
 - a clarification: `{"outcome":"clarify","clarification":{"kind":...,"choices":[{"id":...,"semantic_value":{...}}]}}`,
   with no presentation labels;
 - a decline: `{"outcome":"declined"}`.

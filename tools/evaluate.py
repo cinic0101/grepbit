@@ -211,7 +211,7 @@ def load_routes(path: Path | None = None) -> dict:
 
 def _read_annex(path: Path) -> dict:
     """The closed annex document: each listed oracle expects the one stated count assumption."""
-    data = _read_json(path, "invalid_asset")
+    data = assets.read_asset(path)
     if (not isinstance(data, dict) or set(data) != {"version", "expectations"} or data["version"] != ANNEX_VERSION
             or not isinstance(data["expectations"], dict) or not data["expectations"]
             or any(not isinstance(key, str) or value != ASSUMPTION for key, value in data["expectations"].items())):
@@ -1207,25 +1207,43 @@ async def _replay_execute(plan: _ReplayPlan) -> dict:
     report_path, report, database, database_sha = plan.report_path, plan.report, plan.database, plan.database_sha
     checked, current, panel, entries = plan.checked, plan.current, plan.panel, plan.entries
     calls, classes, replayed = [], [], deepcopy(report["results"])
-    for row, item, target in zip(report["results"], entries, replayed):
+    actions = [None] * len(report["results"])
+    for position, (row, item, target) in enumerate(zip(report["results"], entries, replayed)):
         if not _replayable(row):
             classes.append("not_replayable")
             continue
         result = await recipe_model.interpret_recipe_and_execute(
             item.case.question, database, _replay_client(row["validated_action"], calls))
         graded = p3_grading.grade(result, item.oracle)
+        actions[position] = _validated_action(result)
         classes.append("replayed_same" if all(_same(graded[key], row[key]) for key in graded) else "replayed_changed")
         target.update(graded)
     scored = scoring.summarize(replayed, replayed, panel_kind="development", run_status=report["status"])
     archived = report["summary"]["per_input"]
+    # On an annex panel a row is replayed_same only if its annex verdict is unchanged too (docs/count-assumption.md).
+    expectations = _panel_annex(report.get("panel"))
+    verdicts = [None] * len(classes)
+    if expectations is not None:
+        for position, (row, old, new) in enumerate(zip(report["results"], archived, scored["per_input"])):
+            if classes[position] == "not_replayable":
+                continue
+            verdicts[position] = (annexed(row, bool(old["correct"]), expectations),
+                                  annexed({**row, "validated_action": actions[position]}, bool(new["correct"]),
+                                          expectations))
+            if classes[position] == "replayed_same" and verdicts[position][0] != verdicts[position][1]:
+                classes[position] = "replayed_changed"
     rows = []
-    for row, target, kind, old, new in zip(report["results"], replayed, classes, archived, scored["per_input"]):
-        rows.append({"case_id": row["case_id"], "class": kind,
-                     "archived": {"outcome": row["outcome"], "actual_action": row["actual_action"],
-                                  "correct": old["correct"]},
-                     "replayed": None if kind == "not_replayable" else {
-                         "outcome": target["outcome"], "actual_action": target["actual_action"],
-                         "correct": new["correct"]}})
+    for row, target, kind, old, new, verdict in zip(report["results"], replayed, classes, archived,
+                                                    scored["per_input"], verdicts):
+        entry = {"case_id": row["case_id"], "class": kind,
+                 "archived": {"outcome": row["outcome"], "actual_action": row["actual_action"],
+                              "correct": old["correct"]},
+                 "replayed": None if kind == "not_replayable" else {
+                     "outcome": target["outcome"], "actual_action": target["actual_action"],
+                     "correct": new["correct"]}}
+        if expectations is not None:
+            entry["annex"] = None if verdict is None else {"archived": verdict[0], "replayed": verdict[1]}
+        rows.append(entry)
     value = {
         "version": REPLAY_VERSION, "claim": "offline_replay_observation", "promotion_eligible": False,
         "live_model_attempts": 0, "mock_transport_calls": len(calls),
@@ -1242,6 +1260,8 @@ async def _replay_execute(plan: _ReplayPlan) -> dict:
         "comparison": (_comparison(_baseline_projection(report_path), replayed, scored)
                        if report["status"] == "complete" else None),
     }
+    if expectations is not None:
+        value["annex_sha256"] = report["panel"]["annex_sha256"]
     _write_new(plan.output_path, value)
     return value
 
@@ -1331,7 +1351,7 @@ def aggregate(panel_id: str, route_id: str, candidate_id: str, *, runs_path: Pat
                   "report_sha256": run["report_sha256"], "report_version": report["report_version"],
                   "accepted_commit": run["accepted_commit"], "evaluator_version": report.get("evaluator_version"),
                   "status": report["status"],
-                  "correct": sum(bool(item["correct"]) for item in report["summary"]["per_input"])}
+                  "correct": _counts(report, report["summary"], panels_path)[0]}
                  for run, report in zip(included, reports)],
         "inputs": inputs,
         "class_counts": {kind: sum(row["class"] == kind for row in inputs) for kind in _AGGREGATE_CLASSES},

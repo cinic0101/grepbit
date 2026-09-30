@@ -52,14 +52,20 @@ For each named panel, on the named route:
     `--aggregate`.
   - Every selected report's `candidate_sha256` must equal the registry bytes
     of its index `candidate_id`.
-  - The candidate report's panel id, panel asset digests, case order and
-    question hashes must equal each baseline report's.
+  - The candidate report's panel id, panel asset digests, annex digest
+    (`panel.annex_sha256`, when the panel has one), case order and question
+    hashes must equal each baseline report's.
   - Every selected report's authorization reference, panel id, route id and
     status must equal its index entry's grant, the named panel, the named route
     and the entry's status. The index decides the selection, so it must agree
     with the digest-pinned reports.
 
 ## Per-input classes
+
+On a panel with an annex (`docs/count-assumption.md`), every row below is
+first replaced by its annex verdict. This applies to baseline rows, the
+candidate row and sentinel rows alike. A frozen-correct row with no persisted
+validated action cannot have its assumption checked, so it is unassessed.
 
 The baseline class of each input comes from `--aggregate` over all baseline
 runs, the sentinel included: `stable_correct`, `stable_wrong`, `flaky` or
@@ -182,9 +188,13 @@ repeated panel is `invalid_arguments`.
   under other authorizations are listed in `other_candidate_runs`, so a
   re-gate under a new authorization stays visible.
 - The panels are named before the run, in the proposal the owner authorizes,
-  and the output lists them. For #79 count candidates the panels are
-  `p3-dev-bound-meaning-v1` and `p3-dev-mechanism-probe-v1`. A sentinel and a
-  candidate run on both cost 92 calls per candidate.
+  and the output lists them. For #79 count candidates the panels were
+  `p3-dev-bound-meaning-v1` and `p3-dev-mechanism-probe-v1`. Under ADR #136 a
+  count-assumption candidate (v13) is gated on `p3-dev-bound-meaning-v2` and
+  `p3-dev-mechanism-probe-v2`. On the v1 panels, that candidate's intended
+  answers would be breaks by design. Each such gate needs a sentinel plus a
+  candidate run on both panels, 92 calls per candidate, and v2 also needs at
+  least two baseline runs per panel.
 - The gate reads recorded runs only. It does not replace the regression and
   holdout rules or the independent semantic acceptance in AGENTS.md.
 - A candidate that changes model-facing bytes still needs a live run. A
