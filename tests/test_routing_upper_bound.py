@@ -1,4 +1,5 @@
 """Routing upper-bound rulers (routing-upper-bound-v1, #79): synthetic panels and mock transports only; no live call."""
+import asyncio
 import io
 import json
 from contextlib import redirect_stdout
@@ -95,7 +96,7 @@ class RoutingExperimentTests(EvaluateHarness):
         self.experiment_sent = []
 
     # ----------------------------------------------------------------- helpers
-    def scripted(self, *, declined=(), broken=(), page=(), sink=None):
+    def scripted(self, *, declined=(), broken=(), page=(), cancel=(), sink=None, base=BASE):
         cases = self.inputs
 
         def respond(request):
@@ -103,13 +104,15 @@ class RoutingExperimentTests(EvaluateHarness):
                 sink.append(request)
             question = json.loads(request.content)["messages"][-1]["content"]
             case = next(case for case in cases if case.question == question)
+            if case.case_id in cancel:
+                raise asyncio.CancelledError()
             if case.case_id in page:
                 return httpx.Response(200, text="<html>gateway error</html>", headers={"content-type": "text/html"})
             content = ("{not json" if case.case_id in broken else json.dumps({"outcome": "declined"})
                        if case.case_id in declined else json.dumps(self.by_oracle[case.oracle_id]))
             return httpx.Response(200, json=envelope(content))
 
-        return GatewayClient(GatewayConfig(BASE, KEY, MODEL), transport=httpx.MockTransport(respond))
+        return GatewayClient(GatewayConfig(base, KEY, MODEL), transport=httpx.MockTransport(respond))
 
     async def baseline(self, grant, *, declined=()):
         self.recorded += 1
@@ -198,6 +201,7 @@ class RoutingExperimentTests(EvaluateHarness):
         self.assertEqual((rows[x]["graded"]["outcome"], rows[z]["graded"]["outcome"]),
                          ("complete_correct", "false_refusal"))
         self.assertEqual(rows[z]["validated_action"], '{"outcome":"declined"}')
+        self.assertEqual(rows[x]["usage"], {"prompt_tokens": 3, "completion_tokens": 4, "total_tokens": 7})
         comparison = result["comparison"]
         self.assertEqual(comparison["baseline_runs"], [run["run_id"] for run in (*earlier, sentinel)])
         self.assertEqual(comparison["sentinel_runs"], [sentinel["run_id"]])
@@ -263,6 +267,41 @@ class RoutingExperimentTests(EvaluateHarness):
             await routing.run_live(self.database, slot, packet_path=packet, authorization_path=authorization,
                                    accepted_commit=SHA, env_file=self.root / "unused.env", **self.registries)
         self.assertEqual((drift.exception.code, sent, slot.exists()), ("manifest_drift", [], False))
+
+    async def test_interruption_transport_and_pinned_assets(self):
+        await self.baseline(989)
+        await self.baseline(990)
+        third = self.inputs[2].case_id
+        with self.assertRaises(asyncio.CancelledError):
+            await self.experiment(990, cancel={third})
+        slot = sorted(self.root.glob("routing-run-*"), key=lambda path: int(path.name.rsplit("-", 1)[1]))[-1]
+        result = routing.read_report(slot / "report.json", **self.registries)
+        self.assertEqual((result["status"], result["stop_reason"], result["possible_in_flight_attempts"],
+                          result["client_http_attempts"], result["results"][2]["error_code"]),
+                         ("incomplete", "interrupted", 0, 3, "interrupted"))
+        # A client on another transport than the packet's is refused before the first send.
+        packet = self.experiment_prepare()
+        authorization = packet.parent / "authorization.json"
+        tls_slot = self.root / "routing-tls-run"
+        routing.bind_authorization(packet, f"{GRANT}990", authorization, tls_slot)
+        sent = []
+        with patch.object(runner, "_admitted_client", return_value=self.scripted(
+                sink=sent, base="https://synthetic-evaluate.invalid/v1")):
+            result = await routing.run_live(self.database, tls_slot, packet_path=packet,
+                                            authorization_path=authorization, accepted_commit=SHA,
+                                            env_file=self.root / "unused.env", **self.registries)
+        self.assertEqual((result["stop_reason"], result["results"][0]["error_code"], sent),
+                         ("anomaly", "invalid_configuration", []))
+        # Readback pins the oracles it grades against.
+        target = self.root / "development-oracles-v1.json"
+        raw = target.read_bytes()
+        try:
+            target.write_bytes(raw + b"\n")
+            with self.assertRaises(p3_assets.P3Error) as drift:
+                routing.read_report(tls_slot / "report.json", **self.registries)
+            self.assertEqual(drift.exception.code, "manifest_drift")
+        finally:
+            target.write_bytes(raw)
 
     async def test_cli_dispatches_through_the_runner_and_its_arguments_are_closed(self):
         await self.baseline(980)

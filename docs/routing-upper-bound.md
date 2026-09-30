@@ -114,15 +114,22 @@ These are the same as the reading diagnostic (`docs/reading-diagnostic.md`).
   - `state`: `not_started`, `reserved`, `returned` or `failed`;
   - `attempt`, `http_attempts`, `elapsed_seconds` and `error_code`;
   - `validated_action`: canonical JSON, exactly as evaluation v2 keeps it;
-  - `graded`: the `p3_grading.grade` result, or null.
+  - `graded`: the `p3_grading.grade` result, or null;
+  - `usage`: the returned token counts for a returned row, else null.
 
   No raw completion or reasoning is kept.
 - **Row states.** A reply that reached the pipeline is `returned` and
   graded, even when it is malformed (`invalid_output`). A route,
   configuration or envelope failure is `failed`, with its `error_code` and no
   grade.
-- **Readback** recomputes the comparison from the run index and adds it to the
-  report as `comparison`:
+- **Transport.** The client's transport security must equal the packet's;
+  a mismatch is an `invalid_configuration` anomaly before the first send.
+- **Interruption.** An interrupted run reads back with stop reason
+  `interrupted` and its real call count.
+- **Readback** pins the panel, cases and oracles files against their registry
+  digests and checks each row's question hash. It is as strict as the reading
+  diagnostic's. It recomputes the comparison from the run index and adds it to
+  the report as `comparison`:
   - `baseline_runs` and `sentinel_runs`;
   - `inputs`: `case_id`, `scenario`, `baseline_class`, `sentinel_assessed`,
     `experiment` (`correct`, `wrong` or `unassessed`), the graded `outcome`
