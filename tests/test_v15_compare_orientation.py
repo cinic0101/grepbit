@@ -8,6 +8,7 @@ from pathlib import Path
 import httpx
 
 from grepbit import bedrock, gateway, model, recipe_model
+from grepbit.overview import OverviewRequest
 from grepbit.gateway import GatewayClient, GatewayConfig, ModelError, MAX_INPUT_BYTES, MAX_REQUEST_BYTES
 from tools import candidate_registry as registry, evaluate, fixture, p3_assets, p3_grading
 
@@ -18,6 +19,21 @@ MARCH = {**SCOPE, "start": "2026-03-01T00:00:00+08:00", "end": "2026-04-01T00:00
 FEBRUARY = {**SCOPE, "start": "2026-02-01T00:00:00+08:00", "end": "2026-03-01T00:00:00+08:00"}
 OVERVIEW = {"center_code": "CTR-A01", "start": "2026-03-01T00:00:00+08:00", "end": "2026-04-01T00:00:00+08:00",
             "timezone": "Asia/Taipei"}
+
+
+def superseded():
+    """v15 is registered but no longer current (v16, ADR #146). Only its identity-bound checks stop applying:
+    the Compare orientation behaviour stays live in v16 and stays checked here."""
+    index = registry.load_index()
+    return V15 in [r["candidate_id"] for r in index["entries"]] and index["current"] != V15
+
+
+class _LiveV15:
+    @classmethod
+    def setUpClass(cls):
+        if superseded():
+            raise unittest.SkipTest("v15 superseded; its registration is no longer current")
+        super().setUpClass()
 
 
 def _compare(value="stated", current=MARCH, baseline=FEBRUARY, **extra):
@@ -68,8 +84,8 @@ class ProposalTests(unittest.TestCase):
         self.assertIsNone(legacy.orientation)
         self.assertNotIn("orientation", legacy.to_dict())
         hash(legacy)
-        overview = recipe_model._proposal({"outcome": "request", "recipe_id": "overview", "recipe_version": "0.1",
-                                           "request": OVERVIEW}).request
+        # The native request directly, so this check does not depend on what a later candidate parses.
+        overview = OverviewRequest.from_mapping(OVERVIEW)
         for recipe, native, orientation in (("compare", request, "sideways"), ("overview", overview, "stated")):
             with self.subTest(recipe=recipe, orientation=orientation), self.assertRaises(ValueError):
                 recipe_model.RecipeProposal(recipe, native, orientation)
@@ -99,10 +115,11 @@ class ContractTextTests(unittest.TestCase):
         self.assertNotIn("use comparison_roles only when", text)
         context = recipe_model.runtime_context()
         self.assertIn("Server-built", context["clarification"]["comparison_roles"])
-        self.assertEqual((recipe_model.INSTRUCTION_VERSION, recipe_model.CONTEXT_VERSION,
-                          recipe_model.OUTPUT_CONTRACT, recipe_model.STRUCTURED_OUTPUT_VERSION),
-                         ("recipe-selection-instruction-v8", "learningops-recipe-context-v5",
-                          "recipe-request-json-v4", "recipe-structured-output-v4"))
+        if not superseded():
+            self.assertEqual((recipe_model.INSTRUCTION_VERSION, recipe_model.CONTEXT_VERSION,
+                              recipe_model.OUTPUT_CONTRACT, recipe_model.STRUCTURED_OUTPUT_VERSION),
+                             ("recipe-selection-instruction-v8", "learningops-recipe-context-v5",
+                              "recipe-request-json-v4", "recipe-structured-output-v4"))
 
     def test_every_dev_question_and_a_full_input_fit_the_unchanged_request_cap(self):
         self.assertEqual((MAX_INPUT_BYTES, MAX_REQUEST_BYTES), (4096, 32768))
@@ -271,7 +288,7 @@ class OrientedScriptTests(unittest.TestCase):
             self.assertEqual(orient(unchanged), unchanged)
 
 
-class RegistryTests(unittest.TestCase):
+class RegistryTests(_LiveV15, unittest.TestCase):
     def test_v15_is_the_registered_current_candidate(self):
         current = registry.current()
         self.assertEqual((current["candidate_id"], current["ancestor"]), (V15, "p3-v12-restoration-v14"))

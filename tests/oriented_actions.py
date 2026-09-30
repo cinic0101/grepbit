@@ -1,4 +1,4 @@
-"""Scripted v12-era actions in v15's shape (docs/compare-orientation-v15.md, ADR #142).
+"""Scripted v12-era actions in v15's and v16's shapes (docs/compare-orientation-v15.md, docs/count-reading-v16.md).
 
 v15 requires a typed ``orientation`` on every Compare request and no longer admits a model-emitted
 ``comparison_roles`` clarification. The offline fake scripts are therefore derived, never hand-edited:
@@ -38,3 +38,27 @@ def oriented_script(source: str) -> dict:
 
 def render(document: dict) -> str:
     return json.dumps(document, indent=2, ensure_ascii=False) + "\n"
+
+
+# v16 (ADR #146) adds a typed Overview count reading. A scripted Overview request gains count_request "none",
+# which executes exactly as before; v15's oriented scripts stay immutable.
+READ_SIBLINGS = {
+    "evals/p3/development-responses-v1.json": "evals/p3/development-read-responses-v1.json",
+    "evals/dev/dev-responses-v1.json": "evals/dev/dev-read-responses-v1.json",
+    "evals/dev/bound-meaning-responses-v1.json": "evals/dev/bound-meaning-read-responses-v1.json",
+    "evals/dev/mechanism-probe-responses-v1.json": "evals/dev/mechanism-probe-read-responses-v1.json",
+}
+
+
+def read(action: dict) -> dict:
+    action = copy.deepcopy(action)
+    if action.get("outcome") == "request" and action.get("recipe_id") == "overview" and "count_request" not in action:
+        return {**action, "count_request": "none"}
+    return action
+
+
+def read_script(source: str) -> dict:
+    data = json.loads((ROOT / source).read_text(encoding="utf-8"))
+    return {"version": data["version"],
+            "responses": [{"case_id": row["case_id"], "action": read(orient(row["action"]))}
+                          for row in data["responses"]]}

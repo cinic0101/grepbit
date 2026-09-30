@@ -48,9 +48,10 @@ def proposal(recipe="overview"):
                     for role, month in (("current", 3), ("baseline", 2))},
         "breakdown": dict(period(), top_k=2),
     }[recipe]
-    # v15: every model Compare request carries a typed orientation (docs/compare-orientation-v15.md).
+    # v15/v16: every model Compare or Overview request carries its typed reading (ADR #142, #146).
     return dict(outcome="request", recipe_id=recipe, recipe_version="0.1", request=native,
-                **({"orientation": "stated"} if recipe == "compare" else {}))
+                **({"orientation": "stated"} if recipe == "compare" else {}),
+                **({"count_request": "none"} if recipe == "overview" else {}))
 
 
 def envelope(content=None, **changes):
@@ -171,7 +172,8 @@ class RecipeModelTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(result.proposal.recipe_id, recipe)
                 self.assertEqual(result.proposal.recipe_version, "0.1")
                 self.assertEqual(set(result.proposal.to_dict()), {"outcome", "recipe_id", "recipe_version", "request",
-                                                                  *(["orientation"] if recipe == "compare" else [])})
+                                                                  *(["orientation"] if recipe == "compare" else []),
+                                                                  *(["count_request"] if recipe == "overview" else [])})
                 self.assertEqual(result.evidence["proposal"], result.proposal.to_dict())
                 self.assertEqual(result.evidence["analysis_pack"],
                                  json.loads(json.dumps(result.analysis_pack.to_dict())))

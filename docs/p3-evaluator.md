@@ -394,6 +394,16 @@ candidate cannot manufacture that acceptance.
 > `tests/test_p3_exposed.py` keeps the `20abb559` hash as superseded ancestry.
 > The frozen grading, scoring, expectation and asset sources are unchanged.
 
+> **Amended again 2026-09-30, for v16.** By owner decision on #146
+> (#issuecomment-5914114297), the P2 schema pin in
+> `tests/test_recipe_clarification.py` is also checked after removing v16's
+> required Overview `count_request`, whose exact form it asserts
+> (`docs/count-reading-v16.md`, "Frozen source change").
+> The P2 Overview meanings carry `count_request: "none"` through the shared,
+> unfrozen `proposal()` helper. `tests/test_p3_exposed.py` keeps `42b0ce5c…`,
+> the file's hash at baseline `20abb559`, as superseded ancestry. The frozen
+> grading, scoring, expectation and asset sources are unchanged.
+
 Examples below are future separately authorized owner-side operations, not
 permission to execute them now. Authoring/review is owner-declared complete,
 but exact sanitized fresh identity pins and an actual formal freeze are absent:

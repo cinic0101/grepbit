@@ -97,6 +97,9 @@ ASSUMPTION = {"count_basis": "booked_seats"}
 # The typed Compare orientation of v15 archives (docs/compare-orientation-v15.md), pinned so archives stay
 # readable under any later candidate.
 ORIENTATIONS = ("stated", "unresolved")
+# The typed Overview count reading of v16 archives (docs/count-reading-v16.md), pinned likewise.
+UNAVAILABLE_COUNTS = ("known_booking_accounts", "attendance_visits", "distinct_people")
+COUNT_REQUESTS = ("none", "booked_seats", "unresolved", *UNAVAILABLE_COUNTS)
 _ROUTE_FIELDS = {"route_id", "provider", "model", "region", "call_timeout_seconds", "transport_security", "note"}
 _RUN_FIELDS = {"version", "run_id", "recorded_at", "candidate_id", "panel_id", "tier", "route_id", "claim",
                "report_sha256", "slot", "accepted_commit", "grant", "status", "inputs", "correct",
@@ -249,6 +252,15 @@ def _panel_annex(panel_block: object, panels_path: Path | None = None) -> dict |
     return _read_annex(path)
 
 
+def _stated_assumption(action: object) -> dict | None:
+    """The count assumption a persisted request states: v13's explicit key, or v16's unresolved count reading."""
+    if not isinstance(action, dict) or action.get("outcome") != "request":
+        return None
+    if "assumption" in action:
+        return action["assumption"]
+    return dict(ASSUMPTION) if action.get("count_request") == "unresolved" else None
+
+
 def annexed(row: dict, frozen_correct: bool, expectations: dict | None) -> str | None:
     """The annex verdict on one graded row: None when no annex applies, else correct, wrong or unassessed.
 
@@ -266,7 +278,7 @@ def annexed(row: dict, frozen_correct: bool, expectations: dict | None) -> str |
         action = model.strict_json(text)
     except ModelError:
         raise assets.P3Error("invalid_asset") from None
-    stated = action.get("assumption") if isinstance(action, dict) and action.get("outcome") == "request" else None
+    stated = _stated_assumption(action)
     return "correct" if stated == expectations.get(row["oracle_id"]) else "wrong"
 
 
@@ -814,16 +826,19 @@ def _action_shape(action: object) -> bool:
     if outcome == "declined":
         return action == {"outcome": "declined"}
     if outcome == "request":
-        # An Overview proposal may carry the one stated count assumption (docs/count-assumption.md), and a
-        # Compare proposal one typed orientation (docs/compare-orientation-v15.md).
+        # An Overview proposal may carry the one stated count assumption (v13, docs/count-assumption.md) or one
+        # typed count reading (v16, docs/count-reading-v16.md), and a Compare proposal one typed orientation
+        # (v15, docs/compare-orientation-v15.md).
         base = {"outcome", "recipe_id", "recipe_version", "request"}
-        return (set(action) in (base, base | {"assumption"}, base | {"orientation"})
+        return (set(action) in (base, base | {"assumption"}, base | {"orientation"}, base | {"count_request"})
                 and isinstance(action["recipe_id"], str) and action["recipe_id"] in _ACTION_RECIPES
                 and action["recipe_version"] == "0.1" and isinstance(action["request"], dict)
                 and ("assumption" not in action
                      or action["recipe_id"] == "overview" and action["assumption"] == ASSUMPTION)
                 and ("orientation" not in action
-                     or action["recipe_id"] == "compare" and action["orientation"] in ORIENTATIONS))
+                     or action["recipe_id"] == "compare" and action["orientation"] in ORIENTATIONS)
+                and ("count_request" not in action
+                     or action["recipe_id"] == "overview" and action["count_request"] in COUNT_REQUESTS))
     if outcome != "clarify" or set(action) != {"outcome", "clarification"}:
         return False
     clarification = action["clarification"]
@@ -860,6 +875,9 @@ def _validated_action(result) -> str | None:
         elif clarification is not None and source is not None:
             # A server-built clarification persists the model's own action, so replay rebuilds it.
             action = source.to_dict()
+        elif source is not None and error is not None and error.code == "model_declined":
+            # So does a server decline of a named unavailable count (docs/count-reading-v16.md).
+            action = source.to_dict()
         elif clarification is not None:
             action = {"outcome": "clarify", "clarification": clarification.to_dict()}
         elif error is not None and error.code == "model_declined":
@@ -889,8 +907,12 @@ def _check_action(row: dict, stop_reason: str | None = None) -> bool:
     # An unresolved Compare orientation is the model's action behind a server-built roles clarification.
     derived = (isinstance(action, dict) and action.get("outcome") == "request"
                and action.get("orientation") == "unresolved")
+    # A named unavailable count reading is the model's action behind a server decline (v16).
+    declined = (isinstance(action, dict) and action.get("outcome") == "request"
+                and action.get("count_request") in UNAVAILABLE_COUNTS)
+    expected = "clarify" if derived else "decline" if declined else None
     if (_action_text(action) != text
-            or ("clarify" if derived else _ACTION_OUTCOMES[action["outcome"]]) != row["actual_action"]):
+            or (expected or _ACTION_OUTCOMES[action["outcome"]]) != row["actual_action"]):
         raise assets.P3Error("invalid_asset")
     if action["outcome"] == "clarify" and (
             action["clarification"]["kind"] != row["clarification_kind"]
@@ -905,7 +927,7 @@ def _check_action(row: dict, stop_reason: str | None = None) -> bool:
         return True
     evidence = evidence if isinstance(evidence, dict) else {}
     stages = evidence.get("stages") if isinstance(evidence.get("stages"), dict) else {}
-    if action["outcome"] == "declined":
+    if action["outcome"] == "declined" or declined:
         if evidence.get("error_code") != "model_declined":
             raise assets.P3Error("invalid_asset")
         return False

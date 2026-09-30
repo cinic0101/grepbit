@@ -33,8 +33,8 @@ POLICY_MANIFEST_VERSION = "p3-manifest-v2"
 POLICY_REPORT_VERSION = "p3-report-v2"
 SCRIPT_VERSION = "p3-fake-responses-v1"
 DEFAULT_PANEL = ROOT / "evals/p3/development-panel-v1.json"
-# v15 runs Compare cases from actions with a typed orientation (docs/compare-orientation-v15.md).
-DEFAULT_RESPONSES = ROOT / "evals/p3/development-oriented-responses-v1.json"
+# v16 runs its cases from actions with typed Compare and count readings (docs/count-reading-v16.md).
+DEFAULT_RESPONSES = ROOT / "evals/p3/development-read-responses-v1.json"
 MAX_REPORT_BYTES = 16 * 1024 * 1024
 NETWORK_CODES = frozenset({"transport_error", "gateway_error", "rate_limited"})
 _INTERNAL_ERRORS = recipe_smoke._INTERNAL_ERRORS

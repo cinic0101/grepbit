@@ -65,9 +65,10 @@ def proposal(recipe="overview"):
                     for role, number in (("current", 3), ("baseline", 2))},
         "breakdown": {**month(3), "top_k": 2},
     }
-    # v15: every model Compare request carries a typed orientation (docs/compare-orientation-v15.md).
+    # v15/v16: every model Compare or Overview request carries its typed reading (ADR #142, #146).
     return {"outcome": "request", "recipe_id": recipe, "recipe_version": "0.1", "request": requests[recipe],
-            **({"orientation": "stated"} if recipe == "compare" else {})}
+            **({"orientation": "stated"} if recipe == "compare" else {}),
+            **({"count_request": "none"} if recipe == "overview" else {})}
 
 
 def invalid_cases():

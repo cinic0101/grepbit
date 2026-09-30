@@ -45,6 +45,12 @@ The expected assumption is kept **outside** the oracle, in a closed annex file:
 
 ## The annex verdict
 
+> **Amended 2026-09-30 (v16, #146).** An action states the assumption through
+> v13's explicit `assumption` key or through v16's typed Overview
+> `count_request: "unresolved"`, from which the server states it
+> (`docs/count-reading-v16.md`). A v16 `count_request` other than `unresolved`
+> states none. The expectations and the annexes are unchanged.
+
 - **The frozen grade is recorded unchanged.** On an annex panel, the runner
   derives a verdict per row from that grade and the row's persisted
   `validated_action`:

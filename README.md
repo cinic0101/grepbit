@@ -112,7 +112,7 @@ restoration, not a new fix, and v12's results are its results. The next change i
 orientation and code decides whether to clarify the roles. See the
 [v12 restoration](docs/v12-restoration-v14.md).
 
-The current candidate, v15, implements ADR #142:
+v15 implements ADR #142:
 - The model returns every two-month comparison as a Compare request with a
   typed `orientation`, `stated` or `unresolved`.
 - The code executes a `stated` request. For `unresolved` it builds the
@@ -129,6 +129,20 @@ The current candidate, v15, implements ADR #142:
 
 See the [v15 contract](docs/compare-orientation-v15.md) and the
 [gate result](docs/compare-orientation-v15-result.md).
+
+The current candidate, v16, implements ADR #146. It applies the same
+read-then-decide split to counts:
+- Every Overview request carries a typed `count_request`.
+- The code states the owner's booked-seats assumption for an `unresolved`
+  count, and it declines a named unavailable count.
+- A question read as `booked_seats` or `none` states no assumption; one that
+  names booked seats gains one only if the model reads it as `unresolved`.
+- The model still asks its own `count_basis` clarification when a question is
+  undecided between named meanings.
+- v16 has no live result yet. It is measured against v15 on the two v2 dev
+  panels.
+
+See the [v16 contract](docs/count-reading-v16.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality

@@ -244,7 +244,8 @@ class CandidateModelRulers(unittest.IsolatedAsyncioTestCase):
 
     async def test_12b_typed_request_uses_unchanged_native_overview(self):
         config = gateway.GatewayConfig(BASE, KEY, ALTERNATIVE, expected_model=self.admitted())
-        proposal = {"outcome": "request", "recipe_id": "overview", "recipe_version": "0.1",
+        # v16: a model Overview request carries a typed count reading (docs/count-reading-v16.md).
+        proposal = {"outcome": "request", "recipe_id": "overview", "recipe_version": "0.1", "count_request": "none",
                     "request": {"center_code": "CTR-A01", "start": "2026-03-01T00:00:00+08:00",
                                 "end": "2026-04-01T00:00:00+08:00", "timezone": "Asia/Taipei"}}
         with tempfile.TemporaryDirectory() as directory:

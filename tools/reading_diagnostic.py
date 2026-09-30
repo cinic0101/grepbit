@@ -161,6 +161,9 @@ def _recorded(action: object) -> tuple[str | None, str | None]:
     # roles clarification (docs/compare-orientation-v15.md), so the recorded decision is a clarification.
     if outcome == "request" and value.get("orientation") == "unresolved":
         return "clarify", "comparison_roles"
+    # A v16 named unavailable count reading is the model's action behind a server decline.
+    if outcome == "request" and value.get("count_request") in evaluate.UNAVAILABLE_COUNTS:
+        return "decline", None
     return _ACTIONS[outcome], kind
 
 
