@@ -139,7 +139,10 @@ In the packet the schema is written with keys in this order:
 ```
 
 `reading` precedes `verdict` in both the declared and the alphabetical order, so
-a route that sorts schema keys still asks for the reading first.
+a route that sorts schema keys still asks for the reading first. The schema
+uses no keyword that the Bedrock encoding strips (length, pattern, count or
+range). Both routes therefore decode the same closed set; unlike the recipe
+schema, it is not compacted.
 
 ## Persisted observation
 

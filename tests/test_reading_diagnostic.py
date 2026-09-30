@@ -45,7 +45,7 @@ class ReadingDiagnosticTests(EvaluateHarness):
         return GatewayClient(GatewayConfig(BASE, KEY, MODEL), transport=httpx.MockTransport(respond))
 
     async def source_run(self, grant=901, *, declined=()):
-        packet = self.prepare()
+        packet = self.prepare(repetition=self.recorded + 1)
         output = self.output()
         authorization = self.root / f"authorization-{output.name}.json"
         runner.bind_authorization(packet, f"{GRANT}{grant}", authorization, output)
@@ -310,13 +310,17 @@ class ReadingDiagnosticTests(EvaluateHarness):
         miscounted = json.loads(json.dumps(original))
         miscounted["client_http_attempts"] += 1
         tampered.append(miscounted)
+        raw_bytes = path.read_bytes()
+        self.assertEqual(reading.read_report(path, **self.registries)["status"], "complete")
         for number, value in enumerate(tampered):
             with self.subTest(case=number):
-                copy = self.root / f"tampered-{number}" / "report.json"
-                copy.parent.mkdir()
-                copy.write_text(json.dumps(value))
-                with self.assertRaises(p3_assets.P3Error):
-                    reading.read_report(copy, **self.registries)
+                try:
+                    path.write_text(json.dumps(value))
+                    with self.assertRaises(p3_assets.P3Error):
+                        reading.read_report(path, **self.registries)
+                finally:
+                    path.write_bytes(raw_bytes)
+        self.assertEqual(reading.read_report(path, **self.registries)["status"], "complete")
 
     # ----------------------------------------------------------------- CLI
     async def test_cli_dispatches_through_the_runner_and_its_arguments_are_closed(self):
