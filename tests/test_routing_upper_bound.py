@@ -83,7 +83,8 @@ class RouterAndContextTests(EvaluateHarness):
                                  [{"role": "system",
                                    "content": recipe_model.SYSTEM_INSTRUCTION + "\n" + _canonical(narrowed)},
                                   {"role": "user", "content": "Q?"}])
-                self.assertEqual(routing.schema_name(scenario), f"grepbit_recipe_request_{scenario}")
+                # The production schema name: only the narrowed context and schema vary.
+                self.assertEqual(routing.schema_name(scenario), recipe_model.STRUCTURED_OUTPUT_SCHEMA_NAME)
 
 
 class RoutingExperimentTests(EvaluateHarness):
@@ -96,7 +97,7 @@ class RoutingExperimentTests(EvaluateHarness):
         self.experiment_sent = []
 
     # ----------------------------------------------------------------- helpers
-    def scripted(self, *, declined=(), broken=(), page=(), cancel=(), sink=None, base=BASE):
+    def scripted(self, *, declined=(), broken=(), page=(), cancel=(), failing=(), refused=(), sink=None, base=BASE):
         cases = self.inputs
 
         def respond(request):
@@ -106,6 +107,12 @@ class RoutingExperimentTests(EvaluateHarness):
             case = next(case for case in cases if case.question == question)
             if case.case_id in cancel:
                 raise asyncio.CancelledError()
+            if case.case_id in failing:
+                raise httpx.ConnectError("synthetic transport failure", request=request)
+            if case.case_id in refused:
+                body = envelope()
+                body["choices"][0]["message"].update(content=None, refusal="synthetic refusal")
+                return httpx.Response(200, json=body)
             if case.case_id in page:
                 return httpx.Response(200, text="<html>gateway error</html>", headers={"content-type": "text/html"})
             content = ("{not json" if case.case_id in broken else json.dumps({"outcome": "declined"})
@@ -114,13 +121,14 @@ class RoutingExperimentTests(EvaluateHarness):
 
         return GatewayClient(GatewayConfig(base, KEY, MODEL), transport=httpx.MockTransport(respond))
 
-    async def baseline(self, grant, *, declined=()):
+    async def baseline(self, grant, *, declined=(), page=(), failing=()):
         self.recorded += 1
         packet = self.prepare(repetition=self.recorded)
         output = self.output()
         authorization = self.root / f"authorization-{output.name}.json"
         runner.bind_authorization(packet, f"{GRANT}{grant}", authorization, output)
-        await self.run_mock(packet, output, authorization, client=self.scripted(declined=declined))
+        await self.run_mock(packet, output, authorization,
+                            client=self.scripted(declined=declined, page=page, failing=failing))
         return runner.record(output / "report.json", runs_path=self.runs,
                              now=f"2026-09-30T01:{self.recorded:02d}:00Z")
 
@@ -174,6 +182,7 @@ class RoutingExperimentTests(EvaluateHarness):
 
         refused("not_dev_panel", panel="synthetic-regression")
         refused("route", route="bedrock-sonnet")
+        refused("route", route="litellm-12b")
         with patch.object(routing, "ROUTER_TABLE", {}):
             refused("router_table")
         wrong = {"synthetic-dev": dict(_SYNTHETIC_TABLE["synthetic-dev"], E02_compare="overview")}
@@ -295,6 +304,65 @@ class RoutingExperimentTests(EvaluateHarness):
             (row["experiment"], row["class"]) for row in result["comparison"]["inputs"] if row["case_id"] == slow))),
             {"experiment": "unassessed", "class": "unassessed"})
         self.assertEqual(result["comparison"]["verdict"], "inconclusive")
+
+    async def test_a_model_refusal_is_graded_as_a_decline_like_production(self):
+        await self.baseline(991)
+        await self.baseline(992)
+        x = self.inputs[0].case_id
+        result, _ = await self.experiment(992, refused={x})
+        row = result["results"][0]
+        self.assertEqual((result["status"], row["state"], row["graded"]["actual_action"], row["graded"]["outcome"]),
+                         ("complete", "returned", "decline", "false_refusal"))
+        self.assertEqual(result["comparison"]["broke"], [x])
+
+    async def test_the_comparison_applies_the_gates_integrity_checks_and_sentinel_rules(self):
+        x = self.inputs[0].case_id
+        earlier = [await self.baseline(993, declined={x}), await self.baseline(994, declined={x})]
+        await self.baseline(995, declined={x})
+        result, slot = await self.experiment(995)
+        self.assertEqual((result["comparison"]["refusal"], result["comparison"]["fixed"]), (None, [x]))
+        self.assertEqual(set(result["comparison"]), {"run_index_sha256", "baseline_runs", "sentinel_runs",
+                                                      "recorded_at", "inputs", "fixed", "broke", "excluded",
+                                                      "unassessed", "counts", "verdict", "refusal"})
+        path = slot / "report.json"
+        original = runner._read_archived
+
+        def altered(field):
+            def read(archive):
+                report = original(archive)
+                if archive.parent.as_posix().endswith(earlier[0]["slot"]):
+                    if field == "candidate":
+                        report["candidate"] = dict(report["candidate"], candidate_sha256="0" * 64)
+                    else:
+                        report["panel"] = dict(report["panel"], assets=dict(report["panel"]["assets"], oracles="0" * 64))
+                return report
+            return read
+
+        for field, reason in (("candidate", "candidate_identity"), ("assets", "inputs_differ")):
+            with self.subTest(reason=reason), patch.object(runner, "_read_archived", side_effect=altered(field)):
+                comparison = routing.read_report(path, **self.registries)["comparison"]
+                self.assertEqual((comparison["refusal"], comparison["verdict"]), (reason, None))
+        rows = runner.load_runs(self.runs)
+        self.runs.write_text("".join(json.dumps(dict(row, grant=f"{GRANT}999") if row["run_id"] == earlier[0]["run_id"]
+                                                else row, sort_keys=True) + "\n" for row in rows))
+        self.assertEqual(routing.read_report(path, **self.registries)["comparison"]["refusal"], "index_mismatch")
+
+    async def test_a_fix_needs_a_complete_sentinel_that_assessed_the_input(self):
+        x = self.inputs[0].case_id
+        await self.baseline(996, declined={x})
+        await self.baseline(997, declined={x})
+        # A sentinel stopped at its first input gives no same-session evidence.
+        await self.baseline(998, page={x})
+        result, _ = await self.experiment(998)
+        self.assertEqual((result["comparison"]["refusal"], result["comparison"]["verdict"]),
+                         ("sentinel_incomplete", None))
+        # A complete sentinel that could not assess x: x is excluded, not fixed.
+        await self.baseline(999, failing={x})
+        result, _ = await self.experiment(999)
+        rows = {row["case_id"]: row for row in result["comparison"]["inputs"]}
+        self.assertEqual((rows[x]["baseline_class"], rows[x]["sentinel_assessed"], rows[x]["class"]),
+                         ("stable_wrong", False, "excluded"))
+        self.assertEqual(result["comparison"]["verdict"], "no_fix")
 
     async def test_interruption_transport_and_pinned_assets(self):
         await self.baseline(989)

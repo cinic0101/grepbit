@@ -10,12 +10,15 @@ from __future__ import annotations
 
 import asyncio
 from copy import deepcopy
+import json
 from pathlib import Path
 import sys
 import time
 
+import httpx
+
 from grepbit import model as protocol, recipe_model
-from grepbit.gateway import ModelError
+from grepbit.gateway import MODEL, GatewayClient, GatewayConfig, ModelError
 from grepbit.provider import normalize_response
 from tools import candidate_registry as registry, evaluate, p3_assets as assets, p3_eval as evaluator
 from tools import p3_grading, p3_live_evidence as live, p3_scoring as scoring, smoke
@@ -28,6 +31,8 @@ SCENARIOS = ("overview", "compare", "breakdown")
 KIND_SCENARIOS = {"count_basis": "overview", "center": "overview", "metric_meaning": "overview",
                   "comparison_roles": "compare"}
 REFUSALS = ("not_dev_panel", "route", "router_table")
+COMPARISON_REFUSALS = ("no_sentinel", "sentinel_incomplete", "candidate_identity", "inputs_differ",
+                       "index_mismatch")
 # The perfect router: experiment configuration, not an oracle. Answer and clarify families must agree with
 # their oracles (checked at preparation); decline families have no recipe and are routed by this table only.
 ROUTER_TABLE = {
@@ -110,8 +115,9 @@ def narrowed_context(scenario: str) -> dict:
 
 
 def schema_name(scenario: str) -> str:
+    """The production schema name, so that only the narrowed context and schema vary."""
     _kinds(scenario)
-    return f"grepbit_recipe_request_{scenario}"
+    return recipe_model.STRUCTURED_OUTPUT_SCHEMA_NAME
 
 
 def messages(scenario: str, question: str) -> list[dict[str, str]]:
@@ -127,7 +133,9 @@ def _plan(database: Path, *, panel_id: str, route_id: str, accepted_commit: str,
         raise assets.P3Error("invalid_arguments")
     if evaluate._entry(evaluate.load_panels(panels_path), "panels", panel_id, "panel_id")["tier"] != "dev":
         raise ExperimentRefused("not_dev_panel")
-    if evaluate._entry(evaluate.load_routes(routes_path), "routes", route_id, "route_id")["provider"] != "litellm":
+    route = evaluate._entry(evaluate.load_routes(routes_path), "routes", route_id, "route_id")
+    # The replay client that grades the reply is the 31B LiteLLM client; other routes are out of scope for v1.
+    if route["provider"] != "litellm" or route["model"] != MODEL:
         raise ExperimentRefused("route")
     table = ROUTER_TABLE.get(panel_id)
     if table is None:
@@ -233,6 +241,15 @@ def bind_authorization(packet_path: Path, reference: str, output_path: Path, run
 
 # --------------------------------------------------------------------------- live
 
+def _body_replay_client(body: bytes) -> GatewayClient:
+    """Serves the route's exact response body, so the production pipeline parses it as it would have."""
+    def respond(request):
+        return httpx.Response(200, content=body, headers={"content-type": "application/json"})
+
+    return GatewayClient(GatewayConfig(evaluate._REPLAY_BASE, evaluate._REPLAY_TOKEN, MODEL),
+                         transport=httpx.MockTransport(respond))
+
+
 async def run_live(database: Path, output_dir: Path, *, packet_path: Path, authorization_path: Path,
                    accepted_commit: str, env_file: Path, panels_path: Path | None = None,
                    routes_path: Path | None = None, runs_path: Path | None = None,
@@ -299,8 +316,22 @@ async def run_live(database: Path, output_dir: Path, *, packet_path: Path, autho
                                         "schema": narrowed_schema(item["scenario"])})
             response = normalize_response(client.config, response)
             evidence: dict = {}
-            content = protocol._content(response.body, evidence, expected_model=client.config.expected_model)
+            try:
+                # Envelope and route anomalies stop the run; a model refusal is the model's answer.
+                protocol._content(response.body, evidence, expected_model=client.config.expected_model)
+            except ModelError as exc:
+                if exc.code != "model_declined":
+                    raise
             usage = {key: (evidence.get("usage") or {}).get(key) for key in shared._USAGE_FIELDS}
+            row["http_attempts"] = client.http_attempts - before
+            # The production pipeline counts model latency and kernel time against one call budget.
+            left = packet["call_timeout_seconds"] - (clock() - call_start)
+            if left <= 0:
+                raise ModelError("timeout")
+            result = await recipe_model.interpret_recipe_and_execute(
+                case.question, database, _body_replay_client(response.body), timeout_seconds=left)
+            row.update(state="returned", validated_action=evaluate._validated_action(result),
+                       graded=p3_grading.grade(result, panel.oracle_for(case)), usage=usage)
         except (ModelError, assets.P3Error, smoke.SmokeError) as exc:
             code = exc.code
             row.update(state="failed", error_code=code)
@@ -313,12 +344,6 @@ async def run_live(database: Path, output_dir: Path, *, packet_path: Path, autho
             artifacts.persist(report)
             raise
         row["http_attempts"] = (client.http_attempts - before) if client is not None else 0
-        if code is None:
-            # The production validators, kernel and grader run unchanged on the returned content; no model call.
-            result = await recipe_model.interpret_recipe_and_execute(
-                case.question, database, evaluate._replay_client(content, []))
-            row.update(state="returned", validated_action=evaluate._validated_action(result),
-                       graded=p3_grading.grade(result, panel.oracle_for(case)), usage=usage)
         row["elapsed_seconds"] = max(0.0, clock() - call_start)
         report["client_http_attempts"] += row["http_attempts"]
         report.update(possible_in_flight_attempts=0, elapsed_seconds=max(0.0, clock() - started))
@@ -351,8 +376,24 @@ def _check_graded(graded: object) -> None:
     if (graded["version"] != p3_grading.VERSION or graded["outcome"] not in assets.OUTCOMES
             or graded["actual_action"] not in (None, "answer", "clarify", "decline")
             or not isinstance(graded["layers"], dict) or set(graded["layers"]) != set(p3_grading.LAYERS)
+            or any(value not in ("passed", "failed", "not_assessed") for value in graded["layers"].values())
+            or graded["operational_error"] is not None and not isinstance(graded["operational_error"], str)
             or type(graded["checked_wrong"]) is not bool or not isinstance(graded["diagnostics"], list)
             or not isinstance(graded["missing_required_slots"], list)):
+        raise assets.P3Error("invalid_asset")
+
+
+def _check_validated_action(text: str | None, graded: dict | None) -> None:
+    """The persisted action has evaluation v2's closed shape and agrees with the graded action."""
+    if text is None:
+        return
+    try:
+        action = protocol.strict_json(text)
+    except ModelError:
+        raise assets.P3Error("invalid_asset") from None
+    if (not evaluate._action_shape(action) or protocol.canonical_json(action) != text or graded is None
+            or {"request": "answer", "clarify": "clarify", "declined": "decline"}[action["outcome"]]
+            != graded["actual_action"]):
         raise assets.P3Error("invalid_asset")
 
 
@@ -364,12 +405,14 @@ def _check_row(row: object, item: dict) -> None:
             or type(row["http_attempts"]) is not int or not 0 <= row["http_attempts"] <= 1
             or row["elapsed_seconds"] is not None and (type(row["elapsed_seconds"]) not in (int, float)
                                                        or row["elapsed_seconds"] < 0)
-            or row["error_code"] is not None and row["error_code"] not in shared._ROW_ERRORS
+            or row["error_code"] is not None and (row["error_code"] not in shared._ROW_ERRORS
+                                                  or row["error_code"] in ("invalid_json", "invalid_reading"))
             or row["validated_action"] is not None and (not isinstance(row["validated_action"], str)
                                                         or len(row["validated_action"].encode()) > 16384)):
         raise assets.P3Error("invalid_asset")
     if row["graded"] is not None:
         _check_graded(row["graded"])
+    _check_validated_action(row["validated_action"], row["graded"])
     usage = row["usage"]
     if usage is not None and (not isinstance(usage, dict) or set(usage) != set(shared._USAGE_FIELDS) or any(
             value is not None and (type(value) is not int or value < 0) for value in usage.values())):
@@ -436,8 +479,11 @@ def _compare(report: dict, packet: dict, panels_path: Path | None, runs_path: Pa
                                          evaluate.load_runs(runs_path), {}, candidates_index)
     sentinels = [position for position, run in enumerate(baseline)
                  if run["grant"] == report["owner_authorization_reference"]]
-    value = {"baseline_runs": [run["run_id"] for run in baseline],
+    runs_file = evaluate.RUNS if runs_path is None else runs_path
+    value = {"run_index_sha256": evaluator._pin(runs_file)["sha256"],
+             "baseline_runs": [run["run_id"] for run in baseline],
              "sentinel_runs": [baseline[position]["run_id"] for position in sentinels],
+             "recorded_at": {"sentinel_runs": [baseline[position]["recorded_at"] for position in sentinels]},
              "inputs": [], "fixed": [], "broke": [], "excluded": [], "unassessed": [],
              "counts": None, "verdict": None, "refusal": None}
     if not sentinels:
@@ -447,10 +493,22 @@ def _compare(report: dict, packet: dict, panels_path: Path | None, runs_path: Pa
         value["refusal"] = "sentinel_incomplete"
         return value
     reports = evaluate._archived_reports(baseline)
-    order = [(item["case_id"], item["question_sha256"]) for item in packet["inputs"]]
-    if any([(row["case_id"], row["question_sha256"]) for row in archived["results"]] != order
-           for archived in reports):
-        raise assets.P3Error("manifest_drift")
+    # The candidate gate's integrity checks, in its order: bytes, inputs, then index agreement.
+    target = canonical["candidate"]["candidate_sha256"]
+    expected_inputs = (panel_id, canonical["panel"]["assets"],
+                       [(item["case_id"], item["question_sha256"]) for item in packet["inputs"]])
+    views = [evaluate._gate_view(archived) for archived in reports]
+    if any(sha != target for sha, _ in views):
+        value["refusal"] = "candidate_identity"
+        return value
+    if any(inputs != expected_inputs for _, inputs in views):
+        value["refusal"] = "inputs_differ"
+        return value
+    if any((archived["owner_authorization_reference"], archived["panel"]["panel_id"],
+            archived["route"]["route_id"], archived["status"]) != (run["grant"], panel_id, route_id, run["status"])
+           for run, archived in zip(baseline, reports)):
+        value["refusal"] = "index_mismatch"
+        return value
     measured_classes = evaluate._input_classes(reports)
     if not len(report["results"]) == len(panel.cases) == len(measured_classes):
         raise assets.P3Error("manifest_drift")

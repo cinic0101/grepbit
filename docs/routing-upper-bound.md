@@ -54,26 +54,37 @@ three changes and no other:
   - the `clarify` branch, with its kinds filtered to those of `S`, and dropped
     if none remain.
 
-  Every kept branch is byte-identical, in canonical JSON, to a branch of the
-  production schema.
+  The kept request and `declined` branches are identical, in canonical JSON,
+  to production branches. The kept `clarify` branch is the production branch
+  with its kinds filtered; each kept kind is identical to a production kind.
 
 The system message is `SYSTEM_INSTRUCTION + "\n" + canonical_json(narrowed
 context)`, built by `recipe_model._messages`. The user message is the
-question. The structured output is the narrowed schema, under the schema name
-`grepbit_recipe_request_<S>`, sent through the route's client as a JSON-schema
-constraint. `SYSTEM_INSTRUCTION` and every unlisted context field are
-unchanged, so only the context narrowing varies.
+question. The structured output is the narrowed schema, sent through the
+route's client as a JSON-schema constraint under the production schema name
+`grepbit_recipe_request`. `SYSTEM_INSTRUCTION`, the schema name and every
+unlisted context field are unchanged, so only the narrowed context and schema
+vary.
 
-The route is `litellm-gemma-4-31b` only. The Bedrock route pins and compacts
-only the production recipe schema, and a narrowed schema would need its own
-grammar-size check there; that is out of scope for v1.
+The route must be a LiteLLM route serving the 31B model, which is
+`litellm-gemma-4-31b`; any other route is refused with `route`. The replay
+client that grades the reply is the 31B LiteLLM client. The Bedrock route
+pins and compacts only the production recipe schema, and a narrowed schema
+would need its own grammar-size check there; that is out of scope for v1.
 
 ## Grading
 
-The content the model returned goes through
-`recipe_model.interpret_recipe_and_execute`, using the same replay client as
-`tools/evaluate.py --replay`: the production validators, kernel execution and
-presentation run unchanged, with zero further model calls. `p3_grading.grade`
+The route's exact response body is served again, by a mock transport, to
+`recipe_model.interpret_recipe_and_execute`. So the production envelope
+parsing, validators, kernel execution and presentation run unchanged, with
+zero further model calls.
+- **Refusals.** A model refusal (`message.refusal`) is graded as a decline,
+  as in production.
+- **Anomalies.** Before the replay, the envelope is checked once more. A
+  route or envelope anomaly stops the run, as in evaluation.
+- **Time budget.** The replay gets what is left of the per-call timeout
+  after the model call. With none left, the row is a `timeout`, as the
+  production budget would make it. `p3_grading.grade`
 then grades the result against the panel oracle. A response that is not valid
 JSON, or that the validators reject, is the model's own content: it is graded
 `invalid_output` and counts as wrong. The narrowed schema is a subset of the
@@ -90,8 +101,18 @@ The comparison reuses the candidate gate's rules (`docs/candidate-gate.md`):
   `unchanged_wrong`, `excluded` or `unassessed`, as in the gate.
   - A fix needs an assessed sentinel row on that input.
   - A route failure is unassessed, never a break.
-- **Verdict** per panel and overall, first match: `regression` >
-  `inconclusive` > `passed` > `no_fix`.
+- **Integrity checks**, in the gate's order. Each is a closed comparison
+  refusal:
+  - `candidate_identity`: a baseline report's bytes differ from the current
+    candidate's;
+  - `inputs_differ`: its panel id, panel asset digests, case order or
+    question hashes differ from the experiment's;
+  - `index_mismatch`: its authorization, panel, route or status differ from
+    its index row.
+- **Verdict** for the report's panel, first match: `regression` >
+  `inconclusive` > `passed` > `no_fix`. One report covers one panel; a union
+  across panels is computed by the reader of several reports, not by the
+  tool.
 - The report states the verdict as a development observation of a
   hypothetical router, not a candidate verdict.
 
@@ -136,9 +157,21 @@ These are the same as the reading diagnostic (`docs/reading-diagnostic.md`).
     and the `class`;
   - the case-id lists `fixed`, `broke`, `excluded` and `unassessed`;
   - `counts`, `verdict` and `refusal`.
-- **Comparison refusal.** When no baseline run under the report's authorization
-  is complete, the comparison has `verdict` null and `refusal` `no_sentinel`
-  (none recorded) or `sentinel_incomplete`. The report still reads back.
+- **Readback also checks:**
+  - that each validated action has evaluation v2's closed shape and agrees
+    with the graded action;
+  - that the graded layers carry only closed values;
+  - that no failed row carries a content-error code (content errors are
+    graded).
+- **Known limit.** Readback recomputes the scenario pins and the grader
+  version from the current code. After `dev`'s context or grader changes, an
+  older report no longer reads back.
+- **Comparison refusal.** When a sentinel is missing or incomplete, or an
+  integrity check fails, the comparison has `verdict` null. Its `refusal` is
+  one of `no_sentinel`, `sentinel_incomplete`, `candidate_identity`,
+  `inputs_differ` or `index_mismatch`. The report still reads back.
+- **Comparison fields.** The comparison also records `run_index_sha256` and
+  the sentinel runs' `recorded_at`.
 - **Preparation refusals**, each `invalid_manifest` with one closed reason:
   - `not_dev_panel`: the panel is not `dev`-tier;
   - `route`: the route is not a LiteLLM route;
