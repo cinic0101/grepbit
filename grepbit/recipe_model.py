@@ -127,9 +127,9 @@ SYSTEM_INSTRUCTION = (
     'choice limit. The reviewed enum lists are a vocabulary for representing grounded choices, '
     'never a menu to offer in full. '
     "count_basis and metric_meaning require a complete explicit Overview scope. "
-    'In a supported Overview question, a generic people count (headcount, how many people, including people who '
+    'With a complete explicit Overview scope, a generic people count (headcount, how many people, people who '
     'booked) that names no seats, accounts, attendance or distinct individuals is answered with the request plus '
-    'assumption:{"count_basis":"booked_seats"}. '
+    'assumption:{"count_basis":"booked_seats"}; otherwise omit assumption. '
     "Use count_basis only when the question itself is undecided between named meanings. "
     "Count choices include booked_seats and reviewed alternative count meanings; amount choices include "
     "confirmed_booked_amount and reviewed alternative amount meanings. Alternatives do not add executable metrics. "

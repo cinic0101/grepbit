@@ -71,7 +71,7 @@
     {
       "candidate_id": "p3-count-assumption-v13",
       "path": "p3-count-assumption-v13.json",
-      "sha256": "7dda6b3b713b1ace90dd867f4b8f98f07a8a8b2c7352a0200ea7bbf2c6f643f2",
+      "sha256": "8f29d043fe4e78d3afc9b70caa71d5e0622791c24d1f9e747d3fb545d4d2bbf6",
       "ancestor": "p3-v10-restoration-v12"
     }
   ]

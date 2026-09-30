@@ -89,8 +89,8 @@ input. See the
 [v10 restoration](docs/v10-restoration-v12.md).
 
 The current candidate, v13, implements the owner's count rule (ADR #136): a
-generic people or count question is answered with booked seats and the
-assumption stated, not clarified. An Overview answer may carry the typed
+generic people count that names no count meaning is answered with booked
+seats and the assumption stated, not clarified. An Overview answer may carry the typed
 `assumption` `{"count_basis": "booked_seats"}`, and `count_basis` clarification
 is kept for questions that are themselves undecided between named meanings.
 The kernel is unchanged, Bedrock fails closed and the 32,768-byte request cap

@@ -40,10 +40,10 @@ evaluator stay byte-identical.
    `count_basis`, is the constant `booked_seats`. It is not required. No other
    branch changes.
 3. **Instruction.** `SYSTEM_INSTRUCTION` states the rule:
-   - in a supported Overview question, a generic people count (headcount, how
-     many people, including people who booked) that names no seats, accounts,
-     attendance or distinct individuals is answered with the request and
-     `assumption`;
+   - with a complete explicit Overview scope, a generic people count
+     (headcount, how many people, people who booked) that names no seats,
+     accounts, attendance or distinct individuals is answered with the request
+     and `assumption`; otherwise the assumption is omitted;
    - `count_basis` is used only when the question itself is undecided between
      named meanings, and then offers exactly those meanings;
    - an explicitly required unsupported meaning still declines. The existing
@@ -51,10 +51,14 @@ evaluator stay byte-identical.
 
    The rule names the four count meanings instead of an "event" framing:
    under v11, 31B read booking wording as event framing even on unframed
-   headcount questions (`docs/count-cue-policy.md`). "Including people who
+   headcount questions (`docs/count-cue-policy.md`). The example "people who
    booked" keeps booking wording on a people count from counting as a basis.
-   The rule is scoped to supported Overview questions, so a count noun does not
-   turn a Compare, Breakdown or multi-month question into a narrowed Overview.
+   The rule reuses the instruction's existing term "complete explicit Overview
+   scope", so a question that asks only for a count (`dev-MN2`, `dev-MN3`) is
+   covered, and a count noun does not turn a Compare, Breakdown or multi-month
+   question into a narrowed Overview. "Otherwise omit assumption" closes the
+   rule for questions bound to seats (`dev-BM5`) and for questions without a
+   people count.
 4. **Context.**
    - The `count_basis` clarification text is narrowed the same way.
    - A new context entry, `count_assumption`, gives the assumed basis, what
@@ -100,10 +104,12 @@ evaluator stay byte-identical.
   32,768-byte cap for every question on the registered dev-tier panels and for
   a full 4,096-byte input without JSON escapes. The ruler checks this through
   the gateway client.
-  - For that input the request grows from 31,826 bytes (v12) to 32,720 bytes,
-    so the headroom is 48 bytes.
+  - On the evaluated 31B route, that input's request grows from 31,826 bytes
+    (v12) to 32,744 bytes, so the headroom is 24 bytes. The request carries the
+    model name, so the headroom depends on the route: 21 bytes on the 12B
+    route, which the grant does not run.
   - A 4,096-byte input whose JSON escapes (newlines, quotes, backslashes) add
-    more than 48 bytes is now refused as `input_too_large` before any send; v12
+    more than 24 bytes is now refused as `input_too_large` before any send; v12
     tolerated 942. It fails closed.
   - The owner said the cap may be raised. v13 does not use that, so the limits
     stay part of the unchanged identity. A later candidate that adds
@@ -140,7 +146,10 @@ evaluator stay byte-identical.
 
 ## Evaluation (the grant's steps 4 and 5)
 
-- **Runs.** One v13 run on each v2 dev panel under the grant, 46 calls.
+- **Runs.** One v13 run on each of the two new v2 panels of #138,
+  `p3-dev-bound-meaning-v2` and `p3-dev-mechanism-probe-v2`, under the grant:
+  46 calls. The other registered dev panels, including
+  `p3-dev-matrix-compare-first-v2`, are not run.
 - **Gate.** Then `tools/evaluate.py --gate --candidate p3-count-assumption-v13
   --baseline-candidate p3-v10-restoration-v12 --route litellm-gemma-4-31b
   --owner-authorization-reference <grant> --panels p3-dev-bound-meaning-v2
@@ -158,5 +167,15 @@ evaluator stay byte-identical.
   renders it. So ADR #136's consequence that the user sees seats labelled as
   seats is not implemented yet.
 - This is a single instruction change on one route, one run per panel. It may
-  also move unrelated decisions. The gate measures that against v12's stable
-  classes.
+  also move unrelated decisions. The gate measures that only on the two run
+  panels, against v12's stable classes.
+- **Unmeasured near-miss.** `dev-C1` (all three languages; "How many people
+  booked at CTR-B01 in March 2026? I am not sure whether you count seats or
+  booking accounts.") expects a `count_basis` clarification. Its first sentence
+  matches the new rule's trigger, and only its second sentence, which names
+  seats and accounts, excludes it. It is on `p3-dev-matrix-compare-first-v2`,
+  which the grant does not run and which has no annex. So neither a wrong
+  answer there nor a spurious assumption on that panel's Overview answers
+  (`dev-A1`, `dev-A2`) is measured. `dev-BM7` covers the "undecided between
+  named meanings" row without the "people booked" wording. Measuring `dev-C1`
+  needs its own owner authorization.

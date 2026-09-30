@@ -88,8 +88,9 @@ class ContractTextTests(unittest.TestCase):
 
     def test_the_instruction_and_context_state_the_rule(self):
         text = recipe_model.SYSTEM_INSTRUCTION
-        for phrase in ('assumption:{"count_basis":"booked_seats"}', "In a supported Overview question",
-                       "including people who booked", "names no seats, accounts, attendance or distinct individuals",
+        for phrase in ('assumption:{"count_basis":"booked_seats"}', "With a complete explicit Overview scope",
+                       "how many people, people who booked", "otherwise omit assumption",
+                       "names no seats, accounts, attendance or distinct individuals",
                        "undecided between named meanings"):
             self.assertIn(phrase, text)
         context = recipe_model.runtime_context()
