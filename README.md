@@ -139,10 +139,17 @@ read-then-decide split to counts:
   names booked seats gains one only if the model reads it as `unresolved`.
 - The model still asks its own `count_basis` clarification when a question is
   undecided between named meanings.
-- v16 has no live result yet. It is measured against v15 on the two v2 dev
-  panels.
+- The pre-registered gate against v15 on the two v2 dev panels is **passed**,
+  with one run per panel:
+  - it fixed `dev-BM6` (all languages) and `dev-MN1.en`, and broke none;
+  - `p3-dev-bound-meaning-v2` is 24/24;
+  - the seven remaining count inputs (`dev-MN1` zh/ja, `dev-MN2`, `dev-MN3`)
+    are the model's own four-meaning `count_basis` clarifications.
 
-See the [v16 contract](docs/count-reading-v16.md).
+  This is a development observation, not promotion.
+
+See the [v16 contract](docs/count-reading-v16.md) and the
+[gate result](docs/count-reading-v16-result.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
