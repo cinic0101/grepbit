@@ -37,9 +37,11 @@ For each named panel, on the named route:
   selection as `--aggregate`, so a run registered under another id with the
   same bytes (v7 for v12) is included.
 - **Sentinel.** At least one baseline run must carry `grant` equal to the given
-  reference. One owner authorization is the gate's definition of "the same
-  session". The sentinel makes the baseline classes hold in the candidate's
-  session, not only in earlier ones.
+  reference, and at least one of those runs must be `complete`. One owner
+  authorization is the gate's definition of "the same session". The sentinel
+  makes the baseline classes hold in the candidate's session, not only in
+  earlier ones. An incomplete sentinel still counts as a baseline run, but
+  alone it gives no same-session evidence.
 - **Candidate run.** Exactly one indexed run whose candidate's registry bytes
   equal the gated candidate's, with the same `grant`. Several runs under one
   authorization are refused, so there is no best-of and no rerun to green.
@@ -52,6 +54,10 @@ For each named panel, on the named route:
     of its index `candidate_id`.
   - The candidate report's panel id, panel asset digests, case order and
     question hashes must equal each baseline report's.
+  - Every selected report's authorization reference, panel id, route id and
+    status must equal its index entry's grant, the named panel, the named route
+    and the entry's status. The index decides the selection, so it must agree
+    with the digest-pinned reports.
 
 ## Per-input classes
 
@@ -61,10 +67,18 @@ runs, the sentinel included: `stable_correct`, `stable_wrong`, `flaky` or
 
 The candidate row is `correct` or `wrong` as graded, or `unassessed`.
 Unassessed means that no model result was usable: the row did not complete,
-is `not_run` or `operational_failure`, or has a runner error. A graded row
-with an error is the model's answer and counts as wrong. For example,
-`invalid_output` (malformed model content) on an input the baseline
-consistently got right is a break, not an inconclusive gate.
+is `not_run` or `operational_failure`, has a runner error, or has an error
+that was not raised on the model's own content.
+- A graded row whose error was raised on the model's content, after the
+  envelope was accepted, is the model's answer and counts as wrong. These are
+  `invalid_json`, `invalid_request` and `constraint_conflict`. For example,
+  malformed JSON on an input the baseline consistently got right is a break,
+  not an inconclusive gate.
+- Any other error leaves the row unassessed, even when the grader records the
+  row as `invalid_output`. Examples are an envelope or gateway failure
+  (`invalid_response`, `unsupported_output`), a transport, budget, kernel or
+  source failure, and a missing result. A route failure never becomes a
+  regression.
 
 The baseline classes keep the aggregate taxonomy, which also counts a graded
 row with an operational error as unassessed. That difference only makes a pass
@@ -74,6 +88,12 @@ harder:
 - An input with too few assessed baseline rows is `insufficient`, so a correct
   candidate row is not counted as a fix.
 
+A fix also needs same-session evidence: at least one sentinel row on that
+input must be assessed (in the aggregate taxonomy). Otherwise a correct
+candidate row on a `stable_wrong` input rests on earlier sessions only, and it
+is `excluded`. A break needs no such evidence, which again only makes a pass
+harder.
+
 The first matching row of the table applies, so an unassessed candidate row
 is `unassessed` whatever the baseline class.
 
@@ -81,7 +101,8 @@ is `unassessed` whatever the baseline class.
 | --- | --- | --- |
 | any | unassessed | `unassessed` |
 | `stable_correct` | wrong | `broke` |
-| `stable_wrong` | correct | `fixed` |
+| `stable_wrong`, a sentinel row assessed | correct | `fixed` |
+| `stable_wrong`, no sentinel row assessed | correct | `excluded` |
 | `stable_correct` | correct | `unchanged_correct` |
 | `stable_wrong` | wrong | `unchanged_wrong` |
 | `flaky` or `insufficient` | correct or wrong | `excluded`: reported with the candidate result, never counted as a fix or a break |
@@ -112,9 +133,12 @@ The gate prints one canonical JSON object and exits 0 whatever the verdict:
 - `run_index_sha256`;
 - `panels`, in the order named. Each entry has:
   - `panel_id`, `baseline_runs`, `sentinel_runs` and `candidate_run`;
+  - `recorded_at`: the index times of the sentinel runs and the candidate run;
+  - `other_candidate_runs`: runs with the candidate's bytes on the panel and
+    route under other authorizations, which this gate ignores;
   - `inputs`, in panel order: `case_id`, `family_id`, `baseline_class`,
-    `candidate` (`correct`, `wrong` or `unassessed`), the candidate row's
-    graded `outcome` and the gate `class`;
+    `sentinel_assessed`, `candidate` (`correct`, `wrong` or `unassessed`), the
+    candidate row's graded `outcome` and the gate `class`;
   - `counts` per gate class;
   - the case-id lists `fixed`, `broke`, `excluded` and `unassessed`;
   - `verdict`;
@@ -131,10 +155,12 @@ A refusal prints the existing safe code `invalid_manifest` with one closed
 | `not_dev_panel` | A named panel is not registered with tier `dev`. |
 | `no_baseline_runs` | A panel has no baseline run. |
 | `no_sentinel` | No baseline run on the panel was recorded under the given authorization. |
+| `sentinel_incomplete` | No baseline run on the panel recorded under the given authorization is complete. |
 | `no_candidate_run` | No candidate run on the panel was recorded under the given authorization. |
 | `multiple_candidate_runs` | More than one candidate run on the panel was recorded under the given authorization. |
 | `candidate_identity` | A selected report's candidate bytes differ from its index entry's registry bytes. |
 | `inputs_differ` | The candidate report's panel, case order or question hashes differ from a baseline report's. |
+| `index_mismatch` | A selected report's authorization, panel, route or status differs from its index entry or the named panel and route. |
 
 An archive that is missing or does not match its digest fails closed with
 `manifest_drift`, as in `--aggregate`. A malformed grant reference or a
@@ -148,6 +174,13 @@ repeated panel is `invalid_arguments`.
   - It is a development observation, not promotion, a probability or
     generalization.
   - Excluded inputs remain unknown.
+- One authorization bounds neither time nor order. A grant may span hours or
+  days, and the sentinel may be recorded after the candidate. The output
+  gives the index times so a reader can see the gap; the gate does not limit
+  it.
+- The gate refuses a second candidate run under the same authorization. Runs
+  under other authorizations are listed in `other_candidate_runs`, so a
+  re-gate under a new authorization stays visible.
 - The panels are named before the run, in the proposal the owner authorizes,
   and the output lists them. For #79 count candidates the panels are
   `p3-dev-bound-meaning-v1` and `p3-dev-mechanism-probe-v1`. A sentinel and a

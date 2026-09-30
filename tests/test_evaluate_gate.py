@@ -35,10 +35,11 @@ class CandidateGateTests(EvaluateHarness):
         self.repetitions, self.recorded = {}, 0
 
     # ----------------------------------------------------------------- helpers
-    def client(self, broken=(), failing=(), wrong=()):
+    def client(self, broken=(), failing=(), wrong=(), error_page=()):
         """Scripted answers per case id: a valid decline (assessed and wrong: every chosen input expects an
         answer), raw invalid JSON (graded invalid_output: the candidate's answer, but unassessed in a
-        baseline's aggregate class) or a transport error (unassessed)."""
+        baseline's aggregate class), a transport error (unassessed) or a gateway error page (an envelope
+        failure that stops the run: unassessed, never the model's answer)."""
         cases = self.inputs
 
         def respond(request):
@@ -47,6 +48,8 @@ class CandidateGateTests(EvaluateHarness):
             case = next(case for case in cases if case.question == question)
             if case.case_id in failing:
                 raise httpx.ConnectError("synthetic transport failure", request=request)
+            if case.case_id in error_page:
+                return httpx.Response(200, text="<html>gateway error</html>", headers={"content-type": "text/html"})
             content = ("{not json" if case.case_id in broken else json.dumps({"outcome": "declined"})
                        if case.case_id in wrong else json.dumps(self.by_oracle[case.oracle_id]))
             return httpx.Response(200, json=envelope(content))
@@ -66,7 +69,8 @@ class CandidateGateTests(EvaluateHarness):
                 patch.object(registry, "current", return_value=entry), patch.object(self, "candidate", candidate_id):
             yield
 
-    async def observe(self, grant, *, candidate=None, panel="synthetic-dev", broken=(), failing=(), wrong=()):
+    async def observe(self, grant, *, candidate=None, panel="synthetic-dev", broken=(), failing=(), wrong=(),
+                      error_page=()):
         candidate = candidate or self.baseline
         key = (candidate, panel)
         self.repetitions[key] = self.repetitions.get(key, 0) + 1
@@ -75,7 +79,7 @@ class CandidateGateTests(EvaluateHarness):
             output = self.output()
             authorization = self.root / f"authorization-{output.name}.json"
             runner.bind_authorization(packet, f"{GRANT}{grant}", authorization, output)
-            await self.run_mock(packet, output, authorization, client=self.client(broken, failing, wrong))
+            await self.run_mock(packet, output, authorization, client=self.client(broken, failing, wrong, error_page))
         self.recorded += 1
         return runner.record(output / "report.json", runs_path=self.runs,
                              now=f"2026-09-29T00:{self.recorded:02d}:00Z")
@@ -175,6 +179,62 @@ class CandidateGateTests(EvaluateHarness):
         self.assertEqual(result["counts"], {kind: first["counts"][kind] + last["counts"][kind] for kind in _CLASSES})
         self.assertEqual(result["verdict"], "regression")
 
+    async def test_gate_keeps_route_failures_out_of_the_verdict_and_needs_same_session_evidence(self):
+        ids = [case.case_id for case in self.inputs]
+        x, z, w = ids[0], ids[2], ids[-1]
+        earlier = [await self.observe(901, wrong={x}), await self.observe(901, wrong={x})]
+        sentinel = await self.observe(902, wrong={x})
+        route_failure = await self.observe(902, candidate=OTHER, error_page={z})
+        await self.observe(903, wrong={x})
+        regression = await self.observe(903, candidate=OTHER, broken={z}, failing={w})
+        stopped = await self.observe(904, error_page={x})
+        await self.observe(904, candidate=OTHER)
+        unseen = await self.observe(905, failing={x})
+        await self.observe(905, candidate=OTHER)
+        self.assertEqual((route_failure["status"], stopped["status"], unseen["status"]),
+                         ("incomplete", "incomplete", "complete"))
+
+        # A gateway error page is an envelope failure: unassessed, so inconclusive rather than a regression.
+        result = self.gate(902)
+        [panel] = result["panels"]
+        rows = {row["case_id"]: row for row in panel["inputs"]}
+        self.assertEqual((rows[z]["baseline_class"], rows[z]["outcome"], rows[z]["candidate"], rows[z]["class"]),
+                         ("stable_correct", "invalid_output", "unassessed", "unassessed"))
+        self.assertEqual((panel["fixed"], panel["broke"], panel["verdict"]), ([x], [], "inconclusive"))
+        self.assertEqual(panel["recorded_at"], {"sentinel_runs": [sentinel["recorded_at"]],
+                                                "candidate_run": route_failure["recorded_at"]})
+        # Same-bytes candidate runs under other authorizations stay visible: no silent re-gate.
+        self.assertEqual(panel["other_candidate_runs"],
+                         [run["run_id"] for run in runner.load_runs(self.runs)
+                          if run["candidate_id"] == OTHER and run["grant"] != f"{GRANT}902"])
+
+        # A break outranks an unassessed row on the same panel.
+        [panel] = self.gate(903)["panels"]
+        self.assertEqual((panel["candidate_run"], panel["broke"], panel["unassessed"], panel["verdict"]),
+                         (regression["run_id"], [z], [w], "regression"))
+
+        # A sentinel that did not complete gives no same-session evidence.
+        self.refused("sentinel_incomplete", 904)
+        # A complete sentinel that could not assess x: x is not a fix, however the earlier sessions classed it.
+        [panel] = self.gate(905)["panels"]
+        rows = {row["case_id"]: row for row in panel["inputs"]}
+        self.assertEqual((rows[x]["baseline_class"], rows[x]["sentinel_assessed"], rows[x]["candidate"],
+                          rows[x]["class"]), ("stable_wrong", False, "correct", "excluded"))
+        self.assertEqual((panel["fixed"], panel["excluded"], panel["verdict"]), ([], [x], "no_fix"))
+
+        # The index decides the selection, so it must agree with each digest-pinned report.
+        rows = runner.load_runs(self.runs)
+
+        def index(changed):
+            self.runs.write_text("".join(json.dumps(changed.get(row["run_id"], row), sort_keys=True) + "\n"
+                                         for row in rows))
+
+        for label, changed in (("grant", dict(earlier[0], grant=f"{GRANT}902")),
+                               ("status", dict(route_failure, status="complete"))):
+            with self.subTest(field=label):
+                index({changed["run_id"]: changed})
+                self.refused("index_mismatch", 902)
+
     # ----------------------------------------------------------------- refusals
     async def test_gate_refuses_by_identity_with_one_closed_reason_before_any_verdict(self):
         x = self.inputs[0].case_id
@@ -264,6 +324,7 @@ class CandidateGateTests(EvaluateHarness):
         with patch.object(runner, "RUNS", self.runs), patch.object(runner, "PANELS", self.panels), \
                 patch("sys.stdout"), patch("sys.stderr"):
             for bad in (argv[:-2], argv[:1] + argv[3:], argv + ["--db", str(self.database)],
+                        argv + ["--panels", "synthetic-dev"],
                         argv + ["--repetition", "2"], [("--panel" if a == "--panels" else a) for a in argv],
                         ["--aggregate", *argv[1:]], ["--gate", "--panel", "synthetic-dev", "--route", "litellm-31b",
                                                      "--candidate", OTHER]):

@@ -1004,9 +1004,12 @@ _REPLAY_BASE = "https://replay.invalid/v1"
 _REPLAY_TOKEN = "replay-synthetic-token"
 _REPLAY_CLASSES = ("replayed_same", "replayed_changed", "not_replayable")
 _AGGREGATE_CLASSES = ("stable_correct", "stable_wrong", "flaky", "insufficient")
-GATE_REFUSALS = ("same_bytes", "not_dev_panel", "no_baseline_runs", "no_sentinel", "no_candidate_run",
-                 "multiple_candidate_runs", "candidate_identity", "inputs_differ")
+GATE_REFUSALS = ("same_bytes", "not_dev_panel", "no_baseline_runs", "no_sentinel", "sentinel_incomplete",
+                 "no_candidate_run", "multiple_candidate_runs", "candidate_identity", "inputs_differ",
+                 "index_mismatch")
 _GATE_CLASSES = ("fixed", "broke", "unchanged_correct", "unchanged_wrong", "excluded", "unassessed")
+# Errors raised on the model's own content after the envelope was accepted: the model's answer, graded wrong.
+_GATE_MODEL_ERRORS = ("invalid_json", "invalid_request", "constraint_conflict")
 
 
 class ReplayRefused(assets.P3Error):
@@ -1248,18 +1251,24 @@ def _gate_view(report: dict) -> tuple:
 
 
 def _gate_unassessed(result: dict) -> bool:
-    """No usable model result. A graded row with an error, such as invalid_output, is the model's answer."""
+    """No usable model result. A graded row whose error was raised on the model's own content, such as
+    invalid_json, is the model's answer; an envelope, gateway, transport, budget, kernel or source error is not."""
+    error = result.get("operational_error")
     return (result["status"] != "completed" or result["outcome"] in ("operational_failure", "not_run")
-            or result.get("runner_error_code") is not None)
+            or result.get("runner_error_code") is not None
+            or error is not None and error not in _GATE_MODEL_ERRORS)
 
 
-def _gate_class(baseline: str, candidate: str) -> str:
+def _gate_class(baseline: str, candidate: str, sentinel_assessed: bool) -> str:
     if candidate == "unassessed":
         return "unassessed"
     if baseline == "stable_correct":
         return "unchanged_correct" if candidate == "correct" else "broke"
+    if baseline == "stable_wrong" and candidate == "correct":
+        # A fix needs same-session evidence that the baseline still gets the input wrong.
+        return "fixed" if sentinel_assessed else "excluded"
     if baseline == "stable_wrong":
-        return "fixed" if candidate == "correct" else "unchanged_wrong"
+        return "unchanged_wrong"
     return "excluded"
 
 
@@ -1290,11 +1299,13 @@ def gate(candidate_id: str, baseline_id: str, route_id: str, reference: str, pan
         baseline = _same_bytes_runs(panel_id, route_id, base, runs, identities, candidates_index)
         if not baseline:
             raise GateRefused("no_baseline_runs")
-        sentinels = [run["run_id"] for run in baseline if run["grant"] == reference]
+        sentinels = [position for position, run in enumerate(baseline) if run["grant"] == reference]
         if not sentinels:
             raise GateRefused("no_sentinel")
-        candidates = [run for run in _same_bytes_runs(panel_id, route_id, target, runs, identities, candidates_index)
-                      if run["grant"] == reference]
+        if all(baseline[position]["status"] != "complete" for position in sentinels):
+            raise GateRefused("sentinel_incomplete")
+        same_bytes = _same_bytes_runs(panel_id, route_id, target, runs, identities, candidates_index)
+        candidates = [run for run in same_bytes if run["grant"] == reference]
         if not candidates:
             raise GateRefused("no_candidate_run")
         if len(candidates) > 1:
@@ -1306,17 +1317,26 @@ def gate(candidate_id: str, baseline_id: str, route_id: str, reference: str, pan
             raise GateRefused("candidate_identity")
         if any(inputs != views[-1][1] for _, inputs in views[:-1]):
             raise GateRefused("inputs_differ")
+        if any((report["owner_authorization_reference"], report["panel"]["panel_id"], report["route"]["route_id"],
+                report["status"]) != (run["grant"], panel_id, route_id, run["status"])
+               for run, report in zip(selected, reports)):
+            raise GateRefused("index_mismatch")
         report, inputs = reports[-1], []
-        for row, score, measured in zip(report["results"], report["summary"]["per_input"],
-                                        _input_classes(reports[:-1])):
+        for position, (row, score, measured) in enumerate(zip(report["results"], report["summary"]["per_input"],
+                                                              _input_classes(reports[:-1]))):
             observed = "unassessed" if _gate_unassessed(row) else "correct" if score["correct"] else "wrong"
+            seen = any(not _unassessed(reports[sentinel]["results"][position]) for sentinel in sentinels)
             inputs.append({"case_id": row["case_id"], "family_id": row["family_id"],
-                           "baseline_class": measured["class"], "candidate": observed, "outcome": row["outcome"],
-                           "class": _gate_class(measured["class"], observed)})
+                           "baseline_class": measured["class"], "sentinel_assessed": seen, "candidate": observed,
+                           "outcome": row["outcome"], "class": _gate_class(measured["class"], observed, seen)})
         counts = {kind: sum(item["class"] == kind for item in inputs) for kind in _GATE_CLASSES}
         panels.append({"panel_id": panel_id, "baseline_runs": [run["run_id"] for run in baseline],
-                       "sentinel_runs": sentinels, "candidate_run": candidates[0]["run_id"], "inputs": inputs,
-                       "counts": counts,
+                       "sentinel_runs": [baseline[position]["run_id"] for position in sentinels],
+                       "candidate_run": candidates[0]["run_id"],
+                       "recorded_at": {"sentinel_runs": [baseline[position]["recorded_at"] for position in sentinels],
+                                       "candidate_run": candidates[0]["recorded_at"]},
+                       "other_candidate_runs": [run["run_id"] for run in same_bytes if run["grant"] != reference],
+                       "inputs": inputs, "counts": counts,
                        **{kind: [item["case_id"] for item in inputs if item["class"] == kind]
                           for kind in ("fixed", "broke", "excluded", "unassessed")},
                        "verdict": _gate_verdict(counts)})
@@ -1348,7 +1368,7 @@ def main(argv=None) -> int:
     for name in ("candidate", "baseline-candidate", "panel", "route", "accepted-commit",
                  "owner-authorization-reference"):
         parser.add_argument("--" + name)
-    parser.add_argument("--panels", nargs="+")
+    parser.add_argument("--panels", nargs="+", action="extend")
     parser.add_argument("--repetition", type=int)
     for name in smoke.POLICY_KEYS:
         parser.add_argument("--gateway-" + name, choices=("enabled", "disabled"))
