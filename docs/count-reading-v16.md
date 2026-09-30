@@ -35,6 +35,10 @@ evaluator stay byte-identical.
    `count_request`, with those six values in that order. No other branch changes.
 3. **Instruction.**
    - Every Overview request carries `count_request`, with the definition above.
+   - A count of bookings is the Overview's own bookings output, so it is
+     `none`, never `known_booking_accounts`. The six values have no bookings
+     entry, and without this clause a bookings question could be declined or
+     gain the seats assumption.
    - The server answers an unresolved count with booked seats and states the
      assumption, and it declines a named unavailable count.
    - `count_basis` is used only when the question itself is undecided between
@@ -67,6 +71,13 @@ evaluator stay byte-identical.
       as when the model declines itself;
     - `source_proposal` keeps the model's request, as for v15's server-built
       clarification.
+- **Two decline routes.** A named unavailable count is declined either by the
+  model returning `{"outcome": "declined"}`, as the existing decline rules
+  allow, or by the code from the typed reading. Both grade as a decline.
+- **Precedence.** A named unavailable count on an otherwise invalid Overview
+  request stays `invalid_request`. The native validators run first, so the
+  server declines only a valid request. For example, `distinct_people` with a
+  start that is not a month start gives `request_values`.
 - **The model's `count_basis` clarification** stays a model action and is
   unchanged. It is limited by the text to questions that are themselves
   undecided between named meanings.
@@ -127,8 +138,10 @@ Each gets a derived v16 sibling, `*-read-responses-v1.json`:
     violates one rule.
 - **Tools.** `tools/reading_diagnostic.py` and `tools/routing_upper_bound.py`
   read a named unavailable count as a decline.
-- **Earlier rulers.** The v15 ruler skips its runtime checks once superseded,
-  and its derived-script checks still run.
+- **Earlier rulers.** The v15 ruler skips only its identity-bound checks once
+  superseded: the registry, the version text, and a legacy Overview parse. Its
+  Compare orientation behaviour checks and derived-script checks still run,
+  because v16 keeps that behaviour.
 - **Registry pins.** `tests/test_candidate_registry.py` names v16 as current,
   with 15 entries.
 
@@ -157,4 +170,11 @@ Each gets a derived v16 sibling, `*-read-responses-v1.json`:
   decided in code, a named-seats question can no longer gain one.
 - **The model's `count_basis` clarification remains prose-decided.** The v12
   failure was false clarifications on generic counts, and it may persist.
+- **Bookings questions are unmeasured.** The two gate panels have no question
+  that asks for a bookings count, such as `dev-A2` on the unrun
+  `p3-dev-matrix-compare-first-v2`. So the bookings clause is not tested live.
+- **The derived scripts read `none`.** They give every scripted Overview request
+  `none`, including `dev-BM5`, which names seats and would faithfully read
+  `booked_seats`. Both execute alike. The scripts exercise none of the new
+  paths; the ruler covers those.
 - **Scope.** One route, one run per panel, exposed inputs. It is not promotion.

@@ -110,8 +110,8 @@ SYSTEM_INSTRUCTION = (
     "using only the shared runtime meanings and closed output schema. "
     "Return one JSON object, no prose, markdown, reasoning, confidence, answers, rows, SQL or tasks. "
     'A request has exactly outcome:"request", recipe_id (one of "overview", "compare", "breakdown"), '
-    'recipe_version:"0.1" and request (the selected native object); Compare also has orientation and '
-    'Overview count_request. '
+    'recipe_version:"0.1" and request (the selected native object); Compare also has orientation, and '
+    'Overview also has count_request. '
     'Read the entire question before selecting an action. Collect its requested outputs and '
     'explicit qualifiers. Outputs requested together or in addition are cumulative '
     'requirements, not competing interpretations. An explicitly named event or population binds '
@@ -137,9 +137,10 @@ SYSTEM_INSTRUCTION = (
     'Every Overview request carries count_request: the count the question asks for; "unresolved" when it asks '
     'for a count whose meaning it leaves open, such as a generic headcount or number of people; "none" when it '
     'asks for no count; otherwise the named meaning (booked_seats, known_booking_accounts, attendance_visits or '
-    'distinct_people); the server answers an unresolved count with booked seats and states that assumption, and '
-    'declines a named unavailable count. Use count_basis only when the question itself is undecided between '
-    'named meanings. '
+    'distinct_people); a count of bookings is the Overview bookings output, so it is none, never '
+    'known_booking_accounts; the server answers an unresolved count with booked seats and states that '
+    'assumption, and declines a named unavailable count. Use count_basis only when the question itself is '
+    'undecided between named meanings. '
     "Count choices include booked_seats and reviewed alternative count meanings; amount choices include "
     "confirmed_booked_amount and reviewed alternative amount meanings. Alternatives do not add executable metrics. "
     'Every Compare request carries orientation:"stated" or orientation:"unresolved": whether the question '
@@ -345,7 +346,8 @@ class RecipeProposal:
     recipe_id: Literal["overview", "compare", "breakdown"]
     request: _NativeRequest
     orientation: Literal["stated", "unresolved"] | None = None
-    count_request: str | None = None
+    count_request: Literal["none", "booked_seats", "unresolved", "known_booking_accounts", "attendance_visits",
+                           "distinct_people"] | None = None
     recipe_version: str = field(default="0.1", init=False)
 
     def __post_init__(self) -> None:

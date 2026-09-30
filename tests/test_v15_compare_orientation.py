@@ -21,7 +21,8 @@ OVERVIEW = {"center_code": "CTR-A01", "start": "2026-03-01T00:00:00+08:00", "end
 
 
 def superseded():
-    """v15 is registered but no longer current (v16, ADR #146): its runtime checks no longer apply."""
+    """v15 is registered but no longer current (v16, ADR #146). Only its identity-bound checks stop applying:
+    the Compare orientation behaviour stays live in v16 and stays checked here."""
     index = registry.load_index()
     return V15 in [r["candidate_id"] for r in index["entries"]] and index["current"] != V15
 
@@ -30,7 +31,7 @@ class _LiveV15:
     @classmethod
     def setUpClass(cls):
         if superseded():
-            raise unittest.SkipTest("v15 superseded; its runtime is no longer live")
+            raise unittest.SkipTest("v15 superseded; its registration is no longer current")
         super().setUpClass()
 
 
@@ -58,7 +59,7 @@ def _run(question, action, database):
         question, database, evaluate._replay_client(model.canonical_json(action), [])))
 
 
-class ProposalTests(_LiveV15, unittest.TestCase):
+class ProposalTests(unittest.TestCase):
     def test_compare_requires_one_typed_orientation_and_no_other_recipe_takes_it(self):
         for orientation in ("stated", "unresolved"):
             parsed = recipe_model._proposal(_compare(orientation))
@@ -77,6 +78,8 @@ class ProposalTests(_LiveV15, unittest.TestCase):
             self.assertEqual((refused.exception.code, refused.exception.reason), ("invalid_request", "root_shape"))
 
     def test_direct_construction_keeps_the_legacy_shape_and_refuses_other_values(self):
+        if superseded():
+            self.skipTest("v15 superseded; a later candidate may require more on the Overview it parses here")
         request = recipe_model._proposal(_compare()).request
         legacy = recipe_model.RecipeProposal("compare", request)
         self.assertIsNone(legacy.orientation)
@@ -89,7 +92,7 @@ class ProposalTests(_LiveV15, unittest.TestCase):
                 recipe_model.RecipeProposal(recipe, native, orientation)
 
 
-class ContractTextTests(_LiveV15, unittest.TestCase):
+class ContractTextTests(unittest.TestCase):
     def test_the_schema_requires_orientation_on_compare_and_drops_model_comparison_roles(self):
         branches = recipe_model.output_schema()["oneOf"]
         requests = {branch["properties"]["recipe_id"]["const"]: branch for branch in branches
@@ -113,10 +116,11 @@ class ContractTextTests(_LiveV15, unittest.TestCase):
         self.assertNotIn("use comparison_roles only when", text)
         context = recipe_model.runtime_context()
         self.assertIn("Server-built", context["clarification"]["comparison_roles"])
-        self.assertEqual((recipe_model.INSTRUCTION_VERSION, recipe_model.CONTEXT_VERSION,
-                          recipe_model.OUTPUT_CONTRACT, recipe_model.STRUCTURED_OUTPUT_VERSION),
-                         ("recipe-selection-instruction-v8", "learningops-recipe-context-v5",
-                          "recipe-request-json-v4", "recipe-structured-output-v4"))
+        if not superseded():
+            self.assertEqual((recipe_model.INSTRUCTION_VERSION, recipe_model.CONTEXT_VERSION,
+                              recipe_model.OUTPUT_CONTRACT, recipe_model.STRUCTURED_OUTPUT_VERSION),
+                             ("recipe-selection-instruction-v8", "learningops-recipe-context-v5",
+                              "recipe-request-json-v4", "recipe-structured-output-v4"))
 
     def test_every_dev_question_and_a_full_input_fit_the_unchanged_request_cap(self):
         self.assertEqual((MAX_INPUT_BYTES, MAX_REQUEST_BYTES), (4096, 32768))
@@ -149,11 +153,9 @@ class ContractTextTests(_LiveV15, unittest.TestCase):
         self.assertEqual(refused.exception.code, "invalid_input")
 
 
-class RuntimeAndEvaluationTests(_LiveV15, unittest.TestCase):
+class RuntimeAndEvaluationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        if superseded():
-            raise unittest.SkipTest("v15 superseded; its runtime is no longer live")
         cls._tmp = tempfile.TemporaryDirectory(prefix="v15-", dir=ROOT / ".artifacts")
         cls.database = Path(cls._tmp.name) / "fixture.sqlite"
         fixture.build(cls.database)

@@ -89,7 +89,7 @@
     {
       "candidate_id": "p3-count-reading-v16",
       "path": "p3-count-reading-v16.json",
-      "sha256": "cdc4152e6fe1ad27dc51f2756d2b8d9c4007b97fed344f19b20c79f038b46610",
+      "sha256": "2d3f72b3a3992e303990481c62db4962211af5d174ec0ab2bcc423d5e0837c6d",
       "ancestor": "p3-compare-orientation-v15"
     }
   ]

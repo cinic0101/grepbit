@@ -135,7 +135,8 @@ read-then-decide split to counts:
 - Every Overview request carries a typed `count_request`.
 - The code states the owner's booked-seats assumption for an `unresolved`
   count, and it declines a named unavailable count.
-- A question that names booked seats can no longer gain an assumption.
+- A question read as `booked_seats` or `none` states no assumption; one that
+  names booked seats gains one only if the model reads it as `unresolved`.
 - The model still asks its own `count_basis` clarification when a question is
   undecided between named meanings.
 - v16 has no live result yet. It is measured against v15 on the two v2 dev

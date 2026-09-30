@@ -826,8 +826,9 @@ def _action_shape(action: object) -> bool:
     if outcome == "declined":
         return action == {"outcome": "declined"}
     if outcome == "request":
-        # An Overview proposal may carry the one stated count assumption (docs/count-assumption.md), and a
-        # Compare proposal one typed orientation (docs/compare-orientation-v15.md).
+        # An Overview proposal may carry the one stated count assumption (v13, docs/count-assumption.md) or one
+        # typed count reading (v16, docs/count-reading-v16.md), and a Compare proposal one typed orientation
+        # (v15, docs/compare-orientation-v15.md).
         base = {"outcome", "recipe_id", "recipe_version", "request"}
         return (set(action) in (base, base | {"assumption"}, base | {"orientation"}, base | {"count_request"})
                 and isinstance(action["recipe_id"], str) and action["recipe_id"] in _ACTION_RECIPES

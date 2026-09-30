@@ -100,7 +100,9 @@ class ContractTextTests(unittest.TestCase):
         text = recipe_model.SYSTEM_INSTRUCTION
         for phrase in ("Every Overview request carries count_request",
                        "whose meaning it leaves open", "the server answers an unresolved count with booked seats",
-                       "declines a named unavailable count", "undecided between named meanings"):
+                       "declines a named unavailable count", "undecided between named meanings",
+                       "a count of bookings is the Overview bookings output, so it is none, never "
+                       "known_booking_accounts"):
             self.assertIn(phrase, text)
         context = recipe_model.runtime_context()
         self.assertIn("only when the question explicitly leaves the count basis undecided between named meanings",
@@ -238,6 +240,20 @@ class RuntimeAndEvaluationTests(unittest.TestCase):
                 annexed = evaluate.annexed({"oracle_id": "dev-MN1.v2",
                                             "validated_action": model.canonical_json(_overview(value))}, True, expected)
                 self.assertEqual(annexed, verdict)
+
+
+class ToolReadbackTests(unittest.TestCase):
+    def test_the_diagnostic_and_routing_tools_read_a_named_unavailable_count_as_a_decline(self):
+        from tools import reading_diagnostic, routing_upper_bound
+        for value in COUNTS:
+            text = model.canonical_json(_overview(value))
+            decline = value in ("known_booking_accounts", "attendance_visits", "distinct_people")
+            with self.subTest(value=value):
+                self.assertEqual(reading_diagnostic._recorded(text), ("decline", None) if decline else ("answer", None))
+                routing_upper_bound._check_validated_action(text, {"actual_action": "decline" if decline else "answer"})
+                with self.assertRaises(p3_assets.P3Error):
+                    routing_upper_bound._check_validated_action(
+                        text, {"actual_action": "answer" if decline else "decline"})
 
 
 class ReadScriptTests(unittest.TestCase):
