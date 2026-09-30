@@ -11,6 +11,7 @@ from grepbit import recipe_model
 from grepbit.contracts import KernelError
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL
 from tools import candidate_registry as registry, evaluate as runner, p3_assets
+import registry_twin
 from test_evaluate import BASE, KEY, SHA, EvaluateHarness, envelope
 
 _OUTCOME_ACTION = {"request": "answer", "clarify": "clarify", "declined": "decline"}
@@ -353,11 +354,12 @@ class ReplayableObservationTests(EvaluateHarness):
         self.assertEqual((after["runs"], after["inputs"]), (result["runs"], result["inputs"]))
         self.assertNotEqual(after["run_index_sha256"], result["run_index_sha256"])
         clean = self.runs.read_text()
-        # A same-bytes run under another registered id (v7 shares v12's model-facing bytes) is included,
+        # A same-bytes run under another registered id (the twin of the current candidate) is included,
         # so a missing or altered archive fails closed instead of silently shrinking the aggregate.
-        same_bytes = registry.load_entry("p3-31b-count-context-v7")
-        self.assertEqual(same_bytes["candidate_sha256"], registry.load_entry(self.candidate)["candidate_sha256"])
-        for label, row in (("missing", dict(base, run_id="same-bytes-missing", candidate_id="p3-31b-count-context-v7",
+        twin, sibling = registry_twin.use(self)
+        self.assertEqual(registry.load_entry(twin)["candidate_sha256"], registry.load_entry(sibling)["candidate_sha256"])
+        self.assertEqual(sibling, self.candidate)
+        for label, row in (("missing", dict(base, run_id="same-bytes-missing", candidate_id=twin,
                                             slot=".artifacts/absent-same-bytes")),
                            ("digest", dict(base, run_id="same-bytes-digest", report_sha256="0" * 64))):
             with self.subTest(label=label):

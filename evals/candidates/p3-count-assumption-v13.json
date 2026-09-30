@@ -1,0 +1,77 @@
+{
+  "registry_version": "candidate-registry-v1",
+  "candidate_id": "p3-count-assumption-v13",
+  "ancestor": "p3-v10-restoration-v12",
+  "ancestor_sha256": "8eabfef7dbf08f7c82892ae4be5041d8bc93c400dcf74c5e2ec4af4557f761f8",
+  "registered_commit": "f920d2da06ff0b0ea612e672d25c0f2efba96c76+dirty",
+  "registered_at": "2026-09-30T07:59:08.170651Z",
+  "note": "Stated count assumption on Overview (ADR #136, route A runtime half): optional assumption booked_seats; narrowed count_basis; Bedrock fails closed; cap unchanged.",
+  "recipe_context": {
+    "context_version": "learningops-recipe-context-v4",
+    "output_contract": "recipe-request-json-v3",
+    "instruction_version": "recipe-selection-instruction-v7",
+    "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5",
+    "context_sha256": "203d342568478e3d9caabb29b8a7df6c04797aa2b083c8a643789be10c685e64",
+    "output_contract_sha256": "428d53c6964565e0a8bec5c43b2bb9535aaf2883fc37df79c2e971c88d6268e7",
+    "instruction_sha256": "68636be57cd409c6f4056455c69af22cac044819c625b06092b415c153bd68c0",
+    "system_message_sha256": "092cb0aa15f76dc381debfd4f258b444cb02996944009bdcf7e146537aa76e1c"
+  },
+  "structured_output": {
+    "version": "recipe-structured-output-v3",
+    "mode": "json_schema",
+    "schema_name": "grepbit_recipe_request",
+    "schema_sha256": "428d53c6964565e0a8bec5c43b2bb9535aaf2883fc37df79c2e971c88d6268e7",
+    "response_format_sha256": "b1547a722fd4aaeb6a3f7f7bacac5bedc88e32f3dfdf16fe56b5189119c56f97"
+  },
+  "p1_context": {
+    "context_version": "learningops-model-context-v1",
+    "output_contract": "fact-request-json-v1",
+    "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5",
+    "context_sha256": "70545dbc5ed67b33b907301933a5556d7575d014bcc19472119d10ba11647fc6",
+    "instruction_sha256": "bff03c3ac45478f5530e9f3e152c277466ec838eeb960eda233ee1e30a73188c"
+  },
+  "limits": {
+    "input": 4096,
+    "request": 32768,
+    "response": 131072,
+    "timeout": 60.0
+  },
+  "semantic_identity_sha256": "0290b399e082f5f0f2070c42184fb2ae9c06be53dea30104e171f657dbe5dd11",
+  "candidate_sha256": "23e3de1ae955aa4638f206026d79b1079a681000f75e6ab7a06162c5824122d0",
+  "wire_witnesses": [
+    {
+      "label": "p310_e01_en",
+      "question_sha256": "634a6e868a355af50ee7ca122282776aab6159573b16b5bd19f0277b4c67e57a",
+      "recipe_body_sha256": "fa5116888024effab6dccaf6abe1c741200948cd250efce07b698f5acec0423e",
+      "recipe_body_bytes": 28691,
+      "p1_body_sha256": "bce2e680673e0a0227ceddfbab44bb23cc4a1da5e724e548861f658a6745431d",
+      "p1_body_bytes": 2911
+    },
+    {
+      "label": "development_wire",
+      "question_sha256": "64d49690bc4bf021865c874d7916902361dd92439386435a80b830452307f37b",
+      "recipe_body_sha256": "ba0496b49a0019d022811c383d0a266f8703621ee2aa0583d2ffde390a6e85a7",
+      "recipe_body_bytes": 28682
+    }
+  ],
+  "runtime_files_sha256": {
+    "grepbit/__init__.py": "b79c2eac8fc5ed252050d8bd1c06cbc11eb53849739ddda6741da3c0bf9bc6e7",
+    "grepbit/__main__.py": "08d36af6fd0488ba438793155308c51aacd458a70dc1cc8cbb2b6ed2127d9efe",
+    "grepbit/bedrock.py": "60adb573ce45b9d61ae2b6324663f80802a016eeef7981e526f4a2493e2493ec",
+    "grepbit/breakdown.py": "a352cd70894665740beac899f128e224de1b74d8b10e94321e8ae8399da3dff9",
+    "grepbit/catalog.py": "e14ad8c323855a69fc8f41c585d24fd58de1f9ac0bfb86aebee34e371c972dfc",
+    "grepbit/clarification.py": "16d5dc6d112fa6311ce6caf59854ecbd8bdf97d5e997b14536a57cbce17fb0cd",
+    "grepbit/compare.py": "29497022a5d4528d45391103cc9d80bcf3e21160ebe440bbe9fc38765c4daafc",
+    "grepbit/composition.py": "6c6921df055fa5f1f5ba1469d924152ce323b3c8aa018236256c26b388548768",
+    "grepbit/contracts.py": "f4b3a2ce51b6469fb6de8688e37689129231072102eb4cb203243c9af92281b9",
+    "grepbit/gateway.py": "5739e79d9e3c1eaf828eb347e4c5930dfdeb41fd157e9e3c68cc5b61da8e526f",
+    "grepbit/grouped.py": "30f58f739be8c4b5901a6590f4d2e6f7b87735716f5ba13b34c046f182b43490",
+    "grepbit/json_diagnostics.py": "56d9ad89b2427e2e90faf97bec6da58826feb7e809940e6e333b6d7c1c348db6",
+    "grepbit/kernel.py": "e817b1e97684b27ef2021a6eff20a5c1b5c7164cef370fe3d4980cf0f3072401",
+    "grepbit/model.py": "09cef6e6fbdd1e77c2f60f4851eafb5be86936d42bd8da2c255bc5dd2334d8e8",
+    "grepbit/overview.py": "751c33bb2bf9ebf16217cd9c3b47fadf5c5a88c40e3f77d9acc7d1308884178f",
+    "grepbit/presentation.py": "bfa2427e02ae8b21c020bd9ce09574a8d86448a3bd73ff447e68576cb8fe44aa",
+    "grepbit/provider.py": "0d1a2867a81216417b0e34ebb2cf1223364307bd29a946fcaa92bf22544bd836",
+    "grepbit/recipe_model.py": "e312175aefc636bac7e050a2c99322411f2e0725b14120def2efeb78958fab4d"
+  }
+}

@@ -71,7 +71,7 @@ choices instead of four. The sequence stopped after 22 calls, the remaining
 steps did not run, and v11 is not an accepted improvement. See the
 [count cue policy](docs/count-cue-policy.md).
 
-The current candidate, v12, returns to v10's exact runtime bytes, which are
+v12 returns to v10's exact runtime bytes, which are
 v7's, by owner decision after v11's stop. It is a restoration, not a new fix.
 The frozen clarification test, the 32,768-byte request cap and the Bedrock
 route are restored; v11 archives stay readable. v7's recorded limitations carry
@@ -87,6 +87,18 @@ and broke 6 on the probe. That is consistent with their byte changes, but
 between-session drift was not measured on the probe and cannot be excluded per
 input. See the
 [v10 restoration](docs/v10-restoration-v12.md).
+
+The current candidate, v13, implements the owner's count rule (ADR #136): a
+generic people count that names no count meaning is answered with booked
+seats and the assumption stated, not clarified. An Overview answer may carry the typed
+`assumption` `{"count_basis": "booked_seats"}`, and `count_basis` clarification
+is kept for questions that are themselves undecided between named meanings.
+The kernel is unchanged, Bedrock fails closed and the 32,768-byte request cap
+is kept. v13 has no live result yet; it will be measured against v12 on the
+two new v2 dev panels of #138 (`p3-dev-bound-meaning-v2` and
+`p3-dev-mechanism-probe-v2`), whose annexes check the assumption. See the
+[v13 contract](docs/count-assumption-v13.md) and the
+[evaluation side](docs/count-assumption.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality

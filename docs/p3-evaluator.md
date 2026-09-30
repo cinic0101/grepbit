@@ -368,6 +368,15 @@ candidate cannot manufacture that acceptance.
 > `tests/test_recipe_clarification.py` to its accepted frozen bytes and
 > `tests/test_p3_exposed.py` to its pin of them (`docs/v10-restoration-v12.md`).
 
+> **Amended 2026-09-30.** By owner decision on #136
+> (#issuecomment-5905969011), the pinned test `tests/test_recipe_clarification.py`
+> is amended for candidate `p3-count-assumption-v13`: its P2 schema pin is
+> checked after removing v13's optional Overview `assumption`, whose exact
+> closed form it asserts (`docs/count-assumption-v13.md`, "Frozen source
+> change"). `tests/test_p3_exposed.py` keeps the `20abb559` hash as superseded
+> ancestry. The frozen grading, scoring, expectation and asset sources are
+> unchanged.
+
 Examples below are future separately authorized owner-side operations, not
 permission to execute them now. Authoring/review is owner-declared complete,
 but exact sanitized fresh identity pins and an actual formal freeze are absent:
