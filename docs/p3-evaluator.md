@@ -377,6 +377,11 @@ candidate cannot manufacture that acceptance.
 > ancestry. The frozen grading, scoring, expectation and asset sources are
 > unchanged.
 
+> **Amended again 2026-09-30.** By owner decision on #79
+> (#issuecomment-5907491660), candidate `p3-v12-restoration-v14` restores
+> `tests/test_recipe_clarification.py` to its accepted frozen bytes and
+> `tests/test_p3_exposed.py` to its pin of them (`docs/v12-restoration-v14.md`).
+
 Examples below are future separately authorized owner-side operations, not
 permission to execute them now. Authoring/review is owner-declared complete,
 but exact sanitized fresh identity pins and an actual formal freeze are absent:

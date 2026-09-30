@@ -134,4 +134,6 @@ stated assumption:
 ## Next
 
 The grant's pre-registered consequence is a revert of v13 to v12 by a further
-PR, with no rerun. The owner decides what follows the stop.
+PR, with no rerun. By owner decision (#79 #issuecomment-5907491660) that revert
+is candidate `p3-v12-restoration-v14` (`docs/v12-restoration-v14.md`), and the
+next step is ADR #142.

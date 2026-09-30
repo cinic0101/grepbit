@@ -11,7 +11,7 @@ from typing import Literal
 from . import model as protocol
 from .breakdown import BreakdownAnalysisPack, BreakdownRequest, execute_breakdown
 from .catalog import LEARNINGOPS, PROFILE_ID
-from .clarification import COUNT_BASES, KINDS, MAX_CHOICES, Clarification, SemanticChoice, clarification_schema
+from .clarification import KINDS, MAX_CHOICES, Clarification, SemanticChoice, clarification_schema
 from .compare import CompareAnalysisPack, CompareRequest, execute_compare
 from .contracts import ExecutionLimits, KernelError
 from .gateway import CALL_TIMEOUT_SECONDS, MODEL, GatewayClient, ModelError, json_schema_response_format
@@ -20,15 +20,11 @@ from .overview import OverviewAnalysisPack, OverviewRequest, execute_overview
 from .presentation import ClarificationPresentation, PRESENTATION_VERSION, render_clarification
 from .provider import LLMClient, normalize_response, response_mode, wire_identity
 
-CONTEXT_VERSION = "learningops-recipe-context-v4"
-OUTPUT_CONTRACT = "recipe-request-json-v3"
-INSTRUCTION_VERSION = "recipe-selection-instruction-v7"
-STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v3"
+CONTEXT_VERSION = "learningops-recipe-context-v3"
+OUTPUT_CONTRACT = "recipe-request-json-v2"
+INSTRUCTION_VERSION = "recipe-selection-instruction-v6"
+STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v2"
 STRUCTURED_OUTPUT_SCHEMA_NAME = "grepbit_recipe_request"
-# The one count assumption an Overview answer may state (ADR #136, docs/count-assumption-v13.md).
-ASSUMPTION = {"count_basis": "booked_seats"}
-ASSUMPTION_REPORTED_AS = "confirmed booked seats"
-UNAVAILABLE_COUNT_BASES = tuple(basis for basis in COUNT_BASES if basis != ASSUMPTION["count_basis"])
 _NativeRequest = OverviewRequest | CompareRequest | BreakdownRequest
 _NativePack = OverviewAnalysisPack | CompareAnalysisPack | BreakdownAnalysisPack
 # Closed request-validation reasons for evidence; the failure stays one fixed
@@ -104,7 +100,7 @@ SYSTEM_INSTRUCTION = (
     "using only the shared runtime meanings and closed output schema. "
     "Return one JSON object, no prose, markdown, reasoning, confidence, answers, rows, SQL or tasks. "
     'A request has exactly outcome:"request", recipe_id (one of "overview", "compare", "breakdown"), '
-    'recipe_version:"0.1" and request (the selected native object); Overview may add assumption. '
+    'recipe_version:"0.1" and request (the selected native object). '
     'Read the entire question before selecting an action. Collect its requested outputs and '
     'explicit qualifiers. Outputs requested together or in addition are cumulative '
     'requirements, not competing interpretations. An explicitly named event or population binds '
@@ -127,10 +123,6 @@ SYSTEM_INSTRUCTION = (
     'choice limit. The reviewed enum lists are a vocabulary for representing grounded choices, '
     'never a menu to offer in full. '
     "count_basis and metric_meaning require a complete explicit Overview scope. "
-    'With a complete explicit Overview scope, a generic people count (headcount, how many people, people who '
-    'booked) that names no seats, accounts, attendance or distinct individuals is answered with the request plus '
-    'assumption:{"count_basis":"booked_seats"}; otherwise omit assumption. '
-    "Use count_basis only when the question itself is undecided between named meanings. "
     "Count choices include booked_seats and reviewed alternative count meanings; amount choices include "
     "confirmed_booked_amount and reviewed alternative amount meanings. Alternatives do not add executable metrics. "
     "comparison_roles requires exactly two reversed assignments of the same two explicitly supplied full months. "
@@ -199,15 +191,12 @@ def output_schema() -> dict[str, object]:
             }},
         },
     }
-    assumption = {"assumption": {"type": "object", "additionalProperties": False, "required": ["count_basis"],
-                                 "properties": {"count_basis": {"const": ASSUMPTION["count_basis"]}}}}
     return {
         "oneOf": [
             {"type": "object", "additionalProperties": False,
              "required": ["outcome", "recipe_id", "recipe_version", "request"],
              "properties": {"outcome": {"const": "request"}, "recipe_id": {"const": recipe},
-                            "recipe_version": {"const": "0.1"}, "request": shape,
-                            **(assumption if recipe == "overview" else {})}}
+                            "recipe_version": {"const": "0.1"}, "request": shape}}
             for recipe, shape in shapes.items()
         ] + [{"type": "object", "additionalProperties": False, "required": ["outcome"],
               "properties": {"outcome": {"const": "declined"}}},
@@ -236,8 +225,7 @@ def runtime_context() -> dict[str, object]:
              "required": ["amount", "bookings", "seats"],
              "optional": ["daily_amount", "category_amounts"],
              "views": "Full observed booking-day and category amounts, not filled calendars or forecasts.",
-             "unsupported": ["names/guessed IDs", "required account/attendance/distinct-people counts",
-                             "custom metrics", "selectable slots"]},
+             "unsupported": ["names/guessed IDs", "people counts", "custom metrics", "selectable slots"]},
             {"id": "compare", "version": "0.1", "purpose": "Compare all-center booked amount across two months.",
              "scope": "Distinct explicit current and baseline months; no center filter.",
              "required": ["current", "baseline", "delta", "growth"], "optional": [],
@@ -253,12 +241,12 @@ def runtime_context() -> dict[str, object]:
         ],
         "clarification": {
             "count_basis": (
-                'Use count_basis only when the question explicitly leaves the count basis undecided between named '
-                'meanings, offering exactly those meanings. First '
+                'Use count_basis only when the question leaves mutually exclusive count meanings unresolved. First '
                 'preserve any specified event or population: a count of actual attendance events is '
                 'attendance_visits, even when expressed using a generic people/count noun. If the question requires '
                 'attendance_visits, distinct_people or known_booking_accounts, decline the whole request, including '
-                'when it also requires a supported Overview. Use one explicit Overview scope. The '
+                'when it also requires a supported Overview. A question that explicitly leaves the count basis '
+                'undecided instead admits only its stated alternatives. Use one explicit Overview scope. The '
                 'available count meanings are booked_seats, known_booking_accounts, attendance_visits and '
                 'distinct_people. Seats are booked line quantities; accounts are distinct non-null booking-account '
                 'IDs, excluding anonymous bookings; visits are attendance events, not distinct humans. Only '
@@ -271,8 +259,6 @@ def runtime_context() -> dict[str, object]:
             "boundary": "One semantic choice, no analytics before user binding; no resume or grounding. "
                         "Known booking accounts remain a separate P1 capability, not a recipe fallback.",
         },
-        "count_assumption": {"assumption": dict(ASSUMPTION), "applies_to": "overview",
-                             "reports": ASSUMPTION_REPORTED_AS, "unavailable": list(UNAVAILABLE_COUNT_BASES)},
         "unsupported": ["profit/cost/targets", "historical status",
                         "missing periods/year", "multi-month or annual aggregation", "arbitrary formulas",
                         "currency/unit conversion", "unrelated multi-question decomposition",
@@ -329,32 +315,11 @@ def messages_for(question: str) -> list[dict[str, str]]:
 class RecipeProposal:
     recipe_id: Literal["overview", "compare", "breakdown"]
     request: _NativeRequest
-    count_basis: Literal["booked_seats"] | None = None
     recipe_version: str = field(default="0.1", init=False)
 
-    def __post_init__(self) -> None:
-        if self.count_basis is not None and (self.recipe_id != "overview"
-                                             or self.count_basis != ASSUMPTION["count_basis"]):
-            raise ValueError("only an Overview proposal may state the one count assumption")
-
-    @property
-    def assumption(self) -> dict[str, str] | None:
-        return None if self.count_basis is None else {"count_basis": self.count_basis}
-
     def to_dict(self) -> dict[str, object]:
-        result = {"outcome": "request", "recipe_id": self.recipe_id,
-                  "recipe_version": self.recipe_version, "request": self.request.to_dict()}
-        if self.count_basis is not None:
-            result["assumption"] = self.assumption
-        return result
-
-
-def assumption_statement(proposal: RecipeProposal | None) -> dict[str, object] | None:
-    """The closed statement a product shows for a stated count assumption; not graded."""
-    if proposal is None or proposal.count_basis is None:
-        return None
-    return {"count_basis": ASSUMPTION["count_basis"], "reported_as": ASSUMPTION_REPORTED_AS,
-            "unavailable": list(UNAVAILABLE_COUNT_BASES)}
+        return {"outcome": "request", "recipe_id": self.recipe_id,
+                "recipe_version": self.recipe_version, "request": self.request.to_dict()}
 
 
 def _proposal(data: object) -> RecipeProposal:
@@ -362,11 +327,8 @@ def _proposal(data: object) -> RecipeProposal:
         raise _InvalidRequest("root_shape")
     if data == {"outcome": "declined"}:
         raise ModelError("model_declined")
-    keys = {"outcome", "recipe_id", "recipe_version", "request"}
-    stated = "assumption" in data
-    if (set(data) != (keys | {"assumption"} if stated else keys)
-            or data["outcome"] != "request" or data["recipe_version"] != "0.1"
-            or stated and (data["recipe_id"] != "overview" or data["assumption"] != ASSUMPTION)):
+    if (set(data) != {"outcome", "recipe_id", "recipe_version", "request"}
+            or data["outcome"] != "request" or data["recipe_version"] != "0.1"):
         raise _InvalidRequest("root_shape")
     recipe, request = data["recipe_id"], data["request"]
     if not isinstance(recipe, str) or recipe not in _REQUEST_FIELDS:
@@ -377,7 +339,7 @@ def _proposal(data: object) -> RecipeProposal:
     if not isinstance(request, dict) or set(request) != fields:
         raise _InvalidRequest("request_fields")
     try:
-        return RecipeProposal(recipe, native.from_mapping(request), ASSUMPTION["count_basis"] if stated else None)
+        return RecipeProposal(recipe, native.from_mapping(request))
     except KernelError:
         raise _InvalidRequest("request_values") from None
 

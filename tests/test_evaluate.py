@@ -469,10 +469,7 @@ class EvaluateRunnerTests(EvaluateHarness):
             config_cls.from_env.assert_not_called()
 
     # ----------------------------------------------------------------- routes
-    async def test_bedrock_route_admits_the_converse_client_and_fails_closed_on_v13(self):
-        """v13 makes no Bedrock claim: the admitted client records the profile, then stops before
-        transport (docs/count-assumption-v13.md). The send path is covered against the frozen v12 schema
-        by the Bedrock adapter tests."""
+    async def test_bedrock_route_uses_the_admitted_converse_client_and_records_the_profile(self):
         packet_path = self.prepare(route="bedrock-sonnet")
         packet = json.loads(packet_path.read_text())
         self.assertEqual(packet["transport_security"], "tls_verification_enabled")
@@ -489,13 +486,10 @@ class EvaluateRunnerTests(EvaluateHarness):
         report, loader = await self.run_mock(packet_path, output, self.bind(packet_path, output), client=client,
                                              route="bedrock")
         loader.assert_called_once_with(env_file=self.root / "unused.env")
-        self.assertEqual((report["status"], report["stop_reason"]), ("incomplete", "configuration_failure"))
-        self.assertEqual(self.sent, [])
-        first, *rest = report["results"]
-        self.assertEqual((first["outcome"], first["error_code"]), ("operational_failure", "invalid_input"))
-        self.assertEqual(first["evidence"]["requested_model"], "jp.anthropic.claude-sonnet-4-6")
-        self.assertIsNone(first["evidence"]["returned_model"])
-        self.assertEqual({row["outcome"] for row in rest}, {"not_run"})
+        self.assertEqual(report["status"], "complete")
+        self.assertEqual(len(self.sent), 15)
+        self.assertTrue(all(row["evidence"]["requested_model"] == "jp.anthropic.claude-sonnet-4-6"
+                            and row["evidence"]["returned_model"] is None for row in report["results"]))
         self.assertEqual(runner.read_report(output / "report.json"), report)
         # The wrong region or model never sends.
         wrong = BedrockClient(BedrockConfig("us-east-1", "jp.anthropic.claude-sonnet-4-6", "synthetic-key"),
