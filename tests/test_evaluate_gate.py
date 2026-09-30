@@ -9,15 +9,17 @@ import httpx
 
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL
 from tools import candidate_registry as registry, evaluate as runner, p3_assets
+import registry_twin
 from test_evaluate import BASE, GRANT, KEY, EvaluateHarness, envelope
 
 OTHER = "p3-bound-meaning-context-v8"
-SAME_BYTES = "p3-31b-count-context-v7"
 _CLASSES = ("fixed", "broke", "unchanged_correct", "unchanged_wrong", "excluded", "unassessed")
 
 
 class CandidateGateTests(EvaluateHarness):
     def setUp(self):
+        # The baseline is the current candidate's twin; the real current candidate has its bytes.
+        _, self.same_bytes = registry_twin.use(self)
         super().setUp()
         # A second development panel: the same inputs under another id and panel pin.
         raw = json.loads((self.root / "development-panel-v1.json").read_text())
@@ -253,10 +255,10 @@ class CandidateGateTests(EvaluateHarness):
         index(*base)
         self.assertEqual(self.gate(902)["verdict"], "passed")
         self.refused("same_bytes", 902, candidate=self.baseline)
-        # v7 is registered under another id with v12's bytes: a noise measurement, not a candidate.
-        self.assertEqual(registry.load_entry(SAME_BYTES)["candidate_sha256"],
+        # Another registered id with the baseline's bytes: a noise measurement, not a candidate.
+        self.assertEqual(registry.load_entry(self.same_bytes)["candidate_sha256"],
                          registry.load_entry(self.baseline)["candidate_sha256"])
-        self.refused("same_bytes", 902, candidate=SAME_BYTES)
+        self.refused("same_bytes", 902, candidate=self.same_bytes)
         self.refused("not_dev_panel", 902, panels=("synthetic-regression",))
         self.refused("not_dev_panel", 902, panels=("synthetic-dev", "synthetic-holdout"))
         self.refused("no_baseline_runs", 902, route="litellm-12b")
@@ -272,7 +274,7 @@ class CandidateGateTests(EvaluateHarness):
         # indexed as the candidate, and a candidate report indexed under a same-bytes baseline id.
         index(earlier[0], dict(earlier[1], candidate_id=OTHER), sentinel, candidate, other_panel)
         self.refused("candidate_identity", 901)
-        index(*base, dict(rerun, candidate_id=SAME_BYTES))
+        index(*base, dict(rerun, candidate_id=self.same_bytes))
         self.refused("candidate_identity", 902)
         # A candidate report of another panel indexed under this panel's id.
         index(*earlier, sentinel, candidate, dict(other_panel, panel_id="synthetic-dev"))
@@ -310,7 +312,7 @@ class CandidateGateTests(EvaluateHarness):
                 redirect_stdout(stdout):
             self.assertEqual(runner.main(argv), 0)
         self.assertEqual(json.loads(stdout.getvalue()), expected)
-        for changed, reason in ((["--candidate", SAME_BYTES], "same_bytes"),
+        for changed, reason in ((["--candidate", self.same_bytes], "same_bytes"),
                                 (["--panels", "synthetic-dev", "synthetic-dev-b"], "no_baseline_runs")):
             with self.subTest(reason=reason):
                 stderr = io.StringIO()
