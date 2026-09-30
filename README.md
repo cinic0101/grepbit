@@ -94,11 +94,16 @@ seats and the assumption stated, not clarified. An Overview answer may carry the
 `assumption` `{"count_basis": "booked_seats"}`, and `count_basis` clarification
 is kept for questions that are themselves undecided between named meanings.
 The kernel is unchanged, Bedrock fails closed and the 32,768-byte request cap
-is kept. v13 has no live result yet; it will be measured against v12 on the
-two new v2 dev panels of #138 (`p3-dev-bound-meaning-v2` and
-`p3-dev-mechanism-probe-v2`), whose annexes check the assumption. See the
-[v13 contract](docs/count-assumption-v13.md) and the
-[evaluation side](docs/count-assumption.md).
+is kept. Against v12 on the two new v2 dev panels of #138
+(`p3-dev-bound-meaning-v2` and `p3-dev-mechanism-probe-v2`), whose annexes
+check the assumption, the pre-registered gate verdict is **regression**. One
+run per panel fixed all 12 distinct generic people-count inputs, but it broke
+6 stable-correct ones: `dev-BM5` in three languages gained a spurious
+assumption, and three Compare inputs became false clarifications. Under the
+grant that is a stop with no rerun, and v13 is to be reverted. See the
+[v13 contract](docs/count-assumption-v13.md), the
+[evaluation side](docs/count-assumption.md) and the
+[gate result](docs/count-assumption-v13-result.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
