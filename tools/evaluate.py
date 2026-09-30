@@ -1352,6 +1352,9 @@ def gate(candidate_id: str, baseline_id: str, route_id: str, reference: str, pan
 def main(argv=None) -> int:
     if argv is None:
         argv = sys.argv[1:]
+    if argv and argv[0] == "--reading-diagnostic":
+        from tools import reading_diagnostic
+        return reading_diagnostic.main(argv[1:])
     if argv and argv[0] == "--completion-diagnostic":
         from tools import p3_completion_diagnostic
         return p3_completion_diagnostic.main(argv[1:])

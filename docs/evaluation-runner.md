@@ -75,6 +75,12 @@ baseline sentinel run under the same owner authorization. Its verdict is
 `regression`, `inconclusive`, `passed` or `no_fix`, and it is a development
 observation only.
 
+`--reading-diagnostic` ([reading diagnostic](reading-diagnostic.md),
+`reading-diagnostic-v1`) is a separate, owner-authorized diagnostic call per
+dev-panel input. It asks the model, in closed codes, how it read the question,
+and leaves the current candidate's bytes unchanged. It is never a run-index
+entry, a gate input or promotion evidence.
+
 ## Historical tools
 
 The prior route tools and candidate helper now live under `tools/history/`;
