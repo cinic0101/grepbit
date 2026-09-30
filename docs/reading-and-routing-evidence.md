@@ -60,13 +60,13 @@ unresolved. In both variants it read:
   an action it was shown.
 - *Fresh decision against production.* The decision under the diagnostic
   framing matched the production action in 20/46 rows for 31B and 21/22 for
-  Sonnet. The contract expects the fresh action to differ from production,
-  so this is not a fidelity measure.
+  Sonnet. The contract says the fresh action may differ from production, so
+  this is not a fidelity measure.
 
 **Findings**, limited to these fields and inputs:
 - **31B's count-resolution and orientation readings are accurate where its
   production decisions fail.** Fresh readings agree with the mapping above on
-  all 40 checkable inputs. That includes four production failures that the
+  all 40 checkable inputs. That includes seven production failures that the
   readings would have resolved: `dev-BM6` ×3 and `dev-MN1.en` (count read as
   unresolved), and `E02_compare.en`, `dev-MC2.en` and `dev-MC4.en`
   (orientation read as stated). The production action is correct on 31 of
@@ -86,8 +86,9 @@ unresolved. In both variants it read:
 ## Step 3: routing upper bound (`docs/routing-upper-bound.md`)
 
 Four runs from `dev@3cf549cd6a65` (#135). All completed, with no stop, retry or repeat.
-- **Review record.** #135's round-2 re-review reported no blocker before the
-  merge. Its record was posted late because of a GitHub API failure
+- **Review record.** Per the agent's disclosure on #135, the round-2
+  re-review reported no blocker before the merge. Its record was posted late
+  because of a GitHub API failure
   ([#135 #issuecomment-5904131736](https://github.com/cinic0101/grepbit/pull/135#issuecomment-5904131736)).
 - **Drift.** All four packets were prepared before either sentinel was
   recorded, so none drifted.
@@ -130,11 +131,11 @@ more v12-bytes runs changes them.
 
 ## Combined reading
 
-- **Accuracy lies in the readings, not the decisions.** On these inputs,
-  31B's count-resolution and orientation readings were accurate where its
-  decisions failed (step 2).
+- **31B's count-resolution and orientation readings were accurate where its
+  decisions failed**, on these inputs (step 2). Its event readings and its
+  replayed readings were not reliable.
 - **Narrowing the context did not help** (step 3). The Compare decision moved
-  under every context change tested so far: v8, v9, v11 and this routing run.
+  under each of v8, v9, v11 and this routing run.
 - **Direction.** Together these favour making the typed readings explicit
   and reducing what the model must decide. ADR #136 is a partial step: the
   model sets a typed `count_assumption` and still chooses the action. A fuller
