@@ -268,6 +268,34 @@ class RoutingExperimentTests(EvaluateHarness):
                                    accepted_commit=SHA, env_file=self.root / "unused.env", **self.registries)
         self.assertEqual((drift.exception.code, sent, slot.exists()), ("manifest_drift", [], False))
 
+    async def test_an_isolated_timeout_leaves_a_complete_run_readable(self):
+        await self.baseline(985)
+        await self.baseline(986)
+        slow = self.inputs[1].case_id
+        cases = self.inputs
+        scripted = self.scripted(sink=self.experiment_sent)
+
+        def respond(request):
+            question = json.loads(request.content)["messages"][-1]["content"]
+            if next(case for case in cases if case.question == question).case_id == slow:
+                raise httpx.ReadTimeout("synthetic timeout")
+            return scripted._transport.handle_request(request)
+
+        packet = self.experiment_prepare()
+        authorization = packet.parent / "authorization.json"
+        slot = self.root / "routing-timeout-run"
+        routing.bind_authorization(packet, f"{GRANT}986", authorization, slot)
+        client = GatewayClient(GatewayConfig(BASE, KEY, MODEL), transport=httpx.MockTransport(respond))
+        with patch.object(runner, "_admitted_client", return_value=client):
+            result = await routing.run_live(self.database, slot, packet_path=packet,
+                                            authorization_path=authorization, accepted_commit=SHA,
+                                            env_file=self.root / "unused.env", **self.registries)
+        self.assertEqual((result["status"], result["results"][1]["error_code"]), ("complete", "timeout"))
+        self.assertEqual(dict(zip(("experiment", "class"), next(
+            (row["experiment"], row["class"]) for row in result["comparison"]["inputs"] if row["case_id"] == slow))),
+            {"experiment": "unassessed", "class": "unassessed"})
+        self.assertEqual(result["comparison"]["verdict"], "inconclusive")
+
     async def test_interruption_transport_and_pinned_assets(self):
         await self.baseline(989)
         await self.baseline(990)
