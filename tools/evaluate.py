@@ -37,7 +37,7 @@ from grepbit import model, recipe_model
 from grepbit.bedrock import BedrockClient, BedrockConfig
 from grepbit.clarification import KINDS, MAX_CHOICES
 from grepbit.contracts import KernelError
-from grepbit.gateway import GEMMA_12B, MODEL, GatewayClient, GatewayConfig
+from grepbit.gateway import GEMMA_12B, MODEL, GatewayClient, GatewayConfig, ModelError
 from grepbit.provider import client_from_env
 from tools import candidate_registry as registry, p3_admission as admission, p3_assets as assets
 from tools import p3_eval as evaluator
@@ -91,6 +91,9 @@ _hash = formal._hash
 _COMPARISON = ("UNCHANGED_CORRECT", "FIXED_KNOWN_FAILURE", "NEW_REGRESSION",
                "UNCHANGED_FAILURE", "OUTCOME_CHANGED_OTHER", "UNASSESSED_OPERATIONAL")
 _PANEL_FIELDS = {"panel_id", "tier", "path", "assets", "allocation_policy", "intake", "freeze", "authoring", "note"}
+# docs/count-assumption.md: an optional, pinned annex of stated-assumption expectations for dev panels.
+ANNEX_VERSION = "count-assumption-annex-v1"
+ASSUMPTION = {"count_basis": "booked_seats"}
 _ROUTE_FIELDS = {"route_id", "provider", "model", "region", "call_timeout_seconds", "transport_security", "note"}
 _RUN_FIELDS = {"version", "run_id", "recorded_at", "candidate_id", "panel_id", "tier", "route_id", "claim",
                "report_sha256", "slot", "accepted_commit", "grant", "status", "inputs", "correct",
@@ -147,7 +150,8 @@ def load_panels(path: Path | None = None) -> dict:
         raise assets.P3Error("invalid_manifest")
     seen = set()
     for row in index["panels"]:
-        if (not isinstance(row, dict) or set(row) != _PANEL_FIELDS or _ID.fullmatch(str(row["panel_id"])) is None
+        if (not isinstance(row, dict) or set(row) not in (_PANEL_FIELDS, _PANEL_FIELDS | {"annex"})
+                or _ID.fullmatch(str(row["panel_id"])) is None
                 or row["panel_id"] in seen or row["tier"] not in TIERS
                 or row["authoring"] not in ("development", "historical", "independent")
                 or not isinstance(row["note"], str) or len(row["note"]) > 200 or not row["note"].isprintable()
@@ -158,12 +162,16 @@ def load_panels(path: Path | None = None) -> dict:
                                                  or not isinstance(row[key]["sha256"], str)
                                                  or _SHA.fullmatch(row[key]["sha256"]) is None)
                        for key in ("intake", "freeze"))
+                or "annex" in row and (row["tier"] != "dev" or not isinstance(row["annex"], dict)
+                                       or set(row["annex"]) != {"path", "sha256"}
+                                       or not isinstance(row["annex"]["sha256"], str)
+                                       or _SHA.fullmatch(row["annex"]["sha256"]) is None)
                 or (row["allocation_policy"] is not None) != (row["intake"] is not None)
                 or row["tier"] == "holdout" and (row["authoring"] != "independent" or row["freeze"] is None)):
             raise assets.P3Error("invalid_manifest")
         _location(row["path"])
-        for key in ("intake", "freeze"):
-            if row[key] is not None:
+        for key in ("intake", "freeze", "annex"):
+            if row.get(key) is not None:
                 _location(row[key]["path"])
         seen.add(row["panel_id"])
     # The same frozen assets under a second id would earn a second fresh claim; a
@@ -199,6 +207,64 @@ def load_routes(path: Path | None = None) -> dict:
     if len(set(identities)) != len(identities):
         raise assets.P3Error("invalid_manifest")
     return index
+
+
+def _read_annex(path: Path) -> dict:
+    """The closed annex document: each listed oracle expects the one stated count assumption."""
+    data = assets.read_asset(path)
+    if (not isinstance(data, dict) or set(data) != {"version", "expectations"} or data["version"] != ANNEX_VERSION
+            or not isinstance(data["expectations"], dict) or not data["expectations"]
+            or any(not isinstance(key, str) or value != ASSUMPTION for key, value in data["expectations"].items())):
+        raise assets.P3Error("invalid_asset")
+    return data["expectations"]
+
+
+def annex_expectations(entry: dict, panel: assets.Panel) -> dict:
+    """A registered panel's pinned annex; every listed oracle is one of the panel's Overview answers."""
+    path = _location(entry["annex"]["path"])
+    if evaluator._pin(path)["sha256"] != entry["annex"]["sha256"]:
+        raise assets.P3Error("manifest_drift")
+    expectations = _read_annex(path)
+    oracles = {oracle.oracle_id: oracle for oracle in panel.oracles}
+    if any(name not in oracles or oracles[name].branch != "answer" or oracles[name].to_dict()["recipe_id"] != "overview"
+           for name in expectations):
+        raise assets.P3Error("invalid_asset")
+    return expectations
+
+
+def _panel_annex(panel_block: object, panels_path: Path | None = None) -> dict | None:
+    """The annex a report's panel identity pins, re-read through the registry and checked; None without one."""
+    sha = panel_block.get("annex_sha256") if isinstance(panel_block, dict) else None
+    if sha is None:
+        return None
+    entry = _entry(load_panels(panels_path), "panels", panel_block["panel_id"], "panel_id")
+    if entry.get("annex") is None or entry["annex"]["sha256"] != sha:
+        raise assets.P3Error("manifest_drift")
+    path = _location(entry["annex"]["path"])
+    if evaluator._pin(path)["sha256"] != sha:
+        raise assets.P3Error("manifest_drift")
+    return _read_annex(path)
+
+
+def annexed(row: dict, frozen_correct: bool, expectations: dict | None) -> str | None:
+    """The annex verdict on one graded row: None when no annex applies, else correct, wrong or unassessed.
+
+    The frozen grade stays as recorded. A frozen-correct answer is correct only if its persisted validated action
+    carries exactly the expected assumption (none when the oracle is not listed); without a persisted action the
+    assumption cannot be checked."""
+    if expectations is None:
+        return None
+    if not frozen_correct:
+        return "wrong"
+    text = row.get("validated_action")
+    if text is None:
+        return "unassessed"
+    try:
+        action = model.strict_json(text)
+    except ModelError:
+        raise assets.P3Error("invalid_asset") from None
+    stated = action.get("assumption") if isinstance(action, dict) and action.get("outcome") == "request" else None
+    return "correct" if stated == expectations.get(row["oracle_id"]) else "wrong"
 
 
 def _entry(index: dict, key: str, ident: str, name: str) -> dict:
@@ -281,6 +347,9 @@ def load_panel_entry(panel_id: str, database: Path, *, panels_path: Path | None 
     for name, path in pins.items():
         if evaluator._pin(path)["sha256"] != entry["assets"][name]:
             raise assets.P3Error("manifest_drift")
+    if entry.get("annex") is not None:
+        annex_expectations(entry, panel)
+        freeze_meta["annex_sha256"] = entry["annex"]["sha256"]
     inputs = panel.inputs()
     if entry["allocation_policy"] is not None:
         allocation.validate_allocation(inputs, entry["allocation_policy"])
@@ -471,9 +540,12 @@ def _packet_contract(packet: dict) -> None:
         raise assets.P3Error("invalid_manifest")
     _hash(candidate["candidate_sha256"])
     _hash(candidate["semantic_identity_sha256"])
-    panel = assets.object_fields(packet["panel"], {"panel_id", "tier", "authoring", "assets", "allocation_policy",
-                                                    "intake_sha256", "freeze_sha256", "owner_review_reference",
-                                                    "input_count"})
+    panel_fields = {"panel_id", "tier", "authoring", "assets", "allocation_policy", "intake_sha256", "freeze_sha256",
+                    "owner_review_reference", "input_count"}
+    panel = assets.object_fields(packet["panel"], panel_fields | (
+        {"annex_sha256"} if isinstance(packet["panel"], dict) and "annex_sha256" in packet["panel"] else set()))
+    if "annex_sha256" in panel and (panel["tier"] != "dev" or not isinstance(panel["annex_sha256"], str)):
+        raise assets.P3Error("invalid_manifest")
     if (panel["tier"] != packet["tier"] or panel["authoring"] not in ("development", "historical", "independent")
             or set(panel["assets"]) != {"panel", "cases", "oracles"}
             or panel["allocation_policy"] not in (None, *allocation.VERSIONS)
@@ -484,8 +556,8 @@ def _packet_contract(packet: dict) -> None:
         raise assets.P3Error("invalid_manifest")
     for digest in panel["assets"].values():
         _hash(digest)
-    for key in ("freeze_sha256", "intake_sha256"):
-        if panel[key] is not None:
+    for key in ("freeze_sha256", "intake_sha256", "annex_sha256"):
+        if panel.get(key) is not None:
             _hash(panel[key])
     if (panel["allocation_policy"] is not None) != (panel["intake_sha256"] is not None):
         raise assets.P3Error("invalid_manifest")
@@ -559,7 +631,8 @@ def build_packet(database: Path, *, candidate_id: str, panel_id: str, route_id: 
         "panel": {"panel_id": panel_id, "tier": entry["tier"], "authoring": entry["authoring"],
                   "assets": dict(entry["assets"]), "allocation_policy": entry["allocation_policy"],
                   "intake_sha256": freeze_meta["intake_sha256"], "freeze_sha256": freeze_meta["freeze_sha256"],
-                  "owner_review_reference": freeze_meta["owner_review_reference"], "input_count": len(inputs)},
+                  "owner_review_reference": freeze_meta["owner_review_reference"], "input_count": len(inputs),
+                  **({"annex_sha256": freeze_meta["annex_sha256"]} if "annex_sha256" in freeze_meta else {})},
         "route": dict(route),
         "baseline": _baseline_projection(baseline_path) if baseline_path is not None else None,
         "observation_fields": list(OBSERVATIONS[version]), "source_identity": source,
@@ -738,9 +811,13 @@ def _action_shape(action: object) -> bool:
     if outcome == "declined":
         return action == {"outcome": "declined"}
     if outcome == "request":
-        return (set(action) == {"outcome", "recipe_id", "recipe_version", "request"}
+        # An Overview proposal may carry the one stated count assumption (docs/count-assumption.md).
+        return (set(action) in ({"outcome", "recipe_id", "recipe_version", "request"},
+                                {"outcome", "recipe_id", "recipe_version", "request", "assumption"})
                 and isinstance(action["recipe_id"], str) and action["recipe_id"] in _ACTION_RECIPES
-                and action["recipe_version"] == "0.1" and isinstance(action["request"], dict))
+                and action["recipe_version"] == "0.1" and isinstance(action["request"], dict)
+                and ("assumption" not in action
+                     or action["recipe_id"] == "overview" and action["assumption"] == ASSUMPTION))
     if outcome != "clarify" or set(action) != {"outcome", "clarification"}:
         return False
     clarification = action["clarification"]
@@ -967,7 +1044,21 @@ def read_report(path: Path) -> dict:
     return report
 
 
-def record(report_path: Path, *, runs_path: Path | None = None, now: str | None = None) -> dict:
+def _counts(report: dict, summary: dict, panels_path: Path | None = None) -> tuple[int, int]:
+    """Correct inputs and fully correct families; on an annex panel, a row counts only if the annex agrees."""
+    frozen = [bool(item["correct"]) for item in summary["per_input"]]
+    expectations = _panel_annex(report.get("panel"), panels_path)
+    if expectations is None:
+        return sum(frozen), sum(v["family_all_variants_correct"] for v in summary["per_family"].values())
+    verdicts = [annexed(row, correct, expectations) == "correct" for row, correct in zip(report["results"], frozen)]
+    families: dict[str, bool] = {}
+    for row, verdict in zip(report["results"], verdicts):
+        families[row["family_id"]] = families.get(row["family_id"], True) and verdict
+    return sum(verdicts), sum(families.values())
+
+
+def record(report_path: Path, *, runs_path: Path | None = None, now: str | None = None,
+           panels_path: Path | None = None) -> dict:
     """Append one run to the append-only index after offline readback; refuses a duplicate run id."""
     report = read_report(report_path)
     runs_file = RUNS if runs_path is None else runs_path
@@ -979,6 +1070,7 @@ def record(report_path: Path, *, runs_path: Path | None = None, now: str | None 
     if derive_claim(report["tier"], report["panel"]["panel_id"], report["route"]["route_id"], runs) != report["claim"]:
         raise assets.P3Error("artifact_conflict")
     summary = report["summary"]
+    correct, families_correct = _counts(report, summary, panels_path)
     row = {"version": RUN_RECORD_VERSION, "run_id": report["run_id"],
            "recorded_at": now or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
            "candidate_id": report["candidate"]["candidate_id"], "panel_id": report["panel"]["panel_id"],
@@ -986,9 +1078,8 @@ def record(report_path: Path, *, runs_path: Path | None = None, now: str | None 
            "report_sha256": _report_digest(report_path), "slot": report["run_slot"],
            "accepted_commit": report["preparation"]["accepted_commit"],
            "grant": report["owner_authorization_reference"], "status": report["status"],
-           "inputs": summary["input_count"], "correct": sum(r["correct"] for r in summary["per_input"]),
-           "families": len(summary["per_family"]),
-           "families_correct": sum(v["family_all_variants_correct"] for v in summary["per_family"].values()),
+           "inputs": summary["input_count"], "correct": correct,
+           "families": len(summary["per_family"]), "families_correct": families_correct,
            "outcomes": summary["outcomes"]}
     _run_record(row)
     runs_file.parent.mkdir(parents=True, exist_ok=True)
@@ -1116,25 +1207,43 @@ async def _replay_execute(plan: _ReplayPlan) -> dict:
     report_path, report, database, database_sha = plan.report_path, plan.report, plan.database, plan.database_sha
     checked, current, panel, entries = plan.checked, plan.current, plan.panel, plan.entries
     calls, classes, replayed = [], [], deepcopy(report["results"])
-    for row, item, target in zip(report["results"], entries, replayed):
+    actions = [None] * len(report["results"])
+    for position, (row, item, target) in enumerate(zip(report["results"], entries, replayed)):
         if not _replayable(row):
             classes.append("not_replayable")
             continue
         result = await recipe_model.interpret_recipe_and_execute(
             item.case.question, database, _replay_client(row["validated_action"], calls))
         graded = p3_grading.grade(result, item.oracle)
+        actions[position] = _validated_action(result)
         classes.append("replayed_same" if all(_same(graded[key], row[key]) for key in graded) else "replayed_changed")
         target.update(graded)
     scored = scoring.summarize(replayed, replayed, panel_kind="development", run_status=report["status"])
     archived = report["summary"]["per_input"]
+    # On an annex panel a row is replayed_same only if its annex verdict is unchanged too (docs/count-assumption.md).
+    expectations = _panel_annex(report.get("panel"))
+    verdicts = [None] * len(classes)
+    if expectations is not None:
+        for position, (row, old, new) in enumerate(zip(report["results"], archived, scored["per_input"])):
+            if classes[position] == "not_replayable":
+                continue
+            verdicts[position] = (annexed(row, bool(old["correct"]), expectations),
+                                  annexed({**row, "validated_action": actions[position]}, bool(new["correct"]),
+                                          expectations))
+            if classes[position] == "replayed_same" and verdicts[position][0] != verdicts[position][1]:
+                classes[position] = "replayed_changed"
     rows = []
-    for row, target, kind, old, new in zip(report["results"], replayed, classes, archived, scored["per_input"]):
-        rows.append({"case_id": row["case_id"], "class": kind,
-                     "archived": {"outcome": row["outcome"], "actual_action": row["actual_action"],
-                                  "correct": old["correct"]},
-                     "replayed": None if kind == "not_replayable" else {
-                         "outcome": target["outcome"], "actual_action": target["actual_action"],
-                         "correct": new["correct"]}})
+    for row, target, kind, old, new, verdict in zip(report["results"], replayed, classes, archived,
+                                                    scored["per_input"], verdicts):
+        entry = {"case_id": row["case_id"], "class": kind,
+                 "archived": {"outcome": row["outcome"], "actual_action": row["actual_action"],
+                              "correct": old["correct"]},
+                 "replayed": None if kind == "not_replayable" else {
+                     "outcome": target["outcome"], "actual_action": target["actual_action"],
+                     "correct": new["correct"]}}
+        if expectations is not None:
+            entry["annex"] = None if verdict is None else {"archived": verdict[0], "replayed": verdict[1]}
+        rows.append(entry)
     value = {
         "version": REPLAY_VERSION, "claim": "offline_replay_observation", "promotion_eligible": False,
         "live_model_attempts": 0, "mock_transport_calls": len(calls),
@@ -1151,6 +1260,8 @@ async def _replay_execute(plan: _ReplayPlan) -> dict:
         "comparison": (_comparison(_baseline_projection(report_path), replayed, scored)
                        if report["status"] == "complete" else None),
     }
+    if expectations is not None:
+        value["annex_sha256"] = report["panel"]["annex_sha256"]
     _write_new(plan.output_path, value)
     return value
 
@@ -1183,7 +1294,7 @@ def _archived_reports(selected: list[dict]) -> list[dict]:
     return reports
 
 
-def _input_classes(reports: list[dict]) -> list[dict]:
+def _input_classes(reports: list[dict], expectations: dict | None = None) -> list[dict]:
     order = [row["case_id"] for row in reports[0]["results"]]
     if any([row["case_id"] for row in report["results"]] != order for report in reports):
         raise assets.P3Error("invalid_scoring")
@@ -1192,6 +1303,12 @@ def _input_classes(reports: list[dict]) -> list[dict]:
         rows = [report["results"][index] for report in reports]
         scores = [report["summary"]["per_input"][index]["correct"] for report in reports]
         assessed = [not _unassessed(row) for row in rows]
+        if expectations is not None:
+            # On an annex panel a row counts as its annex verdict; an uncheckable assumption is unassessed.
+            verdicts = [annexed(row, bool(score), expectations) if seen else None
+                        for row, score, seen in zip(rows, scores, assessed)]
+            assessed = [verdict in ("correct", "wrong") for verdict in verdicts]
+            scores = [verdict == "correct" for verdict in verdicts]
         correct = sum(bool(score) for score, seen in zip(scores, assessed) if seen)
         actions = [row.get("validated_action") for row in rows if row.get("validated_action") is not None]
         count = sum(assessed)
@@ -1208,8 +1325,16 @@ def _input_classes(reports: list[dict]) -> list[dict]:
     return inputs
 
 
+def _shared_annex(reports: list[dict], panels_path: Path | None = None) -> dict | None:
+    """The annex every report pins, or none; reports that disagree about their annex cannot be pooled."""
+    pinned = {(report.get("panel") or {}).get("annex_sha256") for report in reports}
+    if len(pinned) != 1:
+        raise assets.P3Error("invalid_scoring")
+    return _panel_annex(reports[0].get("panel"), panels_path)
+
+
 def aggregate(panel_id: str, route_id: str, candidate_id: str, *, runs_path: Path | None = None,
-              candidates_index: Path | None = None) -> dict:
+              candidates_index: Path | None = None, panels_path: Path | None = None) -> dict:
     """Every indexed run of the panel and route with the same model-facing bytes; selection by identity only."""
     target = registry.load_entry(candidate_id, candidates_index)["candidate_sha256"]
     runs_file = RUNS if runs_path is None else runs_path
@@ -1217,7 +1342,7 @@ def aggregate(panel_id: str, route_id: str, candidate_id: str, *, runs_path: Pat
     if not included:
         raise assets.P3Error("invalid_manifest")
     reports = _archived_reports(included)
-    inputs = _input_classes(reports)
+    inputs = _input_classes(reports, _shared_annex(reports, panels_path))
     return {
         "version": AGGREGATE_VERSION, "promotion_eligible": False, "panel_id": panel_id, "route_id": route_id,
         "candidate": {"candidate_id": candidate_id, "candidate_sha256": target},
@@ -1226,7 +1351,7 @@ def aggregate(panel_id: str, route_id: str, candidate_id: str, *, runs_path: Pat
                   "report_sha256": run["report_sha256"], "report_version": report["report_version"],
                   "accepted_commit": run["accepted_commit"], "evaluator_version": report.get("evaluator_version"),
                   "status": report["status"],
-                  "correct": sum(bool(item["correct"]) for item in report["summary"]["per_input"])}
+                  "correct": _counts(report, report["summary"], panels_path)[0]}
                  for run, report in zip(included, reports)],
         "inputs": inputs,
         "class_counts": {kind: sum(row["class"] == kind for row in inputs) for kind in _AGGREGATE_CLASSES},
@@ -1246,7 +1371,7 @@ def _gate_view(report: dict) -> tuple:
     if report["report_version"] not in REPORT_VERSIONS.values():
         return None, None
     return report["candidate"]["candidate_sha256"], (
-        report["panel"]["panel_id"], report["panel"]["assets"],
+        report["panel"]["panel_id"], report["panel"]["assets"], report["panel"].get("annex_sha256"),
         [(row["case_id"], row["question_sha256"]) for row in report["results"]])
 
 
@@ -1322,10 +1447,20 @@ def gate(candidate_id: str, baseline_id: str, route_id: str, reference: str, pan
                for run, report in zip(selected, reports)):
             raise GateRefused("index_mismatch")
         report, inputs = reports[-1], []
+        # The inputs check above makes every report pin the same annex, if any (docs/count-assumption.md).
+        expectations = _panel_annex(report["panel"], panels_path)
+
+        def assessed(archived: dict, position: int) -> bool:
+            row = archived["results"][position]
+            return not _unassessed(row) and (expectations is None or annexed(
+                row, bool(archived["summary"]["per_input"][position]["correct"]), expectations) != "unassessed")
+
         for position, (row, score, measured) in enumerate(zip(report["results"], report["summary"]["per_input"],
-                                                              _input_classes(reports[:-1]))):
+                                                              _input_classes(reports[:-1], expectations))):
             observed = "unassessed" if _gate_unassessed(row) else "correct" if score["correct"] else "wrong"
-            seen = any(not _unassessed(reports[sentinel]["results"][position]) for sentinel in sentinels)
+            if expectations is not None and observed != "unassessed":
+                observed = annexed(row, observed == "correct", expectations)
+            seen = any(assessed(reports[sentinel], position) for sentinel in sentinels)
             inputs.append({"case_id": row["case_id"], "family_id": row["family_id"],
                            "baseline_class": measured["class"], "sentinel_assessed": seen, "candidate": observed,
                            "outcome": row["outcome"], "class": _gate_class(measured["class"], observed, seen)})
