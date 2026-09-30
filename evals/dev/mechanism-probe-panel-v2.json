@@ -1,0 +1,31 @@
+{
+  "version": "p3-panel-v1",
+  "panel_id": "p3-dev-mechanism-probe-v2",
+  "kind": "development",
+  "cases": "mechanism-probe-cases-v2.json",
+  "oracles": "mechanism-probe-oracles-v2.json",
+  "order": [
+    "E02_compare.en",
+    "dev-MC1.en",
+    "dev-MC2.en",
+    "dev-MC3.en",
+    "dev-MC4.en",
+    "dev-MC5.en",
+    "dev-A3.en",
+    "dev-BM2.en",
+    "dev-MY1.en",
+    "dev-MY2.en",
+    "dev-BM6.zh-TW",
+    "dev-BM6.en",
+    "dev-BM6.ja",
+    "dev-MN1.zh-TW",
+    "dev-MN1.en",
+    "dev-MN1.ja",
+    "dev-MN2.zh-TW",
+    "dev-MN2.en",
+    "dev-MN2.ja",
+    "dev-MN3.zh-TW",
+    "dev-MN3.en",
+    "dev-MN3.ja"
+  ]
+}

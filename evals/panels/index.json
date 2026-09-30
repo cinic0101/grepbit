@@ -159,6 +159,36 @@
       "freeze": null,
       "authoring": "development",
       "note": "22 exposed v8 mechanism probes (#79): E02 one-factor wording, BM2 year placement, generic count framing; independent semantic acceptance. Diagnostic, not a candidate."
+    },
+    {
+      "panel_id": "p3-dev-bound-meaning-v2",
+      "tier": "dev",
+      "path": "evals/dev/bound-meaning-panel-v2.json",
+      "assets": {
+        "panel": "b791b89c6953cf3281e4e5a0673bc1bd8b4a2d98b75f2ffde689c86fca0edc60",
+        "cases": "3324685d34232b2d58d279e1fb157faa157a3d07cf33ab2d84fdd47dd3309a11",
+        "oracles": "4c78ba1ffd77ebcaf0787c205716f994243415dbf3ae21a47d607a742fc095db"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "v1 with dev-BM6 revised by ADR #136: generic unresolved counts answer with booked seats and a stated assumption; independent semantic acceptance on the adding PR."
+    },
+    {
+      "panel_id": "p3-dev-mechanism-probe-v2",
+      "tier": "dev",
+      "path": "evals/dev/mechanism-probe-panel-v2.json",
+      "assets": {
+        "panel": "91fcdf3102446c337326c305dbd16ae4a9e096f8d226c9728950707af7ecd951",
+        "cases": "3d89c22c2a37a027b40adcf2c1e9c39e3c1fbd3275d566a2907c3347afaa571b",
+        "oracles": "f7bbca371fa810a9c692377b5fe69a75e9c4c107932d2b4a5e2c48c33b8c2ed9"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "v1 with dev-BM6, dev-MN1, dev-MN2, dev-MN3 revised by ADR #136: generic unresolved counts answer with booked seats and a stated assumption; independent semantic acceptance on the adding PR."
     }
   ]
 }

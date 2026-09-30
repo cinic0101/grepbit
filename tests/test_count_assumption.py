@@ -86,7 +86,9 @@ class GradingTests(unittest.TestCase):
 class PanelTests(unittest.TestCase):
     def test_the_v2_panels_differ_from_v1_only_where_the_rule_table_says(self):
         registered = {row["panel_id"]: row for row in evaluate.load_panels()["panels"]}
-        bm5 = {key: value for key, value in _bm5().items() if key not in ("oracle_id", "revision", "provenance")}
+        # Compare parsed oracles: the loader canonicalizes the request (UTC instants).
+        bm5 = {key: value for key, value in p3_assets.parse_oracle(_bm5()).to_dict().items()
+               if key not in ("oracle_id", "revision", "provenance")}
         for stem, families in CHANGED.items():
             with self.subTest(panel=stem):
                 old_entry, new_entry = registered[f"{stem}-v1"], registered[f"{stem}-v2"]
