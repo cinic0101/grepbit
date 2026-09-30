@@ -68,6 +68,13 @@ reads every indexed run of that panel and route whose candidate has the same
 `stable_wrong`, `flaky` or `insufficient`. Neither mode is a live run, a
 claim upgrade or promotion.
 
+`--gate` ([candidate gate](candidate-gate.md), `evaluation-gate-v1`) applies
+the pre-registered acceptance rule offline. It compares one candidate run on
+each named dev panel with the baseline's aggregate classes, and needs a
+baseline sentinel run under the same owner authorization. Its verdict is
+`regression`, `inconclusive`, `passed` or `no_fix`, and it is a development
+observation only.
+
 ## Historical tools
 
 The prior route tools and candidate helper now live under `tools/history/`;

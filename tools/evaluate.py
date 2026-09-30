@@ -9,8 +9,9 @@ registered route (``evals/routes``) and the append-only run index
 and the run index, never chosen: a dev panel is a development observation, a
 regression panel an observed regression, a holdout panel a fresh observation
 exactly once per (panel, route) and an observed regression afterwards. Nothing
-here is promotion. Preparation, binding, readback and recording are offline;
-``--live`` needs the owner's recorded grant and one exclusive run slot.
+here is promotion. Preparation, binding, readback, recording, replay,
+aggregation and the candidate gate are offline; ``--live`` needs the owner's
+recorded grant and one exclusive run slot.
 """
 from __future__ import annotations
 
@@ -57,6 +58,7 @@ MANIFEST_VERSION = MANIFEST_VERSIONS[PACKET_VERSION]
 REPORT_VERSION = REPORT_VERSIONS[PACKET_VERSION]
 REPLAY_VERSION = "evaluation-replay-v1"
 AGGREGATE_VERSION = "evaluation-aggregate-v1"
+GATE_VERSION = "evaluation-gate-v1"
 STOP_VERSION = "evaluation-stops-v1"
 RUN_RECORD_VERSION = "evaluation-run-record-v1"
 PURPOSE = "one_tiered_evaluation_run_never_promotion"
@@ -1002,6 +1004,12 @@ _REPLAY_BASE = "https://replay.invalid/v1"
 _REPLAY_TOKEN = "replay-synthetic-token"
 _REPLAY_CLASSES = ("replayed_same", "replayed_changed", "not_replayable")
 _AGGREGATE_CLASSES = ("stable_correct", "stable_wrong", "flaky", "insufficient")
+GATE_REFUSALS = ("same_bytes", "not_dev_panel", "no_baseline_runs", "no_sentinel", "sentinel_incomplete",
+                 "no_candidate_run", "multiple_candidate_runs", "candidate_identity", "inputs_differ",
+                 "index_mismatch")
+_GATE_CLASSES = ("fixed", "broke", "unchanged_correct", "unchanged_wrong", "excluded", "unassessed")
+# Errors raised on the model's own content after the envelope was accepted: the model's answer, graded wrong.
+_GATE_MODEL_ERRORS = ("invalid_json", "invalid_request", "constraint_conflict")
 
 
 class ReplayRefused(assets.P3Error):
@@ -1010,6 +1018,14 @@ class ReplayRefused(assets.P3Error):
     def __init__(self, reason: str):
         super().__init__("manifest_drift")
         self.reason = reason if reason in REPLAY_REFUSALS else "unknown"
+
+
+class GateRefused(assets.P3Error):
+    """A candidate cannot be gated against its baseline as indexed: the existing safe code, one closed reason."""
+
+    def __init__(self, reason: str):
+        super().__init__("invalid_manifest")
+        self.reason = reason if reason in GATE_REFUSALS else "unknown"
 
 
 def _reference(path: Path) -> str:
@@ -1139,24 +1155,24 @@ async def _replay_execute(plan: _ReplayPlan) -> dict:
     return value
 
 
-def aggregate(panel_id: str, route_id: str, candidate_id: str, *, runs_path: Path | None = None,
-              candidates_index: Path | None = None) -> dict:
-    """Every indexed run of the panel and route with the same model-facing bytes; selection by identity only."""
-    target = registry.load_entry(candidate_id, candidates_index)["candidate_sha256"]
-    runs_file = RUNS if runs_path is None else runs_path
-    runs = load_runs(runs_file)
-    identities, included = {}, []
+def _same_bytes_runs(panel_id: str, route_id: str, target: str, runs: list[dict], identities: dict,
+                     candidates_index: Path | None) -> list[dict]:
+    """Indexed runs of the panel and route whose candidate's registry bytes equal ``target``, in index order."""
+    selected = []
     for run in runs:
         if run["panel_id"] != panel_id or run["route_id"] != route_id:
             continue
         if run["candidate_id"] not in identities:
             identities[run["candidate_id"]] = registry.load_entry(run["candidate_id"], candidates_index)["candidate_sha256"]
         if identities[run["candidate_id"]] == target:
-            included.append(run)
-    if not included:
-        raise assets.P3Error("invalid_manifest")
+            selected.append(run)
+    return selected
+
+
+def _archived_reports(selected: list[dict]) -> list[dict]:
+    """Each indexed run's report, read through its own reader and matched to its index digest and run id."""
     reports = []
-    for run in included:
+    for run in selected:
         path = _location(run["slot"] + "/report.json")
         if _report_digest(path) != run["report_sha256"]:
             raise assets.P3Error("manifest_drift")
@@ -1164,6 +1180,10 @@ def aggregate(panel_id: str, route_id: str, candidate_id: str, *, runs_path: Pat
         if report.get("run_id", run["run_id"]) != run["run_id"]:
             raise assets.P3Error("manifest_drift")
         reports.append(report)
+    return reports
+
+
+def _input_classes(reports: list[dict]) -> list[dict]:
     order = [row["case_id"] for row in reports[0]["results"]]
     if any([row["case_id"] for row in report["results"]] != order for report in reports):
         raise assets.P3Error("invalid_scoring")
@@ -1185,6 +1205,19 @@ def aggregate(panel_id: str, route_id: str, candidate_id: str, *, runs_path: Pat
             "distinct_signatures": len({row["actual_signature"] for row in rows
                                         if row.get("actual_signature") is not None}),
             "validated_actions": len(actions), "distinct_validated_actions": len(set(actions)), "class": kind})
+    return inputs
+
+
+def aggregate(panel_id: str, route_id: str, candidate_id: str, *, runs_path: Path | None = None,
+              candidates_index: Path | None = None) -> dict:
+    """Every indexed run of the panel and route with the same model-facing bytes; selection by identity only."""
+    target = registry.load_entry(candidate_id, candidates_index)["candidate_sha256"]
+    runs_file = RUNS if runs_path is None else runs_path
+    included = _same_bytes_runs(panel_id, route_id, target, load_runs(runs_file), {}, candidates_index)
+    if not included:
+        raise assets.P3Error("invalid_manifest")
+    reports = _archived_reports(included)
+    inputs = _input_classes(reports)
     return {
         "version": AGGREGATE_VERSION, "promotion_eligible": False, "panel_id": panel_id, "route_id": route_id,
         "candidate": {"candidate_id": candidate_id, "candidate_sha256": target},
@@ -1208,6 +1241,114 @@ def _tally(values) -> dict:
     return counts
 
 
+def _gate_view(report: dict) -> tuple:
+    """Candidate bytes and inputs of an evaluation report; a formal archive carries neither."""
+    if report["report_version"] not in REPORT_VERSIONS.values():
+        return None, None
+    return report["candidate"]["candidate_sha256"], (
+        report["panel"]["panel_id"], report["panel"]["assets"],
+        [(row["case_id"], row["question_sha256"]) for row in report["results"]])
+
+
+def _gate_unassessed(result: dict) -> bool:
+    """No usable model result. A graded row whose error was raised on the model's own content, such as
+    invalid_json, is the model's answer; an envelope, gateway, transport, budget, kernel or source error is not."""
+    error = result.get("operational_error")
+    return (result["status"] != "completed" or result["outcome"] in ("operational_failure", "not_run")
+            or result.get("runner_error_code") is not None
+            or error is not None and error not in _GATE_MODEL_ERRORS)
+
+
+def _gate_class(baseline: str, candidate: str, sentinel_assessed: bool) -> str:
+    if candidate == "unassessed":
+        return "unassessed"
+    if baseline == "stable_correct":
+        return "unchanged_correct" if candidate == "correct" else "broke"
+    if baseline == "stable_wrong" and candidate == "correct":
+        # A fix needs same-session evidence that the baseline still gets the input wrong.
+        return "fixed" if sentinel_assessed else "excluded"
+    if baseline == "stable_wrong":
+        return "unchanged_wrong"
+    return "excluded"
+
+
+def _gate_verdict(counts: dict) -> str:
+    return ("regression" if counts["broke"] else "inconclusive" if counts["unassessed"]
+            else "passed" if counts["fixed"] else "no_fix")
+
+
+def gate(candidate_id: str, baseline_id: str, route_id: str, reference: str, panel_ids: list[str], *,
+         runs_path: Path | None = None, panels_path: Path | None = None,
+         candidates_index: Path | None = None) -> dict:
+    """The pre-registered acceptance rule (docs/candidate-gate.md): one candidate run against the
+    measured classes of its baseline, with a sentinel under the same owner authorization. Offline."""
+    if (not isinstance(reference, str) or GRANT.fullmatch(reference) is None or not panel_ids
+            or len(set(panel_ids)) != len(panel_ids)):
+        raise assets.P3Error("invalid_arguments")
+    registered = load_panels(panels_path)
+    if any(_entry(registered, "panels", panel_id, "panel_id")["tier"] != "dev" for panel_id in panel_ids):
+        raise GateRefused("not_dev_panel")
+    target = registry.load_entry(candidate_id, candidates_index)["candidate_sha256"]
+    base = registry.load_entry(baseline_id, candidates_index)["candidate_sha256"]
+    if target == base:
+        raise GateRefused("same_bytes")
+    runs_file = RUNS if runs_path is None else runs_path
+    runs = load_runs(runs_file)
+    identities, panels = {}, []
+    for panel_id in panel_ids:
+        baseline = _same_bytes_runs(panel_id, route_id, base, runs, identities, candidates_index)
+        if not baseline:
+            raise GateRefused("no_baseline_runs")
+        sentinels = [position for position, run in enumerate(baseline) if run["grant"] == reference]
+        if not sentinels:
+            raise GateRefused("no_sentinel")
+        if all(baseline[position]["status"] != "complete" for position in sentinels):
+            raise GateRefused("sentinel_incomplete")
+        same_bytes = _same_bytes_runs(panel_id, route_id, target, runs, identities, candidates_index)
+        candidates = [run for run in same_bytes if run["grant"] == reference]
+        if not candidates:
+            raise GateRefused("no_candidate_run")
+        if len(candidates) > 1:
+            raise GateRefused("multiple_candidate_runs")
+        selected = [*baseline, *candidates]
+        reports = _archived_reports(selected)
+        views = [_gate_view(report) for report in reports]
+        if any(sha != identities[run["candidate_id"]] for run, (sha, _) in zip(selected, views)):
+            raise GateRefused("candidate_identity")
+        if any(inputs != views[-1][1] for _, inputs in views[:-1]):
+            raise GateRefused("inputs_differ")
+        if any((report["owner_authorization_reference"], report["panel"]["panel_id"], report["route"]["route_id"],
+                report["status"]) != (run["grant"], panel_id, route_id, run["status"])
+               for run, report in zip(selected, reports)):
+            raise GateRefused("index_mismatch")
+        report, inputs = reports[-1], []
+        for position, (row, score, measured) in enumerate(zip(report["results"], report["summary"]["per_input"],
+                                                              _input_classes(reports[:-1]))):
+            observed = "unassessed" if _gate_unassessed(row) else "correct" if score["correct"] else "wrong"
+            seen = any(not _unassessed(reports[sentinel]["results"][position]) for sentinel in sentinels)
+            inputs.append({"case_id": row["case_id"], "family_id": row["family_id"],
+                           "baseline_class": measured["class"], "sentinel_assessed": seen, "candidate": observed,
+                           "outcome": row["outcome"], "class": _gate_class(measured["class"], observed, seen)})
+        counts = {kind: sum(item["class"] == kind for item in inputs) for kind in _GATE_CLASSES}
+        panels.append({"panel_id": panel_id, "baseline_runs": [run["run_id"] for run in baseline],
+                       "sentinel_runs": [baseline[position]["run_id"] for position in sentinels],
+                       "candidate_run": candidates[0]["run_id"],
+                       "recorded_at": {"sentinel_runs": [baseline[position]["recorded_at"] for position in sentinels],
+                                       "candidate_run": candidates[0]["recorded_at"]},
+                       "other_candidate_runs": [run["run_id"] for run in same_bytes if run["grant"] != reference],
+                       "inputs": inputs, "counts": counts,
+                       **{kind: [item["case_id"] for item in inputs if item["class"] == kind]
+                          for kind in ("fixed", "broke", "excluded", "unassessed")},
+                       "verdict": _gate_verdict(counts)})
+    counts = {kind: sum(panel["counts"][kind] for panel in panels) for kind in _GATE_CLASSES}
+    return {"version": GATE_VERSION, "promotion_eligible": False, "claim": "development_observation",
+            "route_id": route_id, "owner_authorization_reference": reference,
+            "candidate": {"candidate_id": candidate_id, "candidate_sha256": target},
+            "baseline": {"candidate_id": baseline_id, "candidate_sha256": base},
+            "run_index_sha256": evaluator._pin(runs_file)["sha256"],
+            "panels": panels, "counts": counts, "verdict": _gate_verdict(counts)}
+
+
 def main(argv=None) -> int:
     if argv is None:
         argv = sys.argv[1:]
@@ -1219,13 +1360,15 @@ def main(argv=None) -> int:
         return p3_completion_diagnostic.main(argv[1:], profile=p3_completion_diagnostic.V2)
     parser = evaluator._Parser(description=__doc__)
     modes = parser.add_mutually_exclusive_group(required=True)
-    for mode in ("prepare", "bind-authorization", "live", "report", "record", "replay", "aggregate"):
+    for mode in ("prepare", "bind-authorization", "live", "report", "record", "replay", "aggregate", "gate"):
         modes.add_argument("--" + mode, action="store_true")
     for name in ("packet", "authorization", "db", "env-file", "output-dir", "output", "run-output-dir",
                  "baseline", "report-path"):
         parser.add_argument("--" + name, type=Path)
-    for name in ("candidate", "panel", "route", "accepted-commit", "owner-authorization-reference"):
+    for name in ("candidate", "baseline-candidate", "panel", "route", "accepted-commit",
+                 "owner-authorization-reference"):
         parser.add_argument("--" + name)
+    parser.add_argument("--panels", nargs="+", action="extend")
     parser.add_argument("--repetition", type=int)
     for name in smoke.POLICY_KEYS:
         parser.add_argument("--gateway-" + name, choices=("enabled", "disabled"))
@@ -1240,7 +1383,9 @@ def main(argv=None) -> int:
                    if args.bind_authorization else {"live", "packet", "authorization", "env_file"} | common
                    if args.live else {"report", "report_path"} if args.report else
                    {"replay", "report_path", "db", "output"} if args.replay else
-                   {"aggregate", "panel", "route", "candidate"} if args.aggregate else {"record", "report_path"})
+                   {"aggregate", "panel", "route", "candidate"} if args.aggregate else
+                   {"gate", "candidate", "baseline_candidate", "route", "owner_authorization_reference", "panels"}
+                   if args.gate else {"record", "report_path"})
         if present != allowed:
             raise assets.P3Error("invalid_arguments")
         policies = {key: getattr(args, "gateway_" + key) for key in smoke.POLICY_KEYS}
@@ -1257,6 +1402,9 @@ def main(argv=None) -> int:
             result = asyncio.run(_replay_execute(_replay_plan(args.report_path, args.db, args.output)))
         elif args.aggregate:
             result = aggregate(args.panel, args.route, args.candidate)
+        elif args.gate:
+            result = gate(args.candidate, args.baseline_candidate, args.route, args.owner_authorization_reference,
+                          args.panels)
         else:
             if args.live:
                 asyncio.run(run_live(args.db, args.output_dir, packet_path=args.packet,
@@ -1270,7 +1418,8 @@ def main(argv=None) -> int:
         print(model.canonical_json(result))
         return 0 if result.get("status") in (None, "complete") else 1
     except evaluator._SAFE_ERRORS as exc:
-        refusal = {"replay_refusal": exc.reason} if isinstance(exc, ReplayRefused) else {}
+        refusal = ({"replay_refusal": exc.reason} if isinstance(exc, ReplayRefused) else
+                   {"gate_refusal": exc.reason} if isinstance(exc, GateRefused) else {})
         print(model.canonical_json({"status": "incomplete", "error_code": exc.code, **refusal}), file=sys.stderr)
         return 2
     except registry.RegistryError as exc:
