@@ -56,8 +56,10 @@ evaluator stay byte-identical.
 - **Parsing.** `_proposal` requires `orientation` on a Compare request, with
   one of the two values, and refuses it on any other recipe. Anything else is
   `invalid_request`, with reason `root_shape`.
-- **A model-emitted `comparison_roles` clarification** is `invalid_request`,
-  with reason `clarification_shape`.
+- **A model-emitted `comparison_roles` clarification** is `invalid_request`.
+  A well-formed one has reason `clarification_shape`. A malformed one keeps
+  the reason native parsing gives it, for example `choice_consistency` or
+  `choice_values`.
 - **The proposal object.** `RecipeProposal` keeps `orientation`, and
   `to_dict()` includes it only when present.
   - A proposal constructed directly without `orientation` stays valid. The
@@ -187,3 +189,7 @@ restored.
   panels.
 - **The count family is not changed** (v12's count text). Applying the same
   pattern to counts is a later, separate decision.
+- **Reading diagnostic on v15 runs.** The `replayed` variant of
+  `tools/reading_diagnostic.py` would show the model its persisted
+  `orientation`, which is the reading under test. Any future diagnostic on a
+  v15 source should use the `fresh` variant, or account for this.

@@ -185,6 +185,27 @@ class RuntimeAndEvaluationTests(unittest.TestCase):
                 replayed = _run(case.question, json.loads(persisted), self.database)
                 self.assertEqual(replayed.clarification.to_dict(), result.clarification.to_dict())
 
+    def test_a_late_failure_on_the_server_built_path_leaves_no_clarification_or_source(self):
+        case, _ = _case(self.panel, "dev-BM4.en")
+        action = model.canonical_json(_compare("unresolved"))
+        ticks = iter([0.0, 0.0])
+        late = asyncio.run(recipe_model.interpret_recipe_and_execute(
+            case.question, self.database, evaluate._replay_client(action, []), clock=lambda: next(ticks, 1000.0)))
+        client = evaluate._replay_client(action, [])
+        export = client.safe_export
+        client.safe_export = lambda value: ({**export(value), "source_proposal": None}
+                                            if isinstance(value, dict) and "source_proposal" in value else export(value))
+        drifted = asyncio.run(recipe_model.interpret_recipe_and_execute(case.question, self.database, client))
+        for result, code in ((late, "timeout"), (drifted, "invalid_request")):
+            with self.subTest(code=code):
+                self.assertEqual(result.error.code, code)
+                self.assertIsNone(result.clarification)
+                self.assertIsNone(result.presentation)
+                self.assertIsNone(result.source_proposal)
+                self.assertEqual((result.evidence["clarification"], result.evidence["source_proposal"],
+                                  result.evidence["compare_orientation"]), (None, None, None))
+                self.assertIsNone(evaluate._validated_action(result))
+
     def test_a_model_emitted_roles_clarification_is_refused(self):
         case, _ = _case(self.panel, "dev-BM4.en")
         emitted = {"outcome": "clarify", "clarification": {"kind": "comparison_roles", "choices": [
@@ -215,6 +236,9 @@ class RuntimeAndEvaluationTests(unittest.TestCase):
                         {"clarification_choice_count": 3}):
             with self.subTest(changed=changed), self.assertRaises(p3_assets.P3Error):
                 evaluate._check_action({**row, **changed})
+        for text in ("[]", "null", '"x"', "1"):
+            with self.subTest(text=text), self.assertRaises(p3_assets.P3Error):
+                evaluate._check_action({**row, "validated_action": text})
         stated = {**row, "validated_action": model.canonical_json(_compare("stated")), "actual_action": "answer",
                   "clarification_kind": None, "clarification_choice_count": None}
         self.assertFalse(evaluate._check_action(stated))

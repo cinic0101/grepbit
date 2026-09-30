@@ -887,7 +887,8 @@ def _check_action(row: dict, stop_reason: str | None = None) -> bool:
     except (ValueError, RecursionError):
         raise assets.P3Error("invalid_asset") from None
     # An unresolved Compare orientation is the model's action behind a server-built roles clarification.
-    derived = action.get("outcome") == "request" and action.get("orientation") == "unresolved"
+    derived = (isinstance(action, dict) and action.get("outcome") == "request"
+               and action.get("orientation") == "unresolved")
     if (_action_text(action) != text
             or ("clarify" if derived else _ACTION_OUTCOMES[action["outcome"]]) != row["actual_action"]):
         raise assets.P3Error("invalid_asset")
