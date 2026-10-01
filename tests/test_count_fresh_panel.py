@@ -53,6 +53,7 @@ class FreshPanelRulers(unittest.TestCase):
                 for question in slot["questions"].values():
                     self.assertRegex(question, r"(?<![A-Za-z0-9_-])" + re.escape(slot["center_code"])
                                      + r"(?![A-Za-z0-9_-])")
+                    # Every question states its year: a missing year is D05, which is not scored.
                     self.assertIn("2026", question)
 
     def test_registered_pins_and_the_builder_reproduces_every_committed_byte(self):
@@ -93,9 +94,11 @@ class FreshPanelRulers(unittest.TestCase):
                                  (branches[slot["type"]], branches[slot["type"]], "design_seen"))
                 self.assertEqual(oracle["branch"], case.expected_branch)
                 if case.expected_branch == "answer":
-                    self.assertEqual((oracle["recipe_id"], oracle["request"]["center_code"]),
-                                     ("overview", slot["center_code"]))
-                    self.assertTrue(oracle["request"]["start"].startswith(slot["month"] + "-01T00:00:00"))
+                    year, month = (int(part) for part in slot["month"].split("-"))
+                    following = f"{year + month // 12}-{month % 12 + 1:02d}"
+                    self.assertEqual((oracle["recipe_id"], oracle["request"]), ("overview", {
+                        "center_code": slot["center_code"], "start": f"{slot['month']}-01T00:00:00+08:00",
+                        "end": f"{following}-01T00:00:00+08:00", "timezone": "Asia/Taipei"}))
         self.assertEqual({key: raw[key]["capability_category"] for key in ("dev-CF08.v1", "dev-CF09.v1", "dev-CF10.v1")},
                          {"dev-CF08.v1": "D06", "dev-CF09.v1": "D04", "dev-CF10.v1": "D06"})
         self.assertEqual([c["semantic_value"]["value"] for c in raw["dev-CF11.v1"]["clarification"]["choices"]],
@@ -106,12 +109,13 @@ class FreshPanelRulers(unittest.TestCase):
         self.assertEqual(annex, {"version": "count-assumption-annex-v1", "expectations": {
             f"dev-C{slot}.v1": ASSUMPTION for slot, kind in TYPES.items() if kind in ("G", "B")}})
         self.assertEqual(runner.annex_expectations(_entry(), panel), annex["expectations"])
-        # The builder builds an Overview oracle as tools/build_dev_panel.py does: CF01 is dev-A1.v1's scope.
-        accepted = next(row for row in json.loads((DEV / "dev-oracles-v3.json").read_text())["oracles"]
-                        if row["oracle_id"] == "dev-A1.v1")
+        # The builder builds an Overview oracle as tools/build_dev_panel.py does: CF01 and CF05 have the scopes of
+        # the accepted dev-A1.v1 and dev-A2.v1.
+        accepted = {row["oracle_id"]: row for row in json.loads((DEV / "dev-oracles-v3.json").read_text())["oracles"]}
         drop = ("oracle_id", "provenance")
-        self.assertEqual({k: v for k, v in raw["dev-CF01.v1"].items() if k not in drop},
-                         {k: v for k, v in accepted.items() if k not in drop})
+        for fresh, old in (("dev-CF01.v1", "dev-A1.v1"), ("dev-CF05.v1", "dev-A2.v1")):
+            self.assertEqual({k: v for k, v in raw[fresh].items() if k not in drop},
+                             {k: v for k, v in accepted[old].items() if k not in drop})
 
     def test_scripted_correct_actions_grade_correct_and_state_exactly_the_annexed_assumption(self):
         entry = _entry()
@@ -120,10 +124,19 @@ class FreshPanelRulers(unittest.TestCase):
         expectations = json.loads((DEV / "count-fresh-annex-v1.json").read_text())["expectations"]
         panel = p3_assets.load_panel(panel_path)
         oracle_of = {case.case_id: case.oracle_id for case in panel.cases}
+        # Each type's scripted correct action, so that S (booked_seats) and O/K (none) are told apart.
+        readings = {"G": "unresolved", "B": "unresolved", "S": "booked_seats", "O": "none", "K": "none"}
+        outcomes = {"D": "clarify", "U": "declined"}
         for row in json.loads(responses_path.read_text())["responses"]:
+            kind = TYPES[row["case_id"].split(".")[0][len("dev-C"):]]
             with self.subTest(case=row["case_id"]):
                 self.assertEqual(runner._stated_assumption(row["action"]),
                                  expectations.get(oracle_of[row["case_id"]]))
+                if kind in readings:
+                    self.assertEqual((row["action"]["outcome"], row["action"]["count_request"]),
+                                     ("request", readings[kind]))
+                else:
+                    self.assertEqual(row["action"]["outcome"], outcomes[kind])
         with tempfile.TemporaryDirectory(prefix="count-fresh-", dir=ROOT / ".artifacts") as tmp:
             root = Path(tmp)
             database = root / "fixture.sqlite"

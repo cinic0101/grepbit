@@ -29,8 +29,9 @@ PROV = ["Count fresh panel (#152): kernel-derived from the synthetic LearningOps
 TYPES = {"G": ("answer", "unresolved", True), "S": ("answer", "booked_seats", False), "U": ("decline", None, False),
          "D": ("clarify", None, False), "B": ("answer", "unresolved", True), "O": ("answer", "none", False),
          "K": ("answer", "none", False)}
-# Decline categories: the contract's D08 (an explicit account/people/attendance count) is recorded as D06 because the
-# oracle parser admits D01-D06 only (docs/coverage-matrix.md); an Overview plus a required unavailable count is D04.
+# Decline categories: the contract's D08 (an explicit account or people count) is recorded as D06 because the oracle
+# parser admits D01-D06 only (as docs/coverage-matrix.md's D7 and D9 rows); an Overview plus a required unavailable
+# count is D04 (its D8 row, and dev-BM8).
 DECLINE_CATEGORY = {"F08": "D06", "F09": "D04", "F10": "D06"}
 # The named meanings each clarify slot offers, in the question's order.
 CLARIFY_MEANINGS = {"F11": ("booked_seats", "known_booking_accounts"), "F12": ("booked_seats", "distinct_people")}
