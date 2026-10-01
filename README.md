@@ -157,8 +157,8 @@ distinct individuals is answered with the Overview request and
 `count_request: "unresolved"`, not a `count_basis` clarification. That is
 v13's scoped action directive, which v16's text had dropped, adapted to the
 typed reading. The assumption stays
-code-decided. Against v16, the gate `passed` on the two v2 dev panels: 8
-fixed, 0 broke, and 46/46 on one v17 run. On `p3-dev-matrix-compare-first-v3`
+code-decided. Against v16, the gate `passed` overall on the two v2 dev panels:
+8 fixed, 0 broke, and 46/46 on one v17 run. On `p3-dev-matrix-compare-first-v3`
 (#149) it gave `no_fix`, with 0 broke, at 48/54. `dev-A1` (a spurious
 assumption on a no-count Overview) and `dev-C1` (a count_basis clarification
 where the owner ruled for an answer) stay wrong. See the

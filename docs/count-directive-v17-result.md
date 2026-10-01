@@ -7,7 +7,8 @@ amended to 260 calls at #issuecomment-5923049914, for candidate
 v16 (`docs/count-reading-v16.md`).
 
 **Verdicts of the pre-registered gates:**
-- `passed` on the two v2 dev panels;
+- `passed` overall on the v2 pair. Per panel, bound-meaning is `no_fix`, since
+  it was already 24/24, and mechanism-probe is `passed`;
 - `no_fix`, with no break, on `p3-dev-matrix-compare-first-v3` (#149).
 
 These are development observations on exposed inputs, not promotion.
@@ -18,7 +19,7 @@ These are development observations on exposed inputs, not promotion.
 | --- | --- |
 | Route | `litellm-gemma-4-31b`; retry, fallback and cache attested disabled (#79 #issuecomment-5857155780; the reports record `operator_cli_attestation_not_independently_verified`) |
 | v16 runs (step 1) | From `dev@78475bf` (the #149 merge), while v16 was current |
-| v17 runs (step 3) | From `dev@4f1181a` (the #150 merge, after its round-2 no-blocker record) |
+| v17 runs (step 3) | From `dev@4f1181a`, the #150 merge, made after its round-2 no-blocker record. That review covered head `80aaf54`. The merged head `50f4e32` added only that review's docs fixes, to the README and the v17 contract, which the record discloses. The candidate bytes are the same at both heads. |
 | Possible in-flight attempts | 0 in all eight runs |
 | Grant use | **260 of 260** calls: 160 in step 1, including 6 in the stopped run, and 100 in step 3 |
 | Candidate SHA256 | v17 `c69e474bec8e894ccb94c07f775bfe8c03c15e4043266d155082fedf1affeb6c`; baseline v16 `f6e48dd4b237e0fbdf9003d966db74922748d5f2f8404e850c390a414dafd0f5` |
@@ -52,10 +53,19 @@ the edits reverted. No row ran on a changed source.
   Their run slots were never created, and nothing was recorded for them.
 - **Clean HTTPS clone.** After the stop, the remaining runs were prepared and run
   from a clean HTTPS clone of `dev`, at the same merged commits: `78475bf` for
-  v16 and `4f1181a` for v17. They used fresh envelopes and slots. The tools
-  refuse a run unless `dev` is the checked-out branch and the tree is clean.
-- **Copy back.** The run directories were copied back to the main checkout byte
-  for byte (`diff -rq` identical) for `--record` and the gate.
+  v16 and `4f1181a` for v17. The tools refuse a run unless `dev` is the
+  checked-out branch and the tree is clean.
+  - Each run used a new envelope and a new run slot.
+  - The clone's two v3 packets are byte-identical to the two never-run
+    main-checkout packets (`7964978c…` and `abe55bdf…`). That shows the clone
+    reproduced the main checkout's source identity.
+  - So each of those packets has two bound envelopes, and one of each ran.
+  - The leftover envelopes cannot run now: `78475bf` is no longer the head of
+    `dev`, the pinned run index has moved, and their run ids are already
+    recorded.
+- **Copy back.** Each artifact folder came back to the main checkout byte for
+  byte (`diff -rq` identical) for `--record` and the gate. A folder holds the
+  packets, envelopes, logs, scripts and run directories.
 
 **Order** (UTC; local file times and GitHub):
 
@@ -91,7 +101,7 @@ sentinel-assessed.
 | Panel | Baseline runs | Fixed | Broke | Excluded | Unchanged correct | Unchanged wrong | Verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `p3-dev-bound-meaning-v2` | 2 | 0 | 0 | 0 | 24 | 0 | no_fix (already 24/24) |
-| `p3-dev-mechanism-probe-v2` | 3 (r1, incomplete r2, r3) | 8 | 0 | 1 | 13 | 0 | passed |
+| `p3-dev-mechanism-probe-v2` | 3 (#148's r1 under the earlier grant, incomplete r2, r3) | 8 | 0 | 1 | 13 | 0 | passed |
 | **v2 pair** | | 8 | 0 | 1 | 37 | 0 | **passed** |
 | `p3-dev-matrix-compare-first-v3` | 2 | 0 | 0 | 0 | 48 | 6 | **no_fix** |
 
@@ -101,8 +111,11 @@ sentinel-assessed.
 - **Excluded:** `dev-MN1.en` was flaky on v16 (correct on #148's r1, a
   clarification on r3). v17 answers it correctly, but a flaky baseline cannot
   gate as fixed.
-- **Unchanged wrong on v3:** `dev-A1` ×3 and `dev-C1` ×3. v17's contract
-  expected both and did not target them.
+- **Unchanged wrong on v3:** `dev-A1` ×3 and `dev-C1` ×3. The v17 contract
+  named both as not targeted:
+  - `dev-C1` from its first commit, before any run;
+  - `dev-A1` only in #150's last commit (`50f4e32`, 02:12:31). That was after
+    the v16 baseline showed it wrong, and before the v17 run.
 - **Broke:** none, on any panel.
 
 Annex-aware index counts:
@@ -115,10 +128,12 @@ Annex-aware index counts:
 
 ## Reading
 
-- **Only the targeted inputs moved.** Against the v16 baseline of the same
-  panel, the only outcome changes are the nine `dev-MN` rows: from
-  clarification to the correct answer. Every other input on the three panels
-  kept its outcome:
+- **Only the targeted inputs moved.** Across all v16 runs of each panel and
+  the v17 run, only the nine `dev-MN` rows differ. Each moved from a
+  clarification to the correct answer, except `dev-MN1.en`: it was already
+  correct on #148's r1, so it moved only against r3. On every other input, the
+  outcome, validated action, signature and error code are identical across the
+  runs:
   - `dev-BM5` read `booked_seats`, with no assumption;
   - `dev-BM7` kept its clarification;
   - `dev-BM8` and `dev-D8` were declined by the model itself;
