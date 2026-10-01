@@ -277,13 +277,18 @@ class AblationRunTests(EvaluateHarness):
         result, slot = await self.experiment(952)
         report_path = slot / "report.json"
         original = report_path.read_text()
-        for key, value in (("annex", "correct"), ("reading", {"outcome": "declined", "count_request": None,
-                                                              "clarification_kind": None, "choices": None})):
+        # results[0] is a labels row and results[1] its rules row; a rules row can never have been mapped.
+        for position, key, value in ((0, "annex", "correct"),
+                                     (0, "reading", {"outcome": "declined", "count_request": None,
+                                                     "clarification_kind": None, "choices": None}),
+                                     (1, "mapped", True), (0, "mapped", None), (0, "mapped", "yes")):
             tampered = json.loads(original)
-            tampered["results"][0][key] = value
+            self.assertEqual(tampered["results"][1]["variant"], "rules")
+            tampered["results"][position][key] = value
             report_path.write_text(json.dumps(tampered))
-            with self.assertRaises(p3_assets.P3Error):
+            with self.subTest(key=key, value=value), self.assertRaises(p3_assets.P3Error) as refusal:
                 ablation.read_report(report_path, **self.registries)
+            self.assertEqual(refusal.exception.code, "invalid_asset")
         report_path.write_text(original)
         packet = json.loads((slot / "packet.json").read_text())
         packet["variants"]["rules"]["edits"] = []
@@ -385,12 +390,14 @@ class AblationRunTests(EvaluateHarness):
         renamed = json.loads(json.dumps(packet))
         renamed["inputs"][0]["messages_sha256"] = "0" * 64
         for changed in (relabelled, renamed):
-            with self.assertRaises(p3_assets.P3Error):
+            with self.assertRaises(p3_assets.P3Error) as refusal:
                 ablation._registered(changed, self.panel)
+            self.assertEqual(refusal.exception.code, "manifest_drift")
         # The readback runs the check: different variant messages are drift, not a silent pass.
         with patch.object(ablation, "messages", side_effect=lambda variant, question: [{"role": "user", "content": ""}]), \
-                self.assertRaises(p3_assets.P3Error):
+                self.assertRaises(p3_assets.P3Error) as refusal:
             ablation.read_report(slot / "report.json", **self.registries)
+        self.assertEqual(refusal.exception.code, "manifest_drift")
 
     async def test_each_comparison_refusal_fires_on_its_own_condition(self):
         baseline = await self.baseline(985)

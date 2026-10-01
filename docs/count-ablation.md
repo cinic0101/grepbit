@@ -151,9 +151,11 @@ no verdict:
     `candidate_identity`, `inputs_differ`, `index_mismatch`.
   - There is no verdict.
   - **From a clean clone.** A clean clone has no baseline archives, so the
-    in-run readback gives `baseline_unavailable` rather than an error. Copy the
-    run slot back byte for byte, then re-read it with `--report` in the checkout
-    that holds the archives.
+    in-run readback gives `baseline_unavailable` rather than an error. Then:
+    - copy the run slot back byte for byte, to the same repository-relative
+      path, because the slot must equal the envelope's `run_slot`;
+    - re-read it with `--report`, in the checkout that holds the archives, with
+      the same merged commit's code.
 
 ## Commands
 
@@ -172,22 +174,49 @@ The tool runs as a module (`-m tools.count_ablation`), not as a script.
 
 ## Reading rule (pre-registered)
 
-For each target and its variant:
-- **The target moves** if its variant verdict is `correct` in at least two of
-  its three languages. Its baseline is wrong in every recorded run.
-- **A control breaks** under a variant if both hold: its baseline is correct in
-  every assessed run, with at least one assessed run; and its variant verdict
-  is `wrong`.
-- **Inconclusive:** fewer than two of the target's three rows have an assessed
-  variant verdict (`correct` or `wrong`), or any control row under that variant
-  lacks one (unassessed, failed or not started), or a target or control has no
-  assessed baseline run. Unassessed and operational failures never count as
-  `wrong` or `correct`.
-- **Supported:** not inconclusive, the target moves, and no control breaks
-  under that variant.
-- **Mixed:** not inconclusive, the target moves, but a control breaks.
-- **No support:** not inconclusive, and the target does not move. The verdict
-  is per hypothesis and says nothing beyond this wording.
+Each row's variant verdict is `correct`, `wrong` or unassessed. Unassessed
+covers an `unassessed` grade, a failed row, a reserved row and a row that was
+never started. Unassessed rows never count as `correct` or `wrong`. A baseline
+input is "wrong" or "correct" only over its assessed runs, with at least one
+assessed run.
+
+For each hypothesis, its target and its variant:
+- **No reading.** No reading is made if the comparison is refused
+  (`baseline_unavailable` is re-read after the copy-back), or if the target's
+  baseline is not wrong in every assessed run.
+- **Target rows.** Let `c` be the target's three rows with verdict `correct`,
+  and `u` the unassessed ones.
+  - **The target moves** if `c ≥ 2`.
+  - **The target does not move** if `c + u < 2`: even if every unassessed row
+    were correct, it could not move.
+  - **Otherwise the target is undetermined** (`c < 2` and `c + u ≥ 2`).
+- **A control breaks** under a variant if its baseline is correct and its
+  variant verdict is `wrong`.
+- **The outcomes:**
+  - **Inconclusive:** the target is undetermined. Or the target moves but a
+    control row under that variant is unassessed, or a control has no assessed
+    baseline run.
+  - **Supported:** the target moves, every control row is assessed, and no
+    control breaks.
+  - **Mixed:** the target moves, every control row is assessed, and a control
+    breaks.
+  - **No support:** the target does not move. The controls do not change this
+    outcome.
+- **Scope.** The verdict is per hypothesis and says nothing beyond this
+  wording.
+
+## Run order and stops across the three runs
+
+The three per-panel runs execute in a fixed order:
+1. `p3-dev-matrix-compare-first-v3` (18 calls; the targets `dev-A1` and
+   `dev-C1`);
+2. `p3-dev-bound-meaning-v2` (18);
+3. `p3-dev-mechanism-probe-v2` (6).
+
+Any run that ends with a stop other than `complete` ends step (4). No further
+run is started until the owner decides. The stops include `anomaly`,
+`timeout_streak`, `network_streak`, `budget` and `interrupted`. A stopped run is
+never repeated without the owner.
 
 ## Claims and limits
 
@@ -198,10 +227,16 @@ For each target and its variant:
   parser rejects. By design, it does make a reply that uses a variant label
   valid for the production schema.
 - **Known limit: tied to the current code.** As with `routing_upper_bound`,
-  readback recomputes the variant pins and messages from the current code.
-  After any runtime change, an archived report fails readback with
-  `variant_text` or `invalid_manifest`. Read the results while the candidate is
-  current.
+  readback recomputes from the current code:
+  - the variant pins and messages, failing as `invalid_manifest` (with
+    experiment refusal reason `variant_text` when an edit no longer applies);
+  - the annex verdict and reading, failing as `invalid_asset`;
+  - the panel's input metadata (`_registered`), failing as `manifest_drift`.
+
+  After any runtime or panel-metadata change, an archived report fails
+  readback. Read the results while the candidate is current.
+- **`mapped` on failed rows.** Only a returned row carries a boolean `mapped`.
+  A failed row records `None`, even if `map_back` ran.
 - **What a null result means.** A variant that moves nothing gives no support
   to its hypothesis, for this wording only. It does not refute the hypothesis.
 - **The rules variant is not only a scoping.**
