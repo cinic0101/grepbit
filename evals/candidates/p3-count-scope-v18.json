@@ -1,0 +1,77 @@
+{
+  "registry_version": "candidate-registry-v1",
+  "candidate_id": "p3-count-scope-v18",
+  "ancestor": "p3-count-directive-v17",
+  "ancestor_sha256": "a6334dcdc2fbfe742d5ce96110f2ade2fa1dcc2eac5bb8c08aa6ac079950d071",
+  "registered_commit": "97c956da193f60a6603d86629788b89c67d0a6da",
+  "registered_at": "2026-10-01T03:05:26.297697Z",
+  "note": "v17 plus option T of ADR #152: a general overview asks for no count; count_basis only when the user says they are undecided; doubt about the system basis is answered with count_request unresolved.",
+  "recipe_context": {
+    "context_version": "learningops-recipe-context-v6",
+    "output_contract": "recipe-request-json-v5",
+    "instruction_version": "recipe-selection-instruction-v11",
+    "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5",
+    "context_sha256": "a31bb3892ba51208a827f37c769e60fbe149b40adcb57ad99d96398fb05f2ed6",
+    "output_contract_sha256": "af3e4a24edeecdb8134f9e84bed8088f1be30a3f8b621a5b9ad437afc5523310",
+    "instruction_sha256": "da4ec91514e4be78674645d5748cddc7fff91cb8661589bb6ba069528ed679fb",
+    "system_message_sha256": "d4dd31fdb7f19ed5abf3ff288f79a31d6163a16a444bc27416f2718c196e6987"
+  },
+  "structured_output": {
+    "version": "recipe-structured-output-v5",
+    "mode": "json_schema",
+    "schema_name": "grepbit_recipe_request",
+    "schema_sha256": "af3e4a24edeecdb8134f9e84bed8088f1be30a3f8b621a5b9ad437afc5523310",
+    "response_format_sha256": "464737bf569274e4204de32c9bdfd9c2129f5763ea97463e8799188b034434cd"
+  },
+  "p1_context": {
+    "context_version": "learningops-model-context-v1",
+    "output_contract": "fact-request-json-v1",
+    "catalog_sha256": "9027e2af35e49a790fd4c3e985ccff12e92868946f9398506ccfa7e623c897c5",
+    "context_sha256": "70545dbc5ed67b33b907301933a5556d7575d014bcc19472119d10ba11647fc6",
+    "instruction_sha256": "bff03c3ac45478f5530e9f3e152c277466ec838eeb960eda233ee1e30a73188c"
+  },
+  "limits": {
+    "input": 4096,
+    "request": 32768,
+    "response": 131072,
+    "timeout": 60.0
+  },
+  "semantic_identity_sha256": "73eb8f8379e44e242e765277d04bfec409cacb5dc539fbe941ad28d03470ee7a",
+  "candidate_sha256": "375482d4ca8f9f9714c913fa5cbc3d968c16e1e9a2bc1dcf383c7bcde0b90a16",
+  "wire_witnesses": [
+    {
+      "label": "p310_e01_en",
+      "question_sha256": "634a6e868a355af50ee7ca122282776aab6159573b16b5bd19f0277b4c67e57a",
+      "recipe_body_sha256": "58ee2fe4f0afd543207f673bf561443b83d68348e2662951c86ab2d7213fd2b5",
+      "recipe_body_bytes": 26273,
+      "p1_body_sha256": "bce2e680673e0a0227ceddfbab44bb23cc4a1da5e724e548861f658a6745431d",
+      "p1_body_bytes": 2911
+    },
+    {
+      "label": "development_wire",
+      "question_sha256": "64d49690bc4bf021865c874d7916902361dd92439386435a80b830452307f37b",
+      "recipe_body_sha256": "7d15dd2bdff69c0c787c3e0cd76490bb30826fb0294c09016e1a581aa9faef70",
+      "recipe_body_bytes": 26264
+    }
+  ],
+  "runtime_files_sha256": {
+    "grepbit/__init__.py": "b79c2eac8fc5ed252050d8bd1c06cbc11eb53849739ddda6741da3c0bf9bc6e7",
+    "grepbit/__main__.py": "08d36af6fd0488ba438793155308c51aacd458a70dc1cc8cbb2b6ed2127d9efe",
+    "grepbit/bedrock.py": "60adb573ce45b9d61ae2b6324663f80802a016eeef7981e526f4a2493e2493ec",
+    "grepbit/breakdown.py": "a352cd70894665740beac899f128e224de1b74d8b10e94321e8ae8399da3dff9",
+    "grepbit/catalog.py": "e14ad8c323855a69fc8f41c585d24fd58de1f9ac0bfb86aebee34e371c972dfc",
+    "grepbit/clarification.py": "16d5dc6d112fa6311ce6caf59854ecbd8bdf97d5e997b14536a57cbce17fb0cd",
+    "grepbit/compare.py": "29497022a5d4528d45391103cc9d80bcf3e21160ebe440bbe9fc38765c4daafc",
+    "grepbit/composition.py": "6c6921df055fa5f1f5ba1469d924152ce323b3c8aa018236256c26b388548768",
+    "grepbit/contracts.py": "f4b3a2ce51b6469fb6de8688e37689129231072102eb4cb203243c9af92281b9",
+    "grepbit/gateway.py": "5739e79d9e3c1eaf828eb347e4c5930dfdeb41fd157e9e3c68cc5b61da8e526f",
+    "grepbit/grouped.py": "30f58f739be8c4b5901a6590f4d2e6f7b87735716f5ba13b34c046f182b43490",
+    "grepbit/json_diagnostics.py": "56d9ad89b2427e2e90faf97bec6da58826feb7e809940e6e333b6d7c1c348db6",
+    "grepbit/kernel.py": "e817b1e97684b27ef2021a6eff20a5c1b5c7164cef370fe3d4980cf0f3072401",
+    "grepbit/model.py": "09cef6e6fbdd1e77c2f60f4851eafb5be86936d42bd8da2c255bc5dd2334d8e8",
+    "grepbit/overview.py": "751c33bb2bf9ebf16217cd9c3b47fadf5c5a88c40e3f77d9acc7d1308884178f",
+    "grepbit/presentation.py": "bfa2427e02ae8b21c020bd9ce09574a8d86448a3bd73ff447e68576cb8fe44aa",
+    "grepbit/provider.py": "0d1a2867a81216417b0e34ebb2cf1223364307bd29a946fcaa92bf22544bd836",
+    "grepbit/recipe_model.py": "6c7e59cef313ec0e96a745429f86a7ffdbc0c630be3bad6095e4107233c75fc5"
+  }
+}
