@@ -1,0 +1,240 @@
+{
+  "version": "count-fresh-authored-v1",
+  "authoring": "Written by an independent fresh-context sub-agent from the owner's count rules (#152); it saw no production prompt, candidate output, oracle or tuned-panel question, and used no tools. Recorded verbatim.",
+  "slots": [
+    {
+      "slot": "F01",
+      "type": "G",
+      "center_code": "CTR-A01",
+      "month": "2026-03",
+      "detail": "a plain \"how many people\" question",
+      "questions": {
+        "zh-TW": "CTR-A01 在 2026 年 3 月總共有多少人？",
+        "en": "How many people did CTR-A01 have in March 2026?",
+        "ja": "CTR-A01は2026年3月、何人でしたか？"
+      },
+      "author_note": "none"
+    },
+    {
+      "slot": "F02",
+      "type": "G",
+      "center_code": "CTR-A02",
+      "month": "2026-02",
+      "detail": "sign-up / registration count wording",
+      "questions": {
+        "zh-TW": "想問一下，CTR-A02 2026 年 2 月有多少人報名？",
+        "en": "Quick question: how many people signed up at CTR-A02 in February 2026?",
+        "ja": "CTR-A02で2026年2月に申し込んだ人数を教えてください。"
+      },
+      "author_note": "Sign-up wording is generic people wording as the brief specifies, but a reader could take it as a count of bookings (K)."
+    },
+    {
+      "slot": "F03",
+      "type": "G",
+      "center_code": "CTR-B01",
+      "month": "2026-04",
+      "detail": "asks for the month's overview plus a generic people count",
+      "questions": {
+        "zh-TW": "請給我 CTR-B01 2026 年 4 月的總覽，順便告訴我那個月有多少人。",
+        "en": "Can I get the overview for CTR-B01 for April 2026, plus how many people there were that month?",
+        "ja": "CTR-B01の2026年4月の概要と、その月の人数をあわせて教えてもらえますか。"
+      },
+      "author_note": "none"
+    },
+    {
+      "slot": "F04",
+      "type": "G",
+      "center_code": "CTR-A01",
+      "month": "2026-02",
+      "detail": "short, casual",
+      "questions": {
+        "zh-TW": "CTR-A01 2026年2月 人數多少？",
+        "en": "CTR-A01, Feb 2026 - headcount?",
+        "ja": "CTR-A01、2026年2月って何人？"
+      },
+      "author_note": "none"
+    },
+    {
+      "slot": "F05",
+      "type": "G",
+      "center_code": "CTR-B01",
+      "month": "2026-03",
+      "detail": "formal, report-style request",
+      "questions": {
+        "zh-TW": "為彙整本月份報告，敬請提供 CTR-B01 於 2026 年 3 月之人數統計。",
+        "en": "Please provide the headcount for CTR-B01 for March 2026, for inclusion in our monthly report.",
+        "ja": "月次報告に用いるため、CTR-B01の2026年3月の人数をご提供いただけますでしょうか。"
+      },
+      "author_note": "none"
+    },
+    {
+      "slot": "F06",
+      "type": "S",
+      "center_code": "CTR-A02",
+      "month": "2026-03",
+      "detail": "asks only for the booked seats",
+      "questions": {
+        "zh-TW": "CTR-A02 在 2026 年 3 月一共被預訂了幾個座位？",
+        "en": "How many seats were booked at CTR-A02 in March 2026?",
+        "ja": "CTR-A02の2026年3月の予約席数はいくつですか？"
+      },
+      "author_note": "none"
+    },
+    {
+      "slot": "F07",
+      "type": "S",
+      "center_code": "CTR-B01",
+      "month": "2026-04",
+      "detail": "asks for the overview including booked seats",
+      "questions": {
+        "zh-TW": "麻煩整理 CTR-B01 2026 年 4 月的概況，記得要包含已預訂的座位數。",
+        "en": "Please pull up the April 2026 overview for CTR-B01, including the number of booked seats.",
+        "ja": "CTR-B01の2026年4月の概況をお願いします。予約席数も含めてください。"
+      },
+      "author_note": "none"
+    },
+    {
+      "slot": "F08",
+      "type": "U",
+      "center_code": "CTR-A01",
+      "month": "2026-03",
+      "detail": "requires only the number of distinct booking accounts",
+      "questions": {
+        "zh-TW": "我只需要 CTR-A01 2026 年 3 月不重複的預約帳號數（匿名預約不算），不能用座位數代替。",
+        "en": "For CTR-A01 in March 2026, I need only the number of distinct booking accounts, with anonymous bookings excluded. Seat counts won't do.",
+        "ja": "CTR-A01の2026年3月について、重複を除いた予約アカウント数だけが必要です（匿名予約は対象外）。席数での代用は不可です。"
+      },
+      "author_note": "none"
+    },
+    {
+      "slot": "F09",
+      "type": "U",
+      "center_code": "CTR-B01",
+      "month": "2026-03",
+      "detail": "asks for the overview and also requires the number of attendance visits",
+      "questions": {
+        "zh-TW": "請提供 CTR-B01 2026 年 3 月的總覽，另外一定要附上出席人次（依實際出席紀錄計算，不是預訂），這個數字是必要的。",
+        "en": "Give me the March 2026 overview for CTR-B01, and I also need the number of attendance visits, meaning actual check-ins, not bookings. That figure is required.",
+        "ja": "CTR-B01の2026年3月の概要に加えて、出席の延べ回数（予約ではなく実際の出席記録ベース）も必ず出してください。この数字は必須です。"
+      },
+      "author_note": "none"
+    },
+    {
+      "slot": "F10",
+      "type": "U",
+      "center_code": "CTR-A02",
+      "month": "2026-02",
+      "detail": "requires only the number of distinct real people, each counted once",
+      "questions": {
+        "zh-TW": "CTR-A02 2026 年 2 月不重複的實際人數是多少？同一個人不管訂幾次都只能算一次，我只要這個數字。",
+        "en": "How many distinct real people did CTR-A02 have in February 2026? Each person must be counted exactly once, however many times they booked; that is the only number I need.",
+        "ja": "CTR-A02の2026年2月の実人数を教えてください。同じ人は何回予約していても1人として数えること。必要なのはこの数字だけです。"
+      },
+      "author_note": "none"
+    },
+    {
+      "slot": "F11",
+      "type": "D",
+      "center_code": "CTR-B01",
+      "month": "2026-03",
+      "detail": "undecided between booked seats and booking accounts",
+      "questions": {
+        "zh-TW": "我想看 CTR-B01 2026 年 3 月的數字，不過要看預訂座位數還是預約帳號數，我自己還沒決定。",
+        "en": "I want a number for CTR-B01 for March 2026, but I haven't decided yet whether I want booked seats or booking accounts.",
+        "ja": "CTR-B01の2026年3月の数を出したいのですが、予約席数にするか予約アカウント数にするか、自分でもまだ決めていません。"
+      },
+      "author_note": "none"
+    },
+    {
+      "slot": "F12",
+      "type": "D",
+      "center_code": "CTR-A01",
+      "month": "2026-02",
+      "detail": "undecided between booked seats and distinct people",
+      "questions": {
+        "zh-TW": "CTR-A01 2026 年 2 月的人數，我還在猶豫要用預訂座位數，還是每個人只算一次的實際人數，自己還沒拿定主意。",
+        "en": "About CTR-A01 for February 2026: I'm still torn between booked seats and distinct people, each counted once, and I haven't made up my mind which I want.",
+        "ja": "CTR-A01の2026年2月の人数について、予約席数で見るか、1人を1回だけ数える実人数で見るか、私自身まだ決めかねています。"
+      },
+      "author_note": "none"
+    },
+    {
+      "slot": "F13",
+      "type": "B",
+      "center_code": "CTR-A02",
+      "month": "2026-03",
+      "detail": "doubts whether the system counts seats or booking accounts",
+      "questions": {
+        "zh-TW": "CTR-A02 2026 年 3 月有多少人？我不確定系統是算預訂座位數還是預約帳號數。",
+        "en": "How many people did CTR-A02 have in March 2026? I'm not sure whether the system counts booked seats or booking accounts.",
+        "ja": "CTR-A02の2026年3月は何人でしたか？システムが予約席数で数えているのか、予約アカウント数で数えているのか、よく分かっていません。"
+      },
+      "author_note": "none"
+    },
+    {
+      "slot": "F14",
+      "type": "B",
+      "center_code": "CTR-A01",
+      "month": "2026-03",
+      "detail": "doubts whether the system counts each booked seat or each person once",
+      "questions": {
+        "zh-TW": "幫我查一下 CTR-A01 2026 年 3 月有多少人。我其實不知道系統是每個預訂座位各算一次，還是同一個人只算一次。",
+        "en": "Can you check how many people CTR-A01 had in March 2026? I honestly don't know if the system counts every booked seat or counts each person just once.",
+        "ja": "CTR-A01の2026年3月の人数を調べてもらえますか。システムが予約された席ごとに数えるのか、同じ人は1回だけ数えるのか、私には分かりません。"
+      },
+      "author_note": "none"
+    },
+    {
+      "slot": "F15",
+      "type": "B",
+      "center_code": "CTR-B01",
+      "month": "2026-04",
+      "detail": "asks for the month's figures and how many people, doubting whether the system counts seats or booking accounts",
+      "questions": {
+        "zh-TW": "請給我 CTR-B01 2026 年 4 月的各項數字，還有總共多少人。我不清楚系統的人數是依預訂座位還是預約帳號來算的。",
+        "en": "Send me CTR-B01's figures for April 2026 and how many people there were. I don't know whether the system's people figure is based on booked seats or on booking accounts.",
+        "ja": "CTR-B01の2026年4月の各数値と人数をお願いします。なお、システム上の人数が予約席ベースなのか予約アカウントベースなのか、把握できていません。"
+      },
+      "author_note": "The month's figures are taken to mean the Overview."
+    },
+    {
+      "slot": "F16",
+      "type": "O",
+      "center_code": "CTR-B01",
+      "month": "2026-04",
+      "detail": "how bookings went / the booking situation",
+      "questions": {
+        "zh-TW": "CTR-B01 2026 年 4 月的預約狀況如何？",
+        "en": "How did bookings go at CTR-B01 in April 2026?",
+        "ja": "CTR-B01の2026年4月の予約状況はどうでしたか？"
+      },
+      "author_note": "none"
+    },
+    {
+      "slot": "F17",
+      "type": "O",
+      "center_code": "CTR-A02",
+      "month": "2026-02",
+      "detail": "a summary of the month's bookings",
+      "questions": {
+        "zh-TW": "麻煩幫我彙整一份 CTR-A02 2026 年 2 月的預約摘要。",
+        "en": "Could you put together a summary of CTR-A02's bookings for February 2026?",
+        "ja": "CTR-A02の2026年2月分の予約について、サマリーをまとめていただけますか。"
+      },
+      "author_note": "none"
+    },
+    {
+      "slot": "F18",
+      "type": "K",
+      "center_code": "CTR-A01",
+      "month": "2026-02",
+      "detail": "the number of bookings (orders)",
+      "questions": {
+        "zh-TW": "CTR-A01 2026 年 2 月一共成立了幾筆預約訂單？",
+        "en": "How many booking orders did CTR-A01 take in February 2026?",
+        "ja": "CTR-A01の2026年2月の予約件数（注文数）は何件ですか？"
+      },
+      "author_note": "none"
+    }
+  ]
+}

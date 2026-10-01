@@ -1,0 +1,29 @@
+{
+  "version": "count-assumption-annex-v1",
+  "expectations": {
+    "dev-CF01.v1": {
+      "count_basis": "booked_seats"
+    },
+    "dev-CF02.v1": {
+      "count_basis": "booked_seats"
+    },
+    "dev-CF03.v1": {
+      "count_basis": "booked_seats"
+    },
+    "dev-CF04.v1": {
+      "count_basis": "booked_seats"
+    },
+    "dev-CF05.v1": {
+      "count_basis": "booked_seats"
+    },
+    "dev-CF13.v1": {
+      "count_basis": "booked_seats"
+    },
+    "dev-CF14.v1": {
+      "count_basis": "booked_seats"
+    },
+    "dev-CF15.v1": {
+      "count_basis": "booked_seats"
+    }
+  }
+}
