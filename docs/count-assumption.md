@@ -189,18 +189,28 @@ owner approved the scope and the revisions at #issuecomment-5926866518 and
 - **Scripted correct actions.** `bound-meaning-read-responses-v2.json` and
   `count-fresh-read-responses-v2.json` read the revised families as a generic
   count (`count_request: "unresolved"`).
-  - `dev-BM6` is rewritten the same way. Its v1 script predates `dev-BM6.v2`,
-    which has been an answer since ADR #136.
+  - `dev-BM6` is rewritten the same way. Its v1 script encodes `dev-BM6.v1`'s
+    clarification, although `dev-BM6.v2` has been an answer since ADR #136.
   - Every other action is unchanged.
-- **Unchanged as history.** The older oracles that expect a `count_basis`
-  clarification predate #158: `p3-development-v1`'s C01, the dev-matrix
-  v1/v2 `dev-C1.v1`, and bound-meaning v1 and mechanism-probe v1. So do
-  `p3-dev-bound-meaning-v2` and `p3-dev-count-fresh-v1`, and their results.
+- **Unchanged as history.** These older oracles expect a `count_basis`
+  clarification and predate #158:
+  - `p3-development-v1`'s C01;
+  - `dev-C1.v1` in `p3-dev-matrix-v1`, `-boundaries-first-v1`,
+    `-compare-first-v1` and `-compare-first-v2`;
+  - `p3-dev-bound-meaning-v1` (`dev-BM6.v1`, `dev-BM7.v1`) and v2
+    (`dev-BM7.v1`);
+  - `p3-dev-mechanism-probe-v1` (`dev-BM6.v1`, `dev-MN1`–`MN3.v1`);
+  - `p3-dev-count-fresh-v1` (`dev-CF11.v1`, `dev-CF12.v1`).
+
+  They, and their results, stay as they are. The grant's gate panels hold no
+  `count_basis` clarification oracle.
 - **The ruler** is `tests/test_count_basis_revisions.py`. It checks that each
-  new panel equals its predecessor byte for byte apart from the stated fields,
-  that each revised oracle equals its named source answer, the annex
-  additions, the scripted actions, and that a mock loop grades every case
-  correct with exactly its annexed assumption.
+  new panel equals its predecessor apart from the stated fields: the panel file
+  as text, the rest as parsed JSON, with the registry digests pinning the bytes.
+  It also checks that each revised oracle equals its named source answer, whose
+  scope is the old clarification's; the annex additions; the scripted actions;
+  and that a mock loop grades every case correct with exactly its annexed
+  assumption.
 - **Not covered here.** The runtime half is candidate v19, which answers a
   model `count_basis` clarification on the server. It is a separate PR.
   Frozen formal and holdout panels may still expect `count_basis`
@@ -220,6 +230,15 @@ owner approved the scope and the revisions at #issuecomment-5926866518 and
     clarification.
   - The reviewer did not re-check `dev-A2.v1`'s values, which `dev-C1.v2`
     copies, against the fixture; they rest on `dev-A2.v1`'s accepted status.
+- **The ADR #158 panels (#159).** The owner-designated independent reviewer
+  accepted `dev-BM7.v2`, `dev-CF11.v2` and `dev-CF12.v2` and their annexes.
+  - The reviewer took the stated assumption to name the user's alternative as
+    unavailable. The runtime's statement names all three unavailable meanings.
+  - It raised points for the owner: whether all three must be named; bookings
+    are not booking accounts; the supersession covers `count_basis` only; and
+    a user undecided between two unavailable meanings needs a ruling.
+  - The revised oracles copy their source answers' values, which rest on those
+    sources' accepted status.
 
 ## Claims and limits
 

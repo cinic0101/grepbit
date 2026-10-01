@@ -20,7 +20,8 @@ REVISIONS = {
                     {"dev-CF11": "dev-CF05.v1", "dev-CF12": "dev-CF04.v1"}, ("v1", "v2")),
 }
 # Families whose scripted correct action becomes a generic count reading, with the oracle whose scope it reads.
-# bound-meaning-read-responses-v1 was written for the v1 panel and predates dev-BM6.v2 (an answer since ADR #136).
+# bound-meaning-read-responses-v1 encodes the v1 panel's actions, including dev-BM6.v1's clarification, although
+# dev-BM6.v2 has been an answer since ADR #136.
 SCRIPTED = {"bound-meaning": {"dev-BM6": "dev-BM6.v2", "dev-BM7": "dev-BM6.v2"},
             "count-fresh": {"dev-CF11": "dev-CF05.v1", "dev-CF12": "dev-CF04.v1"}}
 
@@ -63,8 +64,8 @@ class RevisionTests(unittest.TestCase):
                     if case["family_id"] in revised:
                         self.assertEqual(changed, {"oracle_id", "expected_branch", "cohort", "semantic_signature"}
                                          | exposure, case_id)
-                        self.assertEqual((case["oracle_id"], case["expected_branch"], case["question"]),
-                                         (f"{case['family_id']}.v2", "answer", prior["question"]))
+                        self.assertEqual((case["oracle_id"], case["expected_branch"], case["cohort"], case["question"]),
+                                         (f"{case['family_id']}.v2", "answer", "answer", prior["question"]))
                     else:
                         self.assertEqual(changed, exposure, case_id)
                     if key == "count-fresh":
@@ -85,6 +86,10 @@ class RevisionTests(unittest.TestCase):
                         self.assertEqual(by_old[f"{family}.v1"]["branch"], "clarify")
                         self.assertEqual(by_old[f"{family}.v1"]["clarification"]["kind"], "count_basis")
                         source = by_old[revised[family]]
+                        # The named source answers exactly the scope the old clarification's choices bound.
+                        self.assertEqual({json.dumps(c["semantic_value"]["scope"], sort_keys=True) for c in
+                                          by_old[f"{family}.v1"]["clarification"]["choices"]},
+                                         {json.dumps(source["request"], sort_keys=True)})
                         self.assertEqual({k: v for k, v in oracle.items() if k not in DROP},
                                          {k: v for k, v in source.items() if k not in DROP})
                         self.assertEqual((oracle["revision"], list(oracle)), (2, list(source)))
