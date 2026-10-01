@@ -203,18 +203,18 @@
       "tier": "dev",
       "path": "evals/dev/dev-panel-compare-first-v3.json",
       "assets": {
-        "panel": "0dd5ecd76b498927a859fab0b0ae31f8397503a6b4bacc25457b8337b87dd8b2",
-        "cases": "0cbb5b04e74328e5089b7026730f46d9b7c6f9c2df27890649b3946d89f2d06e",
-        "oracles": "ce1006a917cddfef1e72b233b0e1a725c1cab87f6111898fda38526ed1392f72"
+        "panel": "e856a396bb93c561ace0044d0396732fb3291506b96a7ae0fd67ece973f92784",
+        "cases": "bc99535b0411672562b5dd9495d85a0b51688c52079191ea2155cfb1755e7051",
+        "oracles": "fbac9668d796b3cb687162b6c867e94a63f6da1c891e248805a00b4270e201cc"
       },
       "allocation_policy": null,
       "intake": null,
       "freeze": null,
       "authoring": "development",
-      "note": "compare-first v2 cases and oracles with an empty annex (ADR #146): no input expects a count assumption; independent semantic acceptance on the adding PR.",
+      "note": "compare-first v2 with dev-C1 ruled rule 1 (#149): generic people count answered with booked seats and the stated assumption; independent semantic acceptance on PR #149.",
       "annex": {
         "path": "evals/dev/compare-first-annex-v3.json",
-        "sha256": "c426b33ac9f3ccb7a58173db0440bf0a36df775157b2fe43694224650de94c31"
+        "sha256": "7cae2be77cc81140168fa096701e05eca6417fb28e50c9a8b67fb58d152804f4"
       }
     }
   ]

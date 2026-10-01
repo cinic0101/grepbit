@@ -1,4 +1,8 @@
 {
   "version": "count-assumption-annex-v1",
-  "expectations": {}
+  "expectations": {
+    "dev-C1.v2": {
+      "count_basis": "booked_seats"
+    }
+  }
 }

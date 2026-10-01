@@ -2,8 +2,8 @@
   "version": "p3-panel-v1",
   "panel_id": "p3-dev-matrix-compare-first-v3",
   "kind": "development",
-  "cases": "dev-cases-v2.json",
-  "oracles": "dev-oracles-v2.json",
+  "cases": "dev-cases-v3.json",
+  "oracles": "dev-oracles-v3.json",
   "order": [
     "dev-A3.en",
     "dev-C2.zh-TW",
