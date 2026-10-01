@@ -53,12 +53,16 @@ exclusion did not hold on `dev-BM5` (`docs/count-assumption-v13-result.md`).
 
 ## Evaluation
 
+**Result:** `passed` overall on the v2 pair, and `no_fix`, with no break, on
+the v3 panel. See the [gate results](count-directive-v17-result.md).
+
 The grant is #146 #issuecomment-5922742690, with 254 calls. It was amended at
 #issuecomment-5923049914 to 260 calls, with one operational repeat, after the
 operational stop at #issuecomment-5923032940.
 - **v2 dev panels:** one v16 sentinel per panel while v16 is current (46), then
   one v17 run per panel (46).
-- **Wider validation on `p3-dev-matrix-compare-first-v3`** (#149, empty annex):
+- **Wider validation on `p3-dev-matrix-compare-first-v3`** (#149; its annex
+  holds only `dev-C1.v2`):
   two v16 runs while v16 is current (108; one is the sentinel), then one v17
   run (54).
 - **Gate.** `tools/evaluate.py --gate --candidate p3-count-directive-v17

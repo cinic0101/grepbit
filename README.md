@@ -157,9 +157,13 @@ distinct individuals is answered with the Overview request and
 `count_request: "unresolved"`, not a `count_basis` clarification. That is
 v13's scoped action directive, which v16's text had dropped, adapted to the
 typed reading. The assumption stays
-code-decided. v17 has no live result yet. It will be measured against v16 on the
-two v2 dev panels and on `p3-dev-matrix-compare-first-v3` (#149). See the
-[v17 contract](docs/count-directive-v17.md).
+code-decided. Against v16, the gate `passed` overall on the two v2 dev panels:
+8 fixed, 0 broke, and 46/46 on one v17 run. On `p3-dev-matrix-compare-first-v3`
+(#149) it gave `no_fix`, with 0 broke, at 48/54. `dev-A1` (a spurious
+assumption on a no-count Overview) and `dev-C1` (a count_basis clarification
+where the owner ruled for an answer) stay wrong. See the
+[v17 contract](docs/count-directive-v17.md) and the
+[gate results](docs/count-directive-v17-result.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
