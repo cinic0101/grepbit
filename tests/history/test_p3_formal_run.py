@@ -65,6 +65,11 @@ class FormalTests(unittest.IsolatedAsyncioTestCase):
     and client factory with synthetic values/MockTransport after authorization.
     """
     def setUp(self):
+        # The historical P3 tools are tested with their era's runtime, which presented a count_basis clarification;
+        # v19 answers it on the server (ADR #158; its consequence is ruled in tests/test_v19_count_basis_answer.py).
+        era = patch("grepbit.recipe_model._server_answers", return_value=False)
+        era.start()
+        self.addCleanup(era.stop)
         for target in ("socket.socket.connect", "socket.socket.connect_ex", "socket.create_connection",
                        "socket.getaddrinfo", "httpx.AsyncHTTPTransport", "httpx.HTTPTransport",
                        "grepbit.gateway.GatewayConfig.from_env"):
@@ -306,9 +311,7 @@ class FormalTests(unittest.IsolatedAsyncioTestCase):
         report = await self.run_formal(lambda request: httpx.Response(200, json=envelope(json.dumps(
             by_oracle[self.cases[len(self.sent)-1].oracle_id]))))
         self.assertEqual(report["status"], "complete")
-        # v19 (ADR #158) answers a scripted count_basis clarification on the server; the historical oracles still expect it.
-        # The scripted C01 action is answered and graded missed, so the formal promotion no longer passes (#158).
-        self.assertFalse(report["summary"]["promotion"]["passed"])
+        self.assertTrue(report["summary"]["promotion"]["passed"])
         self.assertEqual(report["summary"], p3_formal_policy.summarize(
             report["results"], report["results"], panel_kind="formal", run_status="complete",
             allocation_policy=self.packet["allocation_policy"]))

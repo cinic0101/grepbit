@@ -380,6 +380,13 @@ class RecipeProposal:
         return result
 
 
+def _server_answers(clarification: Clarification) -> bool:
+    """ADR #158: a clarification is offered only when every choice can be answered. Booked seats is the only
+    executable count, so no count_basis choice set (two or more distinct meanings) is fully answerable."""
+    return clarification.kind == "count_basis" and any(
+        choice.semantic_value.value != "booked_seats" for choice in clarification.choices)
+
+
 def _roles_clarification(request: CompareRequest) -> Clarification:
     """The two reversed role assignments of an unresolved Compare request, in a fixed order."""
     return Clarification("comparison_roles", (
@@ -490,7 +497,7 @@ async def interpret_recipe_and_execute(
             action = {"clarification": clarification.to_dict(), "presentation": presentation.to_dict()}
             if client.safe_export(action) != action:
                 raise _InvalidRequest("export_drift")
-            if clarification.kind == "count_basis":
+            if _server_answers(clarification):
                 # Only booked seats is executable, so no count_basis choice set is fully answerable (ADR #158):
                 # the code, not the model, answers the clarification's own Overview scope and states the assumption.
                 source_clarification, clarification, presentation = clarification, None, None
@@ -539,7 +546,10 @@ async def interpret_recipe_and_execute(
         clarification, presentation = None, None
         if not (exc.code == "model_declined" and source_proposal is not None):
             source_proposal = None
-        source_clarification = None
+        # A server answer to a model count_basis clarification keeps that clarification for as long as the
+        # proposal is kept, so a failed execution still persists the model's own action (ADR #158).
+        if proposal is None:
+            source_clarification = None
         error = ModelError(exc.code, http_status=exc.http_status)
         stages[error.stage] = "failed"
         if isinstance(exc, _InvalidRequest):

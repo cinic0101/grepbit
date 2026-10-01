@@ -71,6 +71,11 @@ class SyntheticCandidateExecution(unittest.IsolatedAsyncioTestCase):
     """Synthetic metadata and MockTransport; no accepted live artifact is created."""
 
     def setUp(self):
+        # The historical P3 tools are tested with their era's runtime, which presented a count_basis clarification;
+        # v19 answers it on the server (ADR #158; its consequence is ruled in tests/test_v19_count_basis_answer.py).
+        era = patch("grepbit.recipe_model._server_answers", return_value=False)
+        era.start()
+        self.addCleanup(era.stop)
         from tools.history import p3_candidate_regression as runner
         self.runner = runner
         for target in ("socket.socket.connect", "socket.socket.connect_ex", "socket.create_connection",
@@ -341,8 +346,7 @@ class SyntheticCandidateExecution(unittest.IsolatedAsyncioTestCase):
         output = self.output()
         report, _ = await self.run_candidate(handler=respond, output=output)
         self.assertEqual(report["status"], "complete")
-        # v19 (ADR #158) answers a scripted count_basis clarification on the server; the historical oracles still expect it.
-        self.assertEqual(sum(row["correct"] for row in report["summary"]["per_input"]), 23)
+        self.assertEqual(sum(row["correct"] for row in report["summary"]["per_input"]), 28)
         self.assertFalse(report["promotion_eligible"])
         self.assertFalse(report["summary"]["promotion_eligible"])
         self.assertEqual(report["summary"]["promotion_result"], "not_applicable")

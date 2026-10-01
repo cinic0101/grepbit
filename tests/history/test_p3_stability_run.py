@@ -56,6 +56,11 @@ def metadata():
 
 class StabilityRunTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
+        # The historical P3 tools are tested with their era's runtime, which presented a count_basis clarification;
+        # v19 answers it on the server (ADR #158; its consequence is ruled in tests/test_v19_count_basis_answer.py).
+        era = patch("grepbit.recipe_model._server_answers", return_value=False)
+        era.start()
+        self.addCleanup(era.stop)
         for target in ("socket.socket.connect", "socket.socket.connect_ex", "socket.create_connection",
                        "socket.getaddrinfo", "httpx.AsyncHTTPTransport", "httpx.HTTPTransport",
                        "grepbit.gateway.GatewayConfig.from_env"):
@@ -272,9 +277,8 @@ class StabilityRunTests(unittest.IsolatedAsyncioTestCase):
             cid = self.packet["schedule"][len(self.sent)-1]["case_id"]
             return httpx.Response(200, json=envelope(json.dumps(self.actions[cid])))
         report = await self.run_stability(respond)
-        # v19 (ADR #158) answers a scripted count_basis clarification on the server; the historical oracles still expect it.
-        self.assertFalse(report["summary"]["stability_passed"])
-        self.assertEqual(report["summary"]["correct_trials"], 15)
+        self.assertTrue(report["summary"]["stability_passed"])
+        self.assertEqual(report["summary"]["correct_trials"], 18)
         self.assertEqual(report["historical_quality"]["promotion"], "failed")
         self.assertEqual(stability.read_report(self.current_output / "report.json"), report)
 
@@ -458,8 +462,7 @@ class StabilityRunTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.read(self.current_output / "report.json")["status"], "incomplete")
         for name in ("terminal-candidate.json", "terminal.next.json"):
             candidate = self.current_output / name
-            # v19 (ADR #158) answers the scripted count_basis clarification, so stability no longer passes.
-            self.assertFalse(self.read(candidate)["summary"]["stability_passed"])
+            self.assertTrue(self.read(candidate)["summary"]["stability_passed"])
             with self.assertRaises(p3_assets.P3Error):
                 stability.read_report(candidate)
         durable = stability.read_report(self.current_output / "report.json")

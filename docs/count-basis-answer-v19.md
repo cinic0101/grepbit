@@ -28,18 +28,36 @@ code decides the action.
   present it. Instead it answers the clarification's own Overview scope with
   `count_request: "unresolved"`, so the stated assumption follows as in v16:
   booked seats, with the unavailable meanings named.
+- The rule is `_server_answers(clarification)`: a clarification is offered
+  only when every choice is answerable, and booked seats is the only
+  executable count.
 - `RecipeInterpretation.source_clarification` and the evidence key
-  `source_clarification` keep the model's clarification.
-- Every other path is unchanged: other clarification kinds, requests,
-  declines, the v15 roles clarification and the v16 decline.
+  `source_clarification` keep the model's clarification for as long as the
+  server-built proposal is kept. So a kernel failure or a timeout after the
+  answer still persists the model's own action.
+- **Unchanged:** other clarification kinds, model requests, declines, the v15
+  roles clarification and the v16 decline.
+- **Changed by the answer:** a `count_basis` clarification whose scope is a
+  one-month Overview is answered with that Overview, whatever the question's
+  analysis type. A `count_basis` clarification always binds an Overview scope.
 
-**Evaluator:**
+**Evaluator and diagnostics:**
 - `tools/evaluate.py` persists the model's own clarification as the validated
   action, so replay rebuilds the answer.
-- `_check_action` maps that action to an `answer`, and `_stated_assumption`
-  reads the stated assumption from it.
-- `tools/routing_upper_bound.py` maps it the same way, and so does
-  `tools/count_ablation.py`, which reuses routing's check.
+- **The recorded row decides, never the action alone.** Before v19 the same
+  action was a real clarification, and archives keep both kinds of row:
+  - A `count_basis` clarification on a row whose recorded `actual_action` is
+    `answer` is a v19 server answer. It states the assumption, and the row has
+    no clarification observation.
+  - On a `clarify` row it is the clarification it was, with its kind and
+    choice-count checks, and it states no assumption.
+- `_check_action`, `_stated_assumption` and `annexed` apply this rule, so do
+  `tools/routing_upper_bound.py`, `tools/reading_diagnostic.py` (`_recorded`)
+  and `tools/count_ablation.py`.
+- **Without a recorded row**, as with a scripted action, the current runtime's
+  answer applies.
+- So v18 archives read back, aggregate and gate against v19 unchanged. The
+  ruler builds a v18-shaped archive and gates it.
 
 **Model-facing context:**
 - The context's `count_basis` entry gains one sentence at its end: "The server
@@ -71,7 +89,7 @@ Several oracles still expect a `count_basis` clarification. They predate #158
 and stay unchanged as history:
 - `p3-development-v1`'s C01, which is frozen by `tests/test_p3_exposed.py`;
 - the dev-matrix v1/v2 `dev-C1.v1`;
-- bound-meaning v1/v2 `dev-BM6.v1`/`dev-BM7.v1`;
+- bound-meaning v1 (`dev-BM6.v1`, `dev-BM7.v1`) and v2 (`dev-BM7.v1`);
 - mechanism-probe v1;
 - count-fresh v1 `dev-CF11`/`dev-CF12`.
 
@@ -94,16 +112,17 @@ grades wrong: at most 14 of 15 inputs are correct.
 - **`test_invalid_request_reason`** keeps a `count_basis` default for its
   validation cases, because the validators run before the answer.
 
-**The history tools.** The historical P3 tools' tests run the frozen
-development and regression scripts:
-- `test_p3_candidate_regression` and `test_p3_dev_regression`: 23 of 28
-  correct; the dev regression shows 4 new regressions, and its clarify-row
-  tamper checks run only when a clarify row exists;
-- `test_p3_formal_run`: the formal promotion no longer passes;
-- `test_p3_stability_run`: stability no longer passes (15 of 18 trials).
-
-This is the #158 item-6 consequence. Under v19, frozen expectations that ask
-for a `count_basis` clarification count as missed.
+**The history tools.** The historical P3 tools' tests
+(`tests/history/test_p3_candidate_regression.py`, `test_p3_dev_regression.py`,
+`test_p3_formal_run.py`, `test_p3_stability_run.py`) run with their era's
+behaviour: they patch `recipe_model._server_answers` to `False`.
+- **Why.** They guard those tools' archive, observation and promotion logic,
+  including the clarify-row tamper checks and the formal and stability success
+  paths, and they do so unchanged.
+- **The #158 item-6 consequence**, that frozen expectations asking for a
+  `count_basis` clarification count as missed under v19, is ruled by
+  `tests/test_v19_count_basis_answer.py`. There a v18-shaped archive gates
+  against v19, and the C01 input is a `broke`.
 
 ## Evaluation (grant steps 4 and 5)
 
@@ -127,6 +146,8 @@ actions under v19's rule, and assuming the model is unchanged:
   - The model could stop clarifying and read a named meaning instead (for
     example `known_booking_accounts`), which the server declines.
   - Compare and decline inputs could move under the byte change.
+  - A `count_basis` clarification given for a Compare or Breakdown question
+    would now run its one-month Overview scope, not a clarification.
 - **Formal and holdout panels are frozen** and may expect `count_basis`
   clarifications, so a promotion claim needs a new formal panel (#158 item 6).
 - **Scope.** One route and one run per panel, on exposed development inputs.

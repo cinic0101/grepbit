@@ -1691,10 +1691,14 @@ class P3ExposedWrapperIsolationTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(
                 {key: value for key, value in row["evidence"].items() if key != "analysis_pack"},
                 {key: value for key, value in direct.evidence.items() if key != "analysis_pack"})
-            # The signature follows the actual action: v19 answers a count_basis clarification (ADR #158).
-            self.assertEqual(row["actual_signature"],
-                             runner.p3_grading.actual_signature(direct, row["actual_action"]))
-            if row["actual_action"] == "answer":
+            # The expected action, derived independently of the row: v19 answers a scripted count_basis
+            # clarification (ADR #158), so that case is an answer; every other case is its expected branch.
+            action = self.actions[case["case_id"]]
+            expected_action = ("answer" if action.get("outcome") == "clarify"
+                               and action["clarification"]["kind"] == "count_basis" else case["expected_branch"])
+            self.assertEqual(row["actual_action"], expected_action)
+            self.assertEqual(row["actual_signature"], runner.p3_grading.actual_signature(direct, expected_action))
+            if expected_action == "answer":
                 self.assertIsNotNone(row["evidence"]["analysis_pack"])
             else:
                 self.assertIsNotNone(direct.presentation)
