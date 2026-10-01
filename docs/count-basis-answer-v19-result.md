@@ -25,7 +25,7 @@ on exposed inputs, not promotion.
 | Route | `litellm-gemma-4-31b`; retry, fallback and cache attested disabled (#79 #issuecomment-5857155780; the reports record `operator_cli_attestation_not_independently_verified`) |
 | v18 sentinels (step 2) | From `dev@ba7e556` (the #159 merge), while v18 was current |
 | v18 baseline runs (step 2b) | From `dev@ba7e556`, in a second clean HTTPS clone, under the amendment. Repetition 2 on the two panel versions that had only the sentinel. |
-| v19 runs (step 4) | From `dev@250fc89`, the #160 merge. That merge came after the round-2 no-blocker review record (#160 #issuecomment-5931964878) and the owner's confirmation of the frozen-test diff (#issuecomment-5931564694). The reviewed head `8807876` is the merged head. |
+| v19 runs (step 4) | From `dev@250fc89`, the #160 merge. That merge came after the round-2 no-blocker review record (#160 #issuecomment-5931964878) and the owner's confirmation of the frozen-test diff (#160 #issuecomment-5931564694). The reviewed head `8807876` is the merged head. |
 | Where | Clean HTTPS clones of `dev` at those commits. The artifact folders were copied back byte for byte (`diff -rq` identical) for `--record` and the gate. |
 | Possible in-flight attempts | 0 in all ten runs |
 | Grant use | **386 of 386** calls (308 in the grant and 78 in the amendment), with no repeat |
@@ -48,6 +48,9 @@ The index rows carry the grant reference: the original grant for the
 sentinels and the v19 runs, and the amendment for the step-(2b) runs.
 
 ### Order (UTC; local file times and GitHub)
+
+The two gate times come from the agent's scratch output files, outside the run
+folders; the gate writes no archive.
 
 | Time | Event |
 | --- | --- |
@@ -81,17 +84,22 @@ already showed `regression`.
 
 **Option B was chosen after one v19 result existed, disclosed.** The first v19
 run (`bound-meaning-v3`) finished at 13:03:20, before the amendment (13:04:25)
-and the step-(2b) binding (13:05:27).
+and the step-(2b) binding (13:05:27). The second (`count-fresh-v2`) was then
+under way, with about 16 of its rows written.
 - **What the agent saw.** By the agent's own account, which no artifact can
   confirm, it had then seen only folder listings and the run sequence's start
   line, not any v19 report or score.
   - The first v19 content it read was the run sequence's completion lines
     after 13:12:36, which hold call counts and status only.
-  - The first scores it saw were in the `--record` output at 13:13:38, after
-    the step-(2b) runs had started (13:12:54).
+  - The first v19 scores it saw were in the `--record` output at 13:13:38
+    (the v18 sentinels' at 13:13:30), after the step-(2b) runs had started
+    (13:12:54).
 - **The verdict does not depend on B.** The `p3-dev-mechanism-probe-v2` break
-  alone gives `regression`, and option B only made the gate measure two more
-  panels.
+  alone gives `regression`.
+- **The headline counts do.** 18 of the 21 fixes (`dev-BM7` ×3 and `dev-CF11`
+  to `dev-CF15` ×15) and the `p3-dev-bound-meaning-v3` break count in the gate
+  only because step (2b) made those two panels measurable. Under option A they
+  would have been possible fixes and a possible break, from one sample each.
 - **The amendment's order held for the runs.** Step (2b) started after step
   (4) completed.
 

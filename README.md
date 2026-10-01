@@ -202,7 +202,9 @@ change cannot be registered.
 
 Against v18 on four dev panels, the gate gave `regression`:
 - **21 fixed:** `dev-C1`, `dev-BM7`, and the fresh panel's undecided-choice
-  and system-basis-doubt rows, all through the server's answer.
+  and system-basis-doubt rows, all through the server's answer. Nine of them
+  (`dev-BM7`, `dev-CF11` and `dev-CF12`) count as fixes under the ADR #158
+  oracle revisions.
 - **1 input broke, `dev-BM2.en`, on both panels that contain it.** It is a
   no-count Compare of an amount that v19's model declined, and it was stable
   on v18.
