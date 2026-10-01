@@ -6,9 +6,10 @@ for candidate `p3-count-scope-v18` (`docs/count-scope-v18.md`, #153). The
 baseline is v17 (`docs/count-directive-v17.md`).
 
 **Verdicts of the pre-registered gates:** `no_fix` on the v2 pair and `no_fix`
-on `p3-dev-matrix-compare-first-v3`. Nothing was fixed and nothing broke. On
-all 100 inputs, v18 behaves exactly like v17. This is a development
-observation on exposed inputs, not promotion.
+on `p3-dev-matrix-compare-first-v3`. Nothing was fixed and nothing broke.
+v18 gives v17's outcome on all 100 inputs. The only action-byte change
+attributable to v18 is the local choice ids in `dev-BM7.ja`. This is a
+development observation on exposed inputs, not promotion.
 
 ## Runs
 
@@ -16,7 +17,7 @@ observation on exposed inputs, not promotion.
 | --- | --- |
 | Route | `litellm-gemma-4-31b`; retry, fallback and cache attested disabled (#79 #issuecomment-5857155780; the reports record `operator_cli_attestation_not_independently_verified`) |
 | v17 sentinels (step 1) | From `dev@a937ed8` (the #151 merge), while v17 was current, repetition 2 |
-| v18 runs (step 3) | From `dev@d84e30a`, the #153 merge, made after its no-blocker review record |
+| v18 runs (step 3) | From `dev@d84e30a`, the #153 merge, made after its no-blocker review record. That review covered `5fd6779`. The merged head also has `0d27fe5`, that review's fixes to docs and to a docstring in the v17 ruler, which the record discloses. The candidate bytes are the same: `375482d4…` in every v18 report. |
 | Where | A clean HTTPS clone of `dev` at those commits, as in #151. The artifact folders were copied back byte for byte (`diff -rq` identical) for `--record` and the gate. |
 | Possible in-flight attempts | 0 in all six runs |
 | Grant use | **200 of 200** calls, with no repeat |
@@ -31,12 +32,16 @@ observation on exposed inputs, not promotion.
 | mechanism-probe r1 | v18 | 22 | `92724a94bd1479d58caa85929c1383c2ff7e17f2cf56db01c9e430f8cbf253a0` | `066acefba1b8a7e1f1ee44b5a673a22c797562a4bf2872d59e6179502f80c34a` |
 | compare-first-v3 r1 | v18 | 54 | `bf5fb64ad042b32097d2bb6a24c97dcfe07ba2b44205a917c27399aae53e2a31` | `44bf45e3896314c33c351dfd91f01e2075b9f20d38c37970297f4527984d55e7` |
 
-**Order** (UTC; local file times and GitHub):
+**Order** (UTC; local file times and GitHub). The grant allowed step (1) to
+start at once, and the `AGENTS.md` question was no precondition. Step (1) and
+#153's commits therefore preceded the owner's answer to it:
 
 | Time | Event |
 | --- | --- |
 | 03:01:44 | grant recorded (the owner: 「方案 T + 200 沒問題」) |
 | 03:02:21 to 03:09:41 | v17 sentinel packets written and the three runs finished, from `a937ed8` |
+| 03:04:42 to 03:05:53 | #153's contract, implementation and registration commits |
+| 03:16:54 | the owner's answer to the `AGENTS.md` question recorded (「ok 同意你對 agents.md 修改的意見，可以繼續了」) |
 | 03:40:13 | #153's no-blocker review record posted, verified on GitHub before step 3 |
 | 03:40:21 | #153 merged, so v18 became current |
 | 03:40:32 to 03:47:52 | v18 packets written and the three runs finished, from `d84e30a` |
@@ -99,19 +104,21 @@ Annex-aware index counts:
 
 ## Claims and limits
 
-- **What this shows.** On 31B, these instruction edits do not move the two
-  readings. It does not show why. The model's raw reasoning is not retained.
-- **Two observations each.** One v18 run per panel, and two v17 runs per panel,
-  on one route with exposed, mostly agent-authored inputs. This is not
-  generalization evidence. It makes no claim about holdout or formal panels,
-  Bedrock (which fails closed) or promotion.
+- **What this shows.** On 31B, in one run per panel, these instruction edits
+  did not move the two readings. It does not show why: the model's raw
+  reasoning is not retained.
+- **Observations.** One v18 run and two v17 runs per panel, on one route, with
+  exposed, mostly agent-authored inputs. This is not generalization evidence.
+  It makes no claim about holdout or formal panels, Bedrock (which fails closed)
+  or promotion.
 - **v18 stays current.** The gate rules require a revert only on `regression`.
-  v18's text matches the owner's rulings, and it adds 312 bytes to each
-  request, with no measured effect. Restoring v17's text would be a new candidate and needs an
-  owner decision.
+  #153's independent review found its wording consistent with the owner's
+  rulings. It adds 312 bytes to each request, with no measured effect.
+  Restoring v17's text would be a new candidate. The agent reads that as
+  needing an owner decision too, like any further count-family candidate.
 - **Next steps need their own owner decision**, as recorded at #152
-  #issuecomment-5924018925. A further count-family candidate needs one; the
-  options are in ADR #152, including option B for `dev-C1`.
+  #issuecomment-5924018925. ADR #152's fallback condition for option B, "if T
+  leaves `dev-C1` unchanged", is now met. The ADR lists the options.
 - **Untested live.** The server-decline path still never ran.
 - **Budget.** The grant is spent at 200 of 200 calls.
 - **Raw reports** stay local under `.artifacts/v18-sentinel-20261001/` and

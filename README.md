@@ -166,13 +166,13 @@ where the owner ruled for an answer) stay wrong. See the
 [gate results](docs/count-directive-v17-result.md).
 
 The current candidate, v18 (ADR #152), changes three places in v17's
-instruction text:
-- a general overview of bookings that asks for no number of people reads
+instruction text. It tells the model:
+- that a general overview of bookings that asks for no number of people is
   `count_request: "none"`;
-- `count_basis` applies only when the user says they are undecided between
+- to use `count_basis` only when the user says they are undecided between
   named meanings;
-- a people count that names seats or accounts only in doubt about the system's
-  basis is answered with `count_request: "unresolved"`, and the stated
+- to answer a people count that names seats or accounts only in doubt about the
+  system's basis with `count_request: "unresolved"`, so that the stated
   assumption tells the basis.
 
 It targets `dev-A1` and `dev-C1`. Against v17, both gates gave `no_fix`: no
