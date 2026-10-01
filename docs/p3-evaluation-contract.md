@@ -165,9 +165,10 @@ No real private problem/source confirmation is claimed.
 > panels (`p3-dev-bound-meaning-v2`, `p3-dev-mechanism-probe-v2`), a generic
 > people or count noun whose meaning is unresolved is answered with booked
 > seats and a stated assumption instead of a `count_basis` clarification. See
-> `docs/count-assumption.md`. The row above keeps its accepted text for the v1
-> panels and for the formal and holdout evidence, which this note does not
-> change.
+> `docs/count-assumption.md`. The same applies to `dev-C1` on
+> `p3-dev-matrix-compare-first-v3`, by owner ruling (#149). The row above keeps
+> its accepted text for the v1 panels, the earlier dev panels and the formal and
+> holdout evidence, which this note does not change.
 
 Required wrong-valid traps are covered by A01-A06, C01/C04 and D01-D06:
 metric, count unit, population, scope, grain, comparison roles, month/year,

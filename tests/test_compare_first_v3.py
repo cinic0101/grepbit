@@ -55,12 +55,17 @@ class CompareFirstV3PanelTests(unittest.TestCase):
         self.assertEqual((new["tier"], new["authoring"], new["allocation_policy"], new["intake"], new["freeze"]),
                          ("dev", "development", None, None, None))
         self.assertNotIn("annex", old)
-        v2_panel = json.loads((ROOT / old["path"]).read_text(encoding="utf-8"))
-        v3_panel = json.loads((ROOT / new["path"]).read_text(encoding="utf-8"))
-        self.assertEqual(v3_panel, {**v2_panel, "panel_id": V3, "cases": "dev-cases-v3.json",
-                                    "oracles": "dev-oracles-v3.json"})
+        v2_bytes = (ROOT / old["path"]).read_text(encoding="utf-8")
+        self.assertEqual((ROOT / new["path"]).read_text(encoding="utf-8"),
+                         v2_bytes.replace(f'"panel_id": "{V2}"', f'"panel_id": "{V3}"', 1)
+                         .replace('"cases": "dev-cases-v2.json"', '"cases": "dev-cases-v3.json"', 1)
+                         .replace('"oracles": "dev-oracles-v2.json"', '"oracles": "dev-oracles-v3.json"', 1))
+        for name, relative in (("panel", new["path"]), ("cases", "evals/dev/dev-cases-v3.json"),
+                               ("oracles", "evals/dev/dev-oracles-v3.json")):
+            self.assertEqual(hashlib.sha256((ROOT / relative).read_bytes()).hexdigest(), new["assets"][name], name)
         folder = ROOT / "evals/dev"
-        cases = {name: {c["case_id"]: c for c in json.loads((folder / f"dev-cases-{name}.json").read_text())["cases"]}
+        cases = {name: {c["case_id"]: c for c in json.loads(
+            (folder / f"dev-cases-{name}.json").read_text(encoding="utf-8"))["cases"]}
                  for name in ("v2", "v3")}
         self.assertEqual(list(cases["v2"]), list(cases["v3"]))
         for case_id, case in cases["v3"].items():
@@ -72,7 +77,7 @@ class CompareFirstV3PanelTests(unittest.TestCase):
                              {"oracle_id", "expected_branch", "cohort", "semantic_signature"})
             self.assertEqual((case["oracle_id"], case["expected_branch"], case["cohort"], case["question"]),
                              ("dev-C1.v2", "answer", "answer", before["question"]))
-        oracles = {name: json.loads((folder / f"dev-oracles-{name}.json").read_text())["oracles"]
+        oracles = {name: json.loads((folder / f"dev-oracles-{name}.json").read_text(encoding="utf-8"))["oracles"]
                    for name in ("v2", "v3")}
         ids = [o["oracle_id"] for o in oracles["v3"]]
         self.assertEqual(ids, [("dev-C1.v2" if i == "dev-C1.v1" else i) for i in (o["oracle_id"] for o in oracles["v2"])])

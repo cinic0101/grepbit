@@ -120,7 +120,7 @@ class VerdictTests(unittest.TestCase):
             good.write_text(json.dumps({"version": "count-assumption-annex-v1", "expectations": {"a.v2": ASSUMPTION}}))
             self.assertEqual(runner._read_annex(good), {"a.v2": ASSUMPTION})
             bad_documents = (
-                # An empty listing is admitted since the compare-first v3 panel (tests/test_compare_first_v3.py).
+                # An empty listing is admitted (tests/test_compare_first_v3.py): no oracle expects an assumption.
                 {"version": "count-assumption-annex-v2", "expectations": {"a.v2": ASSUMPTION}},
                 {"version": "count-assumption-annex-v1", "expectations": {"a.v2": {"count_basis": "x"}}},
                 {"version": "count-assumption-annex-v1", "expectations": {"a.v2": ASSUMPTION}, "note": ""})
