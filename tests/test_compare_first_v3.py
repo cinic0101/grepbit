@@ -10,7 +10,7 @@ import httpx
 
 import test_count_assumption as annex_runs
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL
-from test_evaluate import BASE, GRANT, KEY, SERVER_ANSWERED, envelope
+from test_evaluate import BASE, GRANT, KEY, envelope
 from tools import evaluate, p3_assets
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -138,12 +138,9 @@ class EmptyAnnexRunTests(annex_runs.AnnexRunTests):
         self.assertEqual(evaluate._panel_annex(packet["panel"], self.panels), {})
         report = evaluate.read_report(output / "report.json")
         frozen = sum(item["correct"] for item in report["summary"]["per_input"])
-        # v19 answers the scripted C01 count_basis clarification, which its frozen oracle grades missed (ADR #158).
-        answered = len(SERVER_ANSWERED)
-        self.assertEqual((frozen, run["correct"]),
-                         (len(self.inputs) - answered, len(self.inputs) - len(self.listed) - answered))
+        self.assertEqual((frozen, run["correct"]), (len(self.inputs), len(self.inputs) - len(self.listed)))
         plain, _ = await self.observe(902)
-        self.assertEqual(plain["correct"], len(self.inputs) - answered)
+        self.assertEqual(plain["correct"], len(self.inputs))
 
     async def test_the_packet_contract_and_the_annex_listing_are_checked(self):
         _, output = await self.observe(901)
@@ -165,10 +162,7 @@ class EmptyAnnexRunTests(annex_runs.AnnexRunTests):
         await self.observe(950, candidate=annex_runs.OTHER)
         aggregate = evaluate.aggregate("synthetic-dev", "litellm-31b", self.candidate, runs_path=self.runs,
                                        panels_path=self.panels)
-        self.assertEqual({row["class"] for row in aggregate["inputs"] if row["case_id"] not in SERVER_ANSWERED},
-                         {"stable_correct"})
-        self.assertEqual({row["class"] for row in aggregate["inputs"] if row["case_id"] in SERVER_ANSWERED},
-                         {"stable_wrong"})
+        self.assertEqual({row["class"] for row in aggregate["inputs"]}, {"stable_correct"})
         [panel] = evaluate.gate(annex_runs.OTHER, self.candidate, "litellm-31b", f"{GRANT}950", ["synthetic-dev"],
                                 runs_path=self.runs, panels_path=self.panels)["panels"]
         # The candidate states the assumption on the E01 answers, which the empty annex expects nowhere.

@@ -15,12 +15,7 @@ from grepbit.contracts import KernelError
 from grepbit.gateway import GatewayClient, GatewayConfig
 from tools import fixture, p3_assets, p3_live_evidence
 import frozen_recipe_schema
-from test_recipe_clarification import clarify as _clarify
-
-
-def clarify(kind="count_basis"):
-    """These validation cases keep a count_basis default: the validators run before v19's server answer (#158)."""
-    return _clarify(kind)
+from test_recipe_clarification import clarify
 from test_recipe_model import envelope, period, proposal
 
 

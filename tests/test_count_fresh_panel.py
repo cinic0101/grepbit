@@ -130,10 +130,8 @@ class FreshPanelRulers(unittest.TestCase):
         for row in json.loads(responses_path.read_text())["responses"]:
             kind = TYPES[row["case_id"].split(".")[0][len("dev-C"):]]
             with self.subTest(case=row["case_id"]):
-                # v19 (ADR #158) answers the D rows' count_basis clarification and states the assumption, which
-                # this v1 annex (written before #158) does not expect; p3-dev-count-fresh-v2 revises them.
                 self.assertEqual(runner._stated_assumption(row["action"]),
-                                 ASSUMPTION if kind == "D" else expectations.get(oracle_of[row["case_id"]]))
+                                 expectations.get(oracle_of[row["case_id"]]))
                 if kind in readings:
                     self.assertEqual((row["action"]["outcome"], row["action"]["count_request"]),
                                      ("request", readings[kind]))
@@ -147,9 +145,8 @@ class FreshPanelRulers(unittest.TestCase):
             report = asyncio.run(p3_eval.run_panel(database, root / "run", manifest_path=root / "prep" / "manifest.json",
                                                    panel_path=panel_path, responses_path=responses_path))
         self.assertEqual(report["status"], "complete")
-        # Under v19 the D rows' scripted clarifications are answered: missed against the v1 clarify oracles.
         self.assertEqual(report["summary"]["outcomes"],
-                         {"complete_correct": 39, "missed_clarification": 6, "correct_decline": 9})
+                         {"complete_correct": 39, "correct_clarification": 6, "correct_decline": 9})
 
     def test_no_question_repeats_a_tuned_panel_question(self):
         fresh = {case.question for case in p3_assets.load_panel(ROOT / _entry()["path"]).cases}

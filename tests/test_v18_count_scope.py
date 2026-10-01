@@ -30,9 +30,10 @@ EDITS = (
 
 
 def superseded():
-    """v18 is registered but no longer current (v19, #158). v19 changes only the context's count_basis entry, so the
-    three instruction edits and their undo to v17 stay live; the version tuple, the v17-equal context digest and the
-    registration stop applying."""
+    """v18 is registered but no longer current (v19, #158; then v20, a restoration with v18's identity). v19 changed
+    only the context's count_basis entry, so the three instruction edits and their undo to v17 stay live. The guard
+    skips the version tuple, the v17-equal context digest and the registration; under v20 the first two would pass
+    again, and the v20 ruler checks the runtime's digest while v20 is current."""
     index = registry.load_index()
     return V18 in [r["candidate_id"] for r in index["entries"]] and index["current"] != V18
 

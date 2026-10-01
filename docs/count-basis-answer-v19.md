@@ -1,5 +1,10 @@
 # Candidate v19: the server answers a count_basis clarification (#158)
 
+**Superseded.** v19 failed its gate with `regression`
+([results](count-basis-answer-v19-result.md)). v20 restores v18's runtime
+([restoration](v18-restoration-v20.md)). This document describes v19 as it
+was registered.
+
 Candidate `p3-count-basis-answer-v19`, whose ancestor is `p3-count-scope-v18`.
 It is scope 1 of ADR #158 and step (3) of the grant
 [#158 #issuecomment-5927141003](https://github.com/cinic0101/grepbit/issues/158#issuecomment-5927141003)
@@ -55,7 +60,8 @@ code decides the action.
   `tools/routing_upper_bound.py`, `tools/reading_diagnostic.py` (`_recorded`)
   and `tools/count_ablation.py`.
 - **Without a recorded row**, as with a scripted action, the current runtime's
-  answer applies.
+  answer applies. From v20 on, an action with no recorded row states none
+  ([restoration](v18-restoration-v20.md)).
 - So v18 archives read back, aggregate and gate against v19 unchanged. The
   ruler builds a v18-shaped archive and gates it.
 

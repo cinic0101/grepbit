@@ -262,11 +262,11 @@ def _count_basis_clarification(action: object) -> bool:
 def _stated_assumption(action: object, actual_action: str | None = None) -> dict | None:
     """The count assumption a persisted request states: v13's explicit key, or v16's unresolved count reading.
 
-    A model count_basis clarification states the assumption only where the server answered it (v19, ADR #158).
-    Before v19 the same action was a real clarification, so the row's recorded ``actual_action`` decides: a
-    ``clarify`` row states none. Without a recorded row (a scripted action) the current runtime's answer applies."""
+    A model count_basis clarification states the assumption only on a row whose recorded ``actual_action`` is
+    ``answer``: v19's server answer (ADR #158). On a ``clarify`` row, or with no recorded row, it is the
+    clarification it was and states none; no current runtime is consulted (v20, docs/v18-restoration-v20.md)."""
     if _count_basis_clarification(action):
-        return None if actual_action == "clarify" else dict(ASSUMPTION)
+        return dict(ASSUMPTION) if actual_action == "answer" else None
     if not isinstance(action, dict) or action.get("outcome") != "request":
         return None
     if "assumption" in action:
