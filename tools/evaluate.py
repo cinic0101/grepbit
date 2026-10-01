@@ -256,6 +256,10 @@ def _panel_annex(panel_block: object, panels_path: Path | None = None) -> dict |
 
 def _stated_assumption(action: object) -> dict | None:
     """The count assumption a persisted request states: v13's explicit key, or v16's unresolved count reading."""
+    if (isinstance(action, dict) and action.get("outcome") == "clarify"
+            and action.get("clarification", {}).get("kind") == "count_basis"):
+        # The server answers a model count_basis clarification with booked seats and states it (ADR #158).
+        return dict(ASSUMPTION)
     if not isinstance(action, dict) or action.get("outcome") != "request":
         return None
     if "assumption" in action:
@@ -871,8 +875,12 @@ def _validated_action(result) -> str | None:
     clarification = getattr(result, "clarification", None)
     source = getattr(result, "source_proposal", None)
     error = getattr(result, "error", None)
+    source_clarification = getattr(result, "source_clarification", None)
     try:
-        if proposal is not None:
+        if proposal is not None and source_clarification is not None:
+            # A server answer to a model count_basis clarification persists the model's own action (ADR #158).
+            action = {"outcome": "clarify", "clarification": source_clarification.to_dict()}
+        elif proposal is not None:
             action = proposal.to_dict()
         elif clarification is not None and source is not None:
             # A server-built clarification persists the model's own action, so replay rebuilds it.
@@ -912,11 +920,14 @@ def _check_action(row: dict, stop_reason: str | None = None) -> bool:
     # A named unavailable count reading is the model's action behind a server decline (v16).
     declined = (isinstance(action, dict) and action.get("outcome") == "request"
                 and action.get("count_request") in UNAVAILABLE_COUNTS)
-    expected = "clarify" if derived else "decline" if declined else None
+    # A model count_basis clarification is the model's action behind a server answer (ADR #158).
+    answered = (isinstance(action, dict) and action.get("outcome") == "clarify"
+                and action.get("clarification", {}).get("kind") == "count_basis")
+    expected = "clarify" if derived else "decline" if declined else "answer" if answered else None
     if (_action_text(action) != text
             or (expected or _ACTION_OUTCOMES[action["outcome"]]) != row["actual_action"]):
         raise assets.P3Error("invalid_asset")
-    if action["outcome"] == "clarify" and (
+    if action["outcome"] == "clarify" and not answered and (
             action["clarification"]["kind"] != row["clarification_kind"]
             or len(action["clarification"]["choices"]) != row["clarification_choice_count"]):
         raise assets.P3Error("invalid_asset")

@@ -397,7 +397,9 @@ def _check_validated_action(text: str | None, graded: dict | None) -> None:
     derived = action["outcome"] == "request" and action.get("orientation") == "unresolved"
     # A v16 named unavailable count reading is the model's action behind a server decline.
     declined = action["outcome"] == "request" and action.get("count_request") in evaluate.UNAVAILABLE_COUNTS
-    if ("clarify" if derived else "decline" if declined else
+    # A v19 model count_basis clarification is the model's action behind a server answer (ADR #158).
+    answered = action["outcome"] == "clarify" and action["clarification"]["kind"] == "count_basis"
+    if ("clarify" if derived else "decline" if declined else "answer" if answered else
             {"request": "answer", "clarify": "clarify", "declined": "decline"}[action["outcome"]]
             ) != graded["actual_action"]:
         raise assets.P3Error("invalid_asset")

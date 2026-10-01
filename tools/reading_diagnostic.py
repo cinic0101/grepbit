@@ -164,6 +164,9 @@ def _recorded(action: object) -> tuple[str | None, str | None]:
     # A v16 named unavailable count reading is the model's action behind a server decline.
     if outcome == "request" and value.get("count_request") in evaluate.UNAVAILABLE_COUNTS:
         return "decline", None
+    # A v19 model count_basis clarification is the model's action behind a server answer (ADR #158).
+    if kind == "count_basis":
+        return "answer", None
     return _ACTIONS[outcome], kind
 
 
