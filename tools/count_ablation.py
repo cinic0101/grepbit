@@ -9,8 +9,6 @@ Observational only: never a candidate, a run-index entry, a gate verdict or prom
 from __future__ import annotations
 
 import asyncio
-from copy import deepcopy
-import json
 from pathlib import Path
 import sys
 import time
@@ -27,6 +25,7 @@ AUTHORIZATION_VERSION = "count-ablation-authorization-v1"
 EVIDENCE_CLASS = "diagnostic_observation"
 VARIANTS = ("labels", "rules")
 REFUSALS = ("not_dev_panel", "route", "selection", "variant_text")
+COMPARISON_REFUSALS = ("no_baseline", "candidate_identity", "inputs_differ", "index_mismatch")
 # The pre-registered inputs: every case of these families, in panel order.
 SELECTION = {
     "p3-dev-bound-meaning-v2": ("dev-BM5", "dev-BM6", "dev-BM7"),
@@ -140,22 +139,26 @@ def messages(variant: str, question: str) -> list[dict[str, str]]:
 
 def map_back(variant: str, body: bytes) -> bytes:
     """Under ``labels``, the reply's Overview count_request label maps back to the production value; every other
-    reply, and every ``rules`` reply, is returned byte for byte."""
+    reply, and every ``rules`` reply, is returned byte for byte.
+
+    The envelope and the content are parsed with the production parser (protocol.strict_json), so a reply that
+    production would reject (duplicate keys, non-finite numbers, lone surrogates, excessive nesting) is never
+    mapped: it passes through unchanged and the unchanged pipeline grades it. Mapping never raises."""
     _variant(variant)
     if variant != "labels":
         return body
     try:
-        envelope = json.loads(body)
+        envelope = protocol.strict_json(body)
         message = envelope["choices"][0]["message"]
-        action = json.loads(message["content"])
-    except (ValueError, TypeError, LookupError):
+        action = protocol.strict_json(message["content"])
+        if (not isinstance(action, dict) or action.get("outcome") != "request"
+                or action.get("recipe_id") != "overview" or action.get("count_request") not in INVERSE_LABELS):
+            return body
+        action["count_request"] = INVERSE_LABELS[action["count_request"]]
+        message["content"] = protocol.canonical_json(action)
+        return protocol.canonical_json(envelope).encode("utf-8")
+    except (ModelError, TypeError, LookupError, ValueError, UnicodeError, RecursionError):
         return body
-    if (not isinstance(action, dict) or action.get("outcome") != "request" or action.get("recipe_id") != "overview"
-            or action.get("count_request") not in INVERSE_LABELS):
-        return body
-    action["count_request"] = INVERSE_LABELS[action["count_request"]]
-    message["content"] = json.dumps(action, ensure_ascii=False, separators=(",", ":"))
-    return json.dumps(envelope, ensure_ascii=False).encode()
 
 
 def _variant_pins(variant: str) -> dict:
@@ -216,11 +219,13 @@ def _options(packet: dict) -> dict:
             "accepted_commit": canonical["accepted_commit"]}
 
 
-def _expected_order(canonical: dict, inputs: list) -> list:
-    """Each selected case once per variant, in the canonical panel order."""
+def _expected_inputs(canonical: dict) -> list:
+    """Each pre-registered case once per variant, in canonical order, from the digest-pinned canonical packet."""
     families = SELECTION.get(canonical["panel"]["panel_id"], ())
-    by_case = {row.get("case_id"): row.get("family_id") for row in inputs if isinstance(row, dict)}
-    return [(case_id, variant) for case_id in canonical["order"] if by_case.get(case_id) in families
+    items = [item for item in canonical["inputs"] if item["family_id"] in families]
+    if not families or {item["family_id"] for item in items} != set(families):
+        raise assets.P3Error("invalid_manifest")
+    return [(item["case_id"], item["family_id"], item["question_sha256"], variant) for item in items
             for variant in VARIANTS]
 
 
@@ -230,9 +235,9 @@ def _packet_contract(packet: object) -> dict:
     evaluate._packet_contract(canonical)
     if (packet["version"] != VERSION or packet["canonical_packet_sha256"] != _sha(canonical)
             or packet["evidence_class"] != EVIDENCE_CLASS or packet["promotion_eligible"] is not False
-            or not isinstance(inputs, list) or not inputs
-            or [(row.get("case_id"), row.get("variant")) if isinstance(row, dict) else None for row in inputs]
-            != _expected_order(canonical, inputs)
+            or not isinstance(inputs, list)
+            or [(row.get("case_id"), row.get("family_id"), row.get("question_sha256"), row.get("variant"))
+                if isinstance(row, dict) else None for row in inputs] != _expected_inputs(canonical)
             or packet["max_calls"] != len(inputs)
             or packet["call_timeout_seconds"] != canonical["settings"]["call_timeout_seconds"]
             or packet["run_seconds"] != len(inputs) * packet["call_timeout_seconds"] + 120
@@ -296,7 +301,18 @@ def _annex(entry: dict, panel: assets.Panel) -> dict | None:
     return evaluate.annex_expectations(entry, panel) if entry.get("annex") is not None else None
 
 
+def _unassessed(graded: dict) -> bool:
+    """The candidate gate's rule: an operational failure is no model result, never a wrong one."""
+    return evaluate._gate_unassessed({"status": "completed", "outcome": graded["outcome"],
+                                      "operational_error": graded.get("operational_error"),
+                                      "runner_error_code": None})
+
+
 def _annex_verdict(validated: str | None, graded: dict, case: assets.Case, expectations: dict | None) -> str | None:
+    if expectations is None:
+        return None
+    if _unassessed(graded):
+        return "unassessed"
     frozen_correct = graded["outcome"] == scoring._SUCCESS[case.expected_branch]
     return evaluate.annexed({"validated_action": validated, "oracle_id": case.oracle_id}, frozen_correct,
                             expectations)
@@ -520,11 +536,21 @@ def _compare(report: dict, packet: dict, panel: assets.Panel, expectations: dict
         value["refusal"] = "no_baseline"
         return value
     reports = evaluate._archived_reports(baseline)
+    # The candidate gate's integrity checks, in routing_upper_bound's order: bytes, inputs, then index agreement.
+    target = canonical["candidate"]["candidate_sha256"]
     expected_inputs = (panel_id, canonical["panel"]["assets"], canonical["panel"].get("annex_sha256"),
-                       [(case.case_id, item["question_sha256"]) for case, item in
-                        zip(panel.cases, canonical["inputs"])])
-    if any(inputs != expected_inputs for _, inputs in (evaluate._gate_view(archived) for archived in reports)):
+                       [(item["case_id"], item["question_sha256"]) for item in canonical["inputs"]])
+    views = [evaluate._gate_view(archived) for archived in reports]
+    if any(sha != target for sha, _ in views):
+        value["refusal"] = "candidate_identity"
+        return value
+    if any(inputs != expected_inputs for _, inputs in views):
         value["refusal"] = "inputs_differ"
+        return value
+    if any((archived["owner_authorization_reference"], archived["panel"]["panel_id"],
+            archived["route"]["route_id"], archived["status"]) != (run["grant"], panel_id, route_id, run["status"])
+           for run, archived in zip(baseline, reports)):
+        value["refusal"] = "index_mismatch"
         return value
     measured = {row["case_id"]: row for row in evaluate._input_classes(reports, expectations)}
     cases = {case.case_id: case for case in panel.cases}
@@ -532,8 +558,8 @@ def _compare(report: dict, packet: dict, panel: assets.Panel, expectations: dict
         case = cases[row["case_id"]]
         returned = row["state"] == "returned"
         frozen = returned and row["graded"]["outcome"] == scoring._SUCCESS[case.expected_branch]
-        verdict = (None if not returned else row["annex"] if row["annex"] is not None
-                   else "correct" if frozen else "wrong")
+        verdict = (None if not returned else "unassessed" if _unassessed(row["graded"])
+                   else row["annex"] if row["annex"] is not None else "correct" if frozen else "wrong")
         value["inputs"].append({"case_id": row["case_id"], "variant": row["variant"],
                                 "baseline_assessed": measured[row["case_id"]]["assessed"],
                                 "baseline_correct": measured[row["case_id"]]["correct"],
@@ -565,6 +591,13 @@ def read_report(path: Path, *, panels_path: Path | None = None, routes_path: Pat
             or (entry.get("annex") or {}).get("sha256") != canonical["panel"].get("annex_sha256")):
         raise assets.P3Error("manifest_drift")
     expectations = _annex(entry, panel)
+    # Every pinned row names a registered case of the pinned panel, with its question and variant messages.
+    questions = {case.case_id: case.question for case in panel.cases}
+    shas = {item["case_id"]: item["question_sha256"] for item in panel.inputs()}
+    if any(row["case_id"] not in questions or shas[row["case_id"]] != row["question_sha256"]
+           or _sha(messages(row["variant"], questions[row["case_id"]])) != row["messages_sha256"]
+           for row in packet["inputs"]):
+        raise assets.P3Error("manifest_drift")
     report = evaluator._document(path, evaluator.MAX_REPORT_BYTES, "invalid_asset")
     _check_report(report, manifest, packet, panel, expectations)
     return {**report, "comparison": _compare(report, packet, panel, expectations, runs_path, candidates_index)}
@@ -609,7 +642,7 @@ def main(argv: list[str] | None = None) -> int:
             result = {key: report[key] for key in ("version", "status", "stop_reason", "client_http_attempts",
                                                    "possible_in_flight_attempts", "evidence_class",
                                                    "promotion_eligible", "summary")}
-            result["comparison"] = {key: report["comparison"][key] for key in ("baseline_runs", "refusal")}
+            result["comparison"] = {key: report["comparison"][key] for key in ("baseline_runs", "inputs", "refusal")}
         print(protocol.canonical_json(result))
         return 0 if result.get("status", "complete") == "complete" else 1
     except ExperimentRefused as exc:

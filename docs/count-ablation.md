@@ -4,8 +4,8 @@ Contract `count-ablation-v1`, step (2) of the grant
 [#152 #issuecomment-5925246940](https://github.com/cinic0101/grepbit/issues/152#issuecomment-5925246940)
 (owner: 「我沒問題了，可以開始」). It tests two root-cause hypotheses for the
 current candidate's (v18) two stable failures. It sends the production system
-message with exactly one pre-registered change, and grades the reply through
-the unchanged production pipeline.
+message changed by one pre-registered variant, a fixed set of edits, and grades
+the reply through the unchanged production pipeline.
 
 It is observational: never a candidate, a gate input, a run-index entry or
 promotion evidence. It leaves the runtime, candidates, cases, oracles, panels
@@ -41,7 +41,10 @@ Every case of these families runs, in each panel's order, under both variants:
 | `p3-dev-matrix-compare-first-v3` | `dev-A1`, `dev-A2`, `dev-C1` | 9 |
 
 Each input runs under each variant: 21 × 2 = **42 calls**, one per input and
-variant. There is one run per panel: 18 + 6 + 18.
+variant. There is one run per panel: 18 + 6 + 18. The grant's step (4) says
+"one ablation run". The agent reads it as this one pre-registered set of 42
+calls, in three per-panel runs, each with its own envelope and slot; that
+reading is recorded on #152.
 
 **What each input is for:**
 - the targets are `dev-A1` (H-A1) and `dev-C1` (H-C1);
@@ -74,10 +77,20 @@ different candidate cannot silently receive a different edit.
   | `Overview request and count_request "unresolved", not a count_basis clarification.` | `Overview request and count_request "generic_people_count", not a count_basis clarification.` |
   | `is also answered with count_request "unresolved", and the stated assumption` | `is also answered with count_request "generic_people_count", and the stated assumption` |
 
+- **Edit 4 changes more than a label.** It also changes the noun: "an
+  unresolved count" becomes "a generic_people_count reading".
 - **The reply.** Before the production pipeline reads the reply, its content's
   Overview `count_request` is mapped back by the inverse table, so the
-  unchanged pipeline validates and grades it. Any other reply passes through
-  byte for byte.
+  unchanged pipeline validates and grades it.
+  - The envelope and the content are parsed with the production parser
+    (`protocol.strict_json`).
+  - A reply that production would reject passes through byte for byte, and the
+    unchanged pipeline grades it. That covers duplicate keys, non-finite
+    numbers, lone surrogates and excessive nesting.
+  - Mapping never raises, and any other reply also passes through.
+  - A reply that uses a production label (`none` or `unresolved`) under
+    `labels` falls outside the variant schema. It passes through and is graded
+    as given.
 
 **`rules`** (H-C1). The schema is unchanged, and the reply passes through byte
 for byte.
@@ -96,7 +109,8 @@ for byte.
 ## Wire, grading and records
 
 These follow `tools/routing_upper_bound.py` (`docs/routing-upper-bound.md`),
-except that the variant replaces the narrowed context:
+except that the variant replaces the narrowed context and the comparison has
+no verdict:
 - **Packet.** The packet embeds the canonical evaluation packet for the current
   candidate, the panel and the route, with a clean `dev` checkout at the
   accepted commit. It pins:
@@ -119,9 +133,31 @@ except that the variant replaces the narrowed context:
     kind and its choice count.
 - **Authorization.** One envelope binds the grant comment and one run slot.
 - **Readback.** The report reads back from the slot.
+- **Unassessed rows.** A returned row whose grade is an operational failure is
+  `unassessed`, under the candidate gate's rule (`_gate_unassessed`), never
+  `wrong`.
+- **The packet contract** takes the pre-registered selection from the
+  digest-pinned canonical packet. Readback also checks every row's question and
+  variant messages against the pinned panel.
 - **Comparison.** Each row is compared with the current candidate's own
   recorded runs of the same bytes on that panel: the baseline's assessed and
-  correct counts per input, annex-aware. There is no verdict.
+  correct counts per input, annex-aware.
+  - It applies the candidate gate's integrity checks in `routing_upper_bound`'s
+    order. Each refusal is closed: `no_baseline`, `candidate_identity`,
+    `inputs_differ`, `index_mismatch`.
+  - There is no verdict.
+
+## Reading rule (pre-registered)
+
+For each target and its variant:
+- **The target moves** if its variant verdict is `correct` in at least two of
+  its three languages. Its baseline is wrong in every recorded run.
+- **A control breaks** under a variant if its baseline is correct in every
+  assessed run and its variant verdict is `wrong`.
+- **Supported:** the target moves and no control breaks under that variant.
+- **Mixed:** the target moves but a control breaks.
+- **No support:** the target does not move. The verdict is per hypothesis and
+  says nothing beyond this wording.
 
 ## Claims and limits
 
@@ -129,8 +165,16 @@ except that the variant replaces the narrowed context:
   A change suggests a cause; it does not prove one.
 - **Labels mapping.** Mapping the `labels` reply back is a deterministic
   rename. It is disclosed, and it never repairs a reply.
-- **What a null result means.** A variant that moves nothing rejects its
-  hypothesis for this wording only.
+- **What a null result means.** A variant that moves nothing gives no support
+  to its hypothesis, for this wording only. It does not refute the hypothesis.
+- **The rules variant is not only a scoping.**
+  - It adds a directive to the either/or rule. Its `count_basis` text repeats
+    v18's edit 3 (system-basis doubt) inside the context.
+  - Its wording, "the user says they themselves have not decided", echoes how
+    `dev-BM7` is phrased, which biases that control toward staying a
+    clarification.
+  - So a move under `rules` cannot be attributed to the older rules alone. It
+    shows that stating the distinction in those two places changes the action.
 - **Not a candidate.** A variant that moves a target is evidence for a v19
   design. It is not a candidate: the frozen clarification test pins the
   `count_request` enum, so a `labels`-style candidate needs the owner's

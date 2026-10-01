@@ -1,4 +1,5 @@
 """Count ablation rulers (count-ablation-v1, #152): synthetic panels and mock transports only; no live call."""
+import hashlib
 import io
 import json
 from contextlib import redirect_stderr
@@ -57,6 +58,39 @@ class VariantTests(unittest.TestCase):
         self.assertEqual(ablation.VARIANTS, ("labels", "rules"))
         self.assertEqual(ablation.REFUSALS, ("not_dev_panel", "route", "selection", "variant_text"))
 
+    def test_undoing_each_variant_gives_the_production_system_message(self):
+        production = recipe_model.messages_for("q")
+        for variant, edits in (("labels", ablation.LABEL_EDITS),
+                               ("rules", ablation.RULE_EDITS + (ablation.COUNT_BASIS_EDIT,))):
+            wire = ablation.messages(variant, "q")
+            content = wire[0]["content"]
+            for old, new in edits:
+                self.assertEqual(content.count(new), 1)
+                content = content.replace(new, old, 1)
+            if variant == "labels":
+                renamed = '"enum":["no_people_count","booked_seats","generic_people_count"'
+                self.assertEqual(content.count(renamed), 1)
+                content = content.replace(renamed, '"enum":["none","booked_seats","unresolved"', 1)
+            self.assertEqual([{"role": "system", "content": content}, wire[1]], production)
+
+    def test_map_back_never_repairs_a_reply_production_rejects_and_never_raises(self):
+        request = ('{"center_code":"CTR-A01","start":"2026-03-01T00:00:00+08:00",'
+                   '"end":"2026-04-01T00:00:00+08:00","timezone":"Asia/Taipei"}')
+        rejected = (
+            '{"outcome":"request","recipe_id":"overview","recipe_version":"0.1","request":' + request
+            + ',"count_request":"none","count_request":"generic_people_count"}',
+            '{"outcome":"declined","outcome":"request","recipe_id":"overview","recipe_version":"0.1","request":'
+            + request + ',"count_request":"generic_people_count"}',
+            '{"outcome":"request","recipe_id":"overview","recipe_version":"0.1","request":{"center_code":"\\ud800"},'
+            '"count_request":"generic_people_count"}',
+            "[" * 100000 + "]" * 100000)
+        for content in rejected:
+            body = json.dumps(envelope(content)).encode()
+            self.assertEqual(ablation.map_back("labels", body), body)
+        duplicated = (b'{"model":"m","model":"m","choices":[{"index":0,"message":{"role":"assistant","content":'
+                      + json.dumps(json.dumps(_overview("generic_people_count"))).encode() + b'}}]}')
+        self.assertEqual(ablation.map_back("labels", duplicated), duplicated)
+
     def test_a_changed_base_text_is_refused_rather_than_edited_differently(self):
         doubled = recipe_model.SYSTEM_INSTRUCTION + " " + ablation.RULE_EDITS[0][0]
         missing = recipe_model.SYSTEM_INSTRUCTION.replace(ablation.LABEL_EDITS[2][0], "so it is zero")
@@ -105,7 +139,7 @@ class AblationRunTests(EvaluateHarness):
         self.selected = [case for case in self.panel.cases if case.family_id in _SYNTHETIC["synthetic-dev"]]
         self.recorded, self.experiment_sent = 0, []
 
-    def scripted(self, *, page=(), sink=None):
+    def scripted(self, *, page=(), failing=(), sink=None):
         cases = self.panel.cases
 
         def respond(request):
@@ -114,6 +148,8 @@ class AblationRunTests(EvaluateHarness):
             payload = json.loads(request.content)
             question = payload["messages"][-1]["content"]
             case = next(case for case in cases if case.question == question)
+            if case.case_id in failing:
+                raise httpx.ConnectError("synthetic transport failure", request=request)
             if case.case_id in page:
                 return httpx.Response(200, text="<html>gateway error</html>", headers={"content-type": "text/html"})
             action = dict(self.by_oracle[case.oracle_id])
@@ -256,6 +292,84 @@ class AblationRunTests(EvaluateHarness):
             await ablation.run_live(self.database, target, packet_path=fresh, authorization_path=authorization,
                                     accepted_commit="2" * 40, env_file=self.root / "unused.env", **self.registries)
 
+    async def test_the_packet_contract_enforces_the_pre_registered_selection(self):
+        packet = json.loads(self.experiment_prepare().read_text())
+        self.assertEqual(ablation._packet_contract(json.loads(json.dumps(packet)))["inputs"], packet["inputs"])
+        other = next(item for item in packet["canonical_packet"]["inputs"]
+                     if item["family_id"] not in _SYNTHETIC["synthetic-dev"])
+
+        def resized(rows):
+            changed = json.loads(json.dumps(packet))
+            changed.update(inputs=rows, max_calls=len(rows), run_seconds=len(rows) * changed["call_timeout_seconds"] + 120)
+            return changed
+
+        relabelled = {**packet["inputs"][0], "case_id": other["case_id"], "question_sha256": other["question_sha256"]}
+        for rows in (packet["inputs"][1:], packet["inputs"][:2], [relabelled] + packet["inputs"][1:],
+                     [{**packet["inputs"][0], "question_sha256": "0" * 64}] + packet["inputs"][1:]):
+            with self.assertRaises(p3_assets.P3Error):
+                ablation._packet_contract(resized(rows))
+
+    async def test_an_annex_panel_runs_end_to_end_with_mapped_labels(self):
+        overview = next(case for case in self.selected if case.family_id == "E01_overview")
+        annex = self.root / "annex.json"
+        annex.write_text(json.dumps({"version": "count-assumption-annex-v1",
+                                     "expectations": {overview.oracle_id: {"count_basis": "booked_seats"}}}))
+        registry = json.loads(self.panels.read_text())
+        registry["panels"][0]["annex"] = {"path": f"{self.relative}/annex.json",
+                                          "sha256": hashlib.sha256(annex.read_bytes()).hexdigest()}
+        self.panels.write_text(json.dumps(registry))
+        # evaluate.record re-reads a report's annex through the default registry, so point it at the synthetic one.
+        self.enterContext(patch.object(runner, "PANELS", self.panels))
+        # The scripted model reads the Overview as a generic count, so it states the annexed assumption.
+        self.by_oracle[overview.oracle_id] = {**self.by_oracle[overview.oracle_id], "count_request": "unresolved"}
+        baseline = await self.baseline(960)
+        result, slot = await self.experiment(961)
+        self.assertEqual(result["status"], "complete")
+        rows = {(row["case_id"], row["variant"]): row for row in result["results"]}
+        for variant in ablation.VARIANTS:
+            row = rows[(overview.case_id, variant)]
+            # The labels schema has no "unresolved": the persisted production value can only come from map_back.
+            self.assertEqual((row["reading"]["count_request"], row["annex"]), ("unresolved", "correct"))
+        self.assertNotIn("unresolved", json.dumps(ablation.variant_schema("labels")["oneOf"][0]))
+        comparison = result["comparison"]
+        self.assertEqual((comparison["baseline_runs"], comparison["refusal"]), ([baseline["run_id"]], None))
+        self.assertTrue(all(item["variant_verdict"] == "correct" for item in comparison["inputs"]))
+        self.assertEqual(ablation.read_report(slot / "report.json", **self.registries), result)
+
+    async def test_two_network_failures_in_a_row_stop_the_run(self):
+        first = self.selected[0].case_id
+        result, _ = await self.experiment(965, failing={first})
+        states = [(row["state"], row["error_code"]) for row in result["results"]]
+        self.assertEqual(states[:2], [("failed", "transport_error")] * 2)
+        self.assertEqual({state for state, _ in states[2:]}, {"not_started"})
+        self.assertEqual((result["status"], result["stop_reason"]), ("incomplete", "network_streak"))
+
+    async def test_live_refuses_a_drifted_packet_before_any_send_or_slot(self):
+        packet_path = self.experiment_prepare()
+        packet = json.loads(packet_path.read_text())
+        packet["inputs"][0]["messages_sha256"] = "0" * 64
+        drifted = packet_path.parent / "drifted" / "packet.json"
+        drifted.parent.mkdir()
+        drifted.write_text(json.dumps(packet))
+        authorization = drifted.parent / "authorization.json"
+        slot = self.root / "ablation-drifted-run"
+        ablation.bind_authorization(drifted, f"{GRANT}966", authorization, slot)
+        with patch.object(runner, "_admitted_client", return_value=self.scripted(sink=self.experiment_sent)), \
+                self.assertRaises(p3_assets.P3Error):
+            await ablation.run_live(self.database, slot, packet_path=drifted, authorization_path=authorization,
+                                    accepted_commit=SHA, env_file=self.root / "unused.env", **self.registries)
+        self.assertEqual((self.experiment_sent, slot.exists()), ([], False))
+
+    async def test_the_comparison_applies_the_gates_integrity_checks(self):
+        await self.baseline(970)
+        _, slot = await self.experiment(971)
+        original = runner._gate_view
+        with patch.object(runner, "_gate_view", side_effect=lambda report: ("0" * 64, original(report)[1])):
+            refused = ablation.read_report(slot / "report.json", **self.registries)["comparison"]
+        self.assertEqual((refused["refusal"], refused["inputs"]), ("candidate_identity", []))
+        self.assertEqual(ablation.COMPARISON_REFUSALS,
+                         ("no_baseline", "candidate_identity", "inputs_differ", "index_mismatch"))
+
     async def test_the_annex_verdict_follows_evaluate_annexed_on_the_persisted_action(self):
         case = self.selected[0]
         graded = {"outcome": "complete_correct"}
@@ -267,6 +381,11 @@ class AblationRunTests(EvaluateHarness):
         self.assertEqual(ablation._annex_verdict(stated, graded, case, {}), "wrong")
         self.assertEqual(ablation._annex_verdict(silent, graded, case, {}), "correct")
         self.assertIsNone(ablation._annex_verdict(silent, graded, case, None))
+        # An operational failure is no model result: unassessed, never wrong (the candidate gate's rule).
+        failed = {"outcome": "operational_failure", "operational_error": "kernel_failure"}
+        self.assertEqual(ablation._annex_verdict(None, failed, case, expectations), "unassessed")
+        self.assertTrue(ablation._unassessed(failed))
+        self.assertFalse(ablation._unassessed({"outcome": "invalid_output", "operational_error": "invalid_json"}))
         self.assertEqual(ablation._reading(stated), {"outcome": "request", "count_request": "unresolved",
                                                      "clarification_kind": None, "choices": None})
 
