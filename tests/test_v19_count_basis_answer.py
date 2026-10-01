@@ -14,7 +14,7 @@ from grepbit.contracts import KernelError
 from grepbit.gateway import GatewayClient, GatewayConfig, MAX_INPUT_BYTES, MAX_REQUEST_BYTES, MODEL
 from tools import candidate_registry as registry, evaluate, fixture, p3_assets, reading_diagnostic
 from tools import routing_upper_bound as routing
-from test_evaluate import BASE, GRANT, KEY, SERVER_ANSWERED, EvaluateHarness
+from test_evaluate import BASE, GRANT, KEY, EvaluateHarness
 from test_evaluate import envelope as wire_envelope
 from test_recipe_model import envelope, period
 
@@ -24,6 +24,15 @@ ASSUMPTION = {"count_basis": "booked_seats"}
 SENTENCE = (" The server answers a count_basis clarification with booked seats and states that assumption, because "
             "no other count meaning is executable here.")
 QUESTION = "CTR-A01, March 2026: count the people as seats or as booking accounts? I have not decided."
+# The synthetic harness copies p3-development-v1, whose C01 input v19 answers.
+SERVER_ANSWERED = frozenset({"C01_count_basis.en"})
+
+
+def superseded():
+    """v19 is registered but no longer current (v20 restores v18, docs/v18-restoration-v20.md). Its runtime,
+    context, v18-archive and registration checks need v19's runtime; its runtime-free checks stay."""
+    index = registry.load_index()
+    return V19 in [r["candidate_id"] for r in index["entries"]] and index["current"] != V19
 
 
 def clarification(kind="count_basis", values=("booked_seats", "known_booking_accounts"), code="CTR-A01"):
@@ -38,6 +47,8 @@ def clarification(kind="count_basis", values=("booked_seats", "known_booking_acc
 
 class ContextTests(unittest.TestCase):
     def test_only_the_count_basis_context_entry_changes_from_v18(self):
+        if superseded():
+            self.skipTest("v19 superseded; the live context is no longer v19's")
         v18 = registry.load_entry(V18)
         self.assertEqual((recipe_model.INSTRUCTION_VERSION, recipe_model.CONTEXT_VERSION,
                           recipe_model.OUTPUT_CONTRACT, recipe_model.STRUCTURED_OUTPUT_VERSION),
@@ -80,6 +91,8 @@ class ContextTests(unittest.TestCase):
 
 class RuntimeTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
+        if superseded():
+            self.skipTest("v19 superseded; the live runtime is no longer v19's")
         tmp = tempfile.TemporaryDirectory(prefix="v19-", dir=ROOT / ".artifacts")
         self.addCleanup(tmp.cleanup)
         self.database = Path(tmp.name) / "fixture.sqlite"
@@ -179,7 +192,7 @@ class EvaluatorTests(unittest.TestCase):
         routing._check_validated_action(center, {"actual_action": "clarify", "outcome": "correct_clarification"})
         with self.assertRaises(p3_assets.P3Error):
             routing._check_validated_action(center, {"actual_action": "answer", "outcome": "complete_correct"})
-        self.assertEqual(evaluate._stated_assumption(clarification()), ASSUMPTION)
+        # With no recorded row, no assumption is stated from v20 on (docs/v18-restoration-v20.md).
         self.assertEqual(evaluate._stated_assumption(clarification(), "answer"), ASSUMPTION)
         self.assertIsNone(evaluate._stated_assumption(clarification(), "clarify"))
         self.assertIsNone(evaluate._stated_assumption(clarification("center")))
@@ -195,6 +208,11 @@ class EvaluatorTests(unittest.TestCase):
 
 class PreV19ArchiveTests(EvaluateHarness):
     """A v18-shaped archive (a real count_basis clarification row) reads back, aggregates and gates against v19."""
+
+    def setUp(self):
+        if superseded():
+            self.skipTest("v19 superseded; tests/test_v20_restoration.py gates v19 archives through its frozen runtime")
+        super().setUp()
 
     @contextmanager
     def as_v18(self):
@@ -261,6 +279,8 @@ class PreV19ArchiveTests(EvaluateHarness):
 
 class RegistryTests(unittest.TestCase):
     def test_v19_is_the_registered_current_candidate(self):
+        if superseded():
+            self.skipTest("v19 superseded; its registration is no longer current")
         current = registry.current()
         self.assertEqual((current["candidate_id"], current["ancestor"]), (V19, V18))
         self.assertEqual(registry.check()["runtime_files_changed"], [])

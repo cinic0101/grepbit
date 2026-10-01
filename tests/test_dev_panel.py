@@ -75,12 +75,9 @@ class DevPanelRulers(unittest.TestCase):
             report = asyncio.run(p3_eval.run_panel(database, root / "run", manifest_path=root / "prep" / "manifest.json",
                                                    panel_path=PANEL, responses_path=RESPONSES))
         self.assertEqual(report["status"], "complete")
-        # v19 (ADR #158) answers a scripted count_basis clarification on the server; this panel's oracles predate
-        # #158 and still expect the clarification, so those rows grade missed_clarification.
-        self.assertEqual(report["summary"]["outcomes"], {"complete_correct": 18, "correct_clarification": 9,
-                                                         "missed_clarification": 3, "correct_decline": 24})
-        self.assertEqual({k for k, v in report["summary"]["per_family"].items() if not v["family_all_variants_correct"]},
-                         {"dev-C1"})
+        self.assertEqual(report["summary"]["outcomes"],
+                         {"complete_correct": 18, "correct_clarification": 12, "correct_decline": 24})
+        self.assertTrue(all(v["family_all_variants_correct"] for v in report["summary"]["per_family"].values()))
         self.assertEqual(len(report["summary"]["per_family"]), 18)
 
 

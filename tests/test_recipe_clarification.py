@@ -24,12 +24,7 @@ QUESTION = "CTR-A01 or CTR-B01, March 2026 and February 2026; clarify the stated
 KINDS = ("count_basis", "comparison_roles", "center", "metric_meaning")
 
 
-# ADR #158 (v19): the server answers a model count_basis clarification with booked seats and the stated assumption
-# (tests/test_v19_count_basis_answer.py), so it is no longer a non-executing action; the generic default is center.
-NONEXECUTING_KINDS = tuple(kind for kind in KINDS if kind != "count_basis")
-
-
-def clarify(kind="center"):
+def clarify(kind="count_basis"):
     scope = dict(period(), center_code="CTR-A01")
     if kind in ("count_basis", "metric_meaning"):
         values = ("booked_seats", "known_booking_accounts") if kind == "count_basis" else (
@@ -102,7 +97,7 @@ class RecipeClarificationTests(unittest.IsolatedAsyncioTestCase):
         return result
 
     async def test_all_kinds_are_distinct_successful_nonexecuting_actions(self):
-        for kind in NONEXECUTING_KINDS:
+        for kind in KINDS:
             with self.subTest(kind=kind):
                 # v15 builds comparison_roles on the server from an unresolved Compare orientation (ADR #142).
                 action = dict(proposal("compare"), orientation="unresolved") if kind == "comparison_roles" else (

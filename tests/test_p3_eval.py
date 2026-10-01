@@ -229,9 +229,8 @@ class P3EvalTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((report["status"], report["client_http_attempts"],
                           report["possible_in_flight_attempts"], report["attempt_budget_used"]),
                          ("complete", 15, 0, 15))
-        # v19 (ADR #158) answers the scripted C01 count_basis clarification; its frozen oracle grades it missed.
-        self.assertEqual(report["summary"]["outcomes"], {"complete_correct": 9, "correct_clarification": 3,
-                                                         "missed_clarification": 1, "correct_decline": 2})
+        self.assertEqual(report["summary"]["outcomes"],
+                         {"complete_correct": 9, "correct_clarification": 4, "correct_decline": 2})
         self.assertEqual(report["summary"]["semantic_families"], 9)
         self.assertEqual(report["summary"]["answer_score"]["denominator"], 0)
         self.assertEqual(report["summary"]["by_cohort"]["anchor"]["family_count"], 3)
