@@ -77,7 +77,7 @@ transfer (P5) and anything that requires a clock or AS_OF default.
 | dev-A4 | compare | 2026-04 vs 2026-02 | non-adjacent months, one stated year in every language, negative growth |
 | dev-A5 | breakdown k=3 | 2026-03 | all three observed courses, share 1/1 |
 | dev-A6 | breakdown k=2 | 2026-03 | share 64/79 |
-| dev-C1 | count_basis | CTR-B01 | "how many people", naming seats vs booking accounts as the open alternatives |
+| dev-C1 | count_basis | CTR-B01 | "how many people", naming seats vs booking accounts as the open alternatives. On `p3-dev-matrix-compare-first-v3` it is an answer with the stated assumption, by owner ruling (#149, `docs/count-assumption.md`) |
 | dev-C2 | comparison_roles | 2026-02, 2026-03 | two months, no orientation |
 | dev-C3 | center | CTR-A01 or CTR-A02 | two codes, one month |
 | dev-C4 | metric_meaning | CTR-A02 | "revenue" |

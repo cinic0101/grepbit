@@ -197,6 +197,25 @@
         "path": "evals/dev/mechanism-probe-annex-v2.json",
         "sha256": "afcfc8496b750c054e25d096cc9a5120963197388dd33ccc4b67e7e9a1928eb9"
       }
+    },
+    {
+      "panel_id": "p3-dev-matrix-compare-first-v3",
+      "tier": "dev",
+      "path": "evals/dev/dev-panel-compare-first-v3.json",
+      "assets": {
+        "panel": "e856a396bb93c561ace0044d0396732fb3291506b96a7ae0fd67ece973f92784",
+        "cases": "bc99535b0411672562b5dd9495d85a0b51688c52079191ea2155cfb1755e7051",
+        "oracles": "fbac9668d796b3cb687162b6c867e94a63f6da1c891e248805a00b4270e201cc"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "compare-first v2 with dev-C1 ruled rule 1 (#149): generic people count answered with booked seats and the stated assumption; independent semantic acceptance on PR #149.",
+      "annex": {
+        "path": "evals/dev/compare-first-annex-v3.json",
+        "sha256": "7cae2be77cc81140168fa096701e05eca6417fb28e50c9a8b67fb58d152804f4"
+      }
     }
   ]
 }

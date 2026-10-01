@@ -114,6 +114,48 @@ The four count families that the rule table changes get new oracle revisions:
   `dev-BM5` (answer), `dev-BM7` (clarify with the stated meanings) and
   `dev-BM8` (decline).
 
+## The empty annex and the compare-first v3 panel (2026-10-01, ADR #146)
+
+- **An empty annex.** An annex may list no oracle:
+  `{"version": "count-assumption-annex-v1", "expectations": {}}`. It means that
+  no oracle of the panel expects an assumption. So a frozen-correct answer is
+  annex-correct only if its action states none, and a stated assumption is
+  annex-wrong. The reader still refuses a missing `expectations`, a non-object
+  one, another version, an extra key or another assumption value.
+- **`p3-dev-matrix-compare-first-v3`.** It is `p3-dev-matrix-compare-first-v2`
+  under a new panel id, in the same order, with one family revised by the owner's
+  ruling:
+  - **`dev-C1` is ruled rule 1**, by owner decision on #149
+    (#issuecomment-5922552274, 「a 沒問題」). "How many people booked … I am not
+    sure whether you count seats or booking accounts" is a generic people count
+    whose meaning is unresolved. The user doubts the *system's* basis; the
+    question is not undecided between the user's own named meanings, as
+    `dev-BM7` is.
+  - **The new oracle `dev-C1.v2`** is an Overview answer for CTR-B01, 2026-03-01
+    to 2026-04-01 `+08:00`, `Asia/Taipei`. It equals `dev-A2.v1` except for its
+    id, revision and provenance. The three `dev-C1` cases point to it, with
+    `expected_branch` and `cohort` set to `answer` and a new
+    `semantic_signature`. The question text is unchanged.
+  - **New files:** `dev-cases-v3.json` and `dev-oracles-v3.json`. They differ
+    from v2 only there.
+  - **The annex** `evals/dev/compare-first-annex-v3.json` lists exactly
+    `dev-C1.v2`.
+- **Why no other oracle changes.** Under the owner's rule table, none of the
+  other 17 families expects an assumption:
+  - `dev-A1` and `dev-A2` are Overview answers that name no generic people
+    count. `dev-A2` asks for bookings and seats.
+  - `dev-D8` requires attendance visits, so it is a decline.
+- **The v2 panel, its identity and its archives are unchanged.**
+- **Why v3.** It widens the evaluation of the count reading (#146) to inputs
+  the v2 bound-meaning and mechanism-probe panels lack:
+  - a bookings count (`dev-A2`);
+  - a named unavailable count, where the server may decline (`dev-D8`);
+  - a people-booked question that also names the system's possible bases
+    (`dev-C1`).
+- **Acceptance.** The annex and `dev-C1.v2` are expectation data. They need
+  independent semantic acceptance on their PR, as #138's had. The empty-annex
+  reader rule stays for any panel that expects no assumption.
+
 ## Acceptance
 
 - **Semantics.** The owner-designated independent reviewer accepted the v2
@@ -121,6 +163,13 @@ The four count families that the rule table changes get new oracle revisions:
   the same under route A: an Overview answer with the stated assumption.
 - **Code.** The implementation of route A has its own independent code review
   on #138.
+- **The v3 panel (#149).**
+  - The owner-designated independent reviewer accepted the v3 expectations,
+    `dev-C1.v2` and an annex listing it, after the owner's `dev-C1` ruling.
+  - A first round had not accepted the data while `dev-C1` still expected a
+    clarification.
+  - The reviewer did not re-check `dev-A2.v1`'s values, which `dev-C1.v2`
+    copies, against the fixture; they rest on `dev-A2.v1`'s accepted status.
 
 ## Claims and limits
 
