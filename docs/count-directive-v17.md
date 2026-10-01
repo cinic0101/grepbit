@@ -13,8 +13,9 @@ It is the next step the owner approved on #146
 - **v13's text** (#140) had answered all eight. It told the model what action to
   take: a generic people count "is answered with the request plus assumption".
 - **v16's text** says how to *read* the count (`unresolved`) and what the
-  server does, but it never tells the model to return a request instead of
-  clarifying. The research note is on #146.
+  server does. It keeps the general rule "if semantics are unambiguous and
+  supported, answer with the existing request", but it has no count-specific
+  action directive. The research note is on #146.
 
 ## The change (`grepbit/recipe_model.py`, text only)
 
@@ -25,13 +26,19 @@ It is the next step the owner approved on #146
 > or distinct individuals is answered with the Overview request and
 > count_request "unresolved", not a count_basis clarification.
 
-This is v13's sentence (#140), with the same scope guard and the same exclusion
-list, adapted to v16's typed reading. v13 said "answered with the request plus
-assumption"; v17 says "count_request unresolved", because the assumption is
-code-decided since v16.
-- The scope guard keeps a count noun from turning a Compare, Breakdown or
-  multi-month question into a narrowed Overview, as v13's contract explained.
-- The exclusion list keeps a question that names a meaning out of the rule.
+This keeps v13's scope guard and exclusion list (#140) word for word, adapted
+to v16's typed reading:
+- v13 said "answered with the request plus assumption"; v17 says
+  "count_request unresolved", because the assumption is code-decided since v16.
+- v13's closing "otherwise omit assumption" is dropped. That job (protecting
+  `dev-BM5`) now falls to the `count_request` named-meaning reading.
+- The tail "not a count_basis clarification" is new.
+- The sentence follows the `count_basis` limit; in v13 it preceded it.
+
+The scope guard is meant to keep a count noun from turning a Compare, Breakdown
+or multi-month question into a narrowed Overview. The exclusion list is meant
+to keep a question that names a meaning out of the rule. On 31B, v13's
+exclusion did not hold on `dev-BM5` (`docs/count-assumption-v13-result.md`).
 
 - **`INSTRUCTION_VERSION`** becomes `recipe-selection-instruction-v10`, so the
   candidate identity changes.
@@ -69,14 +76,22 @@ operational stop at #issuecomment-5923032940.
     exclusion leaves it out. The existing `count_basis` limit ("undecided
     between named meanings") also reads on it literally.
   - The text does not encode the owner's distinction, that doubt about the
-    system's basis is not the user's own undecided choice. So `dev-C1` most
-    plausibly stays a clarification, unchanged and wrong. An answer there would
-    be a fix.
+    system's basis is not the user's own undecided choice.
+  - **Observed on v16:** both step-(1) v3 runs (`compare-first-v3-r1` and
+    `-r2`) gave a `count_basis` clarification on `dev-C1` in all three
+    languages. So it is stable wrong on the baseline, and it cannot gate as
+    "broke". An answer would be a fix.
+- **Also observed on v16, not targeted:** `dev-A1` ("Give me the March 2026
+  booking picture for CTR-A01"), which asks for no count, read
+  `count_request: "unresolved"` in both v3 runs. That is a spurious assumption,
+  annex-wrong. v17's sentence covers people counts only, so `dev-A1` most
+  plausibly stays wrong.
 - **Risks the gate measures:**
   - **`dev-BM5`** (named seats) is protected only while it reads
     `booked_seats`. Under v13's prose, this input gained a spurious assumption.
-  - **`dev-BM8` and `dev-D8`.** Their zh-TW/ja forms contain the people noun
-    (人數 / 人数 / 人次 / 延べ人数). Read as `unresolved`, a required decline
+  - **`dev-BM8` and `dev-D8`.** `dev-BM8`'s forms contain a people noun in all
+    three languages ("individual people", 人數, 人数), and `dev-D8`'s zh-TW/ja
+    forms do too (人次, 延べ人数). Read as `unresolved`, a required decline
     would become a booked-seats answer.
   - **`dev-BM7`** names the user's own undecided meanings, so it should stay a
     clarification.

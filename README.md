@@ -151,11 +151,12 @@ read-then-decide split to counts:
 See the [v16 contract](docs/count-reading-v16.md) and the
 [gate result](docs/count-reading-v16-result.md).
 
-The current candidate, v17, adds one sentence to v16: a generic people count
-that names no count meaning is answered with the Overview request and
-`count_request: "unresolved"`, not a `count_basis` clarification, given a
-complete Overview scope and no named count meaning. That is v13's scoped
-action directive, which v16's text had dropped, adapted to the typed reading. The assumption stays
+The current candidate, v17, adds one sentence to v16. Given a complete Overview
+scope, a generic people count that names no seats, accounts, attendance or
+distinct individuals is answered with the Overview request and
+`count_request: "unresolved"`, not a `count_basis` clarification. That is
+v13's scoped action directive, which v16's text had dropped, adapted to the
+typed reading. The assumption stays
 code-decided. v17 has no live result yet. It will be measured against v16 on the
 two v2 dev panels and on `p3-dev-matrix-compare-first-v3` (#149). See the
 [v17 contract](docs/count-directive-v17.md).
