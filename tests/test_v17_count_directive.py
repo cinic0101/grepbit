@@ -18,8 +18,9 @@ DIRECTIVE = ('With a complete explicit Overview scope, a generic people count (h
 
 
 def superseded():
-    """v17 is registered but no longer current (v18, #152). Only its identity-bound checks stop applying:
-    the directive stays live in v18 and stays checked here."""
+    """v17 is registered but no longer current (v18, #152). Three checks stop applying: the version tuple,
+    the byte-exact undo to v16 and the registration. The directive, the v16-equal context and structured
+    output, and the size check stay live; a later context or schema candidate must gate those too."""
     index = registry.load_index()
     return V17 in [r["candidate_id"] for r in index["entries"]] and index["current"] != V17
 

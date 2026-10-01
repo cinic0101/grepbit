@@ -10,7 +10,9 @@ exception for this candidate
 
 v17 (`docs/count-directive-v17.md`, result `docs/count-directive-v17-result.md`)
 left two stable failures on `p3-dev-matrix-compare-first-v3`. Each failed in all
-three languages, in all three runs (v16 ×2, v17 ×1):
+three languages, in all three recorded runs (v16 ×2, v17 ×1). Each failed again
+in the v17 sentinel of this grant's step (1), which is recorded with the
+result.
 
 - **`dev-A1`** ("Give me the March 2026 booking picture for CTR-A01") asks for
   no count, yet it reads `count_request: "unresolved"`. The server then states
@@ -25,6 +27,15 @@ The v17 text does not separate the two cases:
   named meanings";
 - v17's directive excludes every question that names seats or accounts;
 - nothing in it says that a general overview asks for no count.
+
+Two further texts describe `dev-C1`'s shape and pull toward a two-choice
+clarification. Option T leaves both unchanged:
+- **The context's `count_basis` entry:** "Use count_basis only when the question
+  explicitly leaves the count basis undecided between named meanings, offering
+  exactly those meanings".
+- **The instruction's either/or rule:** "An explicit either/or contrast restricts
+  the open interpretations to that contrast … two contrasted meanings require
+  exactly two choices".
 
 ## The change (`grepbit/recipe_model.py`, text only)
 
@@ -54,6 +65,19 @@ The v17 text does not separate the two cases:
   - the frozen clarification test.
 - **Kept phrases.** The edits keep "undecided between named meanings" and v17's
   directive, which earlier rulers check as live behaviour.
+- **Wording versus the ADR draft.** ADR #152 option T drafted edits 2 and 3
+  differently:
+  - ADR edit 2: "only when the user says their own choice between named meanings
+    is undecided";
+  - ADR edit 3: a clause inside v17's directive, "this includes a question that
+    names seats or accounts only to ask which basis the system counts by; the
+    stated assumption answers it".
+
+  The implemented edit 2 keeps the phrase "undecided between named meanings",
+  which the v16 ruler checks. Edit 3 is a separate sentence, so v17's directive
+  stays byte for byte. The own-choice versus system-basis distinction therefore
+  sits in edit 3 rather than in edit 2. The meaning is the same as the draft's.
+  Edit 1 is the draft's text exactly. The ADR left the wording open.
 - **Overlap disclosed.**
   - Edit 1 targets a general overview request like `dev-A1`, but it copies none
     of its words.
@@ -77,14 +101,28 @@ The grant is #152 #issuecomment-5923864223, with 200 calls:
 - **Expectation.**
   - `dev-A1` needs only a reading change, toward `none`.
   - `dev-C1` needs 31B to tell who is undecided, which is uncertain until it
-    runs.
+    runs. The likeliest way T fails on it is the two unchanged texts named
+    under Why, the context's `count_basis` entry and the either/or rule. Also,
+    `dev-C1.ja` has no explicit system subject ("…数えるのか分かりません"), so
+    edit 3's "which basis the system counts by" maps less directly there.
+  - If T leaves `dev-C1` unchanged or breaks `dev-BM7`, ADR #152's fallback is
+    option B, a server-built `count_basis`. B needs a new owner decision and
+    the frozen-test amendment.
 - **Risks the gate measures:**
   - **`dev-BM6` and `dev-MN1`** ask for an overview including a headcount. Edit 1
     could pull them to `none`, which would lose the assumption and make them
     annex-wrong.
   - **`dev-BM7`** says the user has not decided between seats and booking
     accounts, so it should stay a clarification. Edits 2 and 3 could turn it
-    into an answer.
+    into an answer. Its en form asks for "the count" without saying "number of
+    people" (the zh-TW and ja forms say 人數 and 人数), so edit 1 could also
+    act on it.
+  - **`dev-C3`** (a center clarification, "What did March 2026 bookings look
+    like at CTR-A01 or CTR-A02?") is shaped like `dev-A1`. It should stay a
+    clarification.
+  - **`dev-C4-v2`** (a `metric_meaning` clarification, "I have not specified
+    whether…") should stay one. Edit 3's doubt/undecided wording could spill
+    onto it.
   - **`dev-MN2` and `dev-MN3`** are people counts without an overview. They
     should stay `unresolved`.
   - **`dev-BM8` and `dev-D8`** require a named unavailable count, so they
