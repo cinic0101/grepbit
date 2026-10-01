@@ -163,6 +163,13 @@ The four count families that the rule table changes get new oracle revisions:
   the same under route A: an Overview answer with the stated assumption.
 - **Code.** The implementation of route A has its own independent code review
   on #138.
+- **The v3 panel (#149).**
+  - The owner-designated independent reviewer accepted the v3 expectations,
+    `dev-C1.v2` and an annex listing it, after the owner's `dev-C1` ruling.
+  - A first round had not accepted the data while `dev-C1` still expected a
+    clarification.
+  - The reviewer did not re-check `dev-A2.v1`'s values, which `dev-C1.v2`
+    copies, against the fixture; they rest on `dev-A2.v1`'s accepted status.
 
 ## Claims and limits
 
