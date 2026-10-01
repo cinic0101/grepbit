@@ -53,6 +53,9 @@ exclusion did not hold on `dev-BM5` (`docs/count-assumption-v13-result.md`).
 
 ## Evaluation
 
+**Result:** `passed` on the two v2 dev panels and `no_fix`, with no break, on
+the v3 panel. See the [gate results](count-directive-v17-result.md).
+
 The grant is #146 #issuecomment-5922742690, with 254 calls. It was amended at
 #issuecomment-5923049914 to 260 calls, with one operational repeat, after the
 operational stop at #issuecomment-5923032940.
