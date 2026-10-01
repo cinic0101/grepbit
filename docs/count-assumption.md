@@ -188,7 +188,10 @@ owner approved the scope and the revisions at #issuecomment-5926866518 and
   - **The annex** `count-fresh-annex-v2.json` adds the two revised oracles.
 - **Scripted correct actions.** `bound-meaning-read-responses-v2.json` and
   `count-fresh-read-responses-v2.json` read the revised families as a generic
-  count (`count_request: "unresolved"`). Every other action is unchanged.
+  count (`count_request: "unresolved"`).
+  - `dev-BM6` is rewritten the same way. Its v1 script predates `dev-BM6.v2`,
+    which has been an answer since ADR #136.
+  - Every other action is unchanged.
 - **Unchanged as history.** The older oracles that expect a `count_basis`
   clarification predate #158: `p3-development-v1`'s C01, the dev-matrix
   v1/v2 `dev-C1.v1`, and bound-meaning v1 and mechanism-probe v1. So do

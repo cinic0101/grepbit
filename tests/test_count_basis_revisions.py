@@ -19,6 +19,10 @@ REVISIONS = {
     "count-fresh": ("p3-dev-count-fresh-v1", "p3-dev-count-fresh-v2", "count-fresh", ("v1", "v2"),
                     {"dev-CF11": "dev-CF05.v1", "dev-CF12": "dev-CF04.v1"}, ("v1", "v2")),
 }
+# Families whose scripted correct action becomes a generic count reading, with the oracle whose scope it reads.
+# bound-meaning-read-responses-v1 was written for the v1 panel and predates dev-BM6.v2 (an answer since ADR #136).
+SCRIPTED = {"bound-meaning": {"dev-BM6": "dev-BM6.v2", "dev-BM7": "dev-BM6.v2"},
+            "count-fresh": {"dev-CF11": "dev-CF05.v1", "dev-CF12": "dev-CF04.v1"}}
 
 
 def entry(panel_id):
@@ -99,9 +103,9 @@ class RevisionTests(unittest.TestCase):
                 self.assertEqual(list(old_actions), list(new_actions))
                 for case_id, action in new_actions.items():
                     family = case_id.split(".")[0]
-                    if family in revised:
+                    if family in SCRIPTED[key]:
                         self.assertEqual(action, {"outcome": "request", "recipe_id": "overview", "recipe_version": "0.1",
-                                                  "request": by_old[revised[family]]["request"],
+                                                  "request": by_old[SCRIPTED[key][family]]["request"],
                                                   "count_request": "unresolved"})
                     else:
                         self.assertEqual(action, old_actions[case_id])

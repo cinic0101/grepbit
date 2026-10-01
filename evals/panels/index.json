@@ -235,6 +235,44 @@
         "path": "evals/dev/count-fresh-annex-v1.json",
         "sha256": "b08aca22af02718cb7155e963e783de3382840482a5d99fae7757e2cb8c15e05"
       }
+    },
+    {
+      "panel_id": "p3-dev-bound-meaning-v3",
+      "tier": "dev",
+      "path": "evals/dev/bound-meaning-panel-v3.json",
+      "assets": {
+        "panel": "f2b853e1ff7803c24b53855374508708f1eb50f28309b9266fc019378ae92478",
+        "cases": "efc836f829dbeeff817dfee5b646193143c54d5bce69c012bed776946bb1c4ff",
+        "oracles": "188c2653b8ac4228269cae7e5213e210086a41c091025401a99e3602a3977f1d"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "Bound-meaning v2 with dev-BM7 answered with booked seats and the stated assumption (ADR #158: clarify only when every choice is answerable).",
+      "annex": {
+        "path": "evals/dev/bound-meaning-annex-v3.json",
+        "sha256": "8402ce31d03934d03f92c675fbdc7b2ddd00cd96a93bc6565f198b19c13d186d"
+      }
+    },
+    {
+      "panel_id": "p3-dev-count-fresh-v2",
+      "tier": "dev",
+      "path": "evals/dev/count-fresh-panel-v2.json",
+      "assets": {
+        "panel": "91458dc7dadde4eec02ad709a7bdaa84e5eff39464f704163d882e21caa99273",
+        "cases": "30954cab7a6d538e4617b68f5d1b85b58a5bdc7bf601311edd583c104c2b0855",
+        "oracles": "da639bc01f86682c4aba9e45da9706a8c759ed034310036e8aa7b5fa7e4ba1b5"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "Fresh count v1, now exposed, with dev-CF11/CF12 answered with booked seats and the stated assumption (ADR #158).",
+      "annex": {
+        "path": "evals/dev/count-fresh-annex-v2.json",
+        "sha256": "2856a9b9b0d8626f30bab1474380dc05111b7c52d0708802bb6c20dfc0b27d6d"
+      }
     }
   ]
 }
