@@ -13,6 +13,13 @@ Steps (2), (4) and (5) of the grant
 - **0 broke.**
 - **2 excluded:** `dev-BM2.en`, flaky in the baseline.
 
+**The verdict depends on that baseline's flakiness.**
+- **The prediction failed.** The contract predicted that `dev-BM2.en` would
+  stay answered, and it did not: v21 declined it on both panels.
+- **What saved the verdict.** It is excluded only because the v20 sentinel
+  declined it too. Had the sentinel answered, the baseline would be
+  `stable_correct`, v21's decline a `broke`, and the verdict `regression`.
+
 This is a development observation on exposed inputs, not promotion.
 
 ## Runs
@@ -76,7 +83,7 @@ The gate ran after all eight rows were recorded.
 | **Overall** | 21 | 0 | 2 | 122 | 9 | **passed** |
 
 - **Fixed:** `dev-BM7` ×3, `dev-CF11` to `dev-CF15` ×15, and `dev-C1` ×3. Nine of them (`dev-BM7`, `dev-CF11`, `dev-CF12`) count as fixes under the ADR #158 oracle revisions.
-- **Excluded:** `dev-BM2.en` on both panels. Its baseline is `flaky`: correct, correct, then a decline in the v20 sentinel.
+- **Excluded:** `dev-BM2.en` on both panels. Its baseline is `flaky`: correct, correct, then a decline in the v20 sentinel. v21 declined it too, against the contract's prediction; see the note under the verdict.
 - **Unchanged wrong:** the `dev-A1` class, which is out of scope (#158): `dev-A1` ×3, and `dev-CF16` and `dev-CF17` ×3.
 
 Annex-aware index counts:
@@ -99,10 +106,12 @@ Annex-aware index counts:
     assumption.
   - **No other count reading moved.** The G, S, U and K rows of the fresh
     panel, the Compare rows and the decline rows all kept their outcomes.
-- **`dev-BM2.en` is flaky on v18's model-facing bytes**, not broken by v19 or
-  v21. The question is "Against February 2026 as the reference, how did the
-  overall confirmed booking amount in March change?" Its observations today,
-  all on the same route:
+- **`dev-BM2.en` is flaky on v18's model-facing bytes.** Its decline is not
+  specific to v19's or v21's change, because v20's run of the same model
+  input declined it too. Whether either change also affected it cannot be
+  told from these runs. The question is "Against February 2026 as the
+  reference, how did the overall confirmed booking amount in March change?"
+  Its observations on 2026-10-01 (UTC, run end times), all on the same route:
 
   | Time (UTC) | Candidate (model input) | Outcome |
   | --- | --- | --- |
@@ -113,15 +122,25 @@ Annex-aware index counts:
   | 15:55, 16:04 | v20 (v18's bytes) | declined ×2 |
   | 16:27, 16:36 | v21 (v18's bytes) | declined ×2 |
 
-  - **What this shows.** v18's exact bytes answered it 5 times and declined it
-    twice. The declines cluster from 13:00 on, so a serving-side change during
-    the day cannot be told apart from sampling.
+  - **What this shows.**
+    - **The counts.** By behaviour identity (v18 and v20), it was answered 5
+      times and declined twice. By model input, which adds v21, it was
+      answered 5 times and declined 4 times.
+    - **The declines cluster from 13:00 on,** so a serving-side change during
+      the day cannot be told apart from sampling.
   - **What it corrects.** The v19 record's reading that its decline was "most
-    likely an effect of the changed model-facing bytes" does not hold. That
+    likely an effect of the changed model-facing context" does not hold. That
     record carries a dated correction.
-- **Determinism is high but not complete.** Between the v20 sentinel and v18's
-  earlier runs on the same panels, 229 of 232 outcomes repeat, and the three
-  differences are all `dev-BM2.en`.
+- **Determinism is high but not complete.** Between the v20 sentinel and the
+  six earlier v18 runs in the gate's baselines, 304 of 308 outcomes repeat,
+  and the four differences are all `dev-BM2.en`.
+- **Re-running v19's gate now gives a different verdict.**
+  - **What changed.** v19's documented gate command, run on today's index
+    (`bbf39d2f`, which now holds v20's runs of v18's behaviour), gives
+    `passed` with `dev-BM2.en` excluded.
+  - **Which verdict counts.** v19's recorded `regression` was computed at
+    index `f8b87cef` and is the pre-registered verdict.
+  - **What the re-run is.** A counterfactual, not a re-gate.
 
 ## Claims and limits
 

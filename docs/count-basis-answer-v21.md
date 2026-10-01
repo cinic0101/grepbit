@@ -92,7 +92,13 @@ v20's (that is, v18's) bytes.
 ## Evaluation (grant #164 #issuecomment-5934502364)
 
 **Result: `passed`.** 21 fixed, 0 broke, and `dev-BM2.en` excluded as flaky
-in the baseline. See the [gate results](count-basis-answer-v21-result.md).
+in the baseline.
+- **The prediction failed.** The offline prediction below that it "stays
+  answered" failed: v21 declined it.
+- **What saved the verdict.** The pass on it rests on the v20 sentinel also
+  declining it.
+
+See the [gate results](count-basis-answer-v21-result.md).
 
 **The steps.**
 - **(2)** One v20 sentinel on each of `p3-dev-bound-meaning-v3`,
@@ -108,7 +114,8 @@ in the baseline. See the [gate results](count-basis-answer-v21-result.md).
 recorded actions predict v21's model actions up to sampling: 76 of 78 repeated
 between v18's runs. Under v21's rule:
 - the 21 `count_basis` clarifications that v19 fixed become answers;
-- `dev-BM2.en` stays answered;
+- `dev-BM2.en` stays answered (failed: v21 declined it, as did the v20
+  sentinel);
 - `dev-A1` and the fresh panel's O rows stay wrong (out of scope).
 
 `--replay` of v18's or v20's archives under v21 is allowed, because the model

@@ -13,17 +13,23 @@ The candidate is `p3-count-basis-answer-v19` (`docs/count-basis-answer-v19.md`,
   `dev-CF15` ×15.
 - **2 broke:** `dev-BM2.en` on each of the two panels that contain it.
 
-**Correction (2026-10-02, #164; new evidence, this record otherwise unchanged).**
+**Correction (2026-10-02 +08:00, i.e. 2026-10-01 UTC, #164; new evidence; the original text below is kept, with superseded lines marked).**
 The reading below that `dev-BM2.en`'s decline was "most likely an effect of
 the changed model-facing context" does not hold.
 - **The new evidence.** v18's exact model-facing bytes, run as v20, declined
   `dev-BM2.en` on both panels at 15:55 and 16:04 UTC, and so did v21 (the
   same model input) at 16:27 and 16:36 (`docs/count-basis-answer-v21-result.md`).
-  The input is flaky on v18's bytes: 5 answers and 2 declines.
+  The input is flaky on v18's bytes: 5 answers and 2 declines by behaviour
+  identity, and 4 declines with v21. So the decline is not specific to v19's
+  change. Whether that change also affected it cannot be told.
 - **What stands.** The pre-registered verdict above stays as recorded, and so
   does the revert it required.
-- **What it means.** Its only break was a flaky input, which a three-run
-  baseline would have excluded.
+- **What it means.** Its only break was a flaky input.
+  - **On today's baseline,** which now holds v20's declines, v19's documented
+    gate gives `passed` with `dev-BM2.en` excluded (index `bbf39d2f`). That is
+    a counterfactual, not a re-gate.
+  - **In v19's own session,** a third v18 run might have answered, as the
+    13:13 run did.
 
 A regression is a stop. No run is repeated, and v19 is to be reverted by a
 further PR (the grant's verdict term). The revert needs an owner decision
@@ -195,7 +201,8 @@ Annex-aware index counts:
     `p3-dev-mechanism-probe-v2` gave identical actions, including the decline.
   - **v18 still answered it after v19 declined it.** The step-(2b) v18 run
     (13:12:54 to 13:15:04) answered `dev-BM2.en` after v19 had declined it,
-    which argues against a route-side change during the session.
+    which argues against a route-side change during the session. (Superseded:
+    later declines on v18's bytes; see the correction at the top.)
   - **What follows** (superseded; see the correction at the top). The flip is most likely an effect of the changed
     model-facing context, not sampling noise. v19 added one sentence to be
     registrable, and the context version string changed with it (v6 to v7).
@@ -216,7 +223,8 @@ Annex-aware index counts:
   other count reading. The context change made for registrability (the added
   sentence and the version string) coincided with one unrelated decline. That
   decline repeated on both v19 observations, and the input was stable on v18
-  (5 of 5).
+  (5 of 5). (Superseded: v18's bytes later declined it twice; see the
+  correction at the top.)
 - **Observations.** One v19 run and two v18 runs per panel, on one route, with
   exposed, mostly agent-authored inputs. The fresh panel is regression data
   after #157. This is not generalization evidence. It makes no claim about
