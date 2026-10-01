@@ -58,9 +58,13 @@ sentinels and the v19 runs, and the amendment for the step-(2b) runs.
 | 12:58:34 | #160 round-2 review record (no blocker) posted, verified on GitHub |
 | 12:59:35 | #160 merged (`250fc89`), so v19 became current |
 | 13:00:32 | the step-5 gap (#160 review L-C) and options A/B posted on #158, before any v19 call |
-| 13:01:07 to 13:12:36 | v19 packets written and the four runs finished |
+| 13:01:07 | v19 packets written and bound |
+| 13:01:14 to 13:03:20 | v19 `bound-meaning-v3` run (its report holds the `dev-BM2.en` break and the `dev-BM7` fixes) |
+| 13:03:20 to 13:07:37 | v19 `count-fresh-v2` run |
 | 13:04:25 | the owner's choice and the amendment recorded (78 calls) |
 | 13:05:27 | step-(2b) packets written and bound to the amendment |
+| 13:07:37 to 13:10:48 | v19 `compare-first-v3` run |
+| 13:10:48 to 13:12:36 | v19 `mechanism-probe-v2` run; step (4) complete |
 | 13:12:54 to 13:19:14 | the two step-(2b) runs |
 | 13:13:30 to 13:13:39 | the sentinel and v19 rows recorded |
 | 13:14:24 | **an early gate on the two panels that were already measurable** (see below) |
@@ -71,10 +75,25 @@ The agent ran the gate on `p3-dev-matrix-compare-first-v3` and
 `p3-dev-mechanism-probe-v2` at 13:14:24, while step (2b) was still running. It
 already showed `regression`.
 - **Why it changes nothing.** Step (2b) adds baseline runs only to the other
-  two panels. It cannot change those two panels' classes, and its packets had
-  been bound at 13:05:27, before any v19 result.
+  two panels, so it cannot change those two panels' classes.
 - **Which verdict counts.** The four-panel gate below is the pre-registered
   verdict. Its rows for these two panels equal the early gate's.
+
+**Option B was chosen after one v19 result existed, disclosed.** The first v19
+run (`bound-meaning-v3`) finished at 13:03:20, before the amendment (13:04:25)
+and the step-(2b) binding (13:05:27).
+- **What the agent saw.** By the agent's own account, which no artifact can
+  confirm, it had then seen only folder listings and the run sequence's start
+  line, not any v19 report or score.
+  - The first v19 content it read was the run sequence's completion lines
+    after 13:12:36, which hold call counts and status only.
+  - The first scores it saw were in the `--record` output at 13:13:38, after
+    the step-(2b) runs had started (13:12:54).
+- **The verdict does not depend on B.** The `p3-dev-mechanism-probe-v2` break
+  alone gives `regression`, and option B only made the gate measure two more
+  panels.
+- **The amendment's order held for the runs.** Step (2b) started after step
+  (4) completed.
 
 ## Gate
 
@@ -130,10 +149,15 @@ Annex-aware index counts:
 - **The model's actions barely moved.**
   - **Byte-identical: 142 of 154** v19 validated actions equal v18's
     sentinel action.
-  - **Same semantics: 11 more** keep the outcome and differ only in local
-    choice ids. One exception is `dev-CF13.ja`, which went from two to four
-    choices; it is still a `count_basis` clarification and is still answered.
-  - **One decision changed: `dev-BM2.en`**, below.
+  - **Same kind of action: 10 more** keep the same kind of action.
+    - **Nine on `p3-dev-count-fresh-v2`.** They differ only in local choice
+      ids, except `dev-CF13.ja`, which went from two to four choices. It is
+      still a `count_basis` clarification and is still answered.
+    - **`dev-C3.en`** (a `center` clarification) differs in ids only.
+    - **The graded outcome** of the nine count-fresh rows changed, because
+      the server answered them.
+  - **One decision changed:** `dev-BM2.en`, on the 2 rows of the two panels
+    that contain it (below). So 142 + 10 + 2 = 154.
 - **`dev-BM2.en` broke.**
   - **The question:** "Against February 2026 as the reference, how did the
     overall confirmed booking amount in March change?" It is a Compare of an
@@ -149,11 +173,18 @@ Annex-aware index counts:
     outcomes.
   - **v19 too:** its five inputs shared by `p3-dev-bound-meaning-v3` and
     `p3-dev-mechanism-probe-v2` gave identical actions, including the decline.
+  - **v18 still answered it after v19 declined it.** The step-(2b) v18 run
+    (13:12:54 to 13:15:04) answered `dev-BM2.en` after v19 had declined it,
+    which argues against a route-side change during the session.
   - **What follows.** The flip is most likely an effect of the changed
-    model-facing bytes (the one context sentence v19 added to be registrable),
-    not sampling noise. The gate doc records the same kind of effect for v11
-    (7 fixed, 6 broke).
-  - **Not tested.** Which part of the bytes moved it.
+    model-facing context, not sampling noise. v19 added one sentence to be
+    registrable, and the context version string changed with it (v6 to v7).
+    The gate doc records the same kind of effect for v11 (7 fixed, 6 broke).
+  - **Not tested.** Which part of the change moved it.
+  - **How independent v19's two declines are.** They are two observations of
+    the same question bytes in one session. If serving is close to
+    deterministic, they are not independent, so the decline is shown to
+    repeat, not to be stable.
 - **Still wrong:** the `dev-A1` class (`dev-A1` ×3, `dev-CF16`, `dev-CF17`),
   which reads a spurious assumption on a no-count overview.
 
@@ -162,8 +193,10 @@ Annex-aware index counts:
 - **What this shows.** On 31B, the server answering a model `count_basis`
   clarification turned all 21 such rows into correct answers. On these four
   panels, under the revised oracles and with one v19 run, it moved no
-  other count reading. The context sentence added for registrability coincided
-  with one stable, unrelated decline.
+  other count reading. The context change made for registrability (the added
+  sentence and the version string) coincided with one unrelated decline. That
+  decline repeated on both v19 observations, and the input was stable on v18
+  (5 of 5).
 - **Observations.** One v19 run and two v18 runs per panel, on one route, with
   exposed, mostly agent-authored inputs. The fresh panel is regression data
   after #157. This is not generalization evidence. It makes no claim about
@@ -174,6 +207,10 @@ Annex-aware index counts:
   as v12 did (`docs/v10-restoration-v12.md`). The options are on #158.
 - **Untested live.** The server-decline path (v16) still never ran.
 - **Budget.** The grant is spent at 386 of 386 calls.
+  - **How the 78-call cap was confirmed.** The owner's words delegated the
+    A/B choice to the agent. The 78 more calls and the 386 total were stated
+    in the options message the owner answered, not in the owner's own words.
+    The amendment records this, and the owner is asked to confirm it.
 - **Raw reports** stay local under `.artifacts/v19-sentinel-20261001/`,
   `.artifacts/v19-candidate-20261001/` and `.artifacts/v19-baseline-20261001/`.
   The index keeps their digests.
