@@ -1,6 +1,6 @@
 {
   "registry_version": "candidate-registry-v1",
-  "current": "p3-count-basis-answer-v19",
+  "current": "p3-count-scope-v18",
   "entries": [
     {
       "candidate_id": "p33-frozen-20abb559",
@@ -103,12 +103,6 @@
       "path": "p3-count-scope-v18.json",
       "sha256": "c2713743da544316a189b2b4950cd9dbcb7fcabb49a913d0d7107a052cf2605a",
       "ancestor": "p3-count-directive-v17"
-    },
-    {
-      "candidate_id": "p3-count-basis-answer-v19",
-      "path": "p3-count-basis-answer-v19.json",
-      "sha256": "c43607420e9b5fdd27b103e1d431d2aa168d0ed4d6c2282e32cfe406fda16d4d",
-      "ancestor": "p3-count-scope-v18"
     }
   ]
 }
