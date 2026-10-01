@@ -212,12 +212,20 @@ Against v18 on four dev panels, the gate gave `regression`:
 So v19 is reverted. See the [v19 contract](docs/count-basis-answer-v19.md)
 and the [gate results](docs/count-basis-answer-v19-result.md).
 
-The registered current candidate, v20, restores v18's runtime bytes; its
+v20 restores v18's runtime bytes; its
 identity equals v18's. The owner approved this, and the restoration of the
 frozen test, as step 1 of option 2 (#158). Step 2 is a decision on letting
 the candidate identity cover the runtime's decision rule, so that v19's server
 answer could be measured without a model-facing change. See the
 [restoration](docs/v18-restoration-v20.md).
+
+The owner chose option C of ADR #164: a behaviour identity covering both the
+model-facing bytes and the runtime files (#165), so a runtime-only rule can be
+registered and gated. The registered current candidate, v21, is v19's server
+answer on v20's model-facing bytes: the model sees exactly v18's input, and
+only the runtime's decision rule changes. It has no live result yet. It will
+be gated against v20 on the same four dev panels (#164). See the
+[v21 contract](docs/count-basis-answer-v21.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
