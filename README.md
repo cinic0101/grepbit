@@ -166,18 +166,20 @@ where the owner ruled for an answer) stay wrong. See the
 [gate results](docs/count-directive-v17-result.md).
 
 The current candidate, v18 (ADR #152), changes three places in v17's
-instruction text:
-- a general overview of bookings that asks for no number of people reads
+instruction text. It tells the model:
+- that a general overview of bookings that asks for no number of people is
   `count_request: "none"`;
-- `count_basis` applies only when the user says they are undecided between
+- to use `count_basis` only when the user says they are undecided between
   named meanings;
-- a people count that names seats or accounts only in doubt about the system's
-  basis is answered with `count_request: "unresolved"`, and the stated
+- to answer a people count that names seats or accounts only in doubt about the
+  system's basis with `count_request: "unresolved"`, so that the stated
   assumption tells the basis.
 
-It targets `dev-A1` and `dev-C1`. v18 has no live result yet. It will be
-measured against v17 on the same three panels. See the
-[v18 contract](docs/count-scope-v18.md).
+It targets `dev-A1` and `dev-C1`. Against v17, both gates gave `no_fix`: no
+input changed outcome on the three panels, and both targets stayed wrong. v17's
+second run reproduced its first (46/46 and 48/54). See the
+[v18 contract](docs/count-scope-v18.md) and the
+[gate results](docs/count-scope-v18-result.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
