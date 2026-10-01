@@ -1227,6 +1227,7 @@ class _ReplayPlan:
     current: dict
     panel: object
     entries: list
+    panels_path: Path | None = None
 
 
 async def replay(report_path: Path, database: Path, output_path: Path, *, candidates_index: Path | None = None,
@@ -1264,7 +1265,8 @@ def _replay_plan(report_path: Path, database: Path, output_path: Path, *, candid
         raise ReplayRefused("database")
     if output_path.exists() or output_path.is_symlink():
         raise assets.P3Error("artifact_conflict")
-    return _ReplayPlan(report_path, report, database, database_sha, output_path, checked, current, panel, entries)
+    return _ReplayPlan(report_path, report, database, database_sha, output_path, checked, current, panel, entries,
+                       panels_path)
 
 
 async def _replay_execute(plan: _ReplayPlan) -> dict:
@@ -1285,14 +1287,16 @@ async def _replay_execute(plan: _ReplayPlan) -> dict:
     scored = scoring.summarize(replayed, replayed, panel_kind="development", run_status=report["status"])
     archived = report["summary"]["per_input"]
     # On an annex panel a row is replayed_same only if its annex verdict is unchanged too (docs/count-assumption.md).
-    expectations = _panel_annex(report.get("panel"))
+    expectations = _panel_annex(report.get("panel"), plan.panels_path)
     verdicts = [None] * len(classes)
     if expectations is not None:
-        for position, (row, old, new) in enumerate(zip(report["results"], archived, scored["per_input"])):
+        for position, (row, target, old, new) in enumerate(zip(report["results"], replayed, archived,
+                                                               scored["per_input"])):
             if classes[position] == "not_replayable":
                 continue
+            # Each verdict reads its own row: the replayed one carries the replayed actual action (#161).
             verdicts[position] = (annexed(row, bool(old["correct"]), expectations),
-                                  annexed({**row, "validated_action": actions[position]}, bool(new["correct"]),
+                                  annexed({**target, "validated_action": actions[position]}, bool(new["correct"]),
                                           expectations))
             if classes[position] == "replayed_same" and verdicts[position][0] != verdicts[position][1]:
                 classes[position] = "replayed_changed"
