@@ -86,6 +86,10 @@ clarification. Option T leaves both unchanged:
 
 ## Evaluation
 
+**Result:** `no_fix` on the v2 pair and on the v3 panel. No input changed
+outcome, and `dev-A1` and `dev-C1` stayed wrong. See the
+[gate results](count-scope-v18-result.md).
+
 The grant is #152 #issuecomment-5923864223, with 200 calls:
 - **Step 1, while v17 is current:** one v17 sentinel on each of
   `p3-dev-bound-meaning-v2` (24 calls), `p3-dev-mechanism-probe-v2` (22) and
