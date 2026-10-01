@@ -147,7 +147,7 @@ The gate prints one canonical JSON object and exits 0 whatever the verdict:
 - `panels`, in the order named. Each entry has:
   - `panel_id`, `baseline_runs`, `sentinel_runs` and `candidate_run`;
   - `recorded_at`: the index times of the sentinel runs and the candidate run;
-  - `other_candidate_runs`: runs with the candidate's bytes on the panel and
+  - `other_candidate_runs`: runs with the candidate's behaviour identity on the panel and
     route under other authorizations, which this gate ignores;
   - `inputs`, in panel order: `case_id`, `family_id`, `baseline_class`,
     `sentinel_assessed`, `candidate` (`correct`, `wrong` or `unassessed`), the

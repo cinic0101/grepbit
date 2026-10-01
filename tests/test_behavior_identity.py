@@ -148,7 +148,7 @@ class GateSelectionTests(unittest.TestCase):
         self.assertEqual(selected, [[self.sibling, self.same, self.runtime], [self.runtime],
                                     [self.sibling, self.same]])
 
-    def test_the_graded_diagnostics_pool_baselines_by_behaviour_and_the_reading_one_by_model_input(self):
+    def test_the_graded_diagnostics_pool_baselines_by_behaviour(self):
         entry, panel = reading_diagnostic.pinned_panel(PANEL, None)
         current = registry.current()
         inputs = [{"case_id": item["case_id"], "question_sha256": item["question_sha256"]} for item in panel.inputs()]

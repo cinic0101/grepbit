@@ -164,8 +164,9 @@ with:
 Unassessed follows the comparison taxonomy: not completed, operational
 failure, an operational error or a runner error.
 
-Runs of one behaviour identity share their model-facing bytes and runtime
-(`grepbit/*.py`) source, but may still differ in grader or tool source. The aggregate lists each run's commit and evaluator version but does
+Runs of one behaviour identity share, as registered, their model-facing bytes
+and runtime (`grepbit/*.py`) source, but may still differ in grader or tool
+source. The aggregate lists each run's commit and evaluator version but does
 not correct for such differences; a v2 replay does. An aggregate is an
 analysis of already-recorded development observations, not a new claim.
 
