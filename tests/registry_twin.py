@@ -45,3 +45,27 @@ def use(test) -> tuple[str, str]:
     patcher.start()
     test.addCleanup(patcher.stop)
     return TWIN, head["candidate_id"]
+
+
+RUNTIME_TWIN = "p3-registry-runtime-twin-of-current"
+
+
+def use_runtime_twin(test, name="grepbit/overview.py") -> str:
+    """Append to the twin registry served by `use` a runtime twin of the real current candidate: the same
+    model-facing identity, with one runtime file digest changed (docs/behavior-identity.md). Returns its id."""
+    index_path = registry.INDEX
+    index = json.loads(index_path.read_text(encoding="utf-8"))
+    head = registry.current()
+    sibling = registry.load_entry(head["ancestor"])
+    twin = dict(sibling, candidate_id=RUNTIME_TWIN, ancestor=head["candidate_id"],
+                ancestor_sha256=index["entries"][-1]["sha256"],
+                runtime_files_sha256=dict(sibling["runtime_files_sha256"], **{name: "0" * 64}),
+                note="Test twin: the current candidate's model-facing bytes with one runtime file changed.")
+    text = json.dumps(twin, indent=2, ensure_ascii=False) + "\n"
+    (index_path.parent / f"{RUNTIME_TWIN}.json").write_text(text, encoding="utf-8")
+    index["entries"].append({"candidate_id": RUNTIME_TWIN, "path": f"{RUNTIME_TWIN}.json",
+                             "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+                             "ancestor": head["candidate_id"]})
+    index["current"] = RUNTIME_TWIN
+    index_path.write_text(json.dumps(index, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return RUNTIME_TWIN
