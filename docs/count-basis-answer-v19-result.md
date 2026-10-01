@@ -13,6 +13,18 @@ The candidate is `p3-count-basis-answer-v19` (`docs/count-basis-answer-v19.md`,
   `dev-CF15` ×15.
 - **2 broke:** `dev-BM2.en` on each of the two panels that contain it.
 
+**Correction (2026-10-02, #164; new evidence, this record otherwise unchanged).**
+The reading below that `dev-BM2.en`'s decline was "most likely an effect of
+the changed model-facing context" does not hold.
+- **The new evidence.** v18's exact model-facing bytes, run as v20, declined
+  `dev-BM2.en` on both panels at 15:55 and 16:04 UTC, and so did v21 (the
+  same model input) at 16:27 and 16:36 (`docs/count-basis-answer-v21-result.md`).
+  The input is flaky on v18's bytes: 5 answers and 2 declines.
+- **What stands.** The pre-registered verdict above stays as recorded, and so
+  does the revert it required.
+- **What it means.** Its only break was a flaky input, which a three-run
+  baseline would have excluded.
+
 A regression is a stop. No run is repeated, and v19 is to be reverted by a
 further PR (the grant's verdict term). The revert needs an owner decision
 first, because it restores a frozen source. This is a development observation
@@ -184,7 +196,7 @@ Annex-aware index counts:
   - **v18 still answered it after v19 declined it.** The step-(2b) v18 run
     (13:12:54 to 13:15:04) answered `dev-BM2.en` after v19 had declined it,
     which argues against a route-side change during the session.
-  - **What follows.** The flip is most likely an effect of the changed
+  - **What follows** (superseded; see the correction at the top). The flip is most likely an effect of the changed
     model-facing context, not sampling noise. v19 added one sentence to be
     registrable, and the context version string changed with it (v6 to v7).
     The gate doc records the same kind of effect for v11 (7 fixed, 6 broke).
