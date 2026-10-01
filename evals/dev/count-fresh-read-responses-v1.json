@@ -1,0 +1,866 @@
+{
+  "version": "p3-fake-responses-v1",
+  "responses": [
+    {
+      "case_id": "dev-CF01.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF01.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF01.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF02.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A02",
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF02.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A02",
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF02.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A02",
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF03.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-B01",
+          "start": "2026-04-01T00:00:00+08:00",
+          "end": "2026-05-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF03.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-B01",
+          "start": "2026-04-01T00:00:00+08:00",
+          "end": "2026-05-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF03.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-B01",
+          "start": "2026-04-01T00:00:00+08:00",
+          "end": "2026-05-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF04.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A01",
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF04.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A01",
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF04.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A01",
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF05.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-B01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF05.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-B01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF05.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-B01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF06.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A02",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "booked_seats"
+      }
+    },
+    {
+      "case_id": "dev-CF06.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A02",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "booked_seats"
+      }
+    },
+    {
+      "case_id": "dev-CF06.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A02",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "booked_seats"
+      }
+    },
+    {
+      "case_id": "dev-CF07.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-B01",
+          "start": "2026-04-01T00:00:00+08:00",
+          "end": "2026-05-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "booked_seats"
+      }
+    },
+    {
+      "case_id": "dev-CF07.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-B01",
+          "start": "2026-04-01T00:00:00+08:00",
+          "end": "2026-05-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "booked_seats"
+      }
+    },
+    {
+      "case_id": "dev-CF07.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-B01",
+          "start": "2026-04-01T00:00:00+08:00",
+          "end": "2026-05-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "booked_seats"
+      }
+    },
+    {
+      "case_id": "dev-CF08.zh-TW",
+      "action": {
+        "outcome": "declined"
+      }
+    },
+    {
+      "case_id": "dev-CF08.en",
+      "action": {
+        "outcome": "declined"
+      }
+    },
+    {
+      "case_id": "dev-CF08.ja",
+      "action": {
+        "outcome": "declined"
+      }
+    },
+    {
+      "case_id": "dev-CF09.zh-TW",
+      "action": {
+        "outcome": "declined"
+      }
+    },
+    {
+      "case_id": "dev-CF09.en",
+      "action": {
+        "outcome": "declined"
+      }
+    },
+    {
+      "case_id": "dev-CF09.ja",
+      "action": {
+        "outcome": "declined"
+      }
+    },
+    {
+      "case_id": "dev-CF10.zh-TW",
+      "action": {
+        "outcome": "declined"
+      }
+    },
+    {
+      "case_id": "dev-CF10.en",
+      "action": {
+        "outcome": "declined"
+      }
+    },
+    {
+      "case_id": "dev-CF10.ja",
+      "action": {
+        "outcome": "declined"
+      }
+    },
+    {
+      "case_id": "dev-CF11.zh-TW",
+      "action": {
+        "outcome": "clarify",
+        "clarification": {
+          "kind": "count_basis",
+          "choices": [
+            {
+              "id": "c1",
+              "semantic_value": {
+                "type": "count_basis",
+                "scope": {
+                  "center_code": "CTR-B01",
+                  "start": "2026-03-01T00:00:00+08:00",
+                  "end": "2026-04-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei"
+                },
+                "value": "booked_seats"
+              }
+            },
+            {
+              "id": "c2",
+              "semantic_value": {
+                "type": "count_basis",
+                "scope": {
+                  "center_code": "CTR-B01",
+                  "start": "2026-03-01T00:00:00+08:00",
+                  "end": "2026-04-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei"
+                },
+                "value": "known_booking_accounts"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "dev-CF11.en",
+      "action": {
+        "outcome": "clarify",
+        "clarification": {
+          "kind": "count_basis",
+          "choices": [
+            {
+              "id": "c1",
+              "semantic_value": {
+                "type": "count_basis",
+                "scope": {
+                  "center_code": "CTR-B01",
+                  "start": "2026-03-01T00:00:00+08:00",
+                  "end": "2026-04-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei"
+                },
+                "value": "booked_seats"
+              }
+            },
+            {
+              "id": "c2",
+              "semantic_value": {
+                "type": "count_basis",
+                "scope": {
+                  "center_code": "CTR-B01",
+                  "start": "2026-03-01T00:00:00+08:00",
+                  "end": "2026-04-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei"
+                },
+                "value": "known_booking_accounts"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "dev-CF11.ja",
+      "action": {
+        "outcome": "clarify",
+        "clarification": {
+          "kind": "count_basis",
+          "choices": [
+            {
+              "id": "c1",
+              "semantic_value": {
+                "type": "count_basis",
+                "scope": {
+                  "center_code": "CTR-B01",
+                  "start": "2026-03-01T00:00:00+08:00",
+                  "end": "2026-04-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei"
+                },
+                "value": "booked_seats"
+              }
+            },
+            {
+              "id": "c2",
+              "semantic_value": {
+                "type": "count_basis",
+                "scope": {
+                  "center_code": "CTR-B01",
+                  "start": "2026-03-01T00:00:00+08:00",
+                  "end": "2026-04-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei"
+                },
+                "value": "known_booking_accounts"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "dev-CF12.zh-TW",
+      "action": {
+        "outcome": "clarify",
+        "clarification": {
+          "kind": "count_basis",
+          "choices": [
+            {
+              "id": "c1",
+              "semantic_value": {
+                "type": "count_basis",
+                "scope": {
+                  "center_code": "CTR-A01",
+                  "start": "2026-02-01T00:00:00+08:00",
+                  "end": "2026-03-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei"
+                },
+                "value": "booked_seats"
+              }
+            },
+            {
+              "id": "c2",
+              "semantic_value": {
+                "type": "count_basis",
+                "scope": {
+                  "center_code": "CTR-A01",
+                  "start": "2026-02-01T00:00:00+08:00",
+                  "end": "2026-03-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei"
+                },
+                "value": "distinct_people"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "dev-CF12.en",
+      "action": {
+        "outcome": "clarify",
+        "clarification": {
+          "kind": "count_basis",
+          "choices": [
+            {
+              "id": "c1",
+              "semantic_value": {
+                "type": "count_basis",
+                "scope": {
+                  "center_code": "CTR-A01",
+                  "start": "2026-02-01T00:00:00+08:00",
+                  "end": "2026-03-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei"
+                },
+                "value": "booked_seats"
+              }
+            },
+            {
+              "id": "c2",
+              "semantic_value": {
+                "type": "count_basis",
+                "scope": {
+                  "center_code": "CTR-A01",
+                  "start": "2026-02-01T00:00:00+08:00",
+                  "end": "2026-03-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei"
+                },
+                "value": "distinct_people"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "dev-CF12.ja",
+      "action": {
+        "outcome": "clarify",
+        "clarification": {
+          "kind": "count_basis",
+          "choices": [
+            {
+              "id": "c1",
+              "semantic_value": {
+                "type": "count_basis",
+                "scope": {
+                  "center_code": "CTR-A01",
+                  "start": "2026-02-01T00:00:00+08:00",
+                  "end": "2026-03-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei"
+                },
+                "value": "booked_seats"
+              }
+            },
+            {
+              "id": "c2",
+              "semantic_value": {
+                "type": "count_basis",
+                "scope": {
+                  "center_code": "CTR-A01",
+                  "start": "2026-02-01T00:00:00+08:00",
+                  "end": "2026-03-01T00:00:00+08:00",
+                  "timezone": "Asia/Taipei"
+                },
+                "value": "distinct_people"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "dev-CF13.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A02",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF13.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A02",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF13.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A02",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF14.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF14.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF14.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A01",
+          "start": "2026-03-01T00:00:00+08:00",
+          "end": "2026-04-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF15.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-B01",
+          "start": "2026-04-01T00:00:00+08:00",
+          "end": "2026-05-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF15.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-B01",
+          "start": "2026-04-01T00:00:00+08:00",
+          "end": "2026-05-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF15.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-B01",
+          "start": "2026-04-01T00:00:00+08:00",
+          "end": "2026-05-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "unresolved"
+      }
+    },
+    {
+      "case_id": "dev-CF16.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-B01",
+          "start": "2026-04-01T00:00:00+08:00",
+          "end": "2026-05-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "none"
+      }
+    },
+    {
+      "case_id": "dev-CF16.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-B01",
+          "start": "2026-04-01T00:00:00+08:00",
+          "end": "2026-05-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "none"
+      }
+    },
+    {
+      "case_id": "dev-CF16.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-B01",
+          "start": "2026-04-01T00:00:00+08:00",
+          "end": "2026-05-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "none"
+      }
+    },
+    {
+      "case_id": "dev-CF17.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A02",
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "none"
+      }
+    },
+    {
+      "case_id": "dev-CF17.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A02",
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "none"
+      }
+    },
+    {
+      "case_id": "dev-CF17.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A02",
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "none"
+      }
+    },
+    {
+      "case_id": "dev-CF18.zh-TW",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A01",
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "none"
+      }
+    },
+    {
+      "case_id": "dev-CF18.en",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A01",
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "none"
+      }
+    },
+    {
+      "case_id": "dev-CF18.ja",
+      "action": {
+        "outcome": "request",
+        "recipe_id": "overview",
+        "recipe_version": "0.1",
+        "request": {
+          "center_code": "CTR-A01",
+          "start": "2026-02-01T00:00:00+08:00",
+          "end": "2026-03-01T00:00:00+08:00",
+          "timezone": "Asia/Taipei"
+        },
+        "count_request": "none"
+      }
+    }
+  ]
+}

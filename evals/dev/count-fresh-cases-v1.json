@@ -1,0 +1,1301 @@
+{
+  "version": "p3-cases-v1",
+  "cases": [
+    {
+      "case_id": "dev-CF01.zh-TW",
+      "family_id": "dev-CF01",
+      "question": "CTR-A01 在 2026 年 3 月總共有多少人？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F01",
+          "evals/dev/count-fresh-authored-v1.json#F01"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF01|G|CTR-A01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF01.v1"
+    },
+    {
+      "case_id": "dev-CF01.en",
+      "family_id": "dev-CF01",
+      "question": "How many people did CTR-A01 have in March 2026?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F01",
+          "evals/dev/count-fresh-authored-v1.json#F01"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF01|G|CTR-A01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF01.v1"
+    },
+    {
+      "case_id": "dev-CF01.ja",
+      "family_id": "dev-CF01",
+      "question": "CTR-A01は2026年3月、何人でしたか？",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F01",
+          "evals/dev/count-fresh-authored-v1.json#F01"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF01|G|CTR-A01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF01.v1"
+    },
+    {
+      "case_id": "dev-CF02.zh-TW",
+      "family_id": "dev-CF02",
+      "question": "想問一下，CTR-A02 2026 年 2 月有多少人報名？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F02",
+          "evals/dev/count-fresh-authored-v1.json#F02"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF02|G|CTR-A02|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF02.v1"
+    },
+    {
+      "case_id": "dev-CF02.en",
+      "family_id": "dev-CF02",
+      "question": "Quick question: how many people signed up at CTR-A02 in February 2026?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F02",
+          "evals/dev/count-fresh-authored-v1.json#F02"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF02|G|CTR-A02|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF02.v1"
+    },
+    {
+      "case_id": "dev-CF02.ja",
+      "family_id": "dev-CF02",
+      "question": "CTR-A02で2026年2月に申し込んだ人数を教えてください。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F02",
+          "evals/dev/count-fresh-authored-v1.json#F02"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF02|G|CTR-A02|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF02.v1"
+    },
+    {
+      "case_id": "dev-CF03.zh-TW",
+      "family_id": "dev-CF03",
+      "question": "請給我 CTR-B01 2026 年 4 月的總覽，順便告訴我那個月有多少人。",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F03",
+          "evals/dev/count-fresh-authored-v1.json#F03"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF03|G|CTR-B01|2026-04",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF03.v1"
+    },
+    {
+      "case_id": "dev-CF03.en",
+      "family_id": "dev-CF03",
+      "question": "Can I get the overview for CTR-B01 for April 2026, plus how many people there were that month?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F03",
+          "evals/dev/count-fresh-authored-v1.json#F03"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF03|G|CTR-B01|2026-04",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF03.v1"
+    },
+    {
+      "case_id": "dev-CF03.ja",
+      "family_id": "dev-CF03",
+      "question": "CTR-B01の2026年4月の概要と、その月の人数をあわせて教えてもらえますか。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F03",
+          "evals/dev/count-fresh-authored-v1.json#F03"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF03|G|CTR-B01|2026-04",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF03.v1"
+    },
+    {
+      "case_id": "dev-CF04.zh-TW",
+      "family_id": "dev-CF04",
+      "question": "CTR-A01 2026年2月 人數多少？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F04",
+          "evals/dev/count-fresh-authored-v1.json#F04"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF04|G|CTR-A01|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF04.v1"
+    },
+    {
+      "case_id": "dev-CF04.en",
+      "family_id": "dev-CF04",
+      "question": "CTR-A01, Feb 2026 - headcount?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F04",
+          "evals/dev/count-fresh-authored-v1.json#F04"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF04|G|CTR-A01|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF04.v1"
+    },
+    {
+      "case_id": "dev-CF04.ja",
+      "family_id": "dev-CF04",
+      "question": "CTR-A01、2026年2月って何人？",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F04",
+          "evals/dev/count-fresh-authored-v1.json#F04"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF04|G|CTR-A01|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF04.v1"
+    },
+    {
+      "case_id": "dev-CF05.zh-TW",
+      "family_id": "dev-CF05",
+      "question": "為彙整本月份報告，敬請提供 CTR-B01 於 2026 年 3 月之人數統計。",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F05",
+          "evals/dev/count-fresh-authored-v1.json#F05"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF05|G|CTR-B01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF05.v1"
+    },
+    {
+      "case_id": "dev-CF05.en",
+      "family_id": "dev-CF05",
+      "question": "Please provide the headcount for CTR-B01 for March 2026, for inclusion in our monthly report.",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F05",
+          "evals/dev/count-fresh-authored-v1.json#F05"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF05|G|CTR-B01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF05.v1"
+    },
+    {
+      "case_id": "dev-CF05.ja",
+      "family_id": "dev-CF05",
+      "question": "月次報告に用いるため、CTR-B01の2026年3月の人数をご提供いただけますでしょうか。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F05",
+          "evals/dev/count-fresh-authored-v1.json#F05"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF05|G|CTR-B01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF05.v1"
+    },
+    {
+      "case_id": "dev-CF06.zh-TW",
+      "family_id": "dev-CF06",
+      "question": "CTR-A02 在 2026 年 3 月一共被預訂了幾個座位？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F06",
+          "evals/dev/count-fresh-authored-v1.json#F06"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF06|S|CTR-A02|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF06.v1"
+    },
+    {
+      "case_id": "dev-CF06.en",
+      "family_id": "dev-CF06",
+      "question": "How many seats were booked at CTR-A02 in March 2026?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F06",
+          "evals/dev/count-fresh-authored-v1.json#F06"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF06|S|CTR-A02|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF06.v1"
+    },
+    {
+      "case_id": "dev-CF06.ja",
+      "family_id": "dev-CF06",
+      "question": "CTR-A02の2026年3月の予約席数はいくつですか？",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F06",
+          "evals/dev/count-fresh-authored-v1.json#F06"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF06|S|CTR-A02|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF06.v1"
+    },
+    {
+      "case_id": "dev-CF07.zh-TW",
+      "family_id": "dev-CF07",
+      "question": "麻煩整理 CTR-B01 2026 年 4 月的概況，記得要包含已預訂的座位數。",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F07",
+          "evals/dev/count-fresh-authored-v1.json#F07"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF07|S|CTR-B01|2026-04",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF07.v1"
+    },
+    {
+      "case_id": "dev-CF07.en",
+      "family_id": "dev-CF07",
+      "question": "Please pull up the April 2026 overview for CTR-B01, including the number of booked seats.",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F07",
+          "evals/dev/count-fresh-authored-v1.json#F07"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF07|S|CTR-B01|2026-04",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF07.v1"
+    },
+    {
+      "case_id": "dev-CF07.ja",
+      "family_id": "dev-CF07",
+      "question": "CTR-B01の2026年4月の概況をお願いします。予約席数も含めてください。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F07",
+          "evals/dev/count-fresh-authored-v1.json#F07"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF07|S|CTR-B01|2026-04",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF07.v1"
+    },
+    {
+      "case_id": "dev-CF08.zh-TW",
+      "family_id": "dev-CF08",
+      "question": "我只需要 CTR-A01 2026 年 3 月不重複的預約帳號數（匿名預約不算），不能用座位數代替。",
+      "language": "zh-TW",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F08",
+          "evals/dev/count-fresh-authored-v1.json#F08"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF08|U|CTR-A01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF08.v1"
+    },
+    {
+      "case_id": "dev-CF08.en",
+      "family_id": "dev-CF08",
+      "question": "For CTR-A01 in March 2026, I need only the number of distinct booking accounts, with anonymous bookings excluded. Seat counts won't do.",
+      "language": "en",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F08",
+          "evals/dev/count-fresh-authored-v1.json#F08"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF08|U|CTR-A01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF08.v1"
+    },
+    {
+      "case_id": "dev-CF08.ja",
+      "family_id": "dev-CF08",
+      "question": "CTR-A01の2026年3月について、重複を除いた予約アカウント数だけが必要です（匿名予約は対象外）。席数での代用は不可です。",
+      "language": "ja",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F08",
+          "evals/dev/count-fresh-authored-v1.json#F08"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF08|U|CTR-A01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF08.v1"
+    },
+    {
+      "case_id": "dev-CF09.zh-TW",
+      "family_id": "dev-CF09",
+      "question": "請提供 CTR-B01 2026 年 3 月的總覽，另外一定要附上出席人次（依實際出席紀錄計算，不是預訂），這個數字是必要的。",
+      "language": "zh-TW",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F09",
+          "evals/dev/count-fresh-authored-v1.json#F09"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF09|U|CTR-B01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF09.v1"
+    },
+    {
+      "case_id": "dev-CF09.en",
+      "family_id": "dev-CF09",
+      "question": "Give me the March 2026 overview for CTR-B01, and I also need the number of attendance visits, meaning actual check-ins, not bookings. That figure is required.",
+      "language": "en",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F09",
+          "evals/dev/count-fresh-authored-v1.json#F09"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF09|U|CTR-B01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF09.v1"
+    },
+    {
+      "case_id": "dev-CF09.ja",
+      "family_id": "dev-CF09",
+      "question": "CTR-B01の2026年3月の概要に加えて、出席の延べ回数（予約ではなく実際の出席記録ベース）も必ず出してください。この数字は必須です。",
+      "language": "ja",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F09",
+          "evals/dev/count-fresh-authored-v1.json#F09"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF09|U|CTR-B01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF09.v1"
+    },
+    {
+      "case_id": "dev-CF10.zh-TW",
+      "family_id": "dev-CF10",
+      "question": "CTR-A02 2026 年 2 月不重複的實際人數是多少？同一個人不管訂幾次都只能算一次，我只要這個數字。",
+      "language": "zh-TW",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F10",
+          "evals/dev/count-fresh-authored-v1.json#F10"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF10|U|CTR-A02|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF10.v1"
+    },
+    {
+      "case_id": "dev-CF10.en",
+      "family_id": "dev-CF10",
+      "question": "How many distinct real people did CTR-A02 have in February 2026? Each person must be counted exactly once, however many times they booked; that is the only number I need.",
+      "language": "en",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F10",
+          "evals/dev/count-fresh-authored-v1.json#F10"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF10|U|CTR-A02|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF10.v1"
+    },
+    {
+      "case_id": "dev-CF10.ja",
+      "family_id": "dev-CF10",
+      "question": "CTR-A02の2026年2月の実人数を教えてください。同じ人は何回予約していても1人として数えること。必要なのはこの数字だけです。",
+      "language": "ja",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F10",
+          "evals/dev/count-fresh-authored-v1.json#F10"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF10|U|CTR-A02|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF10.v1"
+    },
+    {
+      "case_id": "dev-CF11.zh-TW",
+      "family_id": "dev-CF11",
+      "question": "我想看 CTR-B01 2026 年 3 月的數字，不過要看預訂座位數還是預約帳號數，我自己還沒決定。",
+      "language": "zh-TW",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F11",
+          "evals/dev/count-fresh-authored-v1.json#F11"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF11|D|CTR-B01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF11.v1"
+    },
+    {
+      "case_id": "dev-CF11.en",
+      "family_id": "dev-CF11",
+      "question": "I want a number for CTR-B01 for March 2026, but I haven't decided yet whether I want booked seats or booking accounts.",
+      "language": "en",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F11",
+          "evals/dev/count-fresh-authored-v1.json#F11"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF11|D|CTR-B01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF11.v1"
+    },
+    {
+      "case_id": "dev-CF11.ja",
+      "family_id": "dev-CF11",
+      "question": "CTR-B01の2026年3月の数を出したいのですが、予約席数にするか予約アカウント数にするか、自分でもまだ決めていません。",
+      "language": "ja",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F11",
+          "evals/dev/count-fresh-authored-v1.json#F11"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF11|D|CTR-B01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF11.v1"
+    },
+    {
+      "case_id": "dev-CF12.zh-TW",
+      "family_id": "dev-CF12",
+      "question": "CTR-A01 2026 年 2 月的人數，我還在猶豫要用預訂座位數，還是每個人只算一次的實際人數，自己還沒拿定主意。",
+      "language": "zh-TW",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F12",
+          "evals/dev/count-fresh-authored-v1.json#F12"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF12|D|CTR-A01|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF12.v1"
+    },
+    {
+      "case_id": "dev-CF12.en",
+      "family_id": "dev-CF12",
+      "question": "About CTR-A01 for February 2026: I'm still torn between booked seats and distinct people, each counted once, and I haven't made up my mind which I want.",
+      "language": "en",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F12",
+          "evals/dev/count-fresh-authored-v1.json#F12"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF12|D|CTR-A01|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF12.v1"
+    },
+    {
+      "case_id": "dev-CF12.ja",
+      "family_id": "dev-CF12",
+      "question": "CTR-A01の2026年2月の人数について、予約席数で見るか、1人を1回だけ数える実人数で見るか、私自身まだ決めかねています。",
+      "language": "ja",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F12",
+          "evals/dev/count-fresh-authored-v1.json#F12"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF12|D|CTR-A01|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF12.v1"
+    },
+    {
+      "case_id": "dev-CF13.zh-TW",
+      "family_id": "dev-CF13",
+      "question": "CTR-A02 2026 年 3 月有多少人？我不確定系統是算預訂座位數還是預約帳號數。",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F13",
+          "evals/dev/count-fresh-authored-v1.json#F13"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF13|B|CTR-A02|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF13.v1"
+    },
+    {
+      "case_id": "dev-CF13.en",
+      "family_id": "dev-CF13",
+      "question": "How many people did CTR-A02 have in March 2026? I'm not sure whether the system counts booked seats or booking accounts.",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F13",
+          "evals/dev/count-fresh-authored-v1.json#F13"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF13|B|CTR-A02|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF13.v1"
+    },
+    {
+      "case_id": "dev-CF13.ja",
+      "family_id": "dev-CF13",
+      "question": "CTR-A02の2026年3月は何人でしたか？システムが予約席数で数えているのか、予約アカウント数で数えているのか、よく分かっていません。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F13",
+          "evals/dev/count-fresh-authored-v1.json#F13"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF13|B|CTR-A02|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF13.v1"
+    },
+    {
+      "case_id": "dev-CF14.zh-TW",
+      "family_id": "dev-CF14",
+      "question": "幫我查一下 CTR-A01 2026 年 3 月有多少人。我其實不知道系統是每個預訂座位各算一次，還是同一個人只算一次。",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F14",
+          "evals/dev/count-fresh-authored-v1.json#F14"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF14|B|CTR-A01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF14.v1"
+    },
+    {
+      "case_id": "dev-CF14.en",
+      "family_id": "dev-CF14",
+      "question": "Can you check how many people CTR-A01 had in March 2026? I honestly don't know if the system counts every booked seat or counts each person just once.",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F14",
+          "evals/dev/count-fresh-authored-v1.json#F14"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF14|B|CTR-A01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF14.v1"
+    },
+    {
+      "case_id": "dev-CF14.ja",
+      "family_id": "dev-CF14",
+      "question": "CTR-A01の2026年3月の人数を調べてもらえますか。システムが予約された席ごとに数えるのか、同じ人は1回だけ数えるのか、私には分かりません。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F14",
+          "evals/dev/count-fresh-authored-v1.json#F14"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF14|B|CTR-A01|2026-03",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF14.v1"
+    },
+    {
+      "case_id": "dev-CF15.zh-TW",
+      "family_id": "dev-CF15",
+      "question": "請給我 CTR-B01 2026 年 4 月的各項數字，還有總共多少人。我不清楚系統的人數是依預訂座位還是預約帳號來算的。",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F15",
+          "evals/dev/count-fresh-authored-v1.json#F15"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF15|B|CTR-B01|2026-04",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF15.v1"
+    },
+    {
+      "case_id": "dev-CF15.en",
+      "family_id": "dev-CF15",
+      "question": "Send me CTR-B01's figures for April 2026 and how many people there were. I don't know whether the system's people figure is based on booked seats or on booking accounts.",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F15",
+          "evals/dev/count-fresh-authored-v1.json#F15"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF15|B|CTR-B01|2026-04",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF15.v1"
+    },
+    {
+      "case_id": "dev-CF15.ja",
+      "family_id": "dev-CF15",
+      "question": "CTR-B01の2026年4月の各数値と人数をお願いします。なお、システム上の人数が予約席ベースなのか予約アカウントベースなのか、把握できていません。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F15",
+          "evals/dev/count-fresh-authored-v1.json#F15"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF15|B|CTR-B01|2026-04",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF15.v1"
+    },
+    {
+      "case_id": "dev-CF16.zh-TW",
+      "family_id": "dev-CF16",
+      "question": "CTR-B01 2026 年 4 月的預約狀況如何？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F16",
+          "evals/dev/count-fresh-authored-v1.json#F16"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF16|O|CTR-B01|2026-04",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF16.v1"
+    },
+    {
+      "case_id": "dev-CF16.en",
+      "family_id": "dev-CF16",
+      "question": "How did bookings go at CTR-B01 in April 2026?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F16",
+          "evals/dev/count-fresh-authored-v1.json#F16"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF16|O|CTR-B01|2026-04",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF16.v1"
+    },
+    {
+      "case_id": "dev-CF16.ja",
+      "family_id": "dev-CF16",
+      "question": "CTR-B01の2026年4月の予約状況はどうでしたか？",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F16",
+          "evals/dev/count-fresh-authored-v1.json#F16"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF16|O|CTR-B01|2026-04",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF16.v1"
+    },
+    {
+      "case_id": "dev-CF17.zh-TW",
+      "family_id": "dev-CF17",
+      "question": "麻煩幫我彙整一份 CTR-A02 2026 年 2 月的預約摘要。",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F17",
+          "evals/dev/count-fresh-authored-v1.json#F17"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF17|O|CTR-A02|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF17.v1"
+    },
+    {
+      "case_id": "dev-CF17.en",
+      "family_id": "dev-CF17",
+      "question": "Could you put together a summary of CTR-A02's bookings for February 2026?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F17",
+          "evals/dev/count-fresh-authored-v1.json#F17"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF17|O|CTR-A02|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF17.v1"
+    },
+    {
+      "case_id": "dev-CF17.ja",
+      "family_id": "dev-CF17",
+      "question": "CTR-A02の2026年2月分の予約について、サマリーをまとめていただけますか。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F17",
+          "evals/dev/count-fresh-authored-v1.json#F17"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF17|O|CTR-A02|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF17.v1"
+    },
+    {
+      "case_id": "dev-CF18.zh-TW",
+      "family_id": "dev-CF18",
+      "question": "CTR-A01 2026 年 2 月一共成立了幾筆預約訂單？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F18",
+          "evals/dev/count-fresh-authored-v1.json#F18"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF18|K|CTR-A01|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF18.v1"
+    },
+    {
+      "case_id": "dev-CF18.en",
+      "family_id": "dev-CF18",
+      "question": "How many booking orders did CTR-A01 take in February 2026?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F18",
+          "evals/dev/count-fresh-authored-v1.json#F18"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF18|K|CTR-A01|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF18.v1"
+    },
+    {
+      "case_id": "dev-CF18.ja",
+      "family_id": "dev-CF18",
+      "question": "CTR-A01の2026年2月の予約件数（注文数）は何件ですか？",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "design_seen",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/count-fresh-panel.md#F18",
+          "evals/dev/count-fresh-authored-v1.json#F18"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "design_seen"
+        ]
+      },
+      "semantic_signature": "dev|CF18|K|CTR-A01|2026-02",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-CF18.v1"
+    }
+  ]
+}

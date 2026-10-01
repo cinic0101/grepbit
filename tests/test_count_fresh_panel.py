@@ -82,9 +82,11 @@ class FreshPanelRulers(unittest.TestCase):
         authored = {slot["slot"]: slot for slot in json.loads(AUTHORED.read_text(encoding="utf-8"))["slots"]}
         branches = {"G": "answer", "S": "answer", "U": "decline", "D": "clarify", "B": "answer", "O": "answer",
                     "K": "answer"}
+        # The loader canonicalizes request instants, so the scope is read from the committed oracle document.
+        raw = {row["oracle_id"]: row for row in json.loads((DEV / "count-fresh-oracles-v1.json").read_text())["oracles"]}
         for case in panel.cases:
             slot = authored[case.family_id[len("dev-C"):]]
-            oracle = panel.oracle_for(case).to_dict()
+            oracle = raw[case.oracle_id]
             with self.subTest(case=case.case_id):
                 self.assertEqual(case.question, slot["questions"][case.language])
                 self.assertEqual((case.expected_branch, case.cohort, case.exposure),
@@ -94,7 +96,6 @@ class FreshPanelRulers(unittest.TestCase):
                     self.assertEqual((oracle["recipe_id"], oracle["request"]["center_code"]),
                                      ("overview", slot["center_code"]))
                     self.assertTrue(oracle["request"]["start"].startswith(slot["month"] + "-01T00:00:00"))
-        raw = {row["oracle_id"]: row for row in json.loads((DEV / "count-fresh-oracles-v1.json").read_text())["oracles"]}
         self.assertEqual({key: raw[key]["capability_category"] for key in ("dev-CF08.v1", "dev-CF09.v1", "dev-CF10.v1")},
                          {"dev-CF08.v1": "D06", "dev-CF09.v1": "D04", "dev-CF10.v1": "D06"})
         self.assertEqual([c["semantic_value"]["value"] for c in raw["dev-CF11.v1"]["clarification"]["choices"]],

@@ -216,6 +216,25 @@
         "path": "evals/dev/compare-first-annex-v3.json",
         "sha256": "7cae2be77cc81140168fa096701e05eca6417fb28e50c9a8b67fb58d152804f4"
       }
+    },
+    {
+      "panel_id": "p3-dev-count-fresh-v1",
+      "tier": "dev",
+      "path": "evals/dev/count-fresh-panel-v1.json",
+      "assets": {
+        "panel": "0cfbac611e92ac3d1c320446817275308726c9c79fbd876bdf9749f399ece77d",
+        "cases": "aac6c21e039a91cf45387cc9ef9ac4208792ed9c207392a9eff33575f4e78ba5",
+        "oracles": "8faf561d7f4c5a5549afb7c4ae6a9699488aa300dc5d63710a3561b994b7568f"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "Fresh count panel (#152): 18 families x 3 languages by an independent sub-agent from the owner's count rules; kernel oracles; annex for generic and system-basis-doubt counts.",
+      "annex": {
+        "path": "evals/dev/count-fresh-annex-v1.json",
+        "sha256": "b08aca22af02718cb7155e963e783de3382840482a5d99fae7757e2cb8c15e05"
+      }
     }
   ]
 }
