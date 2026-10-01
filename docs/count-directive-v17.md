@@ -51,6 +51,8 @@ The grant needs the owner's numeric confirmation before any call; proposed
 ## Claims and limits
 
 - **Risk of moving other decisions.** The sentence steers the model away from
-  `count_basis`. `dev-BM7` and `dev-C1` still name their undecided meanings and
-  should stay clarifications. The gate measures both.
+  `count_basis`. `dev-BM7` names the user's own undecided meanings and should
+  stay a clarification. On the v3 panel, `dev-C1` is ruled rule 1 by the
+  owner (#149), so it expects an answer with the stated assumption. The gate
+  measures both.
 - **Scope.** One route, one run per panel; a development observation.

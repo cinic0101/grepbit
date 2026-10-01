@@ -24,6 +24,13 @@ COMPARE = {"current": {**SCOPE, "start": "2026-03-01T00:00:00+08:00", "end": "20
            "baseline": {**SCOPE, "start": "2026-02-01T00:00:00+08:00", "end": "2026-03-01T00:00:00+08:00"}}
 
 
+def superseded():
+    """v16 is registered but no longer current (v17, #146). Only its identity-bound checks stop applying:
+    the count reading behaviour stays live in v17 and stays checked here."""
+    index = registry.load_index()
+    return V16 in [r["candidate_id"] for r in index["entries"]] and index["current"] != V16
+
+
 def _overview(value="none", **extra):
     """An Overview action; ``value`` None omits count_request, and ``extra`` may set any raw key."""
     action = {"outcome": "request", "recipe_id": "overview", "recipe_version": "0.1", "request": dict(OVERVIEW)}
@@ -110,10 +117,11 @@ class ContractTextTests(unittest.TestCase):
         overview = next(recipe for recipe in context["recipes"] if recipe["id"] == "overview")
         self.assertNotIn("people counts", overview["unsupported"])
         self.assertIn("named account/attendance/distinct-people counts", overview["unsupported"])
-        self.assertEqual((recipe_model.INSTRUCTION_VERSION, recipe_model.CONTEXT_VERSION,
-                          recipe_model.OUTPUT_CONTRACT, recipe_model.STRUCTURED_OUTPUT_VERSION),
-                         ("recipe-selection-instruction-v9", "learningops-recipe-context-v6",
-                          "recipe-request-json-v5", "recipe-structured-output-v5"))
+        if not superseded():
+            self.assertEqual((recipe_model.INSTRUCTION_VERSION, recipe_model.CONTEXT_VERSION,
+                              recipe_model.OUTPUT_CONTRACT, recipe_model.STRUCTURED_OUTPUT_VERSION),
+                             ("recipe-selection-instruction-v9", "learningops-recipe-context-v6",
+                              "recipe-request-json-v5", "recipe-structured-output-v5"))
 
     def test_every_dev_question_and_a_full_input_fit_the_unchanged_request_cap(self):
         self.assertEqual((MAX_INPUT_BYTES, MAX_REQUEST_BYTES), (4096, 32768))
@@ -278,6 +286,8 @@ class ReadScriptTests(unittest.TestCase):
 
 class RegistryTests(unittest.TestCase):
     def test_v16_is_the_registered_current_candidate(self):
+        if superseded():
+            self.skipTest("v16 superseded; its registration is no longer current")
         current = registry.current()
         self.assertEqual((current["candidate_id"], current["ancestor"]), (V16, "p3-compare-orientation-v15"))
         self.assertEqual(registry.check()["runtime_files_changed"], [])
