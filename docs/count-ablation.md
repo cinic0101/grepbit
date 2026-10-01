@@ -131,40 +131,77 @@ no verdict:
     persisted validated action.
   - Each row also records the reading: `count_request`, or the clarification
     kind and its choice count.
+  - Each row records `mapped`: whether `map_back` changed the reply's bytes.
+    Only a `labels` row can be mapped. The flag is recorded at run time and
+    cannot be recomputed on readback.
 - **Authorization.** One envelope binds the grant comment and one run slot.
 - **Readback.** The report reads back from the slot.
 - **Unassessed rows.** A returned row whose grade is an operational failure is
   `unassessed`, under the candidate gate's rule (`_gate_unassessed`), never
   `wrong`.
-- **The packet contract** takes the pre-registered selection from the
-  digest-pinned canonical packet. Readback also checks every row's question and
-  variant messages against the pinned panel.
+- **The selection.** The packet contract derives the pre-registered rows from
+  the packet's canonical packet. Readback ties them to the registry:
+  - the canonical inputs must equal the pinned panel's inputs;
+  - every row's question and variant messages must match the pinned panel.
 - **Comparison.** Each row is compared with the current candidate's own
   recorded runs of the same bytes on that panel: the baseline's assessed and
   correct counts per input, annex-aware.
   - It applies the candidate gate's integrity checks in `routing_upper_bound`'s
-    order. Each refusal is closed: `no_baseline`, `candidate_identity`,
-    `inputs_differ`, `index_mismatch`.
+    order. Each refusal is closed: `no_baseline`, `baseline_unavailable`,
+    `candidate_identity`, `inputs_differ`, `index_mismatch`.
   - There is no verdict.
+  - **From a clean clone.** A clean clone has no baseline archives, so the
+    in-run readback gives `baseline_unavailable` rather than an error. Copy the
+    run slot back byte for byte, then re-read it with `--report` in the checkout
+    that holds the archives.
+
+## Commands
+
+```bash
+.venv/bin/python -m tools.count_ablation --prepare --panel <dev panel> --route litellm-gemma-4-31b \
+  --db <fixture.sqlite> --accepted-commit <merged dev commit> --output <dir>/packet.json
+.venv/bin/python -m tools.count_ablation --bind-authorization --packet <dir>/packet.json \
+  --owner-authorization-reference <grant comment URL> --output <dir>/authorization.json --run-output-dir <slot>
+GREPBIT_LLM_PROVIDER=litellm .venv/bin/python -m tools.count_ablation --live --packet <dir>/packet.json \
+  --authorization <dir>/authorization.json --db <fixture.sqlite> --accepted-commit <merged dev commit> \
+  --env-file .env --output-dir <slot>
+.venv/bin/python -m tools.count_ablation --report --report-path <slot>/report.json
+```
+
+The tool runs as a module (`-m tools.count_ablation`), not as a script.
 
 ## Reading rule (pre-registered)
 
 For each target and its variant:
 - **The target moves** if its variant verdict is `correct` in at least two of
   its three languages. Its baseline is wrong in every recorded run.
-- **A control breaks** under a variant if its baseline is correct in every
-  assessed run and its variant verdict is `wrong`.
-- **Supported:** the target moves and no control breaks under that variant.
-- **Mixed:** the target moves but a control breaks.
-- **No support:** the target does not move. The verdict is per hypothesis and
-  says nothing beyond this wording.
+- **A control breaks** under a variant if both hold: its baseline is correct in
+  every assessed run, with at least one assessed run; and its variant verdict
+  is `wrong`.
+- **Inconclusive:** fewer than two of the target's three rows have an assessed
+  variant verdict (`correct` or `wrong`), or any control row under that variant
+  lacks one (unassessed, failed or not started), or a target or control has no
+  assessed baseline run. Unassessed and operational failures never count as
+  `wrong` or `correct`.
+- **Supported:** not inconclusive, the target moves, and no control breaks
+  under that variant.
+- **Mixed:** not inconclusive, the target moves, but a control breaks.
+- **No support:** not inconclusive, and the target does not move. The verdict
+  is per hypothesis and says nothing beyond this wording.
 
 ## Claims and limits
 
 - **Single samples.** Each input and variant is one sample at temperature 0.
   A change suggests a cause; it does not prove one.
 - **Labels mapping.** Mapping the `labels` reply back is a deterministic
-  rename. It is disclosed, and it never repairs a reply.
+  rename, and it is disclosed. It never repairs a reply that production's
+  parser rejects. By design, it does make a reply that uses a variant label
+  valid for the production schema.
+- **Known limit: tied to the current code.** As with `routing_upper_bound`,
+  readback recomputes the variant pins and messages from the current code.
+  After any runtime change, an archived report fails readback with
+  `variant_text` or `invalid_manifest`. Read the results while the candidate is
+  current.
 - **What a null result means.** A variant that moves nothing gives no support
   to its hypothesis, for this wording only. It does not refute the hypothesis.
 - **The rules variant is not only a scoping.**

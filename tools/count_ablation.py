@@ -25,7 +25,7 @@ AUTHORIZATION_VERSION = "count-ablation-authorization-v1"
 EVIDENCE_CLASS = "diagnostic_observation"
 VARIANTS = ("labels", "rules")
 REFUSALS = ("not_dev_panel", "route", "selection", "variant_text")
-COMPARISON_REFUSALS = ("no_baseline", "candidate_identity", "inputs_differ", "index_mismatch")
+COMPARISON_REFUSALS = ("no_baseline", "baseline_unavailable", "candidate_identity", "inputs_differ", "index_mismatch")
 # The pre-registered inputs: every case of these families, in panel order.
 SELECTION = {
     "p3-dev-bound-meaning-v2": ("dev-BM5", "dev-BM6", "dev-BM7"),
@@ -62,7 +62,7 @@ _PACKET_FIELDS = {"version", "canonical_packet", "canonical_packet_sha256", "var
 _INPUT_FIELDS = {"case_id", "family_id", "question_sha256", "variant", "messages_sha256"}
 _MANIFEST_FIELDS = {"version", "packet_sha256", "authorization_sha256", "owner_authorization_reference", "run_slot"}
 _ROW_FIELDS = {"case_id", "family_id", "question_sha256", "variant", "state", "attempt", "http_attempts",
-               "elapsed_seconds", "error_code", "validated_action", "graded", "annex", "reading", "usage"}
+               "elapsed_seconds", "error_code", "validated_action", "graded", "annex", "reading", "mapped", "usage"}
 _REPORT_FIELDS = {"version", "packet_sha256", "authorization_sha256", "run_slot", "owner_authorization_reference",
                   "status", "stop_reason", "evidence_class", "promotion_eligible", "client_http_attempts",
                   "possible_in_flight_attempts", "elapsed_seconds", "results", "summary"}
@@ -360,7 +360,7 @@ async def run_live(database: Path, output_dir: Path, *, packet_path: Path, autho
     rows = [{"case_id": item["case_id"], "family_id": item["family_id"], "question_sha256": item["question_sha256"],
              "variant": item["variant"], "state": "not_started", "attempt": 0, "http_attempts": 0,
              "elapsed_seconds": None, "error_code": None, "validated_action": None, "graded": None, "annex": None,
-             "reading": None, "usage": None} for item in packet["inputs"]]
+             "reading": None, "mapped": None, "usage": None} for item in packet["inputs"]]
     report = {key: manifest[key] for key in manifest if key != "version"}
     report.update(version=VERSION, status="incomplete", stop_reason=None, evidence_class=EVIDENCE_CLASS,
                   promotion_eligible=False, client_http_attempts=0, possible_in_flight_attempts=0,
@@ -410,14 +410,14 @@ async def run_live(database: Path, output_dir: Path, *, packet_path: Path, autho
             left = packet["call_timeout_seconds"] - (clock() - call_start)
             if left <= 0:
                 raise ModelError("timeout")
+            served = map_back(item["variant"], response.body)
             result = await recipe_model.interpret_recipe_and_execute(
-                case.question, database, routing._body_replay_client(map_back(item["variant"], response.body)),
-                timeout_seconds=left)
+                case.question, database, routing._body_replay_client(served), timeout_seconds=left)
             validated = evaluate._validated_action(result)
             graded = p3_grading.grade(result, panel.oracle_for(case))
             row.update(state="returned", validated_action=validated, graded=graded,
                        annex=_annex_verdict(validated, graded, case, expectations), reading=_reading(validated),
-                       usage=usage)
+                       mapped=served != response.body, usage=usage)
         except (ModelError, assets.P3Error, smoke.SmokeError) as exc:
             code = exc.code
             row.update(state="failed", error_code=code)
@@ -481,7 +481,10 @@ def _check_row(row: object, item: dict, case: assets.Case, expectations: dict | 
     if (row["annex"] != (_annex_verdict(row["validated_action"], row["graded"], case, expectations) if returned
                          else None)
             or row["reading"] != (_reading(row["validated_action"]) if returned else None)
-            or row["reading"] is not None and set(row["reading"]) != _READING_FIELDS):
+            or row["reading"] is not None and set(row["reading"]) != _READING_FIELDS
+            # Only a labels reply can have been mapped back; the flag is recorded, not recomputable.
+            or (type(row["mapped"]) is not bool if returned else row["mapped"] is not None)
+            or row["mapped"] is True and row["variant"] != "labels"):
         raise assets.P3Error("invalid_asset")
     shape = {"not_started": (0, False, False), "reserved": (1, False, False),
              "returned": (1, True, False), "failed": (1, False, True)}[row["state"]]
@@ -535,6 +538,10 @@ def _compare(report: dict, packet: dict, panel: assets.Panel, expectations: dict
     if not baseline:
         value["refusal"] = "no_baseline"
         return value
+    # A clean clone lacks the archives; the comparison is then re-read where they are, never failed.
+    if any(not evaluate._location(run["slot"] + "/report.json").is_file() for run in baseline):
+        value["refusal"] = "baseline_unavailable"
+        return value
     reports = evaluate._archived_reports(baseline)
     # The candidate gate's integrity checks, in routing_upper_bound's order: bytes, inputs, then index agreement.
     target = canonical["candidate"]["candidate_sha256"]
@@ -567,6 +574,18 @@ def _compare(report: dict, packet: dict, panel: assets.Panel, expectations: dict
     return value
 
 
+def _registered(packet: dict, panel: assets.Panel) -> None:
+    """The packet's selection is the registered panel's: its canonical inputs equal the pinned panel's inputs, and
+    every row names a registered case with its question and its variant messages."""
+    questions = {case.case_id: case.question for case in panel.cases}
+    shas = {item["case_id"]: item["question_sha256"] for item in panel.inputs()}
+    if packet["canonical_packet"]["inputs"] != panel.inputs() or any(
+            row["case_id"] not in questions or shas[row["case_id"]] != row["question_sha256"]
+            or _sha(messages(row["variant"], questions[row["case_id"]])) != row["messages_sha256"]
+            for row in packet["inputs"]):
+        raise assets.P3Error("manifest_drift")
+
+
 def read_report(path: Path, *, panels_path: Path | None = None, routes_path: Path | None = None,
                 runs_path: Path | None = None, candidates_index: Path | None = None) -> dict:
     """Archive verification plus the comparison with the current candidate's runs, recomputed from the index."""
@@ -591,13 +610,7 @@ def read_report(path: Path, *, panels_path: Path | None = None, routes_path: Pat
             or (entry.get("annex") or {}).get("sha256") != canonical["panel"].get("annex_sha256")):
         raise assets.P3Error("manifest_drift")
     expectations = _annex(entry, panel)
-    # Every pinned row names a registered case of the pinned panel, with its question and variant messages.
-    questions = {case.case_id: case.question for case in panel.cases}
-    shas = {item["case_id"]: item["question_sha256"] for item in panel.inputs()}
-    if any(row["case_id"] not in questions or shas[row["case_id"]] != row["question_sha256"]
-           or _sha(messages(row["variant"], questions[row["case_id"]])) != row["messages_sha256"]
-           for row in packet["inputs"]):
-        raise assets.P3Error("manifest_drift")
+    _registered(packet, panel)
     report = evaluator._document(path, evaluator.MAX_REPORT_BYTES, "invalid_asset")
     _check_report(report, manifest, packet, panel, expectations)
     return {**report, "comparison": _compare(report, packet, panel, expectations, runs_path, candidates_index)}

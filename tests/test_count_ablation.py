@@ -129,6 +129,11 @@ class VariantTests(unittest.TestCase):
             self.assertEqual(ablation.map_back("labels", unchanged), unchanged)
         labelled = body(json.dumps(_overview("generic_people_count")))
         self.assertEqual(ablation.map_back("rules", labelled), labelled)
+        # Only an Overview request's count_request is a label: other actions and non-object content pass through.
+        for unchanged in (body(json.dumps({**_overview("generic_people_count"), "recipe_id": "compare"})),
+                          body(json.dumps({**_overview("generic_people_count"), "outcome": "clarify"})),
+                          body('["generic_people_count"]'), body('"generic_people_count"')):
+            self.assertEqual(ablation.map_back("labels", unchanged), unchanged)
 
 
 class AblationRunTests(EvaluateHarness):
@@ -330,6 +335,7 @@ class AblationRunTests(EvaluateHarness):
             row = rows[(overview.case_id, variant)]
             # The labels schema has no "unresolved": the persisted production value can only come from map_back.
             self.assertEqual((row["reading"]["count_request"], row["annex"]), ("unresolved", "correct"))
+            self.assertIs(row["mapped"], variant == "labels")
         self.assertNotIn("unresolved", json.dumps(ablation.variant_schema("labels")["oneOf"][0]))
         comparison = result["comparison"]
         self.assertEqual((comparison["baseline_runs"], comparison["refusal"]), ([baseline["run_id"]], None))
@@ -367,8 +373,45 @@ class AblationRunTests(EvaluateHarness):
         with patch.object(runner, "_gate_view", side_effect=lambda report: ("0" * 64, original(report)[1])):
             refused = ablation.read_report(slot / "report.json", **self.registries)["comparison"]
         self.assertEqual((refused["refusal"], refused["inputs"]), ("candidate_identity", []))
-        self.assertEqual(ablation.COMPARISON_REFUSALS,
-                         ("no_baseline", "candidate_identity", "inputs_differ", "index_mismatch"))
+        self.assertEqual(ablation.COMPARISON_REFUSALS, ("no_baseline", "baseline_unavailable", "candidate_identity",
+                                                        "inputs_differ", "index_mismatch"))
+
+    async def test_readback_ties_the_selection_and_messages_to_the_registered_panel(self):
+        _, slot = await self.experiment(980)
+        packet = json.loads((slot / "packet.json").read_text())
+        ablation._registered(packet, self.panel)
+        relabelled = json.loads(json.dumps(packet))
+        relabelled["canonical_packet"]["inputs"][0]["family_id"] = "E02_compare"
+        renamed = json.loads(json.dumps(packet))
+        renamed["inputs"][0]["messages_sha256"] = "0" * 64
+        for changed in (relabelled, renamed):
+            with self.assertRaises(p3_assets.P3Error):
+                ablation._registered(changed, self.panel)
+        # The readback runs the check: different variant messages are drift, not a silent pass.
+        with patch.object(ablation, "messages", side_effect=lambda variant, question: [{"role": "user", "content": ""}]), \
+                self.assertRaises(p3_assets.P3Error):
+            ablation.read_report(slot / "report.json", **self.registries)
+
+    async def test_each_comparison_refusal_fires_on_its_own_condition(self):
+        baseline = await self.baseline(985)
+        _, slot = await self.experiment(986)
+        original_view, original_reports = runner._gate_view, runner._archived_reports
+        with patch.object(runner, "_gate_view", side_effect=lambda report: (original_view(report)[0], ("other",))):
+            self.assertEqual(ablation.read_report(slot / "report.json", **self.registries)["comparison"]["refusal"],
+                             "inputs_differ")
+
+        def regranted(selected):
+            return [{**report, "owner_authorization_reference": f"{GRANT}1"} for report in original_reports(selected)]
+
+        with patch.object(runner, "_archived_reports", side_effect=regranted):
+            self.assertEqual(ablation.read_report(slot / "report.json", **self.registries)["comparison"]["refusal"],
+                             "index_mismatch")
+        # Re-read in a checkout without the baseline archive (a clean clone): refused, not failed.
+        archive = runner._location(baseline["slot"] + "/report.json")
+        archive.rename(archive.with_name("moved.json"))
+        comparison = ablation.read_report(slot / "report.json", **self.registries)["comparison"]
+        self.assertEqual((comparison["refusal"], comparison["inputs"]), ("baseline_unavailable", []))
+        self.assertIn("baseline_unavailable", ablation.COMPARISON_REFUSALS)
 
     async def test_the_annex_verdict_follows_evaluate_annexed_on_the_persisted_action(self):
         case = self.selected[0]
