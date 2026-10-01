@@ -57,8 +57,8 @@ REPORT_VERSIONS = {PACKET_V1: "evaluation-report-v1", PACKET_V2: "evaluation-rep
 MANIFEST_VERSION = MANIFEST_VERSIONS[PACKET_VERSION]
 REPORT_VERSION = REPORT_VERSIONS[PACKET_VERSION]
 REPLAY_VERSION = "evaluation-replay-v1"
-AGGREGATE_VERSION = "evaluation-aggregate-v1"
-GATE_VERSION = "evaluation-gate-v1"
+AGGREGATE_VERSION = "evaluation-aggregate-v2"
+GATE_VERSION = "evaluation-gate-v2"
 STOP_VERSION = "evaluation-stops-v1"
 RUN_RECORD_VERSION = "evaluation-run-record-v1"
 PURPOSE = "one_tiered_evaluation_run_never_promotion"
@@ -637,6 +637,10 @@ def build_packet(database: Path, *, candidate_id: str, panel_id: str, route_id: 
     except registry.RegistryError:
         raise assets.P3Error("source_identity_failure") from None
     if checked["candidate_id"] != candidate_id:
+        raise assets.P3Error("source_identity_failure")
+    # A run is attributed to its candidate's behaviour identity, so the runtime files must be the registered ones
+    # too (ADR #164, docs/behavior-identity.md).
+    if checked["runtime_files_changed"]:
         raise assets.P3Error("source_identity_failure")
     entry, panel, freeze_meta = load_panel_entry(panel_id, database, panels_path=panels_path)
     route = _entry(load_routes(routes_path), "routes", route_id, "route_id")
@@ -1326,18 +1330,32 @@ async def _replay_execute(plan: _ReplayPlan) -> dict:
     return value
 
 
-def _same_bytes_runs(panel_id: str, route_id: str, target: str, runs: list[dict], identities: dict,
-                     candidates_index: Path | None) -> list[dict]:
-    """Indexed runs of the panel and route whose candidate's registry bytes equal ``target``, in index order."""
+def _matching_runs(panel_id: str, route_id: str, target: str, runs: list[dict], identities: dict,
+                   candidates_index: Path | None, identity) -> list[dict]:
     selected = []
     for run in runs:
         if run["panel_id"] != panel_id or run["route_id"] != route_id:
             continue
         if run["candidate_id"] not in identities:
-            identities[run["candidate_id"]] = registry.load_entry(run["candidate_id"], candidates_index)["candidate_sha256"]
+            identities[run["candidate_id"]] = identity(registry.load_entry(run["candidate_id"], candidates_index))
         if identities[run["candidate_id"]] == target:
             selected.append(run)
     return selected
+
+
+def _same_bytes_runs(panel_id: str, route_id: str, target: str, runs: list[dict], identities: dict,
+                     candidates_index: Path | None) -> list[dict]:
+    """Indexed runs of the panel and route whose candidate's model-input identity (``candidate_sha256``) equals
+    ``target``, in index order. The diagnostics select by it."""
+    return _matching_runs(panel_id, route_id, target, runs, identities, candidates_index,
+                          lambda entry: entry["candidate_sha256"])
+
+
+def _same_behavior_runs(panel_id: str, route_id: str, target: str, runs: list[dict], identities: dict,
+                        candidates_index: Path | None) -> list[dict]:
+    """Indexed runs of the panel and route whose candidate's behaviour identity equals ``target``, in index order.
+    The gate and the aggregate select by it (ADR #164)."""
+    return _matching_runs(panel_id, route_id, target, runs, identities, candidates_index, registry.behavior_identity)
 
 
 def _archived_reports(selected: list[dict]) -> list[dict]:
@@ -1395,17 +1413,20 @@ def _shared_annex(reports: list[dict], panels_path: Path | None = None) -> dict 
 
 def aggregate(panel_id: str, route_id: str, candidate_id: str, *, runs_path: Path | None = None,
               candidates_index: Path | None = None, panels_path: Path | None = None) -> dict:
-    """Every indexed run of the panel and route with the same model-facing bytes; selection by identity only."""
-    target = registry.load_entry(candidate_id, candidates_index)["candidate_sha256"]
+    """Every indexed run of the panel and route with the same behaviour identity (ADR #164); selection by identity
+    only."""
+    entry = registry.load_entry(candidate_id, candidates_index)
+    target = registry.behavior_identity(entry)
     runs_file = RUNS if runs_path is None else runs_path
-    included = _same_bytes_runs(panel_id, route_id, target, load_runs(runs_file), {}, candidates_index)
+    included = _same_behavior_runs(panel_id, route_id, target, load_runs(runs_file), {}, candidates_index)
     if not included:
         raise assets.P3Error("invalid_manifest")
     reports = _archived_reports(included)
     inputs = _input_classes(reports, _shared_annex(reports, panels_path))
     return {
         "version": AGGREGATE_VERSION, "promotion_eligible": False, "panel_id": panel_id, "route_id": route_id,
-        "candidate": {"candidate_id": candidate_id, "candidate_sha256": target},
+        "candidate": {"candidate_id": candidate_id, "candidate_sha256": entry["candidate_sha256"],
+                      "behavior_sha256": target},
         "run_index_sha256": evaluator._pin(runs_file)["sha256"],
         "runs": [{"run_id": run["run_id"], "candidate_id": run["candidate_id"],
                   "report_sha256": run["report_sha256"], "report_version": report["report_version"],
@@ -1473,15 +1494,18 @@ def gate(candidate_id: str, baseline_id: str, route_id: str, reference: str, pan
     registered = load_panels(panels_path)
     if any(_entry(registered, "panels", panel_id, "panel_id")["tier"] != "dev" for panel_id in panel_ids):
         raise GateRefused("not_dev_panel")
-    target = registry.load_entry(candidate_id, candidates_index)["candidate_sha256"]
-    base = registry.load_entry(baseline_id, candidates_index)["candidate_sha256"]
-    if target == base:
+    target_entry = registry.load_entry(candidate_id, candidates_index)
+    base_entry = registry.load_entry(baseline_id, candidates_index)
+    target, base = target_entry["candidate_sha256"], base_entry["candidate_sha256"]
+    # Runs pool, and the candidate must differ, by behaviour identity (ADR #164); `same_bytes` keeps its name.
+    target_behavior, base_behavior = registry.behavior_identity(target_entry), registry.behavior_identity(base_entry)
+    if target_behavior == base_behavior:
         raise GateRefused("same_bytes")
     runs_file = RUNS if runs_path is None else runs_path
     runs = load_runs(runs_file)
-    identities, panels = {}, []
+    identities, behaviors, panels = {}, {}, []
     for panel_id in panel_ids:
-        baseline = _same_bytes_runs(panel_id, route_id, base, runs, identities, candidates_index)
+        baseline = _same_behavior_runs(panel_id, route_id, base_behavior, runs, behaviors, candidates_index)
         if not baseline:
             raise GateRefused("no_baseline_runs")
         sentinels = [position for position, run in enumerate(baseline) if run["grant"] == reference]
@@ -1489,13 +1513,18 @@ def gate(candidate_id: str, baseline_id: str, route_id: str, reference: str, pan
             raise GateRefused("no_sentinel")
         if all(baseline[position]["status"] != "complete" for position in sentinels):
             raise GateRefused("sentinel_incomplete")
-        same_bytes = _same_bytes_runs(panel_id, route_id, target, runs, identities, candidates_index)
-        candidates = [run for run in same_bytes if run["grant"] == reference]
+        same_behavior = _same_behavior_runs(panel_id, route_id, target_behavior, runs, behaviors, candidates_index)
+        candidates = [run for run in same_behavior if run["grant"] == reference]
         if not candidates:
             raise GateRefused("no_candidate_run")
         if len(candidates) > 1:
             raise GateRefused("multiple_candidate_runs")
         selected = [*baseline, *candidates]
+        # Each report records only the model-input identity, so its check stays on candidate_sha256.
+        for run in selected:
+            if run["candidate_id"] not in identities:
+                identities[run["candidate_id"]] = registry.load_entry(run["candidate_id"],
+                                                                      candidates_index)["candidate_sha256"]
         reports = _archived_reports(selected)
         views = [_gate_view(report) for report in reports]
         if any(sha != identities[run["candidate_id"]] for run, (sha, _) in zip(selected, views)):
@@ -1530,7 +1559,7 @@ def gate(candidate_id: str, baseline_id: str, route_id: str, reference: str, pan
                        "candidate_run": candidates[0]["run_id"],
                        "recorded_at": {"sentinel_runs": [baseline[position]["recorded_at"] for position in sentinels],
                                        "candidate_run": candidates[0]["recorded_at"]},
-                       "other_candidate_runs": [run["run_id"] for run in same_bytes if run["grant"] != reference],
+                       "other_candidate_runs": [run["run_id"] for run in same_behavior if run["grant"] != reference],
                        "inputs": inputs, "counts": counts,
                        **{kind: [item["case_id"] for item in inputs if item["class"] == kind]
                           for kind in ("fixed", "broke", "excluded", "unassessed")},
@@ -1538,8 +1567,8 @@ def gate(candidate_id: str, baseline_id: str, route_id: str, reference: str, pan
     counts = {kind: sum(panel["counts"][kind] for panel in panels) for kind in _GATE_CLASSES}
     return {"version": GATE_VERSION, "promotion_eligible": False, "claim": "development_observation",
             "route_id": route_id, "owner_authorization_reference": reference,
-            "candidate": {"candidate_id": candidate_id, "candidate_sha256": target},
-            "baseline": {"candidate_id": baseline_id, "candidate_sha256": base},
+            "candidate": {"candidate_id": candidate_id, "candidate_sha256": target, "behavior_sha256": target_behavior},
+            "baseline": {"candidate_id": baseline_id, "candidate_sha256": base, "behavior_sha256": base_behavior},
             "run_index_sha256": evaluator._pin(runs_file)["sha256"],
             "panels": panels, "counts": counts, "verdict": _gate_verdict(counts)}
 

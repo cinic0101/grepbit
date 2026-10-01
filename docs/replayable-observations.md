@@ -137,13 +137,16 @@ so the replay is refused.
 ```
 
 The aggregate includes every run in `evals/runs/index.jsonl` with the same
-panel and route whose registered candidate has the same `candidate_sha256`
-as the named candidate. Selection is by identity, never by hand, so runs
+panel and route whose registered candidate has the same behaviour identity
+as the named candidate ([behaviour identity](behavior-identity.md); before
+#164, the same `candidate_sha256`, which gives the same groups for every
+earlier candidate). Selection is by identity, never by hand, so runs
 cannot be cherry-picked. Each included archive must exist at its slot, match
 its indexed `report_sha256`, and read back through its own reader
 (evaluation v1/v2 or the P3.5 formal reader), all with the same input order;
 otherwise the aggregate stops. An aggregate with no included run also stops.
-It prints canonical JSON (`evaluation-aggregate-v1`)
+It prints canonical JSON (`evaluation-aggregate-v2`; its `candidate` object
+also carries `behavior_sha256`)
 with:
 
 - the run index digest and the included runs (id, candidate, report digest,

@@ -68,7 +68,7 @@ reads every indexed run of that panel and route whose candidate has the same
 `stable_wrong`, `flaky` or `insufficient`. Neither mode is a live run, a
 claim upgrade or promotion.
 
-`--gate` ([candidate gate](candidate-gate.md), `evaluation-gate-v1`) applies
+`--gate` ([candidate gate](candidate-gate.md), `evaluation-gate-v2`) applies
 the pre-registered acceptance rule offline. It compares one candidate run on
 each named dev panel with the baseline's aggregate classes, and needs a
 baseline sentinel run under the same owner authorization. Its verdict is

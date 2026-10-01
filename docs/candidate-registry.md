@@ -36,10 +36,14 @@ The semantic identity the runtime submits and enforces:
   P3.10 fixture `tests/fixtures/p310_identity_baseline.json`, which stays
   unchanged as history.
 - `tools/candidate_registry.py register --id <id> --note <why>` appends the
-  live identity as a new candidate. It refuses an unchanged identity, a
-  duplicate id and an invalid id; the ancestor is always the previous current.
+  live identity as a new candidate. It refuses an unchanged behaviour identity
+  ([behaviour identity](behavior-identity.md), #164: `candidate_sha256` plus
+  `runtime_files_sha256`), a duplicate id and an invalid id. The ancestor is
+  always the previous current. A runtime-only change is registrable.
   `check` verifies the live runtime equals the current entry (surfaces and wire
-  bytes); `show` prints the current entry.
+  bytes) and lists changed runtime files; `--prepare` and `--live` refuse
+  while any is listed. `show` prints the current entry and its behaviour
+  identity.
 - The chain is strictly linear: each index row's ancestor is the previous row
   and each entry records its ancestor's digest, so rewriting an ancestor in
   place invalidates its descendants. `candidate_sha256` covers the semantic
