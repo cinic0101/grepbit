@@ -165,7 +165,7 @@ where the owner ruled for an answer) stay wrong. See the
 [v17 contract](docs/count-directive-v17.md) and the
 [gate results](docs/count-directive-v17-result.md).
 
-The current candidate, v18 (ADR #152), changes three places in v17's
+v18 (ADR #152) changes three places in v17's
 instruction text. It tells the model:
 - that a general overview of bookings that asks for no number of people is
   `count_request: "none"`;
@@ -193,6 +193,25 @@ evidence.
 A diagnostic count ablation (#156) found no support, from one sample each, for
 either tested root-cause edit: the enum labels or the older clarification
 rules. See the [results](docs/count-fresh-ablation-result.md).
+
+The owner then decided (ADR #158) that a clarification is offered only when
+every choice can be answered. The registered current candidate, v19, has the
+server answer a model `count_basis` clarification with booked seats and the
+stated assumption. It also adds one context sentence, because a runtime-only
+change cannot be registered.
+
+Against v18 on four dev panels, the gate gave `regression`:
+- **21 fixed:** `dev-C1`, `dev-BM7`, and the fresh panel's undecided-choice
+  and system-basis-doubt rows, all through the server's answer. Nine of them
+  (`dev-BM7`, `dev-CF11` and `dev-CF12`) count as fixes under the ADR #158
+  oracle revisions.
+- **1 input broke, `dev-BM2.en`, on both panels that contain it.** It is a
+  no-count Compare of an amount that v19's model declined, and it was stable
+  on v18.
+
+v19 is therefore to be reverted. That needs an owner decision because it
+restores a frozen test. See the [v19 contract](docs/count-basis-answer-v19.md)
+and the [gate results](docs/count-basis-answer-v19-result.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
