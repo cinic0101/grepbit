@@ -23,6 +23,10 @@ GROUPS = {
 }
 
 
+# The last entry registered when #164 was decided; the historical-groups claim covers the chain through it.
+HISTORICAL_LAST = "p3-v18-restoration-v20"
+
+
 def formula(entry):
     """The contract's formula, written out independently of the registry module."""
     value = {"candidate_sha256": entry["candidate_sha256"], "runtime_files_sha256": entry["runtime_files_sha256"]}
@@ -45,11 +49,15 @@ class FormulaTests(unittest.TestCase):
         for prefix, members in GROUPS.items():
             [group] = [ids for value, ids in behaviours.items() if value.startswith(prefix)]
             self.assertEqual(tuple(group), members)
-        # The behaviour groups equal the model-input groups: no historical pooling changes.
-        by_bytes = {}
-        for entry in entries:
+        # Over the entries registered at #164 (through v20), the behaviour groups equal the model-input groups:
+        # no historical pooling changes. A later runtime-only candidate (v21) splits a model-input group.
+        ids = [entry["candidate_id"] for entry in entries]
+        historical = entries[:ids.index(HISTORICAL_LAST) + 1]
+        by_bytes, by_behaviour = {}, {}
+        for entry in historical:
             by_bytes.setdefault(entry["candidate_sha256"], []).append(entry["candidate_id"])
-        self.assertEqual(sorted(behaviours.values()), sorted(by_bytes.values()))
+            by_behaviour.setdefault(registry.behavior_identity(entry), []).append(entry["candidate_id"])
+        self.assertEqual(sorted(by_behaviour.values()), sorted(by_bytes.values()))
         live = registry.live_identity()
         self.assertEqual(registry.behavior_identity(live), formula(live))
 

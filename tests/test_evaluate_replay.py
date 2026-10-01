@@ -12,7 +12,7 @@ from grepbit.contracts import KernelError
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL
 from tools import candidate_registry as registry, evaluate as runner, p3_assets
 import registry_twin
-from test_evaluate import BASE, KEY, SHA, EvaluateHarness, envelope
+from test_evaluate import BASE, KEY, SERVER_ANSWERED, SHA, EvaluateHarness, envelope
 
 _OUTCOME_ACTION = {"request": "answer", "clarify": "clarify", "declined": "decline"}
 
@@ -89,14 +89,19 @@ class ReplayableObservationTests(EvaluateHarness):
             # v15: an unresolved Compare orientation is persisted as the model's request behind the
             # server-built roles clarification (docs/compare-orientation-v15.md).
             derived = action["outcome"] == "request" and action.get("orientation") == "unresolved"
-            self.assertEqual("clarify" if derived else _OUTCOME_ACTION[action["outcome"]], row["actual_action"])
+            # v19: a model count_basis clarification is persisted behind the server's answer (ADR #158).
+            answered = action["outcome"] == "clarify" and action["clarification"]["kind"] == "count_basis"
+            self.assertEqual("clarify" if derived else "answer" if answered else _OUTCOME_ACTION[action["outcome"]],
+                             row["actual_action"])
             if derived:
                 self.assertEqual((row["clarification_kind"], row["clarification_choice_count"]),
                                  ("comparison_roles", 2))
             if action["outcome"] == "clarify":
                 self.assertEqual(set(action), {"outcome", "clarification"})
-                self.assertEqual(action["clarification"]["kind"], row["clarification_kind"])
-                self.assertEqual(len(action["clarification"]["choices"]), row["clarification_choice_count"])
+                # The server answered a count_basis clarification, so the row records no clarification (v19).
+                self.assertEqual(None if answered else action["clarification"]["kind"], row["clarification_kind"])
+                self.assertEqual(None if answered else len(action["clarification"]["choices"]),
+                                 row["clarification_choice_count"])
             elif action["outcome"] == "request":
                 self.assertEqual(set(action), {"outcome", "recipe_id", "recipe_version", "request",
                                                *(["orientation"] if action["recipe_id"] == "compare" else []),
@@ -107,8 +112,11 @@ class ReplayableObservationTests(EvaluateHarness):
         self.assertEqual(runner.read_report(output / "report.json"), report)
         path = output / "report.json"
         original = path.read_bytes()
-        answer = next(i for i, row in enumerate(report["results"]) if row["actual_action"] == "answer")
-        clarify = next(i for i, row in enumerate(report["results"]) if row["actual_action"] == "clarify")
+        # The model's own request and clarification rows (v19 answers a count_basis clarification on the server).
+        answer = next(i for i, row in enumerate(report["results"]) if row["actual_action"] == "answer"
+                      and json.loads(row["validated_action"])["outcome"] == "request")
+        clarify = next(i for i, row in enumerate(report["results"]) if row["actual_action"] == "clarify"
+                       and json.loads(row["validated_action"])["outcome"] == "clarify")
         answer_action = json.loads(report["results"][answer]["validated_action"])
         clarify_action = json.loads(report["results"][clarify]["validated_action"])
         dropped = deepcopy(clarify_action)
@@ -236,7 +244,7 @@ class ReplayableObservationTests(EvaluateHarness):
         self.assertNotIn("validated_actions", report["summary"]["observations"])
         self.assertEqual(runner.read_report(output / "report.json"), report)
         self.assertEqual(runner.record(output / "report.json", runs_path=self.runs,
-                                       now="2026-09-29T00:00:00Z")["correct"], 15)
+                                       now="2026-09-29T00:00:00Z")["correct"], 15 - len(SERVER_ANSWERED))
         baseline = json.loads(self.prepare(baseline=output / "report.json").read_text())
         self.assertEqual(baseline["version"], "evaluation-packet-v2")
         self.assertEqual(baseline["baseline"]["report_version"], "evaluation-report-v1")
@@ -352,10 +360,14 @@ class ReplayableObservationTests(EvaluateHarness):
             if row["case_id"] in declines:
                 self.assertEqual((row["correct"], row["class"], row["distinct_validated_actions"]),
                                  (3, "stable_correct", 1))
+            elif row["case_id"] in SERVER_ANSWERED:
+                self.assertEqual((row["correct"], row["class"], row["distinct_validated_actions"]),
+                                 (0, "stable_wrong", 2))
             else:
                 self.assertEqual((row["correct"], row["class"], row["distinct_validated_actions"]), (2, "flaky", 2))
-        self.assertEqual(result["class_counts"], {"stable_correct": len(declines), "stable_wrong": 0,
-                                                  "flaky": 15 - len(declines), "insufficient": 0})
+        self.assertEqual(result["class_counts"], {"stable_correct": len(declines), "stable_wrong": len(SERVER_ANSWERED),
+                                                  "flaky": 15 - len(declines) - len(SERVER_ANSWERED),
+                                                  "insufficient": 0})
         base = recorded[-1]
         excluded = [dict(base, run_id="other-bytes", candidate_id="p3-bound-meaning-context-v8",
                          slot=".artifacts/absent-other-bytes"),

@@ -10,7 +10,7 @@ import httpx
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL
 from tools import candidate_registry as registry, evaluate as runner, p3_assets
 import registry_twin
-from test_evaluate import BASE, GRANT, KEY, EvaluateHarness, envelope
+from test_evaluate import BASE, GRANT, KEY, SERVER_ANSWERED, EvaluateHarness, envelope
 
 OTHER = "p3-bound-meaning-context-v8"
 _CLASSES = ("fixed", "broke", "unchanged_correct", "unchanged_wrong", "excluded", "unassessed")
@@ -136,13 +136,17 @@ class CandidateGateTests(EvaluateHarness):
                          ("flaky", "wrong", "excluded"))
         self.assertEqual((rows[z]["baseline_class"], rows[z]["candidate"], rows[z]["class"]),
                          ("stable_correct", "wrong", "broke"))
-        self.assertEqual({rows[i]["class"] for i in ids if i not in (x, y, z)}, {"unchanged_correct"})
+        self.assertEqual({rows[i]["class"] for i in ids if i not in (x, y, z) and i not in SERVER_ANSWERED},
+                         {"unchanged_correct"})
+        # v19 answers the scripted C01 count_basis clarification, which its frozen oracle grades wrong (ADR #158).
+        self.assertEqual({rows[i]["class"] for i in ids if i in SERVER_ANSWERED and i not in (x, y, z)},
+                         {"unchanged_wrong"})
         # Malformed candidate output on an input the baseline always got right is a break, not unassessed.
         self.assertEqual((rows[x]["outcome"], rows[y]["outcome"], rows[z]["outcome"]),
                          ("complete_correct", "invalid_output", "invalid_output"))
         self.assertEqual((panel["fixed"], panel["broke"], panel["excluded"], panel["unassessed"]), ([x], [z], [y], []))
-        self.assertEqual(panel["counts"], {"fixed": 1, "broke": 1, "unchanged_correct": 12, "unchanged_wrong": 0,
-                                           "excluded": 1, "unassessed": 0})
+        self.assertEqual(panel["counts"], {"fixed": 1, "broke": 1, "unchanged_correct": 12 - len(SERVER_ANSWERED),
+                                           "unchanged_wrong": len(SERVER_ANSWERED), "excluded": 1, "unassessed": 0})
         # A break is a regression even next to a fix; a gain never offsets it.
         self.assertEqual((panel["verdict"], result["counts"], result["verdict"]),
                          ("regression", panel["counts"], "regression"))

@@ -130,6 +130,8 @@ class FreshPanelRulers(unittest.TestCase):
         for row in json.loads(responses_path.read_text())["responses"]:
             kind = TYPES[row["case_id"].split(".")[0][len("dev-C"):]]
             with self.subTest(case=row["case_id"]):
+                # A scripted action has no recorded row, so it states no assumption (docs/v18-restoration-v20.md);
+                # in the scripted run below the runtime answers the D rows' count_basis clarification.
                 self.assertEqual(runner._stated_assumption(row["action"]),
                                  expectations.get(oracle_of[row["case_id"]]))
                 if kind in readings:
@@ -145,8 +147,10 @@ class FreshPanelRulers(unittest.TestCase):
             report = asyncio.run(p3_eval.run_panel(database, root / "run", manifest_path=root / "prep" / "manifest.json",
                                                    panel_path=panel_path, responses_path=responses_path))
         self.assertEqual(report["status"], "complete")
+        # The runtime (v19's rule, v21) answers the D rows' scripted clarifications: missed against the v1 clarify
+        # oracles.
         self.assertEqual(report["summary"]["outcomes"],
-                         {"complete_correct": 39, "correct_clarification": 6, "correct_decline": 9})
+                         {"complete_correct": 39, "missed_clarification": 6, "correct_decline": 9})
 
     def test_no_question_repeats_a_tuned_panel_question(self):
         fresh = {case.question for case in p3_assets.load_panel(ROOT / _entry()["path"]).cases}

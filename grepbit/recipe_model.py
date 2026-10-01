@@ -379,6 +379,13 @@ class RecipeProposal:
         return result
 
 
+def _server_answers(clarification: Clarification) -> bool:
+    """ADR #158: a clarification is offered only when every choice can be answered. Booked seats is the only
+    executable count, so no count_basis choice set (two or more distinct meanings) is fully answerable."""
+    return clarification.kind == "count_basis" and any(
+        choice.semantic_value.value != "booked_seats" for choice in clarification.choices)
+
+
 def _roles_clarification(request: CompareRequest) -> Clarification:
     """The two reversed role assignments of an unresolved Compare request, in a fixed order."""
     return Clarification("comparison_roles", (
@@ -423,6 +430,7 @@ class RecipeInterpretation:
     clarification: Clarification | None = None
     presentation: ClarificationPresentation | None = None
     source_proposal: RecipeProposal | None = None
+    source_clarification: Clarification | None = None
 
 
 async def interpret_recipe_and_execute(
@@ -438,6 +446,7 @@ async def interpret_recipe_and_execute(
     clarification: Clarification | None = None
     presentation: ClarificationPresentation | None = None
     source_proposal: RecipeProposal | None = None
+    source_clarification: Clarification | None = None
     stages = dict.fromkeys(protocol.STAGES, "not_run")
     context = runtime_context()
     evidence: dict[str, object] = {
@@ -487,6 +496,12 @@ async def interpret_recipe_and_execute(
             action = {"clarification": clarification.to_dict(), "presentation": presentation.to_dict()}
             if client.safe_export(action) != action:
                 raise _InvalidRequest("export_drift")
+            if _server_answers(clarification):
+                # Only booked seats is executable, so no count_basis choice set is fully answerable (ADR #158):
+                # the code, not the model, answers the clarification's own Overview scope and states the assumption.
+                source_clarification, clarification, presentation = clarification, None, None
+                proposal = RecipeProposal("overview", source_clarification.choices[0].semantic_value.scope,
+                                          count_request="unresolved")
         else:
             proposal = _proposal(data)
             if proposal.count_request in UNAVAILABLE_COUNTS:
@@ -530,6 +545,10 @@ async def interpret_recipe_and_execute(
         clarification, presentation = None, None
         if not (exc.code == "model_declined" and source_proposal is not None):
             source_proposal = None
+        # A server answer to a model count_basis clarification keeps that clarification for as long as the
+        # proposal is kept, so a failed execution still persists the model's own action (ADR #158).
+        if proposal is None:
+            source_clarification = None
         error = ModelError(exc.code, http_status=exc.http_status)
         stages[error.stage] = "failed"
         if isinstance(exc, _InvalidRequest):
@@ -549,6 +568,7 @@ async def interpret_recipe_and_execute(
         "proposal": proposal.to_dict() if proposal else None,
         "compare_orientation": (proposal or source_proposal).orientation if (proposal or source_proposal) else None,
         "source_proposal": source_proposal.to_dict() if source_proposal else None,
+        "source_clarification": source_clarification.to_dict() if source_clarification else None,
         "count_request": (proposal or source_proposal).count_request if (proposal or source_proposal) else None,
         "count_assumption": (dict(ASSUMPTION_STATEMENT, unavailable=list(ASSUMPTION_STATEMENT["unavailable"]))
                              if proposal and error is None and proposal.assumption else None),
@@ -592,4 +612,5 @@ async def interpret_recipe_and_execute(
                        "kernel_execution": "failed" if proposal else "not_run"},
         })
     exported["elapsed_seconds"] = round(elapsed, 6)
-    return RecipeInterpretation(proposal, pack, error, exported, clarification, presentation, source_proposal)
+    return RecipeInterpretation(proposal, pack, error, exported, clarification, presentation, source_proposal,
+                                source_clarification)

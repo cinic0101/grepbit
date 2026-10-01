@@ -11,7 +11,7 @@ import httpx
 from grepbit import model, recipe_model
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL
 from tools import count_ablation as ablation, evaluate as runner, p3_assets
-from test_evaluate import BASE, GRANT, KEY, SHA, EvaluateHarness, envelope
+from test_evaluate import BASE, GRANT, KEY, SERVER_ANSWERED, SHA, EvaluateHarness, envelope
 
 _SYNTHETIC = {"synthetic-dev": ("E01_overview", "C01_count_basis")}
 
@@ -253,7 +253,9 @@ class AblationRunTests(EvaluateHarness):
             case = cases[row["case_id"]]
             expected = self.by_oracle[case.oracle_id]
             self.assertEqual(row["state"], "returned")
-            self.assertIn(row["graded"]["outcome"], ("complete_correct", "correct_clarification"))
+            # v19 answers the scripted C01 count_basis clarification, which its frozen oracle grades missed (#158).
+            self.assertIn(row["graded"]["outcome"], ("missed_clarification",) if row["case_id"] in SERVER_ANSWERED
+                          else ("complete_correct", "correct_clarification"))
             # The labels reply was mapped back, so the persisted action is the production action.
             self.assertEqual(model.strict_json(row["validated_action"]).get("count_request"),
                              expected.get("count_request"))
@@ -262,7 +264,8 @@ class AblationRunTests(EvaluateHarness):
         self.assertEqual(result["summary"]["by_variant"]["labels"]["returned"], len(self.selected))
         comparison = result["comparison"]
         self.assertEqual((comparison["baseline_runs"], comparison["refusal"]), ([baseline["run_id"]], None))
-        self.assertTrue(all(item["variant_verdict"] == "correct" and item["baseline_correct"] == 1
+        self.assertTrue(all((item["variant_verdict"], item["baseline_correct"]) ==
+                            (("wrong", 0) if item["case_id"] in SERVER_ANSWERED else ("correct", 1))
                             for item in comparison["inputs"]))
         self.assertEqual(ablation.read_report(slot / "report.json", **self.registries), result)
 
@@ -344,7 +347,8 @@ class AblationRunTests(EvaluateHarness):
         self.assertNotIn("unresolved", json.dumps(ablation.variant_schema("labels")["oneOf"][0]))
         comparison = result["comparison"]
         self.assertEqual((comparison["baseline_runs"], comparison["refusal"]), ([baseline["run_id"]], None))
-        self.assertTrue(all(item["variant_verdict"] == "correct" for item in comparison["inputs"]))
+        self.assertTrue(all(item["variant_verdict"] == ("wrong" if item["case_id"] in SERVER_ANSWERED else "correct")
+                            for item in comparison["inputs"]))
         self.assertEqual(ablation.read_report(slot / "report.json", **self.registries), result)
 
     async def test_two_network_failures_in_a_row_stop_the_run(self):

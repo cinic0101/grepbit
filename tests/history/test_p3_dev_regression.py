@@ -34,6 +34,11 @@ def envelope(content='{"outcome":"declined"}'):
 
 class DevRegressionTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
+        # The historical P3 tools are tested with their era's runtime, which presented a count_basis clarification;
+        # v19 answers it on the server (ADR #158; its consequence is ruled in tests/test_v19_count_basis_answer.py).
+        era = patch("grepbit.recipe_model._server_answers", return_value=False)
+        era.start()
+        self.addCleanup(era.stop)
         for target in ("socket.socket.connect", "socket.socket.connect_ex", "socket.create_connection",
                        "socket.getaddrinfo", "httpx.AsyncHTTPTransport", "httpx.HTTPTransport",
                        "grepbit.gateway.GatewayConfig.from_env"):
