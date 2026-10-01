@@ -128,6 +128,8 @@ Rebuilding reproduces the committed bytes. The details:
 
 ## Evaluation (step 3)
 
+**Result:** 39/54 (annex-aware), with every G, S, U, D and K row correct and every B and O row wrong. See [the results](count-fresh-ablation-result.md).
+
 - **The run.** One run of the current candidate (v18) on the panel, at most 54
   calls, after this PR merges with both records.
 - **The report.** The frozen grade and the annex verdict per input, by type.
