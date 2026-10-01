@@ -156,6 +156,66 @@ The four count families that the rule table changes get new oracle revisions:
   independent semantic acceptance on their PR, as #138's had. The empty-annex
   reader rule stays for any panel that expects no assumption.
 
+## Clarify only when every choice is answerable (2026-10-01, ADR #158)
+
+The owner decided on #158 that a clarification is offered only when every
+offered choice can be answered (「反問的確要在我們都有能力回答時再反問」). The
+owner approved the scope and the revisions at #issuecomment-5926866518 and
+#issuecomment-5927141003. Booked seats is the only executable count, so a
+`count_basis` clarification is never answerable.
+- A user's own undecided choice between named count meanings (the old rule
+  table's row 3, `dev-BM7`) is now answered with booked seats and the stated
+  assumption, exactly as rule 1.
+- The doubt about the system's basis (`dev-C1`, the #149 ruling) was already
+  answered this way.
+
+**New panels; the old ones stay as history.**
+- **`p3-dev-bound-meaning-v3`** is `p3-dev-bound-meaning-v2` under a new id
+  and files, with one family revised:
+  - **`dev-BM7.v2`** is an Overview answer for CTR-A01 March 2026. It equals
+    `dev-BM6.v2` except for its id, revision and provenance. The three
+    `dev-BM7` cases point to it, as `answer` with a new signature.
+  - **The annex** `bound-meaning-annex-v3.json` lists `dev-BM6.v2` and
+    `dev-BM7.v2`.
+- **`p3-dev-count-fresh-v2`** is `p3-dev-count-fresh-v1` with two families
+  revised:
+  - **`dev-CF11.v2`** equals `dev-CF05.v1`'s CTR-B01 March 2026 Overview, and
+    **`dev-CF12.v2`** equals `dev-CF04.v1`'s CTR-A01 February 2026 Overview,
+    each apart from its id, revision and provenance.
+  - **Exposure.** The panel counts as exposed after its v18 run, so every case
+    is `exposed_regression`, with history `design_seen` then
+    `exposed_regression`.
+  - **The annex** `count-fresh-annex-v2.json` adds the two revised oracles.
+- **Scripted correct actions.** `bound-meaning-read-responses-v2.json` and
+  `count-fresh-read-responses-v2.json` read the revised families as a generic
+  count (`count_request: "unresolved"`).
+  - `dev-BM6` is rewritten the same way. Its v1 script encodes `dev-BM6.v1`'s
+    clarification, although `dev-BM6.v2` has been an answer since ADR #136.
+  - Every other action is unchanged.
+- **Unchanged as history.** These older oracles expect a `count_basis`
+  clarification and predate #158:
+  - `p3-development-v1`'s C01;
+  - `dev-C1.v1` in `p3-dev-matrix-v1`, `-boundaries-first-v1`,
+    `-compare-first-v1` and `-compare-first-v2`;
+  - `p3-dev-bound-meaning-v1` (`dev-BM6.v1`, `dev-BM7.v1`) and v2
+    (`dev-BM7.v1`);
+  - `p3-dev-mechanism-probe-v1` (`dev-BM6.v1`, `dev-MN1`–`MN3.v1`);
+  - `p3-dev-count-fresh-v1` (`dev-CF11.v1`, `dev-CF12.v1`).
+
+  They, and their results, stay as they are. The grant's gate panels hold no
+  `count_basis` clarification oracle.
+- **The ruler** is `tests/test_count_basis_revisions.py`. It checks that each
+  new panel equals its predecessor apart from the stated fields: the panel file
+  as text, the rest as parsed JSON, with the registry digests pinning the bytes.
+  It also checks that each revised oracle equals its named source answer, whose
+  scope is the old clarification's; the annex additions; the scripted actions;
+  and that a mock loop grades every case correct with exactly its annexed
+  assumption.
+- **Not covered here.** The runtime half is candidate v19, which answers a
+  model `count_basis` clarification on the server. It is a separate PR.
+  Frozen formal and holdout panels may still expect `count_basis`
+  clarifications: a promotion claim needs a new formal panel (#158).
+
 ## Acceptance
 
 - **Semantics.** The owner-designated independent reviewer accepted the v2
@@ -170,6 +230,15 @@ The four count families that the rule table changes get new oracle revisions:
     clarification.
   - The reviewer did not re-check `dev-A2.v1`'s values, which `dev-C1.v2`
     copies, against the fixture; they rest on `dev-A2.v1`'s accepted status.
+- **The ADR #158 panels (#159).** The owner-designated independent reviewer
+  accepted `dev-BM7.v2`, `dev-CF11.v2` and `dev-CF12.v2` and their annexes.
+  - The reviewer took the stated assumption to name the user's alternative as
+    unavailable. The runtime's statement names all three unavailable meanings.
+  - It raised points for the owner: whether all three must be named; bookings
+    are not booking accounts; the supersession covers `count_basis` only; and
+    a user undecided between two unavailable meanings needs a ruling.
+  - The revised oracles copy their source answers' values, which rest on those
+    sources' accepted status.
 
 ## Claims and limits
 

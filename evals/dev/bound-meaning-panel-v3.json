@@ -1,0 +1,33 @@
+{
+  "version": "p3-panel-v1",
+  "panel_id": "p3-dev-bound-meaning-v3",
+  "kind": "development",
+  "cases": "bound-meaning-cases-v3.json",
+  "oracles": "bound-meaning-oracles-v3.json",
+  "order": [
+    "E02_compare.zh-TW",
+    "E02_compare.en",
+    "E02_compare.ja",
+    "dev-BM2.zh-TW",
+    "dev-BM2.en",
+    "dev-BM2.ja",
+    "dev-BM3.zh-TW",
+    "dev-BM3.en",
+    "dev-BM3.ja",
+    "dev-BM4.zh-TW",
+    "dev-BM4.en",
+    "dev-BM4.ja",
+    "dev-BM5.zh-TW",
+    "dev-BM5.en",
+    "dev-BM5.ja",
+    "dev-BM6.zh-TW",
+    "dev-BM6.en",
+    "dev-BM6.ja",
+    "dev-BM7.zh-TW",
+    "dev-BM7.en",
+    "dev-BM7.ja",
+    "dev-BM8.zh-TW",
+    "dev-BM8.en",
+    "dev-BM8.ja"
+  ]
+}

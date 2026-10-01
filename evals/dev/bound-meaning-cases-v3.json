@@ -1,0 +1,602 @@
+{
+  "version": "p3-cases-v1",
+  "cases": [
+    {
+      "case_id": "E02_compare.zh-TW",
+      "family_id": "E02_compare",
+      "question": "2026年3月全體已確認報名金額比2月如何？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "anchor",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": [
+          "evals/cases/learningops.json#E02_compare",
+          "evals/panels/p2-recipe-smoke-v1.json#order"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "compare|confirmed_booked_amount|all_centers|current=2026-03|baseline=2026-02|Asia/Taipei|delta,growth",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "E02_compare.v1"
+    },
+    {
+      "case_id": "E02_compare.en",
+      "family_id": "E02_compare",
+      "question": "How did the overall confirmed booking amount in March 2026 compare with February?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "anchor",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": [
+          "evals/cases/learningops-languages.json#E02_compare.en",
+          "evals/panels/p2-recipe-smoke-v1.json#order"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "compare|confirmed_booked_amount|all_centers|current=2026-03|baseline=2026-02|Asia/Taipei|delta,growth",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "E02_compare.v1"
+    },
+    {
+      "case_id": "E02_compare.ja",
+      "family_id": "E02_compare",
+      "question": "2026年3月の全体の確定済み申込金額は、2月と比べてどうでしたか？",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "anchor",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "historical",
+        "references": [
+          "evals/cases/learningops-languages.json#E02_compare.ja",
+          "evals/panels/p2-recipe-smoke-v1.json#order"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "compare|confirmed_booked_amount|all_centers|current=2026-03|baseline=2026-02|Asia/Taipei|delta,growth",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "E02_compare.v1"
+    },
+    {
+      "case_id": "dev-BM2.zh-TW",
+      "family_id": "dev-BM2",
+      "question": "以 2026 年 2 月為參照，3 月全體已確認報名金額有何變化？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#A03",
+          "evals/dev/dev-oracles-v2.json#dev-A3.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM2|A03|current=2026-03|baseline=2026-02|reference_first",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM2.v1"
+    },
+    {
+      "case_id": "dev-BM2.en",
+      "family_id": "dev-BM2",
+      "question": "Against February 2026 as the reference, how did the overall confirmed booking amount in March change?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#A03",
+          "evals/dev/dev-oracles-v2.json#dev-A3.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM2|A03|current=2026-03|baseline=2026-02|reference_first",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM2.v1"
+    },
+    {
+      "case_id": "dev-BM2.ja",
+      "family_id": "dev-BM2",
+      "question": "2026年2月を基準にすると、3月の全体の確定済み申込金額はどう変化しましたか？",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#A03",
+          "evals/dev/dev-oracles-v2.json#dev-A3.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM2|A03|current=2026-03|baseline=2026-02|reference_first",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM2.v1"
+    },
+    {
+      "case_id": "dev-BM3.zh-TW",
+      "family_id": "dev-BM3",
+      "question": "以 2026 年 3 月為參照，較早的 2 月全體已確認報名金額有何差異？",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#A03",
+          "evals/dev/dev-oracles-v2.json#dev-A3.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM3|A03|current=2026-02|baseline=2026-03|reference_first",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM3.v1"
+    },
+    {
+      "case_id": "dev-BM3.en",
+      "family_id": "dev-BM3",
+      "question": "Using March 2026 as the reference, how did the overall confirmed booking amount in the earlier month of February differ?",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#A03",
+          "evals/dev/dev-oracles-v2.json#dev-A3.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM3|A03|current=2026-02|baseline=2026-03|reference_first",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM3.v1"
+    },
+    {
+      "case_id": "dev-BM3.ja",
+      "family_id": "dev-BM3",
+      "question": "2026年3月を基準にして、それより前の2月の全体の確定済み申込金額はどう違いましたか？",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#A03",
+          "evals/dev/dev-oracles-v2.json#dev-A3.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM3|A03|current=2026-02|baseline=2026-03|reference_first",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM3.v1"
+    },
+    {
+      "case_id": "dev-BM4.zh-TW",
+      "family_id": "dev-BM4",
+      "question": "比較 2026 年 2 月與 3 月全體已確認報名金額。",
+      "language": "zh-TW",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#C02",
+          "evals/dev/dev-oracles-v2.json#dev-C2.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM4|C02|two_months|direction_unresolved",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM4.v1"
+    },
+    {
+      "case_id": "dev-BM4.en",
+      "family_id": "dev-BM4",
+      "question": "Compare the overall confirmed booking amounts of February and March 2026.",
+      "language": "en",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#C02",
+          "evals/dev/dev-oracles-v2.json#dev-C2.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM4|C02|two_months|direction_unresolved",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM4.v1"
+    },
+    {
+      "case_id": "dev-BM4.ja",
+      "family_id": "dev-BM4",
+      "question": "2026年2月と3月の全体の確定済み申込金額を比較してください。",
+      "language": "ja",
+      "expected_branch": "clarify",
+      "cohort": "clarify",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#C02",
+          "evals/dev/dev-oracles-v2.json#dev-C2.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM4|C02|two_months|direction_unresolved",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM4.v1"
+    },
+    {
+      "case_id": "dev-BM5.zh-TW",
+      "family_id": "dev-BM5",
+      "question": "請提供 CTR-A01 在 2026 年 3 月的報名概況，包含已確認報名的席次數。",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#A01",
+          "evals/dev/dev-oracles-v2.json#dev-A1.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM5|A01|CTR-A01|2026-03|booked_seats_bound",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM5.v1"
+    },
+    {
+      "case_id": "dev-BM5.en",
+      "family_id": "dev-BM5",
+      "question": "Give me the March 2026 booking overview for CTR-A01, including the number of confirmed booked seats.",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#A01",
+          "evals/dev/dev-oracles-v2.json#dev-A1.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM5|A01|CTR-A01|2026-03|booked_seats_bound",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM5.v1"
+    },
+    {
+      "case_id": "dev-BM5.ja",
+      "family_id": "dev-BM5",
+      "question": "CTR-A01の2026年3月の申込概況を、確定済み申込の席数を含めて教えてください。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#A01",
+          "evals/dev/dev-oracles-v2.json#dev-A1.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM5|A01|CTR-A01|2026-03|booked_seats_bound",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM5.v1"
+    },
+    {
+      "case_id": "dev-BM6.zh-TW",
+      "family_id": "dev-BM6",
+      "question": "請提供 CTR-A01 在 2026 年 3 月的報名概況，包含人數。",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/dev-oracles-v2.json#dev-C1.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM6|count-assumption|CTR-A01|2026-03|booked_seats_assumed",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM6.v2"
+    },
+    {
+      "case_id": "dev-BM6.en",
+      "family_id": "dev-BM6",
+      "question": "Give me the March 2026 booking overview for CTR-A01, including the headcount.",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/dev-oracles-v2.json#dev-C1.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM6|count-assumption|CTR-A01|2026-03|booked_seats_assumed",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM6.v2"
+    },
+    {
+      "case_id": "dev-BM6.ja",
+      "family_id": "dev-BM6",
+      "question": "CTR-A01の2026年3月の申込概況を、人数を含めて教えてください。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/dev-oracles-v2.json#dev-C1.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM6|count-assumption|CTR-A01|2026-03|booked_seats_assumed",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM6.v2"
+    },
+    {
+      "case_id": "dev-BM7.zh-TW",
+      "family_id": "dev-BM7",
+      "question": "請提供 CTR-A01 在 2026 年 3 月的報名概況；人數要算席次還是報名帳戶，我還沒決定。",
+      "language": "zh-TW",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/dev-oracles-v2.json#dev-C1.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM7|count-policy|CTR-A01|2026-03|booked_seats_assumed",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM7.v2"
+    },
+    {
+      "case_id": "dev-BM7.en",
+      "family_id": "dev-BM7",
+      "question": "Give me the March 2026 booking overview for CTR-A01; I have not decided whether the count should mean seats or booking accounts.",
+      "language": "en",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/dev-oracles-v2.json#dev-C1.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM7|count-policy|CTR-A01|2026-03|booked_seats_assumed",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM7.v2"
+    },
+    {
+      "case_id": "dev-BM7.ja",
+      "family_id": "dev-BM7",
+      "question": "CTR-A01の2026年3月の申込概況を教えてください。人数を席数で数えるか申込アカウント数で数えるかは、まだ決めていません。",
+      "language": "ja",
+      "expected_branch": "answer",
+      "cohort": "answer",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#C01",
+          "evals/dev/dev-oracles-v2.json#dev-C1.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM7|count-policy|CTR-A01|2026-03|booked_seats_assumed",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM7.v2"
+    },
+    {
+      "case_id": "dev-BM8.zh-TW",
+      "family_id": "dev-BM8",
+      "question": "請提供 CTR-A01 在 2026 年 3 月的報名概況，另外必須給出去重後的自然人數，每位真人只算一次。",
+      "language": "zh-TW",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#D04",
+          "evals/dev/dev-oracles-v2.json#dev-D8.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM8|D04|CTR-A01|2026-03|overview_plus_distinct_people_required",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM8.v1"
+    },
+    {
+      "case_id": "dev-BM8.en",
+      "family_id": "dev-BM8",
+      "question": "Give me the March 2026 booking overview for CTR-A01, and also the deduplicated count of individual people, counting each actual person only once.",
+      "language": "en",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#D04",
+          "evals/dev/dev-oracles-v2.json#dev-D8.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM8|D04|CTR-A01|2026-03|overview_plus_distinct_people_required",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM8.v1"
+    },
+    {
+      "case_id": "dev-BM8.ja",
+      "family_id": "dev-BM8",
+      "question": "CTR-A01の2026年3月の申込概況に加え、同じ実在の人物を一度だけ数える重複排除後の人数も必ず示してください。",
+      "language": "ja",
+      "expected_branch": "decline",
+      "cohort": "decline",
+      "exposure": "exposed_regression",
+      "provenance": {
+        "origin": "development",
+        "references": [
+          "docs/bound-meaning-controls.md",
+          "docs/p3-evaluation-contract.md#D04",
+          "evals/dev/dev-oracles-v2.json#dev-D8.v1"
+        ],
+        "seen_by_implementer": true,
+        "exposure_history": [
+          "exposed_regression"
+        ]
+      },
+      "semantic_signature": "dev|bound-meaning|BM8|D04|CTR-A01|2026-03|overview_plus_distinct_people_required",
+      "must_pass": true,
+      "observational": false,
+      "oracle_id": "dev-BM8.v1"
+    }
+  ]
+}
