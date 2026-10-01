@@ -59,7 +59,8 @@ def render() -> str:
              "`.venv/bin/python tools/state.py --write` after any registry or index change.", "",
              "## Current candidate", "",
              f"- `{current['candidate_id']}` (semantic identity `{current['semantic_identity_sha256'][:16]}…`, "
-             f"candidate digest `{current['candidate_sha256'][:16]}…`), registered {current['registered_at'][:10]}; "
+             f"candidate digest `{current['candidate_sha256'][:16]}…`, behaviour digest "
+             f"`{registry.behavior_identity(current)[:16]}…`), registered {current['registered_at'][:10]}; "
              f"{len(index['entries'])} registered candidate(s) in `evals/candidates/`.",
              f"- Note: {current['note']}", "",
              "## Panels and latest results per route", "",

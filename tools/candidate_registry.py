@@ -61,6 +61,13 @@ def _digest(value: object) -> str:
     return hashlib.sha256(model.canonical_json(value).encode()).hexdigest()
 
 
+def behavior_identity(identity: dict) -> str:
+    """The behaviour identity (ADR #164, docs/behavior-identity.md): the model-input identity plus every runtime
+    file's digest. Derived from fields every entry and the live identity record, so no entry changes."""
+    return _digest({"candidate_sha256": identity["candidate_sha256"],
+                    "runtime_files_sha256": identity["runtime_files_sha256"]})
+
+
 def _file_digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -214,8 +221,9 @@ def check(index_path: Path | None = None) -> dict:
         if live[key] != entry[key]:
             raise RegistryError("unregistered_candidate")
     return {"candidate_id": entry["candidate_id"], "semantic_identity_sha256": entry["semantic_identity_sha256"],
-            "runtime_files_changed": sorted(name for name, sha in live["runtime_files_sha256"].items()
-                                            if entry["runtime_files_sha256"].get(name) != sha)}
+            "runtime_files_changed": sorted(
+                name for name in set(live["runtime_files_sha256"]) | set(entry["runtime_files_sha256"])
+                if entry["runtime_files_sha256"].get(name) != live["runtime_files_sha256"].get(name))}
 
 
 def register(candidate_id: str, note: str, *, index_path: Path | None = None, now: str | None = None) -> dict:
@@ -232,8 +240,9 @@ def register(candidate_id: str, note: str, *, index_path: Path | None = None, no
         head = current(index_path)
         if any(row["candidate_id"] == candidate_id for row in index["entries"]):
             raise RegistryError("duplicate_candidate_id")
-        # The same surface check() enforces: semantic surfaces plus wire witnesses.
-        if head["candidate_sha256"] == live["candidate_sha256"]:
+        # The behaviour identity: the model-input surface check() enforces plus the runtime files, so a
+        # runtime-only change is registrable (ADR #164).
+        if behavior_identity(head) == behavior_identity(live):
             raise RegistryError("identity_unchanged")
         ancestor, ancestor_sha = head["candidate_id"], index["entries"][-1]["sha256"]
     else:
@@ -279,6 +288,7 @@ def main(argv=None) -> int:
             entry = current()
             result = {key: entry[key] for key in ("candidate_id", "ancestor", "registered_commit", "registered_at",
                                                   "note", "semantic_identity_sha256")}
+            result["behavior_sha256"] = behavior_identity(entry)
             result["recipe_context"] = entry["recipe_context"]
             result["wire_witnesses"] = entry["wire_witnesses"]
     except RegistryError as exc:

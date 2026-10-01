@@ -64,11 +64,11 @@ with zero model calls and refuses (`manifest_drift` with a closed
 `replay_refusal`) when the model-facing bytes, panel assets, inputs or
 database differ. `--aggregate --panel <id> --route <id> --candidate <id>`
 reads every indexed run of that panel and route whose candidate has the same
-`candidate_sha256` and classifies each input as `stable_correct`,
+behaviour identity ([behaviour identity](behavior-identity.md)) and classifies each input as `stable_correct`,
 `stable_wrong`, `flaky` or `insufficient`. Neither mode is a live run, a
 claim upgrade or promotion.
 
-`--gate` ([candidate gate](candidate-gate.md), `evaluation-gate-v1`) applies
+`--gate` ([candidate gate](candidate-gate.md), `evaluation-gate-v2`) applies
 the pre-registered acceptance rule offline. It compares one candidate run on
 each named dev panel with the baseline's aggregate classes, and needs a
 baseline sentinel run under the same owner authorization. Its verdict is

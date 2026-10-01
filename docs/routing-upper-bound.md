@@ -94,7 +94,8 @@ production schema, so a reply valid under it is also valid under production.
 
 The comparison reuses the candidate gate's rules (`docs/candidate-gate.md`):
 - **Baseline classes** are the aggregate classes of every indexed run with the
-  current candidate's bytes on the panel and route.
+  packet candidate's behaviour identity ([behaviour identity](behavior-identity.md))
+  on the panel and route.
 - **Sentinel.** At least one baseline run must be complete and recorded under
   the experiment's authorization reference.
 - **Per-input class:** `fixed`, `broke`, `unchanged_correct`,

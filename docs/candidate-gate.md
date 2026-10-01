@@ -1,6 +1,6 @@
 # Candidate gate (#79)
 
-Contract `evaluation-gate-v1`. It is the pre-registered acceptance rule the
+Contract `evaluation-gate-v2`. It is the pre-registered acceptance rule the
 owner chose as step A of "A+B"
 ([#79 #issuecomment-5900353252](https://github.com/cinic0101/grepbit/issues/79#issuecomment-5900353252)).
 The gate is an offline mode of the single runner, `tools/evaluate.py --gate`.
@@ -28,26 +28,32 @@ The run index and the archives it pins are the only inputs. Only `dev`-tier
 panels are accepted, and the output's claim is `development_observation`.
 Regression and holdout panels keep their own rules.
 
+**v2 (#164).** v1 selected and compared by `candidate_sha256` alone. v2 uses
+the behaviour identity. For every candidate registered before #164 the two
+give the same groups, so no earlier gate result changes.
+
 ## Selection (by identity only)
 
 For each named panel, on the named route:
 
-- **Baseline runs.** Every indexed run whose candidate's registry
-  `candidate_sha256` equals the baseline candidate's. This is the same
+- **Baseline runs.** Every indexed run whose candidate's behaviour identity
+  equals the baseline candidate's ([behaviour identity](behavior-identity.md):
+  the model-input identity plus the runtime files). This is the same
   selection as `--aggregate`, so a run registered under another id with the
-  same bytes (v7 for v12) is included.
+  same bytes and runtime (v7 for v12, v18 for v20) is included.
 - **Sentinel.** At least one baseline run must carry `grant` equal to the given
   reference, and at least one of those runs must be `complete`. One owner
   authorization is the gate's definition of "the same session". The sentinel
   makes the baseline classes hold in the candidate's session, not only in
   earlier ones. An incomplete sentinel still counts as a baseline run, but
   alone it gives no same-session evidence.
-- **Candidate run.** Exactly one indexed run whose candidate's registry bytes
-  equal the gated candidate's, with the same `grant`. Several runs under one
+- **Candidate run.** Exactly one indexed run whose candidate's behaviour
+  identity equals the gated candidate's, with the same `grant`. Several runs under one
   authorization are refused, so there is no best-of and no rerun to green.
 - **Integrity checks.**
-  - The gated candidate's bytes must differ from the baseline's. The same
-    bytes are a noise measurement, not a candidate.
+  - The gated candidate's behaviour identity must differ from the
+    baseline's. The same behaviour is a noise measurement, not a candidate.
+    A runtime-only candidate, with the same model-facing bytes, can be gated.
   - Every selected report must read back and match its index digest, as in
     `--aggregate`.
   - Every selected report's `candidate_sha256` must equal the registry bytes
@@ -132,15 +138,16 @@ The overall verdict applies the same rules to the union of the panels.
 
 The gate prints one canonical JSON object and exits 0 whatever the verdict:
 
-- `version` `evaluation-gate-v1`, `promotion_eligible` false, `claim`
+- `version` `evaluation-gate-v2`, `promotion_eligible` false, `claim`
   `development_observation`;
 - `route_id` and `owner_authorization_reference`;
-- `candidate` and `baseline`, each with `candidate_id` and `candidate_sha256`;
+- `candidate` and `baseline`, each with `candidate_id`, `candidate_sha256`
+  and `behavior_sha256`;
 - `run_index_sha256`;
 - `panels`, in the order named. Each entry has:
   - `panel_id`, `baseline_runs`, `sentinel_runs` and `candidate_run`;
   - `recorded_at`: the index times of the sentinel runs and the candidate run;
-  - `other_candidate_runs`: runs with the candidate's bytes on the panel and
+  - `other_candidate_runs`: runs with the candidate's behaviour identity on the panel and
     route under other authorizations, which this gate ignores;
   - `inputs`, in panel order: `case_id`, `family_id`, `baseline_class`,
     `sentinel_assessed`, `candidate` (`correct`, `wrong` or `unassessed`), the
@@ -157,7 +164,7 @@ A refusal prints the existing safe code `invalid_manifest` with one closed
 
 | Reason | Meaning |
 | --- | --- |
-| `same_bytes` | The candidate's bytes equal the baseline's. |
+| `same_bytes` | The candidate's behaviour identity equals the baseline's (the name is kept from v1). |
 | `not_dev_panel` | A named panel is not registered with tier `dev`. |
 | `no_baseline_runs` | A panel has no baseline run. |
 | `no_sentinel` | No baseline run on the panel was recorded under the given authorization. |

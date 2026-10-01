@@ -144,7 +144,8 @@ no verdict:
   - the canonical inputs must equal the pinned panel's inputs;
   - every row's question and variant messages must match the pinned panel.
 - **Comparison.** Each row is compared with the current candidate's own
-  recorded runs of the same bytes on that panel: the baseline's assessed and
+  recorded runs of the same behaviour identity on that panel
+  ([behaviour identity](behavior-identity.md)): the baseline's assessed and
   correct counts per input, annex-aware.
   - It applies the candidate gate's integrity checks in `routing_upper_bound`'s
     order. Each refusal is closed: `no_baseline`, `baseline_unavailable`,
