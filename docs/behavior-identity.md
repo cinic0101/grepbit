@@ -15,7 +15,9 @@ decline, therefore could not be registered or gated without also changing
 model-facing bytes.
 - **v19 needed such a change to register.** The outputs are close to
   deterministic, and the change most likely flipped one unrelated input
-  (`dev-BM2.en`). The gate then gave `regression` (#162).
+  (`dev-BM2.en`). The gate then gave `regression` (#162). (Corrected
+  2026-10-02: `dev-BM2.en` is flaky on v18's own bytes, so that attribution
+  does not hold; see `count-basis-answer-v21-result.md`.)
 - **v20 restored v18** (#163).
 
 Option C keeps both meanings of "the same candidate":

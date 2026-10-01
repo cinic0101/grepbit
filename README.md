@@ -206,8 +206,9 @@ Against v18 on four dev panels, the gate gave `regression`:
   (`dev-BM7`, `dev-CF11` and `dev-CF12`) count as fixes under the ADR #158
   oracle revisions.
 - **1 input broke, `dev-BM2.en`, on both panels that contain it.** It is a
-  no-count Compare of an amount that v19's model declined, and it was stable
-  on v18.
+  no-count Compare of an amount that v19's model declined. v18 had answered
+  it five times, but v18's own bytes later declined it twice. So the input
+  is flaky, and its decline is not specific to v19 (#164).
 
 So v19 is reverted. See the [v19 contract](docs/count-basis-answer-v19.md)
 and the [gate results](docs/count-basis-answer-v19-result.md).
@@ -223,9 +224,17 @@ The owner chose option C of ADR #164: a behaviour identity covering both the
 model-facing bytes and the runtime files (#165), so a runtime-only rule can be
 registered and gated. The registered current candidate, v21, is v19's server
 answer on v20's model-facing bytes: the model sees exactly v18's input, and
-only the runtime's decision rule changes. It has no live result yet. It will
-be gated against v20 on the same four dev panels (#164). See the
-[v21 contract](docs/count-basis-answer-v21.md).
+only the runtime's decision rule changes. Against v20 on the same four dev
+panels, the gate (`evaluation-gate-v2`) gave `passed`:
+- **21 fixed, 0 broke,** with `dev-BM2.en` excluded as flaky. v21 declined it
+  too, against the prediction, and the pass on it rests on the baseline's own
+  decline.
+- **153 of 154 model actions matched v20's,** so the server's answer alone
+  made the change.
+- **`dev-A1` and the no-count overview rows stay wrong** (out of scope).
+
+See the [v21 contract](docs/count-basis-answer-v21.md) and the
+[gate results](docs/count-basis-answer-v21-result.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality

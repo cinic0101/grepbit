@@ -19,7 +19,8 @@ v19 (`docs/count-basis-answer-v19.md`) had the server answer a model
 - **What broke it.** To be registrable, v19 also changed the model-facing
   context: one sentence, and the version string v6 to v7. The outputs are
   close to deterministic (v18 repeated 76 of 78 actions), and that change most
-  likely flipped `dev-BM2.en` to a decline. The gate gave `regression` (#162),
+  likely flipped `dev-BM2.en` to a decline (corrected after v21's run: the
+  input is flaky on v18's own bytes; see `count-basis-answer-v21-result.md`). The gate gave `regression` (#162),
   and v20 restored v18 (#163).
 
 v21 keeps v19's rule and drops v19's context change. The model sees exactly
@@ -90,6 +91,15 @@ v20's (that is, v18's) bytes.
 
 ## Evaluation (grant #164 #issuecomment-5934502364)
 
+**Result: `passed`.** 21 fixed, 0 broke, and `dev-BM2.en` excluded as flaky
+in the baseline.
+- **The prediction failed.** The offline prediction below that it "stays
+  answered" failed: v21 declined it.
+- **What saved the verdict.** The pass on it rests on the v20 sentinel also
+  declining it.
+
+See the [gate results](count-basis-answer-v21-result.md).
+
 **The steps.**
 - **(2)** One v20 sentinel on each of `p3-dev-bound-meaning-v3`,
   `p3-dev-count-fresh-v2`, `p3-dev-matrix-compare-first-v3` and
@@ -104,7 +114,8 @@ v20's (that is, v18's) bytes.
 recorded actions predict v21's model actions up to sampling: 76 of 78 repeated
 between v18's runs. Under v21's rule:
 - the 21 `count_basis` clarifications that v19 fixed become answers;
-- `dev-BM2.en` stays answered;
+- `dev-BM2.en` stays answered (failed: v21 declined it, as did the v20
+  sentinel);
 - `dev-A1` and the fresh panel's O rows stay wrong (out of scope).
 
 `--replay` of v18's or v20's archives under v21 is allowed, because the model
