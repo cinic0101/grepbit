@@ -13,7 +13,7 @@ v19 (`docs/count-basis-answer-v19.md`, #160) failed its pre-registered gate:
 `regression`, with 21 fixed and `dev-BM2.en` broken on both panels that
 contain it (`docs/count-basis-answer-v19-result.md`, #162). The grant's verdict
 term is that v19 is reverted by a further PR. v19 is not an accepted
-improvement, but it is still the registered current candidate.
+improvement, and it was the registered current candidate until v20.
 
 v20 returns the runtime to v18's exact bytes. It is a restoration, not a new
 fix: it makes no count, Compare or other repair. The v21 proposal (v18's
@@ -66,7 +66,10 @@ v19's archives are in the run index (#162), so the readback rule stays:
   row-based rule. A model `count_basis` clarification on a row whose recorded
   `actual_action` is `answer` is a v19 server answer that states the
   assumption. On a `clarify` row it is the clarification it was.
-- **One change:** `_stated_assumption` with no recorded row now states none.
+- **One change:** `_stated_assumption` now states the assumption for a
+  `count_basis` clarification only when the recorded `actual_action` is
+  `answer`. So an action with no recorded row states none. Readback already
+  rejects any other recorded action for that action.
   - **Why.** Under v19, "no row" meant the current runtime's answer. Under v20
     the current runtime clarifies.
   - **The rule now.** Only a recorded server answer states the assumption, and
@@ -96,7 +99,9 @@ v19's archives are in the run index (#162), so the readback rule stays:
   runtime-free checks, as v11's ruler did under v12:
   - the request cap;
   - the row-based mappings in routing, the reading diagnostic and the annex,
-    with and without a recorded row.
+    with a recorded row.
+
+  The no-row case of `_stated_assumption` is asserted in the v20 ruler.
 
   Its runtime, context, v18-archive and registration checks skip once v19 is
   superseded.
@@ -119,13 +124,21 @@ Committed failing before the restoration and passing after it, in the same PR:
   there is no server answer;
 - v20 is the registered current candidate, with ancestor v19. Every identity
   field above equals v18's, and `check` reports no changed runtime file;
-- the frozen pair and every restored test equal their `ba7e556` bytes;
+- the frozen pair equals its `ba7e556` bytes. The 19 other restored tests
+  are verified on the PR and are not pinned, so later edits to them stay
+  possible;
 - `_stated_assumption` states the assumption only on a recorded `answer` row,
   and `_check_action` reads both kinds of `count_basis` row;
 - the v19 fixture has v19's registered digest, and its archives read back,
   aggregate (the answered C01 input `stable_wrong` against the historical
   clarify oracle) and gate. The gate is v20 against v19: C01 `fixed`, every
-  other input `unchanged_correct`, verdict `passed`.
+  other input `unchanged_correct`, verdict `passed`. This end-to-end check
+  skips with a named reason if any other runtime file differs from v19's
+  registration, because the fixture is v19 only together with them.
+
+Once v20 is superseded, its runtime, frozen-pair, registration and
+end-to-end checks skip, as the earlier restorations' rulers do. The
+evaluator checks and the fixture's digest stay.
 
 ## Evaluation
 
@@ -134,7 +147,7 @@ stand. The next live step belongs to the v21 decision and its own grant.
 
 ## Claims and limits
 
-- **v20 restores v18's behaviour.** `dev-C1`, the fresh panel's
+- **v20 restores v18's behaviour.** `dev-C1`, `dev-BM7`, the fresh panel's
   system-basis-doubt rows and the user-undecided rows (D) are wrong again
   under the revised oracles, as v18 was (#162's v18 runs).
 - **The two-fix default.** v20 is not a count fix. The v21 proposal needs the

@@ -25,31 +25,20 @@ ANSWERED = "C01_count_basis.en"
 V19_FIXTURE = ROOT / "tests/fixtures/v19_recipe_model.py"
 IDENTITY = ("candidate_sha256", "semantic_identity_sha256", "recipe_context", "structured_output", "p1_context",
             "limits", "wire_witnesses", "runtime_files_sha256")
-# The frozen pair (owner-approved, #158 #issuecomment-5932833755) and the tests #160 changed to follow v19's
-# runtime, each back at its bytes at ba7e556.
-RESTORED = {
+# The frozen pair, owner-approved back at its bytes at ba7e556 (#158 #issuecomment-5932833755). The 19 other tests
+# #160 changed return to their ba7e556 bytes too; that is verified on the PR, not pinned here, so later edits to
+# them stay possible.
+FROZEN = {
     "tests/test_recipe_clarification.py": "36c3a189bfd3499c086eee83683c715490fb1d3fb10e44523029007e9923cc24",
     "tests/test_p3_exposed.py": "693addaa05d1530dddd12ee5d6b43d330c358349b85707d077deda2f8d9fd085",
-    "tests/history/test_p3_candidate_regression.py": "ecbfca25c9261f6bf23dbae7abc74eb9a5c7cc64d087f0579957dec8d6ee9808",
-    "tests/history/test_p3_dev_regression.py": "2a6c41266cd06c00c9f9ad0c249a78462dfb28fd9ff8457decc0de131a44872b",
-    "tests/history/test_p3_formal_run.py": "1bc5a61bf0b45457b98b3884f216ed61db92839f5ee928cc0208e43fee164e7c",
-    "tests/history/test_p3_stability_run.py": "b3adb9b3451160030e4a6e9f7c6fe35828d3fae87beba6b7299e21a93a6bbb78",
-    "tests/test_bound_meaning_controls.py": "237cd1f045ad3067204d359ee979f4b240659385737e38c3ef11523f587f301f",
-    "tests/test_compare_first_v3.py": "22aa601da17042eb7d76bafa2b13dc36e1bb9afe26d26f5e211d8ac35679aa15",
-    "tests/test_count_ablation.py": "4a6d94c7590ec4fa5fe15874df81f1c762a0980667645a39b15de0faf94026ad",
-    "tests/test_count_assumption.py": "d976e45a9aa2d62d75382bfcfbff561c7ab37c79baabff6fcd3a52b765f19b84",
-    "tests/test_count_fresh_panel.py": "9c8e81e5a980aac6e19b4a7465a5056159ce8e18aea5a4e464f6570289d68c86",
-    "tests/test_dev_panel.py": "cc6ae777543ac5e4de24ff83d70b0fc6da0c63ce143a8ac8fdbf095f28baac57",
-    "tests/test_evaluate.py": "09dd032ba43914cae72f6a52f715574ef7f853e02c076dbf1c5586fcf134e989",
-    "tests/test_evaluate_gate.py": "68c70c880d77c92456578df945b0613a69a9d1ceeefffaca8c5e6141f27d5687",
-    "tests/test_evaluate_replay.py": "070daab00c637ca4ae06b2e27beac527b5ec8adf1dd58e34f6583b29624918dc",
-    "tests/test_invalid_request_reason.py": "b9afd788210a79c7021e269297fa853a0a13b2c0eb87128b1d82d29fa2eb1ca3",
-    "tests/test_mechanism_probe_controls.py": "b82b82ad8dbd6203830a28b15b05c8cae7faa1fb20f37bc229e9e3d0157d8de1",
-    "tests/test_p3_admission.py": "d30d49f9e1a1818fc513323c03de2f339130eb5151de1f2461d241a728fce134",
-    "tests/test_p3_eval.py": "72a87f802ee76d719a6dce9898df810e07bde10e2513191e4fddc8acb89f6bfa",
-    "tests/test_reading_diagnostic.py": "4af59be4c692afc984f5080804b82a13dbecb74f24200239bd45f4d754fe3136",
-    "tests/test_v17_count_directive.py": "74b34caa019e9e81df517c4841a6c12d38bc23b3e3b6b312ef6c660d2859db97",
 }
+
+
+def superseded():
+    """v20 is registered but no longer current. Its runtime, frozen-pair, registration and end-to-end gate checks
+    stop applying; the evaluator checks and the fixture's digest stay."""
+    index = registry.load_index()
+    return V20 in [r["candidate_id"] for r in index["entries"]] and index["current"] != V20
 
 
 def sha256(path):
@@ -66,6 +55,15 @@ def clarification(kind="count_basis"):
         "kind": kind, "choices": [{"id": f"c{i}", "semantic_value": v} for i, v in enumerate(choices, 1)]}}
 
 
+def v19_drift():
+    """The runtime files besides recipe_model.py whose bytes differ from v19's registration. The fixture reproduces
+    v19 only together with them."""
+    registered = registry.load_entry(V19)["runtime_files_sha256"]
+    live = registry.live_identity()["runtime_files_sha256"]
+    return sorted(name for name in set(registered) | set(live)
+                  if name != "grepbit/recipe_model.py" and registered.get(name) != live.get(name))
+
+
 def v19_runtime():
     """v19's frozen grepbit/recipe_model.py, loaded inside the grepbit package under a private name (ruler only)."""
     name = "grepbit._v19_recipe_model"
@@ -73,11 +71,19 @@ def v19_runtime():
         spec = importlib.util.spec_from_file_location(name, V19_FIXTURE)
         module = importlib.util.module_from_spec(spec)
         sys.modules[name] = module
-        spec.loader.exec_module(module)
+        try:
+            spec.loader.exec_module(module)
+        except BaseException:
+            del sys.modules[name]
+            raise
     return sys.modules[name]
 
 
 class IdentityTests(unittest.TestCase):
+    def setUp(self):
+        if superseded():
+            self.skipTest("v20 superseded; the live runtime, frozen pair and registration are no longer v20's")
+
     def test_the_runtime_is_v18s_bytes_with_no_server_answer(self):
         v18 = registry.load_entry(V18)
         self.assertEqual(sha256(ROOT / "grepbit/recipe_model.py"), v18["runtime_files_sha256"]["grepbit/recipe_model.py"])
@@ -93,12 +99,12 @@ class IdentityTests(unittest.TestCase):
             self.assertEqual(v20[key], v18[key], key)
         self.assertEqual(registry.check()["runtime_files_changed"], [])
 
-    def test_the_frozen_pair_and_the_restored_tests_have_their_v18_bytes(self):
-        for path, digest in RESTORED.items():
+    def test_the_frozen_pair_has_its_v18_bytes(self):
+        for path, digest in FROZEN.items():
             self.assertEqual(sha256(ROOT / path), digest, path)
         import test_p3_exposed
         self.assertEqual(test_p3_exposed.SOURCE_SHA256["tests/test_recipe_clarification.py"],
-                         RESTORED["tests/test_recipe_clarification.py"])
+                         FROZEN["tests/test_recipe_clarification.py"])
 
 
 class EvaluatorTests(unittest.TestCase):
@@ -173,6 +179,10 @@ class V19ArchiveTests(EvaluateHarness):
                     if row["case_id"] == ANSWERED)
 
     async def test_v19_archives_read_back_aggregate_and_gate_against_v20(self):
+        if superseded():
+            self.skipTest("v20 superseded; its candidate run would be recorded under another current candidate")
+        if v19_drift():
+            self.skipTest(f"runtime files differ from v19's registration, so the fixture is not v19: {v19_drift()}")
         self.panel = p3_assets.load_panel(self.root / "development-panel-v1.json")
         baseline = [await self.observe(2001, v19=True), await self.observe(2002, v19=True)]
         sentinel = await self.observe(2050, v19=True)
