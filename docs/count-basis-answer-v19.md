@@ -79,6 +79,32 @@ Tests that run a scripted `count_basis` clarification against them now state
 that v19 answers it. Against a historical clarify oracle, that answer is
 graded `missed_clarification`.
 
+**The synthetic harness.** The harness copies `p3-development-v1`, so its one
+C01 input (`C01_count_basis.en`, `SERVER_ANSWERED` in `tests/test_evaluate.py`)
+grades wrong: at most 14 of 15 inputs are correct.
+- **Expectations moved:** `test_evaluate`, `test_evaluate_replay`,
+  `test_evaluate_gate`, `test_count_assumption`, `test_compare_first_v3`,
+  `test_count_ablation`, `test_reading_diagnostic`, `test_p3_eval` and
+  `test_p3_admission`. `test_p3_admission` now takes the signature of the
+  actual action.
+- **Historical-panel mock loops:** `test_dev_panel` (dev-C1 ×3),
+  `test_mechanism_probe_controls` (12 rows), `test_bound_meaning_controls`
+  (BM6 and BM7, 6 rows) and `test_count_fresh_panel` (v1, CF11 and CF12,
+  6 rows) now expect `missed_clarification` on those rows.
+- **`test_invalid_request_reason`** keeps a `count_basis` default for its
+  validation cases, because the validators run before the answer.
+
+**The history tools.** The historical P3 tools' tests run the frozen
+development and regression scripts:
+- `test_p3_candidate_regression` and `test_p3_dev_regression`: 23 of 28
+  correct; the dev regression shows 4 new regressions, and its clarify-row
+  tamper checks run only when a clarify row exists;
+- `test_p3_formal_run`: the formal promotion no longer passes;
+- `test_p3_stability_run`: stability no longer passes (15 of 18 trials).
+
+This is the #158 item-6 consequence. Under v19, frozen expectations that ask
+for a `count_basis` clarification count as missed.
+
 ## Evaluation (grant steps 4 and 5)
 
 The four panels are `p3-dev-bound-meaning-v3`, `p3-dev-count-fresh-v2`,

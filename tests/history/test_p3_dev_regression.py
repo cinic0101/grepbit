@@ -207,13 +207,15 @@ class DevRegressionTests(unittest.IsolatedAsyncioTestCase):
         summary = report["summary"]
         self.assertEqual(summary["panel_kind"], "dev_regression")
         self.assertNotIn("promotion", summary)
-        self.assertEqual(sum(row["correct"] for row in summary["per_input"]), 28)
+        # v19 (ADR #158) answers a scripted count_basis clarification on the server; the historical oracles still expect it.
+        # Its five count_basis inputs are answered, so they grade wrong and four read as new regressions.
+        self.assertEqual(sum(row["correct"] for row in summary["per_input"]), 23)
         comparison = summary["comparison"]
-        self.assertEqual(comparison["known_failures_fixed"], 3)
-        self.assertEqual(comparison["new_regressions"], 0)
-        self.assertEqual(comparison["category_counts"]["UNCHANGED_CORRECT"], 25)
+        self.assertEqual(comparison["known_failures_fixed"], 2)
+        self.assertEqual(comparison["new_regressions"], 4)
+        self.assertEqual(comparison["category_counts"]["UNCHANGED_CORRECT"], 21)
         clarify_rows = [row for row in report["results"] if row["actual_action"] == "clarify"]
-        self.assertTrue(clarify_rows)
+        self.assertEqual(clarify_rows, [])
         for row in report["results"]:
             if row["actual_action"] == "clarify":
                 self.assertIn(row["clarification_kind"], KINDS)
@@ -240,21 +242,26 @@ class DevRegressionTests(unittest.IsolatedAsyncioTestCase):
         # The archive cannot gain text, a free kind, an out-of-range count or a promotion.
         path = output / "report.json"
         original = path.read_bytes()
-        index = next(i for i, row in enumerate(report["results"]) if row["actual_action"] == "clarify")
+        # v19 (ADR #158): this panel's clarifications are all count_basis, which the server answers, so no clarify
+        # row remains. The clarify-row tampering runs only when one exists; the answer row is tampered either way.
+        index = next((i for i, row in enumerate(report["results"]) if row["actual_action"] == "clarify"), None)
         answer_index = next(i for i, row in enumerate(report["results"]) if row["actual_action"] == "answer")
-        for mutate in (lambda r: r["results"][index].update(clarification_kind="free_text"),
-                       lambda r: r["results"][index].update(clarification_kind=None),
-                       lambda r: r["results"][index].update(clarification_choice_count=9),
-                       lambda r: r["results"][index].update(clarification_kind=["count_basis"]),
-                       lambda r: r["results"][index].update(clarification_kind={"kind": "count_basis"}),
-                       lambda r: r["results"][index].update(clarification_choice_count=True),
-                       lambda r: r["results"][index].update(clarification_kind="comparison_roles",
-                                                            clarification_choice_count=3),
-                       lambda r: r["results"][answer_index].update(clarification_kind="count_basis"),
-                       lambda r: r["results"][index].update(clarification_question="leaked"),
-                       lambda r: r.update(promotion_eligible=True),
-                       lambda r: r["summary"].update(promotion_result="passed"),
-                       lambda r: r["summary"]["observations"].update(clarify_actions=0)):
+        clarify_mutations = () if index is None else (
+            lambda r: r["results"][index].update(clarification_kind="free_text"),
+            lambda r: r["results"][index].update(clarification_kind=None),
+            lambda r: r["results"][index].update(clarification_choice_count=9),
+            lambda r: r["results"][index].update(clarification_kind=["count_basis"]),
+            lambda r: r["results"][index].update(clarification_kind={"kind": "count_basis"}),
+            lambda r: r["results"][index].update(clarification_choice_count=True),
+            lambda r: r["results"][index].update(clarification_kind="comparison_roles", clarification_choice_count=3),
+            lambda r: r["results"][index].update(clarification_question="leaked"))
+        for mutate in clarify_mutations + (
+                lambda r: r["results"][answer_index].update(clarification_kind="count_basis"),
+                lambda r: r["results"][answer_index].update(clarification_choice_count=2),
+                lambda r: r["results"][answer_index].update(clarification_question="leaked"),
+                lambda r: r.update(promotion_eligible=True),
+                lambda r: r["summary"].update(promotion_result="passed"),
+                lambda r: r["summary"]["observations"].update(clarify_actions=len(clarify_rows) + 1)):
             tampered = json.loads(original)
             mutate(tampered)
             path.write_text(json.dumps(tampered))

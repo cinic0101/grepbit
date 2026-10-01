@@ -272,8 +272,9 @@ class StabilityRunTests(unittest.IsolatedAsyncioTestCase):
             cid = self.packet["schedule"][len(self.sent)-1]["case_id"]
             return httpx.Response(200, json=envelope(json.dumps(self.actions[cid])))
         report = await self.run_stability(respond)
-        self.assertTrue(report["summary"]["stability_passed"])
-        self.assertEqual(report["summary"]["correct_trials"], 18)
+        # v19 (ADR #158) answers a scripted count_basis clarification on the server; the historical oracles still expect it.
+        self.assertFalse(report["summary"]["stability_passed"])
+        self.assertEqual(report["summary"]["correct_trials"], 15)
         self.assertEqual(report["historical_quality"]["promotion"], "failed")
         self.assertEqual(stability.read_report(self.current_output / "report.json"), report)
 
@@ -457,7 +458,8 @@ class StabilityRunTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.read(self.current_output / "report.json")["status"], "incomplete")
         for name in ("terminal-candidate.json", "terminal.next.json"):
             candidate = self.current_output / name
-            self.assertTrue(self.read(candidate)["summary"]["stability_passed"])
+            # v19 (ADR #158) answers the scripted count_basis clarification, so stability no longer passes.
+            self.assertFalse(self.read(candidate)["summary"]["stability_passed"])
             with self.assertRaises(p3_assets.P3Error):
                 stability.read_report(candidate)
         durable = stability.read_report(self.current_output / "report.json")

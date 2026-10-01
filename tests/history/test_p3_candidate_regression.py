@@ -341,7 +341,8 @@ class SyntheticCandidateExecution(unittest.IsolatedAsyncioTestCase):
         output = self.output()
         report, _ = await self.run_candidate(handler=respond, output=output)
         self.assertEqual(report["status"], "complete")
-        self.assertEqual(sum(row["correct"] for row in report["summary"]["per_input"]), 28)
+        # v19 (ADR #158) answers a scripted count_basis clarification on the server; the historical oracles still expect it.
+        self.assertEqual(sum(row["correct"] for row in report["summary"]["per_input"]), 23)
         self.assertFalse(report["promotion_eligible"])
         self.assertFalse(report["summary"]["promotion_eligible"])
         self.assertEqual(report["summary"]["promotion_result"], "not_applicable")

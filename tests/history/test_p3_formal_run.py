@@ -306,7 +306,9 @@ class FormalTests(unittest.IsolatedAsyncioTestCase):
         report = await self.run_formal(lambda request: httpx.Response(200, json=envelope(json.dumps(
             by_oracle[self.cases[len(self.sent)-1].oracle_id]))))
         self.assertEqual(report["status"], "complete")
-        self.assertTrue(report["summary"]["promotion"]["passed"])
+        # v19 (ADR #158) answers a scripted count_basis clarification on the server; the historical oracles still expect it.
+        # The scripted C01 action is answered and graded missed, so the formal promotion no longer passes (#158).
+        self.assertFalse(report["summary"]["promotion"]["passed"])
         self.assertEqual(report["summary"], p3_formal_policy.summarize(
             report["results"], report["results"], panel_kind="formal", run_status="complete",
             allocation_policy=self.packet["allocation_policy"]))
