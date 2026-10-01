@@ -1520,7 +1520,7 @@ def gate(candidate_id: str, baseline_id: str, route_id: str, reference: str, pan
         if len(candidates) > 1:
             raise GateRefused("multiple_candidate_runs")
         selected = [*baseline, *candidates]
-        # Each report records only the model-input identity, so its check stays on candidate_sha256.
+        # Each report.json records only the model-input identity, so its check stays on candidate_sha256.
         for run in selected:
             if run["candidate_id"] not in identities:
                 identities[run["candidate_id"]] = registry.load_entry(run["candidate_id"],

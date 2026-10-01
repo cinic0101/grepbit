@@ -484,8 +484,11 @@ def _compare(report: dict, packet: dict, panels_path: Path | None, runs_path: Pa
             or [(item["case_id"], item["question_sha256"]) for item in panel.inputs()]
             != [(item["case_id"], item["question_sha256"]) for item in packet["inputs"]]):
         raise assets.P3Error("manifest_drift")
-    baseline = evaluate._same_bytes_runs(panel_id, route_id, canonical["candidate"]["candidate_sha256"],
-                                         evaluate.load_runs(runs_path), {}, candidates_index)
+    behavior = registry.behavior_identity(registry.load_entry(canonical["candidate"]["candidate_id"],
+                                                              candidates_index))
+    # Graded outcomes depend on the runtime, so the baseline pools by behaviour (ADR #164).
+    baseline = evaluate._same_behavior_runs(panel_id, route_id, behavior, evaluate.load_runs(runs_path), {},
+                                            candidates_index)
     sentinels = [position for position, run in enumerate(baseline)
                  if run["grant"] == report["owner_authorization_reference"]]
     runs_file = evaluate.RUNS if runs_path is None else runs_path

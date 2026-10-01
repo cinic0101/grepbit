@@ -6,7 +6,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from tools import candidate_registry as registry, evaluate, p3_assets
+from tools import candidate_registry as registry, count_ablation, evaluate, p3_assets, reading_diagnostic
+from tools import routing_upper_bound as routing
 
 import registry_twin
 
@@ -84,6 +85,11 @@ class PrepareTests(unittest.TestCase):
                                   gateway_policies=dict(evaluate.ROUTE_POLICY))
         self.assertEqual(refused.exception.code, "source_identity_failure")
 
+    def test_check_lists_a_recorded_runtime_file_the_checkout_no_longer_has(self):
+        dropped = registry.RUNTIME_FILES[0]
+        with patch.object(registry, "RUNTIME_FILES", registry.RUNTIME_FILES[1:]):
+            self.assertEqual(registry.check()["runtime_files_changed"], [dropped])
+
 
 class GateSelectionTests(unittest.TestCase):
     def setUp(self):
@@ -118,6 +124,50 @@ class GateSelectionTests(unittest.TestCase):
         model_input = registry.load_entry(self.sibling)["candidate_sha256"]
         selected = evaluate._same_bytes_runs(PANEL, ROUTE, model_input, runs, {}, None)
         self.assertEqual([run["run_id"] for run in selected], [self.sibling, self.same, self.runtime])
+
+    def test_the_gate_and_the_aggregate_select_runs_by_behaviour(self):
+        rows = [{"panel_id": PANEL, "route_id": ROUTE, "candidate_id": cid, "run_id": cid, "grant": GRANT,
+                 "status": "complete"} for cid in (self.sibling, self.same, self.runtime)]
+        selected = []
+
+        class Stop(Exception):
+            pass
+
+        def capture(runs):
+            selected.append([run["run_id"] for run in runs])
+            raise Stop
+
+        with patch.object(evaluate, "load_runs", return_value=rows), \
+                patch.object(evaluate, "_archived_reports", side_effect=capture):
+            for call in (lambda: self.gate(self.runtime, self.sibling),
+                         lambda: evaluate.aggregate(PANEL, ROUTE, self.runtime, runs_path=self.runs),
+                         lambda: evaluate.aggregate(PANEL, ROUTE, self.sibling, runs_path=self.runs)):
+                with self.assertRaises(Stop):
+                    call()
+        # The gate: the sibling's behaviour group as baseline, then the one runtime-twin candidate run.
+        self.assertEqual(selected, [[self.sibling, self.same, self.runtime], [self.runtime],
+                                    [self.sibling, self.same]])
+
+    def test_the_graded_diagnostics_pool_baselines_by_behaviour_and_the_reading_one_by_model_input(self):
+        entry, panel = reading_diagnostic.pinned_panel(PANEL, None)
+        current = registry.current()
+        inputs = [{"case_id": item["case_id"], "question_sha256": item["question_sha256"]} for item in panel.inputs()]
+        canonical = {"panel": {"panel_id": PANEL, "assets": entry["assets"]}, "route": {"route_id": ROUTE},
+                     "candidate": {"candidate_id": current["candidate_id"],
+                                   "candidate_sha256": current["candidate_sha256"]}, "inputs": inputs}
+        packet, report = {"canonical_packet": canonical, "inputs": inputs}, {"owner_authorization_reference": GRANT}
+        targets, original = [], evaluate._same_behavior_runs
+
+        def record(panel_id, route_id, target, *args):
+            targets.append(target)
+            return original(panel_id, route_id, target, *args)
+
+        with patch.object(evaluate, "load_runs", return_value=[]), \
+                patch.object(evaluate, "_same_behavior_runs", side_effect=record):
+            self.assertEqual(routing._compare(report, packet, None, self.runs, None)["refusal"], "no_sentinel")
+            self.assertEqual(count_ablation._compare(report, packet, panel, None, self.runs, None)["refusal"],
+                             "no_baseline")
+        self.assertEqual(targets, [registry.behavior_identity(current)] * 2)
 
     def test_the_gate_and_aggregate_contracts_are_versioned(self):
         self.assertEqual((evaluate.GATE_VERSION, evaluate.AGGREGATE_VERSION),

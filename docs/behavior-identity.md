@@ -55,17 +55,20 @@ prints it.
 | Use | Identity | Change |
 | --- | --- | --- |
 | `register` refuses `identity_unchanged` | behaviour | was model input. A runtime-only change is now registrable. |
-| `check` (the live runtime is the current candidate) | model input, failing; runtime files, listed | unchanged |
+| `check` (the live runtime is the current candidate) | model input, failing; runtime files, listed | it now also lists a recorded runtime file the checkout no longer has |
 | `--prepare` and `--live` (packet build and its rebuild) | model input and runtime files | **new refusal:** `source_identity_failure` when `check` lists any changed runtime file |
 | `--gate`: the `same_bytes` refusal, the baseline runs and the candidate runs | behaviour | was model input. Version `evaluation-gate-v2`. |
 | `--gate`: each report's recorded identity (`candidate_identity`) | model input | unchanged: a report records only `candidate_sha256` |
 | `--aggregate`: the included runs | behaviour | was model input. Version `evaluation-aggregate-v2`. |
 | `--replay`: `candidate_bytes` | model input | unchanged: replay feeds recorded model actions through the current code, so only the model input must match |
-| Diagnostics: the reading diagnostic, the routing upper bound and the count ablation | model input | unchanged: they study the model's reading of the same input |
+| The reading diagnostic's source run | model input | unchanged: it studies the model's reading of the same input |
+| The routing upper bound's and the count ablation's baselines | behaviour | was model input: they compare graded outcomes, which depend on the runtime |
+| Every diagnostic's packet (built through `evaluate.build_packet`) | model input and runtime files | it inherits the new prepare refusal |
 | `STATE.md` | both | the current candidate's line also shows its behaviour digest |
 
 **Why prepare and live now refuse a runtime drift.** A run is attributed to its
-candidate's behaviour identity through `candidate_id`. A packet built while
+candidate's behaviour identity through `candidate_id`, by the registry; nothing
+in the index verifies it. A packet built while
 `grepbit/*.py` differs from the current entry would attribute the run to a
 behaviour the runtime did not have. Until now, this rested on process alone: a
 merged `dev` commit, plus the current candidate's ruler asserting
@@ -76,6 +79,20 @@ merged `dev` commit, plus the current candidate's ruler asserting
 - **The aggregate** adds it to its `candidate` object.
 - **The refusal code** `same_bytes` keeps its name, for compatibility. It now
   means that the two behaviour identities are equal.
+
+**Historical runs.** Their attribution is by the registry, not verified.
+- **68 of the 70 indexed runs** had, at their `accepted_commit`, `grepbit/*.py`
+  equal to their entry's `runtime_files_sha256`, checked from git at each
+  run's commit (#165).
+- **The two exceptions** are regression-tier runs of `p33-frozen-20abb559` on
+  `p33-formal-v2`, recorded before that entry was registered. Each differs in 5
+  files.
+- **What follows.** No gate result changes, because the gate takes dev panels
+  only. An `--aggregate` over that candidate shows a `behavior_sha256` those
+  two runs did not run with.
+- **Possible hardening, not done here.** Each archived `packet.json` records
+  every `grepbit/*.py` digest (`source_identity.files_sha256`), so a reader
+  could verify the attribution offline.
 
 ## What this enables, and what it does not
 
@@ -107,16 +124,28 @@ PR:
     equals its ancestor's. The live identity is patched so that one runtime file
     digest differs, in a temporary registry.
   - The same behaviour again is refused with `identity_unchanged`.
-  - A model-facing change still registers.
+  - A model-facing change still registers; `tests/test_candidate_registry.py`
+    covers this.
 - **Prepare** refuses `source_identity_failure` when `check` lists a changed
   runtime file.
+- **`check`** lists a recorded runtime file the checkout lacks.
 - **Gate and aggregate:**
   - On a twin registry, a runtime twin (the current entry's model-facing
     identity with one runtime file digest changed) is not refused `same_bytes`
     against its sibling. A same-behaviour twin still is.
-  - Baseline selection includes only same-behaviour runs; model-input selection
-    still includes both.
-  - The versions are `evaluation-gate-v2` and `evaluation-aggregate-v2`, and the
-    outputs carry `behavior_sha256`.
-- **Unchanged identities:** `check`, `--replay` and the diagnostics keep
-  selecting by model input.
+  - The selection helpers: behaviour selection includes only same-behaviour
+    runs, and model-input selection includes both.
+  - End to end, through `gate()` and `aggregate()` with captured selections:
+    - the gate of the runtime twin takes the sibling's behaviour group as its
+      baseline, and the one runtime-twin run as the candidate;
+    - each aggregate selects only its own behaviour group.
+  - The routing upper bound and the count ablation select their baselines by
+    the current candidate's behaviour identity.
+  - The versions are `evaluation-gate-v2` and `evaluation-aggregate-v2`. That
+    the outputs carry `behavior_sha256` is asserted in
+    `tests/test_evaluate_gate.py` and `tests/test_evaluate_replay.py`.
+- **Also checked:**
+  - `--replay` keeps its model-input check, which the existing replay rulers
+    cover;
+  - mutations of each selection back to the model-input identity are caught
+    (#165).

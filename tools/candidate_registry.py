@@ -221,8 +221,9 @@ def check(index_path: Path | None = None) -> dict:
         if live[key] != entry[key]:
             raise RegistryError("unregistered_candidate")
     return {"candidate_id": entry["candidate_id"], "semantic_identity_sha256": entry["semantic_identity_sha256"],
-            "runtime_files_changed": sorted(name for name, sha in live["runtime_files_sha256"].items()
-                                            if entry["runtime_files_sha256"].get(name) != sha)}
+            "runtime_files_changed": sorted(
+                name for name in set(live["runtime_files_sha256"]) | set(entry["runtime_files_sha256"])
+                if entry["runtime_files_sha256"].get(name) != live["runtime_files_sha256"].get(name))}
 
 
 def register(candidate_id: str, note: str, *, index_path: Path | None = None, now: str | None = None) -> dict:

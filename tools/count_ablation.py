@@ -527,11 +527,14 @@ def _check_report(report: dict, manifest: dict, packet: dict, panel: assets.Pane
 
 def _compare(report: dict, packet: dict, panel: assets.Panel, expectations: dict | None,
              runs_path: Path | None, candidates_index: Path | None) -> dict:
-    """Each row beside the current candidate's own recorded runs of the same bytes on the panel; no verdict."""
+    """Each row beside the current candidate's own recorded runs of the same behaviour on the panel; no verdict."""
     canonical = packet["canonical_packet"]
     panel_id, route_id = canonical["panel"]["panel_id"], canonical["route"]["route_id"]
-    baseline = evaluate._same_bytes_runs(panel_id, route_id, canonical["candidate"]["candidate_sha256"],
-                                         evaluate.load_runs(runs_path), {}, candidates_index)
+    behavior = registry.behavior_identity(registry.load_entry(canonical["candidate"]["candidate_id"],
+                                                              candidates_index))
+    # Graded outcomes depend on the runtime, so the baseline pools by behaviour (ADR #164).
+    baseline = evaluate._same_behavior_runs(panel_id, route_id, behavior, evaluate.load_runs(runs_path), {},
+                                            candidates_index)
     runs_file = evaluate.RUNS if runs_path is None else runs_path
     value = {"run_index_sha256": evaluator._pin(runs_file)["sha256"] if runs_file.exists() else None,
              "baseline_runs": [run["run_id"] for run in baseline], "inputs": [], "refusal": None}

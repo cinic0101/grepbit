@@ -54,6 +54,8 @@ def use_runtime_twin(test, name="grepbit/overview.py") -> str:
     """Append to the twin registry served by `use` a runtime twin of the real current candidate: the same
     model-facing identity, with one runtime file digest changed (docs/behavior-identity.md). Returns its id."""
     index_path = registry.INDEX
+    if index_path == registry.DIRECTORY / "index.json":
+        raise RuntimeError("use(test) must serve a twin registry first")
     index = json.loads(index_path.read_text(encoding="utf-8"))
     head = registry.current()
     sibling = registry.load_entry(head["ancestor"])
