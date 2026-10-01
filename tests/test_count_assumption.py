@@ -13,7 +13,7 @@ import httpx
 from grepbit import model
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL
 from tools import candidate_registry as registry, evaluate as runner, p3_assets
-from test_evaluate import BASE, GRANT, KEY, EvaluateHarness, envelope
+from test_evaluate import BASE, GRANT, KEY, SERVER_ANSWERED, EvaluateHarness, envelope
 
 ROOT = Path(__file__).resolve().parents[1]
 DEV = ROOT / "evals/dev"
@@ -231,9 +231,12 @@ class AnnexRunTests(EvaluateHarness):
                          hashlib.sha256((self.root / "annex.json").read_bytes()).hexdigest())
         report = runner.read_report(output / "report.json")
         frozen = sum(item["correct"] for item in report["summary"]["per_input"])
-        # Every answer is frozen-correct, but the listed Overview answers state no assumption.
-        self.assertEqual((frozen, run["correct"]), (len(self.inputs), len(self.inputs) - len(self.listed)))
-        self.assertEqual(run["families_correct"], len(report["summary"]["per_family"]) - 1)
+        # Every answer is frozen-correct, but the listed Overview answers state no assumption. v19 answers the
+        # scripted C01 count_basis clarification, which its frozen oracle grades missed (ADR #158).
+        answered = len(SERVER_ANSWERED)
+        self.assertEqual((frozen, run["correct"]),
+                         (len(self.inputs) - answered, len(self.inputs) - len(self.listed) - answered))
+        self.assertEqual(run["families_correct"], len(report["summary"]["per_family"]) - 1 - answered)
         # A changed annex no longer matches the pinned digest.
         (self.root / "annex.json").write_text(json.dumps({"version": "count-assumption-annex-v1",
                                                          "expectations": {"E02_compare.v1": ASSUMPTION}}))
@@ -345,9 +348,11 @@ class AnnexRunTests(EvaluateHarness):
         classes = runner.aggregate("synthetic-dev", "litellm-31b", self.candidate, runs_path=self.runs,
                                    panels_path=self.panels)
         by_case = {row["case_id"]: row["class"] for row in classes["inputs"]}
-        self.assertEqual({run["correct"] for run in classes["runs"]}, {len(self.inputs) - len(self.listed)})
-        self.assertEqual({by_case[case] for case in self.listed}, {"stable_wrong"})
-        self.assertEqual({kind for case, kind in by_case.items() if case not in self.listed}, {"stable_correct"})
+        self.assertEqual({run["correct"] for run in classes["runs"]},
+                         {len(self.inputs) - len(self.listed) - len(SERVER_ANSWERED)})
+        self.assertEqual({by_case[case] for case in set(self.listed) | SERVER_ANSWERED}, {"stable_wrong"})
+        self.assertEqual({kind for case, kind in by_case.items() if case not in set(self.listed) | SERVER_ANSWERED},
+                         {"stable_correct"})
         with self.stating({candidate[1]}):
             result = runner.gate(OTHER, self.candidate, "litellm-31b", f"{GRANT}950", ["synthetic-dev"],
                                  runs_path=self.runs, panels_path=self.panels)

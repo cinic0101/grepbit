@@ -25,6 +25,10 @@ GRANT = "https://github.com/cinic0101/grepbit/issues/87#issuecomment-"
 BASE = "http://synthetic-evaluate.invalid/v1"
 KEY = "synthetic-evaluate-key"
 POLICY = dict(runner.ROUTE_POLICY)
+# v19 (ADR #158) answers a model count_basis clarification on the server. The development panel's frozen
+# C01_count_basis.v1 oracle predates #158 and still expects that clarification, so the synthetic panel's scripted
+# C01 action is graded missed_clarification: at most 14 of its 15 inputs are correct.
+SERVER_ANSWERED = frozenset({"C01_count_basis.en"})
 
 
 def envelope(content='{"outcome":"declined"}', model_name=MODEL):
@@ -317,7 +321,9 @@ class EvaluateRunnerTests(EvaluateHarness):
         self.assertEqual((summary["panel_kind"], summary["tier"], summary["claim"]),
                          ("evaluation", "dev", "development_observation"))
         self.assertNotIn("promotion", summary)
-        self.assertEqual(sum(row["correct"] for row in summary["per_input"]), 15)
+        self.assertEqual(sum(row["correct"] for row in summary["per_input"]), 15 - len(SERVER_ANSWERED))
+        self.assertEqual({row["case_id"]: row["outcome"] for row in report["results"]
+                          if row["case_id"] in SERVER_ANSWERED}, dict.fromkeys(SERVER_ANSWERED, "missed_clarification"))
         self.assertIsNone(summary["comparison"])
         clarify_rows = [row for row in report["results"] if row["actual_action"] == "clarify"]
         self.assertTrue(clarify_rows)
@@ -338,7 +344,7 @@ class EvaluateRunnerTests(EvaluateHarness):
                 reader(output / "report.json")
         record = runner.record(output / "report.json", runs_path=self.runs, now="2026-09-25T00:00:00Z")
         self.assertEqual((record["tier"], record["claim"], record["correct"], record["inputs"]),
-                         ("dev", "development_observation", 15, 15))
+                         ("dev", "development_observation", 15 - len(SERVER_ANSWERED), 15))
         self.assertEqual(runner.load_runs(self.runs)[0]["run_id"], report["run_id"])
         with self.assertRaises(p3_assets.P3Error) as duplicate:
             runner.record(output / "report.json", runs_path=self.runs)
@@ -349,8 +355,9 @@ class EvaluateRunnerTests(EvaluateHarness):
         second, _ = await self.run_mock(second_packet, second_output, self.bind(second_packet, second_output),
                                         client=self.litellm_client(scripted=True, cases=cases))
         comparison = second["summary"]["comparison"]
-        self.assertEqual(comparison["category_counts"]["UNCHANGED_CORRECT"], 15)
-        self.assertEqual((comparison["known_failures_total"], comparison["previously_correct_total"]), (0, 15))
+        self.assertEqual(comparison["category_counts"]["UNCHANGED_CORRECT"], 15 - len(SERVER_ANSWERED))
+        self.assertEqual((comparison["known_failures_total"], comparison["previously_correct_total"]),
+                         (len(SERVER_ANSWERED), 15 - len(SERVER_ANSWERED)))
         self.assertEqual(runner.read_report(second_output / "report.json"), second)
         # Tampered observations, claims or promotion never read back.
         path = second_output / "report.json"
@@ -391,7 +398,7 @@ class EvaluateRunnerTests(EvaluateHarness):
                                  cap)
                 self.assertEqual(runner.read_report(output / "report.json"), report)
                 self.assertEqual(runner.record(output / "report.json", runs_path=self.root / f"runs-{cap}.jsonl",
-                                               now="2026-09-29T00:00:00Z")["correct"], 15)
+                                               now="2026-09-29T00:00:00Z")["correct"], 15 - len(SERVER_ANSWERED))
                 baseline_packet = json.loads(self.prepare(baseline=output / "report.json").read_bytes())
                 self.assertEqual(baseline_packet["settings"]["max_request_bytes"], current_cap)
                 self.assertEqual(len(baseline_packet["baseline"]["inputs"]), 15)
