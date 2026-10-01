@@ -14,7 +14,8 @@ Candidate `p3-count-basis-answer-v21`, whose ancestor is `p3-v18-restoration-v20
 v19 (`docs/count-basis-answer-v19.md`) had the server answer a model
 `count_basis` clarification with booked seats and the stated assumption.
 - **What it fixed.** All 21 of its fixes came from that rule: on every fixed
-  row the model clarified exactly as on v18, and the server answered.
+  row the model made the same kind of `count_basis` clarification as on v18
+  (some choice ids differ), and the server answered.
 - **What broke it.** To be registrable, v19 also changed the model-facing
   context: one sentence, and the version string v6 to v7. The outputs are
   close to deterministic (v18 repeated 76 of 78 actions), and that change most
@@ -115,7 +116,7 @@ input matches. It can show this offline, and it is never a gate input.
 - **Risks the gate measures:**
   - The model's actions vary slightly between runs even with identical bytes.
   - A `count_basis` clarification given for a Compare or Breakdown question
-    would run its one-month Overview scope (v19's L4).
+    would run its one-month Overview scope (the #160 review's L4).
 - **Scope.** Formal and holdout panels are frozen and may expect
   `count_basis` clarifications, so a promotion claim needs a new formal panel
   (#158 item 6). This covers one route and one run per panel, on exposed
