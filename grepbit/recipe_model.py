@@ -23,7 +23,7 @@ from .provider import LLMClient, normalize_response, response_mode, wire_identit
 
 CONTEXT_VERSION = "learningops-recipe-context-v6"
 OUTPUT_CONTRACT = "recipe-request-json-v5"
-INSTRUCTION_VERSION = "recipe-selection-instruction-v10"
+INSTRUCTION_VERSION = "recipe-selection-instruction-v11"
 STRUCTURED_OUTPUT_VERSION = "recipe-structured-output-v5"
 STRUCTURED_OUTPUT_SCHEMA_NAME = "grepbit_recipe_request"
 # The typed Compare reading (ADR #142, docs/compare-orientation-v15.md): the model reads, code decides.
@@ -136,14 +136,17 @@ SYSTEM_INSTRUCTION = (
     "count_basis and metric_meaning require a complete explicit Overview scope. "
     'Every Overview request carries count_request: the count the question asks for; "unresolved" when it asks '
     'for a count whose meaning it leaves open, such as a generic headcount or number of people; "none" when it '
-    'asks for no count; otherwise the named meaning (booked_seats, known_booking_accounts, attendance_visits or '
+    'asks for no count, including a general overview of bookings that asks for no number of people; otherwise '
+    'the named meaning (booked_seats, known_booking_accounts, attendance_visits or '
     'distinct_people); a count of bookings is the Overview bookings output, so it is none, never '
     'known_booking_accounts; the server answers an unresolved count with booked seats and states that '
-    'assumption, and declines a named unavailable count. Use count_basis only when the question itself is '
+    'assumption, and declines a named unavailable count. Use count_basis only when the user says they are '
     'undecided between named meanings. With a complete explicit Overview scope, a generic people count '
     '(headcount, how many people, people who booked) that names no seats, accounts, attendance or distinct '
     'individuals is answered with the Overview request and count_request "unresolved", not a count_basis '
-    'clarification. '
+    'clarification. Doubt about which basis the system counts by is not the user being undecided: a people '
+    'count that names seats or accounts only in that doubt is also answered with count_request "unresolved", '
+    'and the stated assumption tells the basis. '
     "Count choices include booked_seats and reviewed alternative count meanings; amount choices include "
     "confirmed_booked_amount and reviewed alternative amount meanings. Alternatives do not add executable metrics. "
     'Every Compare request carries orientation:"stated" or orientation:"unresolved": whether the question '
