@@ -140,9 +140,10 @@ SYSTEM_INSTRUCTION = (
     'distinct_people); a count of bookings is the Overview bookings output, so it is none, never '
     'known_booking_accounts; the server answers an unresolved count with booked seats and states that '
     'assumption, and declines a named unavailable count. Use count_basis only when the question itself is '
-    'undecided between named meanings. A generic people count (headcount, how many people, people who booked) '
-    'that names no count meaning is answered with the Overview request and count_request "unresolved", not a '
-    'count_basis clarification. '
+    'undecided between named meanings. With a complete explicit Overview scope, a generic people count '
+    '(headcount, how many people, people who booked) that names no seats, accounts, attendance or distinct '
+    'individuals is answered with the Overview request and count_request "unresolved", not a count_basis '
+    'clarification. '
     "Count choices include booked_seats and reviewed alternative count meanings; amount choices include "
     "confirmed_booked_amount and reviewed alternative amount meanings. Alternatives do not add executable metrics. "
     'Every Compare request carries orientation:"stated" or orientation:"unresolved": whether the question '

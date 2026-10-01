@@ -95,7 +95,7 @@
     {
       "candidate_id": "p3-count-directive-v17",
       "path": "p3-count-directive-v17.json",
-      "sha256": "870aa8c57e11c245cd1369565ace8321bfdf274c2b632dc39f119fb063341efd",
+      "sha256": "a6334dcdc2fbfe742d5ce96110f2ade2fa1dcc2eac5bb8c08aa6ac079950d071",
       "ancestor": "p3-count-reading-v16"
     }
   ]

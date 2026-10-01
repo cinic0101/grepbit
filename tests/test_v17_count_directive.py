@@ -1,5 +1,6 @@
 """Candidate v17 rulers (docs/count-directive-v17.md, #146): offline, mock transports only."""
 import asyncio
+import hashlib
 import unittest
 from pathlib import Path
 
@@ -11,13 +12,15 @@ from tools import candidate_registry as registry, evaluate, p3_assets
 
 ROOT = Path(__file__).resolve().parents[1]
 V16, V17 = "p3-count-reading-v16", "p3-count-directive-v17"
-DIRECTIVE = ('A generic people count (headcount, how many people, people who booked) that names no count meaning '
-             'is answered with the Overview request and count_request "unresolved", not a count_basis clarification.')
+DIRECTIVE = ('With a complete explicit Overview scope, a generic people count (headcount, how many people, people '
+             'who booked) that names no seats, accounts, attendance or distinct individuals is answered with the '
+             'Overview request and count_request "unresolved", not a count_basis clarification.')
 
 
 class DirectiveTests(unittest.TestCase):
     def test_only_the_instruction_changes_from_v16(self):
-        self.assertIn(DIRECTIVE, recipe_model.SYSTEM_INSTRUCTION)
+        self.assertEqual(recipe_model.SYSTEM_INSTRUCTION.count(DIRECTIVE), 1)
+        v16_text = recipe_model.SYSTEM_INSTRUCTION.replace(" " + DIRECTIVE, "", 1)
         self.assertEqual((recipe_model.INSTRUCTION_VERSION, recipe_model.CONTEXT_VERSION,
                           recipe_model.OUTPUT_CONTRACT, recipe_model.STRUCTURED_OUTPUT_VERSION),
                          ("recipe-selection-instruction-v10", "learningops-recipe-context-v6",
@@ -27,6 +30,8 @@ class DirectiveTests(unittest.TestCase):
         live = recipe_model.context_identity()
         self.assertEqual(live["context_sha256"], v16["recipe_context"]["context_sha256"])
         self.assertNotEqual(live["instruction_sha256"], v16["recipe_context"]["instruction_sha256"])
+        # Removing the one sentence gives back v16's instruction exactly.
+        self.assertEqual(hashlib.sha256(v16_text.encode()).hexdigest(), v16["recipe_context"]["instruction_sha256"])
 
     def test_every_dev_question_and_a_full_input_fit_the_unchanged_request_cap(self):
         self.assertEqual((MAX_INPUT_BYTES, MAX_REQUEST_BYTES), (4096, 32768))
@@ -46,6 +51,7 @@ class DirectiveTests(unittest.TestCase):
                                    transport=httpx.MockTransport(respond))
             result = asyncio.run(recipe_model.interpret_recipe_and_execute(question, Path("unused.sqlite"), client))
             with self.subTest(question=question[:40]):
+                self.assertEqual(result.error.code, "model_declined")
                 self.assertEqual(len(sent), 1)
                 self.assertLessEqual(len(sent[0].content), MAX_REQUEST_BYTES)
 
