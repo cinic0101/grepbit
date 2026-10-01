@@ -146,7 +146,7 @@ def closed_reading(value: object) -> dict:
     return result
 
 
-def _recorded(action: object) -> tuple[str | None, str | None]:
+def _recorded(action: object, actual_action: str | None = None) -> tuple[str | None, str | None]:
     if action is None:
         return None, None
     try:
@@ -164,6 +164,10 @@ def _recorded(action: object) -> tuple[str | None, str | None]:
     # A v16 named unavailable count reading is the model's action behind a server decline.
     if outcome == "request" and value.get("count_request") in evaluate.UNAVAILABLE_COUNTS:
         return "decline", None
+    # A v19 model count_basis clarification is the model's action behind a server answer (ADR #158); before v19
+    # it was a real clarification, so the recorded row's actual action decides.
+    if kind == "count_basis" and actual_action == "answer":
+        return "answer", None
     return _ACTIONS[outcome], kind
 
 
@@ -519,7 +523,7 @@ def _compare(report: dict, packet: dict, panels_path: Path | None, runs_path: Pa
         if case.case_id != row["case_id"] or recorded["case_id"] != row["case_id"]:
             raise assets.P3Error("manifest_drift")
         kind = panel.oracle_for(case).clarification.kind if case.expected_branch == "clarify" else None
-        action, recorded_kind = _recorded(recorded["validated_action"])
+        action, recorded_kind = _recorded(recorded["validated_action"], recorded.get("actual_action"))
         verdict = row["reading"]["verdict"] if row["reading"] is not None else None
         comparisons.append({
             "case_id": row["case_id"], "expected_branch": case.expected_branch, "expected_kind": kind,

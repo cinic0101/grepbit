@@ -51,7 +51,7 @@ SOURCE_SHA256 = {
     "tests/test_overview.py": "3870d5e79e46e4ced15d9f4f19754af9a645927a403f9b02b79b2bc09cfb7bc7",
     "tests/test_compare.py": "89e3454e0545e54e610c8df7583ff61efa4b9cfc36da72508acca387ee1df3f3",
     "tests/test_breakdown.py": "0403b52bce47914de4a52f99d3d4b8bde64485a6ad73b84c658c43d7a474eefb",
-    "tests/test_recipe_clarification.py": "36c3a189bfd3499c086eee83683c715490fb1d3fb10e44523029007e9923cc24",
+    "tests/test_recipe_clarification.py": "7eb964192be7b584e972e2db7f4036c15e773bec0b37b27051fd3dbdd1d3eb06",
     "tools/p3_assets.py": "c9835a9350479406bd0d21d96ee1a54bf72c6aaf86a905d8837962b35036fced",
     "tools/p3_grading.py": "50a8afec66c4f1d3f85e673f10fe160fd66c35a2b11dc445f258c6ea02f95b94",
     "tools/p3_expectations.py": "f4513b60b91bd62fdca64840d2eaf1259e37a0b6d3b925ebc1493642d7802745",
@@ -62,7 +62,7 @@ SOURCE_SHA256 = {
 SUPERSEDED_SOURCE_SHA256 = {
     "tests/test_recipe_clarification.py": (
         "42b0ce5ca722422540deb8ef46517da78c8ff558098fc6d81b6948602b3f0c11",
-        "https://github.com/cinic0101/grepbit/issues/146#issuecomment-5914114297"),
+        "https://github.com/cinic0101/grepbit/issues/158#issuecomment-5927141003"),
 }
 
 

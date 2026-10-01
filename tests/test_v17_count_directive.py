@@ -37,7 +37,9 @@ class DirectiveTests(unittest.TestCase):
         v16 = registry.load_entry(V16)
         self.assertEqual(recipe_model.structured_output_identity(), v16["structured_output"])
         live = recipe_model.context_identity()
-        self.assertEqual(live["context_sha256"], v16["recipe_context"]["context_sha256"])
+        # The context is v16's until v19 (#158) changes its count_basis entry (context v7).
+        if recipe_model.CONTEXT_VERSION == "learningops-recipe-context-v6":
+            self.assertEqual(live["context_sha256"], v16["recipe_context"]["context_sha256"])
         self.assertNotEqual(live["instruction_sha256"], v16["recipe_context"]["instruction_sha256"])
         # Removing the one sentence gives back v16's instruction exactly.
         if not superseded():

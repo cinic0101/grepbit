@@ -29,6 +29,14 @@ EDITS = (
 )
 
 
+def superseded():
+    """v18 is registered but no longer current (v19, #158). v19 changes only the context's count_basis entry, so the
+    three instruction edits and their undo to v17 stay live; the version tuple, the v17-equal context digest and the
+    registration stop applying."""
+    index = registry.load_index()
+    return V18 in [r["candidate_id"] for r in index["entries"]] and index["current"] != V18
+
+
 class ScopeTests(unittest.TestCase):
     def test_only_the_instruction_changes_from_v17(self):
         text = recipe_model.SYSTEM_INSTRUCTION
@@ -38,14 +46,16 @@ class ScopeTests(unittest.TestCase):
             v17_text = v17_text.replace(new, old, 1)
         for old, _ in EDITS[:2]:
             self.assertNotIn(old, text)
-        self.assertEqual((recipe_model.INSTRUCTION_VERSION, recipe_model.CONTEXT_VERSION,
-                          recipe_model.OUTPUT_CONTRACT, recipe_model.STRUCTURED_OUTPUT_VERSION),
-                         ("recipe-selection-instruction-v11", "learningops-recipe-context-v6",
-                          "recipe-request-json-v5", "recipe-structured-output-v5"))
+        if not superseded():
+            self.assertEqual((recipe_model.INSTRUCTION_VERSION, recipe_model.CONTEXT_VERSION,
+                              recipe_model.OUTPUT_CONTRACT, recipe_model.STRUCTURED_OUTPUT_VERSION),
+                             ("recipe-selection-instruction-v11", "learningops-recipe-context-v6",
+                              "recipe-request-json-v5", "recipe-structured-output-v5"))
         v17 = registry.load_entry(V17)
         self.assertEqual(recipe_model.structured_output_identity(), v17["structured_output"])
         live = recipe_model.context_identity()
-        self.assertEqual(live["context_sha256"], v17["recipe_context"]["context_sha256"])
+        if not superseded():
+            self.assertEqual(live["context_sha256"], v17["recipe_context"]["context_sha256"])
         self.assertNotEqual(live["instruction_sha256"], v17["recipe_context"]["instruction_sha256"])
         # Undoing the three edits gives back v17's instruction exactly.
         self.assertEqual(hashlib.sha256(v17_text.encode()).hexdigest(), v17["recipe_context"]["instruction_sha256"])
@@ -82,6 +92,8 @@ class ScopeTests(unittest.TestCase):
 
 class RegistryTests(unittest.TestCase):
     def test_v18_is_the_registered_current_candidate(self):
+        if superseded():
+            self.skipTest("v18 superseded; its registration is no longer current")
         current = registry.current()
         self.assertEqual((current["candidate_id"], current["ancestor"]), (V18, V17))
         self.assertEqual(registry.check()["runtime_files_changed"], [])

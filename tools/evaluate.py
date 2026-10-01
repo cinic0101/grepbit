@@ -254,8 +254,19 @@ def _panel_annex(panel_block: object, panels_path: Path | None = None) -> dict |
     return _read_annex(path)
 
 
-def _stated_assumption(action: object) -> dict | None:
-    """The count assumption a persisted request states: v13's explicit key, or v16's unresolved count reading."""
+def _count_basis_clarification(action: object) -> bool:
+    return (isinstance(action, dict) and action.get("outcome") == "clarify"
+            and isinstance(action.get("clarification"), dict) and action["clarification"].get("kind") == "count_basis")
+
+
+def _stated_assumption(action: object, actual_action: str | None = None) -> dict | None:
+    """The count assumption a persisted request states: v13's explicit key, or v16's unresolved count reading.
+
+    A model count_basis clarification states the assumption only where the server answered it (v19, ADR #158).
+    Before v19 the same action was a real clarification, so the row's recorded ``actual_action`` decides: a
+    ``clarify`` row states none. Without a recorded row (a scripted action) the current runtime's answer applies."""
+    if _count_basis_clarification(action):
+        return None if actual_action == "clarify" else dict(ASSUMPTION)
     if not isinstance(action, dict) or action.get("outcome") != "request":
         return None
     if "assumption" in action:
@@ -280,7 +291,7 @@ def annexed(row: dict, frozen_correct: bool, expectations: dict | None) -> str |
         action = model.strict_json(text)
     except ModelError:
         raise assets.P3Error("invalid_asset") from None
-    stated = _stated_assumption(action)
+    stated = _stated_assumption(action, row.get("actual_action"))
     return "correct" if stated == expectations.get(row["oracle_id"]) else "wrong"
 
 
@@ -871,8 +882,12 @@ def _validated_action(result) -> str | None:
     clarification = getattr(result, "clarification", None)
     source = getattr(result, "source_proposal", None)
     error = getattr(result, "error", None)
+    source_clarification = getattr(result, "source_clarification", None)
     try:
-        if proposal is not None:
+        if proposal is not None and source_clarification is not None:
+            # A server answer to a model count_basis clarification persists the model's own action (ADR #158).
+            action = {"outcome": "clarify", "clarification": source_clarification.to_dict()}
+        elif proposal is not None:
             action = proposal.to_dict()
         elif clarification is not None and source is not None:
             # A server-built clarification persists the model's own action, so replay rebuilds it.
@@ -912,15 +927,20 @@ def _check_action(row: dict, stop_reason: str | None = None) -> bool:
     # A named unavailable count reading is the model's action behind a server decline (v16).
     declined = (isinstance(action, dict) and action.get("outcome") == "request"
                 and action.get("count_request") in UNAVAILABLE_COUNTS)
-    expected = "clarify" if derived else "decline" if declined else None
+    # A model count_basis clarification is the model's action behind a server answer from v19 on (ADR #158);
+    # before v19 it was a real clarification row. The recorded actual action decides which, never the action alone.
+    answered = _count_basis_clarification(action) and row["actual_action"] == "answer"
+    expected = "clarify" if derived else "decline" if declined else "answer" if answered else None
     if (_action_text(action) != text
             or (expected or _ACTION_OUTCOMES[action["outcome"]]) != row["actual_action"]):
         raise assets.P3Error("invalid_asset")
-    if action["outcome"] == "clarify" and (
+    if action["outcome"] == "clarify" and not answered and (
             action["clarification"]["kind"] != row["clarification_kind"]
             or len(action["clarification"]["choices"]) != row["clarification_choice_count"]):
         raise assets.P3Error("invalid_asset")
     if derived and (row["clarification_kind"], row["clarification_choice_count"]) != ("comparison_roles", 2):
+        raise assets.P3Error("invalid_asset")
+    if answered and (row["clarification_kind"], row["clarification_choice_count"]) != (None, None):
         raise assets.P3Error("invalid_asset")
     evidence = row["evidence"]
     if evidence is None and stop_reason is not None and row["runner_error_code"] == stop_reason:

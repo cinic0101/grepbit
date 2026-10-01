@@ -314,8 +314,8 @@ def _annex_verdict(validated: str | None, graded: dict, case: assets.Case, expec
     if _unassessed(graded):
         return "unassessed"
     frozen_correct = graded["outcome"] == scoring._SUCCESS[case.expected_branch]
-    return evaluate.annexed({"validated_action": validated, "oracle_id": case.oracle_id}, frozen_correct,
-                            expectations)
+    return evaluate.annexed({"validated_action": validated, "oracle_id": case.oracle_id,
+                             "actual_action": graded.get("actual_action")}, frozen_correct, expectations)
 
 
 def _summary(rows: list[dict]) -> dict:

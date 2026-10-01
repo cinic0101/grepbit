@@ -226,14 +226,17 @@ class ReadingDiagnosticTests(EvaluateHarness):
         self.assertEqual((comparisons[odd.case_id]["expected_branch"],
                           comparisons[odd.case_id]["decision_matches_expected"],
                           comparisons[odd.case_id]["reason_matches_expected_kind"]), ("answer", False, None))
+        # v19 (ADR #158): the recorded count_basis clarification is the model's action behind a server answer.
         self.assertEqual((comparisons[clarify.case_id]["expected_kind"],
+                          comparisons[clarify.case_id]["recorded_action"],
                           comparisons[clarify.case_id]["recorded_kind"],
                           comparisons[clarify.case_id]["reason_matches_expected_kind"]),
-                         ("count_basis", "count_basis", True))
+                         ("count_basis", "answer", None, True))
         self.assertEqual(result["reading_summary"]["matches"]["decision_matches_expected"],
                          {"true": len(self.inputs) - 1, "false": 1, "null": 0})
+        # One more mismatch than before v19: the fresh read of C01 clarifies, but the recorded decision is the answer.
         self.assertEqual(result["reading_summary"]["matches"]["decision_matches_recorded"],
-                         {"true": len(self.inputs) - 2, "false": 2, "null": 0})
+                         {"true": len(self.inputs) - 3, "false": 3, "null": 0})
         self.assertEqual(sum(result["reading_summary"]["fields"]["decision"].values()), len(self.inputs))
         self.assertEqual(reading.read_report(slot / "report.json", **self.registries), result)
 
