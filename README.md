@@ -195,7 +195,7 @@ either tested root-cause edit: the enum labels or the older clarification
 rules. See the [results](docs/count-fresh-ablation-result.md).
 
 The owner then decided (ADR #158) that a clarification is offered only when
-every choice can be answered. The registered current candidate, v19, has the
+every choice can be answered. v19 has the
 server answer a model `count_basis` clarification with booked seats and the
 stated assumption. It also adds one context sentence, because a runtime-only
 change cannot be registered.
@@ -209,9 +209,15 @@ Against v18 on four dev panels, the gate gave `regression`:
   no-count Compare of an amount that v19's model declined, and it was stable
   on v18.
 
-v19 is therefore to be reverted. That needs an owner decision because it
-restores a frozen test. See the [v19 contract](docs/count-basis-answer-v19.md)
+So v19 is reverted. See the [v19 contract](docs/count-basis-answer-v19.md)
 and the [gate results](docs/count-basis-answer-v19-result.md).
+
+The registered current candidate, v20, restores v18's runtime bytes; its
+identity equals v18's. The owner approved this, and the restoration of the
+frozen test, as step 1 of option 2 (#158). Step 2 is a decision on letting
+the candidate identity cover the runtime's decision rule, so that v19's server
+answer could be measured without a model-facing change. See the
+[restoration](docs/v18-restoration-v20.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
