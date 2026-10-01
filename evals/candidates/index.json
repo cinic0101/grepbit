@@ -1,6 +1,6 @@
 {
   "registry_version": "candidate-registry-v1",
-  "current": "p3-count-reading-v16",
+  "current": "p3-count-directive-v17",
   "entries": [
     {
       "candidate_id": "p33-frozen-20abb559",
@@ -91,6 +91,12 @@
       "path": "p3-count-reading-v16.json",
       "sha256": "2d3f72b3a3992e303990481c62db4962211af5d174ec0ab2bcc423d5e0837c6d",
       "ancestor": "p3-compare-orientation-v15"
+    },
+    {
+      "candidate_id": "p3-count-directive-v17",
+      "path": "p3-count-directive-v17.json",
+      "sha256": "a6334dcdc2fbfe742d5ce96110f2ade2fa1dcc2eac5bb8c08aa6ac079950d071",
+      "ancestor": "p3-count-reading-v16"
     }
   ]
 }
