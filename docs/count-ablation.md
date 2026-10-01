@@ -218,6 +218,10 @@ run is started until the owner decides. The stops include `anomaly`,
 `timeout_streak`, `network_streak`, `budget` and `interrupted`. A stopped run is
 never repeated without the owner.
 
+## Result
+
+Both hypotheses: **No support** (H-A1: `dev-A1` correct 1/3 under `labels`; H-C1: `dev-C1` 0/3 under `rules`); no control broke. See [the results](count-fresh-ablation-result.md).
+
 ## Claims and limits
 
 - **Single samples.** Each input and variant is one sample at temperature 0.

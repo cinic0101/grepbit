@@ -181,6 +181,14 @@ second run reproduced its first (46/46 and 48/54). See the
 [v18 contract](docs/count-scope-v18.md) and the
 [gate results](docs/count-scope-v18-result.md).
 
+On a fresh count panel written outside the tuned inputs (#155), v18 scored 39/54.
+Every generic count, named-seats, unavailable-count, user-undecided and
+bookings row was correct. Every system-basis-doubt row (the `dev-C1` class)
+and every no-count overview row (the `dev-A1` class) was wrong. A count
+ablation (#156) found no support for either root-cause hypothesis: the enum
+labels or the older clarification rules. See the
+[results](docs/count-fresh-ablation-result.md).
+
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
 remains open. Grounding, clarification resume, synthesis, PostgreSQL parity
