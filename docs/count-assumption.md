@@ -70,7 +70,9 @@ The expected assumption is kept **outside** the oracle, in a closed annex file:
     sentinel's assessment of an input.
   - `--replay`: a row is `replayed_same` only if both its frozen grade and
     its annex verdict are unchanged. Each replay row also reports the annex
-    verdict before and after.
+    verdict before and after. Each verdict reads its own row: the replayed
+    one reads the replayed graded row, including its actual action. The annex
+    comes from the `panels_path` that replay was given (#161).
   - the aggregate's per-run `correct`.
 - **Where the frozen grade is kept:**
   - the report rows written by the live run. The live path records the frozen
