@@ -68,8 +68,8 @@ v19's archives are in the run index (#162), so the readback rule stays:
   assumption. On a `clarify` row it is the clarification it was.
 - **One change:** `_stated_assumption` now states the assumption for a
   `count_basis` clarification only when the recorded `actual_action` is
-  `answer`. So an action with no recorded row states none. Readback already
-  rejects any other recorded action for that action.
+  `answer`. So an action with no recorded row states none. Readback accepts
+  only `answer` or `clarify` as the recorded action for it.
   - **Why.** Under v19, "no row" meant the current runtime's answer. Under v20
     the current runtime clarifies.
   - **The rule now.** Only a recorded server answer states the assumption, and
@@ -136,9 +136,10 @@ Committed failing before the restoration and passing after it, in the same PR:
   skips with a named reason if any other runtime file differs from v19's
   registration, because the fixture is v19 only together with them.
 
-Once v20 is superseded, its runtime, frozen-pair, registration and
-end-to-end checks skip, as the earlier restorations' rulers do. The
-evaluator checks and the fixture's digest stay.
+Once v20 is superseded, its runtime, frozen-pair, current-registration and
+end-to-end checks skip. As in the earlier restorations' rulers, its
+registration identity (equal to v18's, ancestor v19) stays checked, and so do
+the evaluator checks and the fixture's digest.
 
 ## Evaluation
 

@@ -35,8 +35,8 @@ FROZEN = {
 
 
 def superseded():
-    """v20 is registered but no longer current. Its runtime, frozen-pair, registration and end-to-end gate checks
-    stop applying; the evaluator checks and the fixture's digest stay."""
+    """v20 is registered but no longer current. Its runtime, frozen-pair, current-registration and end-to-end gate
+    checks stop applying; its registration identity, the evaluator checks and the fixture's digest stay."""
     index = registry.load_index()
     return V20 in [r["candidate_id"] for r in index["entries"]] and index["current"] != V20
 
@@ -82,7 +82,7 @@ def v19_runtime():
 class IdentityTests(unittest.TestCase):
     def setUp(self):
         if superseded():
-            self.skipTest("v20 superseded; the live runtime, frozen pair and registration are no longer v20's")
+            self.skipTest("v20 superseded; the live runtime, frozen pair and current registration are no longer v20's")
 
     def test_the_runtime_is_v18s_bytes_with_no_server_answer(self):
         v18 = registry.load_entry(V18)
@@ -91,12 +91,9 @@ class IdentityTests(unittest.TestCase):
         self.assertFalse(hasattr(recipe_model, "_server_answers"))
         self.assertNotIn("source_clarification", recipe_model.RecipeInterpretation.__dataclass_fields__)
 
-    def test_v20_is_the_registered_current_candidate_with_v18s_identity(self):
-        v18, v20 = registry.load_entry(V18), registry.load_entry(V20)
+    def test_v20_is_the_registered_current_candidate(self):
         current = registry.current()
         self.assertEqual((current["candidate_id"], current["ancestor"]), (V20, V19))
-        for key in IDENTITY:
-            self.assertEqual(v20[key], v18[key], key)
         self.assertEqual(registry.check()["runtime_files_changed"], [])
 
     def test_the_frozen_pair_has_its_v18_bytes(self):
@@ -105,6 +102,15 @@ class IdentityTests(unittest.TestCase):
         import test_p3_exposed
         self.assertEqual(test_p3_exposed.SOURCE_SHA256["tests/test_recipe_clarification.py"],
                          FROZEN["tests/test_recipe_clarification.py"])
+
+
+class RegistrationTests(unittest.TestCase):
+    def test_v20s_registration_equals_v18s_identity_after_v19(self):
+        # Immutable registry entries only, so this stays checked after v20 is superseded, as v12's and v14's do.
+        v18, v20 = registry.load_entry(V18), registry.load_entry(V20)
+        self.assertEqual(v20["ancestor"], V19)
+        for key in IDENTITY:
+            self.assertEqual(v20[key], v18[key], key)
 
 
 class EvaluatorTests(unittest.TestCase):
