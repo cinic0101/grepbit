@@ -126,6 +126,13 @@ behaviour: they patch `recipe_model._server_answers` to `False`.
 
 ## Evaluation (grant steps 4 and 5)
 
+**Result: `regression`.** 21 inputs were fixed (`dev-C1` ×3, `dev-BM7` ×3,
+`dev-CF11` to `dev-CF15` ×15), and `dev-BM2.en` broke on both panels that
+contain it. A regression is a stop, so v19 is to be reverted. See the
+[gate results](count-basis-answer-v19-result.md). The amendment
+(#158 #issuecomment-5932057637) added a second v18 run on the two new panel
+versions, so all four panels were gated.
+
 The four panels are `p3-dev-bound-meaning-v3`, `p3-dev-count-fresh-v2`,
 `p3-dev-matrix-compare-first-v3` and `p3-dev-mechanism-probe-v2`. Each gets
 one v18 sentinel (step 2) and one v19 run (step 4): 154 + 154 = 308 calls. The
