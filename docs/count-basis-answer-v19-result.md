@@ -25,9 +25,9 @@ the changed model-facing context" does not hold.
 - **What stands.** The pre-registered verdict above stays as recorded, and so
   does the revert it required.
 - **What it means.** Its only break was a flaky input.
-  - **On today's baseline,** which now holds v20's declines, v19's documented
-    gate gives `passed` with `dev-BM2.en` excluded (index `bbf39d2f`). That is
-    a counterfactual, not a re-gate.
+  - **On index `bbf39d2f`,** which also holds v20's declines, v19's documented
+    gate gives `passed` with `dev-BM2.en` excluded. That is a
+    counterfactual, not a re-gate.
   - **In v19's own session,** a third v18 run might have answered, as the
     13:13 run did.
 

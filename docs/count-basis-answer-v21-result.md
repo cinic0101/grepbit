@@ -107,9 +107,12 @@ Annex-aware index counts:
   - **No other count reading moved.** The G, S, U and K rows of the fresh
     panel, the Compare rows and the decline rows all kept their outcomes.
 - **`dev-BM2.en` is flaky on v18's model-facing bytes.** Its decline is not
-  specific to v19's or v21's change, because v20's run of the same model
-  input declined it too. Whether either change also affected it cannot be
-  told from these runs. The question is "Against February 2026 as the
+  specific to v19's change, because v20's run of the same model input
+  declined it too.
+  - **v21 did not cause it.** v21's change is runtime-only and acts on
+    `count_basis` clarifications after the model's action.
+  - **v19 is undecided.** Whether v19's context change also affected it
+    cannot be told from these runs. The question is "Against February 2026 as the
   reference, how did the overall confirmed booking amount in March change?"
   Its observations on 2026-10-01 (UTC, run end times), all on the same route:
 
@@ -132,7 +135,8 @@ Annex-aware index counts:
     likely an effect of the changed model-facing context" does not hold. That
     record carries a dated correction.
 - **Determinism is high but not complete.** Between the v20 sentinel and the
-  six earlier v18 runs in the gate's baselines, 304 of 308 outcomes repeat,
+  eight earlier v18 runs in the gate's baselines (two per panel), 304 of 308
+  outcomes repeat,
   and the four differences are all `dev-BM2.en`.
 - **Re-running v19's gate now gives a different verdict.**
   - **What changed.** v19's documented gate command, run on today's index
