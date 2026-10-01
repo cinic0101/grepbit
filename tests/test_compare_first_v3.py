@@ -50,22 +50,44 @@ class EmptyAnnexTests(unittest.TestCase):
 
 
 class CompareFirstV3PanelTests(unittest.TestCase):
-    def test_v3_is_v2_with_an_empty_annex(self):
+    def test_v3_is_v2_with_dev_c1_ruled_rule_one(self):
         old, new = entry(V2), entry(V3)
         self.assertEqual((new["tier"], new["authoring"], new["allocation_policy"], new["intake"], new["freeze"]),
                          ("dev", "development", None, None, None))
-        self.assertEqual((new["assets"]["cases"], new["assets"]["oracles"]),
-                         (old["assets"]["cases"], old["assets"]["oracles"]))
         self.assertNotIn("annex", old)
-        v2_bytes = (ROOT / old["path"]).read_text(encoding="utf-8")
-        self.assertEqual((ROOT / new["path"]).read_text(encoding="utf-8"),
-                         v2_bytes.replace(f'"panel_id": "{V2}"', f'"panel_id": "{V3}"', 1))
+        v2_panel = json.loads((ROOT / old["path"]).read_text(encoding="utf-8"))
+        v3_panel = json.loads((ROOT / new["path"]).read_text(encoding="utf-8"))
+        self.assertEqual(v3_panel, {**v2_panel, "panel_id": V3, "cases": "dev-cases-v3.json",
+                                    "oracles": "dev-oracles-v3.json"})
+        folder = ROOT / "evals/dev"
+        cases = {name: {c["case_id"]: c for c in json.loads((folder / f"dev-cases-{name}.json").read_text())["cases"]}
+                 for name in ("v2", "v3")}
+        self.assertEqual(list(cases["v2"]), list(cases["v3"]))
+        for case_id, case in cases["v3"].items():
+            before = cases["v2"][case_id]
+            if case["family_id"] != "dev-C1":
+                self.assertEqual(case, before, case_id)
+                continue
+            self.assertEqual({key for key in case if case[key] != before.get(key)},
+                             {"oracle_id", "expected_branch", "cohort", "semantic_signature"})
+            self.assertEqual((case["oracle_id"], case["expected_branch"], case["cohort"], case["question"]),
+                             ("dev-C1.v2", "answer", "answer", before["question"]))
+        oracles = {name: json.loads((folder / f"dev-oracles-{name}.json").read_text())["oracles"]
+                   for name in ("v2", "v3")}
+        ids = [o["oracle_id"] for o in oracles["v3"]]
+        self.assertEqual(ids, [("dev-C1.v2" if i == "dev-C1.v1" else i) for i in (o["oracle_id"] for o in oracles["v2"])])
+        by_id = {o["oracle_id"]: o for o in oracles["v2"] + oracles["v3"]}
+        for oracle_id in ids:
+            if oracle_id != "dev-C1.v2":
+                self.assertEqual(by_id[oracle_id], next(o for o in oracles["v2"] if o["oracle_id"] == oracle_id))
+        revised, a2 = by_id["dev-C1.v2"], by_id["dev-A2.v1"]
+        drop = ("oracle_id", "revision", "provenance")
+        self.assertEqual({k: v for k, v in revised.items() if k not in drop}, {k: v for k, v in a2.items() if k not in drop})
+        self.assertEqual((revised["revision"], revised["request"]["center_code"]), (2, "CTR-B01"))
         panel = p3_assets.load_panel(ROOT / new["path"])
         self.assertEqual(panel.panel_id, V3)
-        self.assertEqual(evaluate.annex_expectations(new, panel), {})
+        self.assertEqual(evaluate.annex_expectations(new, panel), {"dev-C1.v2": ASSUMPTION})
         annex = ROOT / new["annex"]["path"]
-        self.assertEqual(json.loads(annex.read_text(encoding="utf-8")),
-                         {"version": evaluate.ANNEX_VERSION, "expectations": {}})
         self.assertEqual(hashlib.sha256(annex.read_bytes()).hexdigest(), new["annex"]["sha256"])
 
 
