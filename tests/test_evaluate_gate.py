@@ -1,4 +1,4 @@
-"""Candidate gate rulers (evaluation-gate-v1, #79): synthetic panels and mock transports only; no live call."""
+"""Candidate gate rulers (evaluation-gate-v2, #79, #164): synthetic panels and mock transports only; no live call."""
 from contextlib import contextmanager, redirect_stdout
 import hashlib
 import io
@@ -116,12 +116,12 @@ class CandidateGateTests(EvaluateHarness):
         result = self.gate(902)
         self.assertEqual(result, self.gate(902))
         self.assertEqual((result["version"], result["promotion_eligible"], result["claim"]),
-                         ("evaluation-gate-v1", False, "development_observation"))
+                         ("evaluation-gate-v2", False, "development_observation"))
         self.assertEqual((result["route_id"], result["owner_authorization_reference"]), ("litellm-31b", f"{GRANT}902"))
-        self.assertEqual(result["candidate"], {"candidate_id": OTHER,
-                                               "candidate_sha256": registry.load_entry(OTHER)["candidate_sha256"]})
-        self.assertEqual(result["baseline"], {"candidate_id": self.baseline,
-                                              "candidate_sha256": registry.load_entry(self.baseline)["candidate_sha256"]})
+        for key, cid in (("candidate", OTHER), ("baseline", self.baseline)):
+            entry = registry.load_entry(cid)
+            self.assertEqual(result[key], {"candidate_id": cid, "candidate_sha256": entry["candidate_sha256"],
+                                           "behavior_sha256": registry.behavior_identity(entry)})
         self.assertEqual(result["run_index_sha256"], hashlib.sha256(self.runs.read_bytes()).hexdigest())
         [panel] = result["panels"]
         self.assertEqual(panel["panel_id"], "synthetic-dev")
