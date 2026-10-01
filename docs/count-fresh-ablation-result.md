@@ -24,7 +24,7 @@ attested disabled (#79 #issuecomment-5857155780).
 | Packet manifest SHA256 | `e81e729f44274937336f8a259c7aa815badbdf5717b41a87dd9d4abaf54bf9cc` |
 | Report SHA256 | `fa205f45250a5895fc2b905afe052bc24af2ad3fd3e2c7158424f461e65e0909` |
 | Run | `p3-dev-count-fresh-v1--litellm-gemma-4-31b--p3-count-scope-v18--821041f0ef75--r1`, complete, 54 calls |
-| Annex-aware result | **39/54**, 13 of 18 families |
+| Annex-aware result | **39/54**, 13 of 18 families. The frozen grade is 45/54 and 15 of 18 families: the 6 O rows are frozen-correct but annex-wrong. |
 
 | Type | Families | Rows correct | What v18 did |
 | --- | --- | --- | --- |
@@ -37,17 +37,24 @@ attested disabled (#79 #issuecomment-5857155780).
 | **O: general overview, no count** (like `dev-A1`) | CF16, CF17 | **0/6** | `unresolved`, so a spurious assumption (annex-wrong) on all 6 |
 
 **Reading:**
-- **The handling generalized where it already worked.** v18 handles the five
-  types it handled on the tuned panels (G, S, U, D, K) on 39 new questions.
-- **`dev-A1` and `dev-C1` are not wording accidents.** Their failures are
-  systematic for their whole classes: every O row and every B row failed, in
-  all three languages.
+- **The handling held where it already worked.** On 39 rows (13 new
+  families, written within the prompt's vocabulary), v18 handled the five types
+  it handled on the tuned panels: G, S, U, D and K. This is a development
+  observation, not generalization evidence.
+- **`dev-A1` and `dev-C1` look like more than wording accidents.** The failure
+  appears in every O and B family on this panel, in all three languages: 2 O
+  families and 3 B families, one sample each.
+  - CF14 applies the #149 ruling to seats-versus-distinct-people doubt, an
+    extension the owner has not separately confirmed. Without CF14, B is still
+    0/6.
 - **Limits:**
   - one run;
   - questions written within the prompt's own vocabulary (the brief shared its
     wording, `docs/count-fresh-panel.md`, accepted by the owner as a disclosed
     limitation at #issuecomment-5926564128);
-  - some near-paraphrases of tuned questions.
+  - some near-paraphrases of tuned questions;
+  - **the panel is now exposed.** A later version, for example one with CF11
+    and CF12 revised under ADR #158, is regression data, not fresh.
 
 ## Step (4): the count ablation
 
@@ -57,7 +64,8 @@ attested disabled (#79 #issuecomment-5857155780).
 | `p3-dev-bound-meaning-v2` | 18 | `d641a716bcd9d06407d541c9713b542a5032b26bbe3a44d6f480c5dc2ab9437d` | `4b719d550c7cc7c32203c6d576ee72ee6f97e7891d0efc1762fad9a6045ebf75` |
 | `p3-dev-mechanism-probe-v2` | 6 | `cdb2af72127fdd4cf9709ab16371e154d8f7dd59138d4ff807a549ef1c637908` | `39bf93871f698155298f44661a007669521f6b794e1199b6c9767902de4446f7` |
 
-- **The runs.** All three are complete, from `dev@d6e7945` (the #156 merge),
+- **The runs.** All three are complete, from
+  `dev@d6e7945f807785663e94698c8b840508f1e18781` (the #156 merge),
   under `count-ablation-v1` (`docs/count-ablation.md`). Every row returned.
 - **Readback.** Each report reads back in the main checkout with
   `.venv/bin/python -m tools.count_ablation --report`, against the v18 r1 run
@@ -88,15 +96,16 @@ No `rules` row was mapped.
 
 ## Reading
 
-- **Neither hypothesis explains the failures on this wording.**
+- **These two edits did not move the targets** (one sample each):
   - **Labels.** Renaming the labels to `no_people_count` and
     `generic_people_count` did not move `dev-A1`'s reading in zh-TW or en.
   - **Rules.** Scoping the context's `count_basis` entry and the either/or
     rule did not move `dev-C1`'s clarification in any language.
-  - **What it does not rule out.** These were one-sample probes. The result
-    gives no support; it does not refute the hypotheses.
-- **The remaining explanation, an untested inference.** The decisions come
-  from the model's own reading rather than from these prompt texts:
+  - **What it does not rule out.** The result gives no support; it does not
+    refute the hypotheses. The labels may still play some part (see the weak
+    signal below).
+- **One candidate explanation, untested.** The decisions may come from the
+  model's own reading rather than from these prompt texts:
   - a general booking overview "implies" a count of unresolved meaning (the
     Overview answer does contain counts);
   - a user who voices uncertainty and names two bases is asked to choose.
