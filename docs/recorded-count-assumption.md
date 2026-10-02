@@ -104,3 +104,15 @@ PR:
     verdict goes from `wrong` to `correct`.
   - **The shape.** A replayed statement of the wrong shape fails
     (`invalid_asset`).
+
+**Amended for candidate v22 (2026-10-02, `docs/overview-basis-v22.md`).**
+Policy A's runtime states the assumption on every answered Overview, so two
+checks now follow the live runtime's rule:
+- **The live path.** Under the narrow rule (through v21), the recorded
+  statement still equals the derivation. Under policy A, it equals policy A's
+  rule instead: every answered Overview, and the server answer to a model
+  `count_basis` clarification. On `none` and `booked_seats` readings the
+  derivation would miss it.
+- **The flip.** Replay runs under the rule the live runtime does not use.
+  Under a narrow runtime the E01 annex verdict goes from `wrong` to `correct`;
+  under policy A, from `correct` to `wrong`.

@@ -58,8 +58,20 @@ It is registrable as a runtime-only candidate under the behaviour identity
   - **v22 is the registered current candidate:** ancestor v21; the same
     `candidate_sha256`, a different behaviour identity; `check` reports no
     changed runtime file.
-- **Earlier rulers** that assert v21's narrower rule against the live runtime
-  skip once their candidate is superseded, or follow v22. The PR lists them.
+- **Earlier rulers** asserted v21's narrower rule against the live runtime.
+  Each one now checks either the annex mechanics under a pinned rule, or the
+  live runtime's rule. Each passes on both v21's and v22's runtime
+  (`tests/narrow_assumption.py`):
+  - **The annex mechanics** (`test_count_assumption`, and
+    `test_compare_first_v3`, which reuses its synthetic runs). These pin the
+    narrow rule in `setUp`. They test how the annex is computed, not which
+    rule the current candidate uses.
+  - **v16's ruler** (`test_v16_count_reading`). It checks v16's rule only while
+    the runtime keeps that rule. Under policy A, the reading table and the
+    legacy proposal expect the statement. The named-seats run is skipped,
+    because this ruler covers it.
+  - **A1's ruler** (`test_recorded_count_assumption`). See the amendment in
+    `docs/recorded-count-assumption.md`.
 
 ## Evaluation (needs the owner's numeric confirmation, #169)
 

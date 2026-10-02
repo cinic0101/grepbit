@@ -11,6 +11,8 @@ from grepbit import bedrock, gateway, model, recipe_model
 from grepbit.gateway import GatewayClient, GatewayConfig, ModelError, MAX_INPUT_BYTES, MAX_REQUEST_BYTES
 from tools import candidate_registry as registry, evaluate, fixture, p3_assets, p3_grading
 
+import narrow_assumption
+
 ROOT = Path(__file__).resolve().parents[1]
 V16 = "p3-count-reading-v16"
 COUNTS = ["none", "booked_seats", "unresolved", "known_booking_accounts", "attendance_visits", "distinct_people"]
@@ -61,7 +63,10 @@ class ProposalTests(unittest.TestCase):
             parsed = recipe_model._proposal(_overview(value))
             self.assertEqual(parsed.count_request, value)
             self.assertEqual(parsed.to_dict(), _overview(value))
-            self.assertEqual(parsed.assumption, ASSUMPTION if value == "unresolved" else None)
+            # v16's rule while the runtime keeps it; policy A (#169, v22) states it for every non-unavailable reading.
+            stated = (value == "unresolved") if narrow_assumption.live_rule_is_narrow() else (
+                value not in recipe_model.UNAVAILABLE_COUNTS)
+            self.assertEqual(parsed.assumption, ASSUMPTION if stated else None)
         bad = [_overview(None), _overview(None, count_request=None), _overview("people"), _overview("NONE"),
                _overview(None, count_request=["none"]), _overview("unresolved", assumption=dict(ASSUMPTION)),
                _overview(None, assumption=dict(ASSUMPTION)),
@@ -79,7 +84,7 @@ class ProposalTests(unittest.TestCase):
         request = recipe_model._proposal(_overview()).request
         legacy = recipe_model.RecipeProposal("overview", request)
         self.assertIsNone(legacy.count_request)
-        self.assertIsNone(legacy.assumption)
+        self.assertEqual(legacy.assumption, None if narrow_assumption.live_rule_is_narrow() else ASSUMPTION)
         self.assertNotIn("count_request", legacy.to_dict())
         hash(legacy)
         compare = recipe_model._proposal({"outcome": "request", "recipe_id": "compare", "recipe_version": "0.1",
@@ -191,6 +196,8 @@ class RuntimeAndEvaluationTests(unittest.TestCase):
         self.assertEqual(row["validated_action"], model.canonical_json(_overview("unresolved")))
 
     def test_a_named_seats_count_is_answered_without_an_assumption(self):
+        if not narrow_assumption.live_rule_is_narrow():
+            self.skipTest("policy A (#169, v22) states the basis on every executed Overview; its ruler covers it")
         for value in ("booked_seats", "none"):
             with self.subTest(value=value):
                 result, grade, _, annex = self.graded("dev-BM5.en", _overview(value))
