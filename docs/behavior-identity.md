@@ -59,9 +59,9 @@ prints it.
 | `register` refuses `identity_unchanged` | behaviour | was model input. A runtime-only change is now registrable. |
 | `check` (the live runtime is the current candidate) | model input, failing; runtime files, listed | it now also lists a recorded runtime file the checkout no longer has |
 | `--prepare` and `--live` (packet build and its rebuild) | model input and runtime files | **new refusal:** `source_identity_failure` when `check` lists any changed runtime file |
-| `--gate`: the `same_bytes` refusal, the baseline runs and the candidate runs | behaviour | was model input. Version `evaluation-gate-v2`. |
+| `--gate`: the `same_bytes` refusal, the baseline runs and the candidate runs | behaviour | was model input. Version `evaluation-gate-v2`, v3 since #168. |
 | `--gate`: each report's recorded identity (`candidate_identity`) | model input | unchanged: a report records only `candidate_sha256` |
-| `--aggregate`: the included runs | behaviour | was model input. Version `evaluation-aggregate-v2`. |
+| `--aggregate`: the included runs | behaviour | was model input. Version `evaluation-aggregate-v2`, v3 since #168. |
 | `--replay`: `candidate_bytes` | model input | unchanged: replay feeds recorded model actions through the current code, so only the model input must match |
 | The reading diagnostic's source run | model input | unchanged: it studies the model's reading of the same input |
 | The routing upper bound's and the count ablation's baselines | behaviour | was model input: they compare graded outcomes, which depend on the runtime |

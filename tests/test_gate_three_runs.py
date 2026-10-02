@@ -32,6 +32,8 @@ class ClassRuleTests(unittest.TestCase):
         # An unassessed run does not count towards the three.
         self.assertEqual(classed(RIGHT, RIGHT, DOWN), "insufficient")
         self.assertEqual(classed(RIGHT, RIGHT, DOWN, RIGHT), "stable_correct")
+        # No assessed run at all is never a class to break or fix.
+        self.assertEqual(classed(DOWN, DOWN, DOWN), "insufficient")
 
     def test_one_right_and_one_wrong_is_flaky_at_any_count(self):
         self.assertEqual(classed(RIGHT, WRONG), "flaky")

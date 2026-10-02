@@ -107,8 +107,9 @@ that was not raised on the model's own content.
 The baseline classes keep the aggregate taxonomy, which also counts a graded
 row with an operational error as unassessed. That difference only makes a pass
 harder:
-- An input with such a row in one baseline run and correct answers in the
-  others is `stable_correct`, so a wrong candidate row counts as a break.
+- An input with such a row in one baseline run and correct answers in at
+  least three others is `stable_correct`, so a wrong candidate row counts as
+  a break.
 - An input with too few assessed baseline rows is `insufficient`, so a correct
   candidate row is not counted as a fix.
 
@@ -212,8 +213,9 @@ repeated panel is `invalid_arguments`.
   count-assumption candidate (v13) is gated on `p3-dev-bound-meaning-v2` and
   `p3-dev-mechanism-probe-v2`. On the v1 panels, that candidate's intended
   answers would be breaks by design. Each such gate needs a sentinel plus a
-  candidate run on both panels, 92 calls per candidate, and v2 also needs at
-  least two baseline runs per panel.
+  candidate run on both panels, 92 calls per candidate, and v2 also needed
+  at least two baseline runs per panel. From v3 (#168), a stable class needs
+  three assessed baseline runs per input, the sentinel included.
 - The gate reads recorded runs only. It does not replace the regression and
   holdout rules or the independent semantic acceptance in AGENTS.md.
 - A candidate that changes model-facing bytes still needs a live run. A
