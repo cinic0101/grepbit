@@ -100,6 +100,14 @@ class LiveAndReplayTests(EvaluateHarness):
         self.assertEqual(row["class"], "replayed_changed")
         # E01 expects the assumption: the archived run stated none, and the replayed run states it.
         self.assertEqual(row["annex"], {"archived": "wrong", "replayed": "correct"})
+        # A replayed statement is validated like an archived one: a wrong shape fails.
+        drifted = dict(recipe_model.ASSUMPTION_STATEMENT, reported_as="people")
+        with patch.object(recipe_model, "ASSUMPTION_STATEMENT", drifted), \
+                patch.object(recipe_model.RecipeProposal, "assumption", every_overview), \
+                self.assertRaises(p3_assets.P3Error) as refused:
+            await evaluate.replay(output / "report.json", self.database, self.root / "replay-drift.json",
+                                  panels_path=self.panels)
+        self.assertEqual(refused.exception.code, "invalid_asset")
 
 
 if __name__ == "__main__":

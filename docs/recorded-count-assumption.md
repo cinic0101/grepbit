@@ -57,11 +57,14 @@ the archived evidence projection drops it.
   #161: each verdict reads its own row.
 - **Consistency through v21.** On a run made under v21, the recorded statement
   equals the derivation on every completed row with a persisted action,
-  frozen-correct or not. Kernel-failure and post-execution-timeout rows, which
-  are never assessed, record `null`. The ruler checks this on a synthetic run.
+  frozen-correct or not.
+  - **The exceptions** are kernel-failure and post-execution-timeout rows.
+    They record `null` and are never assessed.
+  - **The ruler** checks this on a synthetic run.
 - **A statement implies no error.** A non-null recorded statement on a row
-  with an `error_code` fails readback. A replayed statement is validated
-  exactly like an archived one.
+  with an `error_code` fails readback. A replayed statement is validated for
+  its shape like an archived one. The runtime makes no statement on an error,
+  so the error rule cannot arise in replay.
 
 ## Not covered
 
@@ -86,10 +89,18 @@ PR:
   statement with `count_request: "none"` states it, and a recorded `null` with
   `count_request: "unresolved"` states none. A row without the key keeps the
   derivation.
-- **The live path records it.** On a synthetic run under the current runtime,
-  every evidence row has the key, and every frozen-correct row's recorded
-  statement equals the derivation.
-- **Replay** reads the replayed run's statement. Under a patched runtime that
-  states the assumption on every Overview (as policy A will), an archived
-  `count_request: "none"` row is `replayed_changed`, with the annex verdict
-  going from `correct` to `wrong` against an oracle that expects none.
+- **The error rule.** A statement on a row with an `error_code` is rejected,
+  and `null` with an error is kept.
+- **The live path records it.** The runtime's statement equals the archived
+  pin. On a synthetic run under the current runtime:
+  - the run completes, and every row's evidence has the key;
+  - on every completed row with a persisted action, the recorded statement
+    equals the derivation;
+  - at least one row states it (the server-answered C01).
+- **Replay reads the replayed run's statement.**
+  - **The flip.** Under a patched runtime that states the assumption on every
+    Overview (as policy A will), the archived `count_request: "none"` E01 rows
+    are `replayed_changed`. Their oracle expects the assumption, so the annex
+    verdict goes from `wrong` to `correct`.
+  - **The shape.** A replayed statement of the wrong shape fails
+    (`invalid_asset`).
