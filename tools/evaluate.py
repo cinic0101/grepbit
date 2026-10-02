@@ -57,8 +57,10 @@ REPORT_VERSIONS = {PACKET_V1: "evaluation-report-v1", PACKET_V2: "evaluation-rep
 MANIFEST_VERSION = MANIFEST_VERSIONS[PACKET_VERSION]
 REPORT_VERSION = REPORT_VERSIONS[PACKET_VERSION]
 REPLAY_VERSION = "evaluation-replay-v1"
-AGGREGATE_VERSION = "evaluation-aggregate-v2"
-GATE_VERSION = "evaluation-gate-v2"
+AGGREGATE_VERSION = "evaluation-aggregate-v3"
+GATE_VERSION = "evaluation-gate-v3"
+# A stable baseline class needs this many assessed runs (#168); runs that disagree are flaky at any count.
+STABLE_MIN_ASSESSED = 3
 STOP_VERSION = "evaluation-stops-v1"
 RUN_RECORD_VERSION = "evaluation-run-record-v1"
 PURPOSE = "one_tiered_evaluation_run_never_promotion"
@@ -1394,8 +1396,8 @@ def _input_classes(reports: list[dict], expectations: dict | None = None) -> lis
         correct = sum(bool(score) for score, seen in zip(scores, assessed) if seen)
         actions = [row.get("validated_action") for row in rows if row.get("validated_action") is not None]
         count = sum(assessed)
-        kind = ("insufficient" if count < 2 else "stable_correct" if correct == count
-                else "stable_wrong" if correct == 0 else "flaky")
+        kind = ("flaky" if 0 < correct < count else "insufficient" if count < STABLE_MIN_ASSESSED
+                else "stable_correct" if correct == count else "stable_wrong")
         inputs.append({
             "case_id": case_id, "family_id": rows[0]["family_id"], "observations": len(rows), "assessed": count,
             "correct": correct, "unassessed": len(rows) - count,

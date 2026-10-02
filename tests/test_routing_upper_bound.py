@@ -231,6 +231,8 @@ class RoutingExperimentTests(EvaluateHarness):
         self.assertEqual((result["comparison"]["verdict"], result["comparison"]["refusal"]), (None, "no_sentinel"))
 
     async def test_model_content_is_graded_and_route_failures_stop_unassessed(self):
+        # A stable baseline class needs three assessed runs (#168).
+        await self.baseline(958)
         await self.baseline(959)
         await self.baseline(960)
         y, w = self.inputs[1].case_id, self.inputs[3].case_id
@@ -310,6 +312,8 @@ class RoutingExperimentTests(EvaluateHarness):
         self.assertEqual(result["comparison"]["verdict"], "inconclusive")
 
     async def test_a_model_refusal_is_graded_as_a_decline_like_production(self):
+        # A stable baseline class needs three assessed runs (#168).
+        await self.baseline(1990)
         await self.baseline(991)
         await self.baseline(992)
         x = self.inputs[0].case_id
@@ -353,6 +357,8 @@ class RoutingExperimentTests(EvaluateHarness):
 
     async def test_a_fix_needs_a_complete_sentinel_that_assessed_the_input(self):
         x = self.inputs[0].case_id
+        # A stable baseline class needs three assessed runs (#168).
+        await self.baseline(1996, declined={x})
         await self.baseline(996, declined={x})
         await self.baseline(997, declined={x})
         # A sentinel stopped at its first input gives no same-session evidence.

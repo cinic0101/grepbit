@@ -344,7 +344,7 @@ class ReplayableObservationTests(EvaluateHarness):
             runner.record(output / "report.json", runs_path=self.runs, now=f"2026-09-29T00:00:0{index}Z")
         recorded = runner.load_runs(self.runs)
         result = runner.aggregate("synthetic-dev", "litellm-31b", self.candidate, runs_path=self.runs)
-        self.assertEqual(result["version"], "evaluation-aggregate-v2")
+        self.assertEqual(result["version"], "evaluation-aggregate-v3")
         entry = registry.load_entry(self.candidate)
         self.assertEqual(result["candidate"], {"candidate_id": self.candidate, "candidate_sha256": entry["candidate_sha256"],
                                                "behavior_sha256": registry.behavior_identity(entry)})

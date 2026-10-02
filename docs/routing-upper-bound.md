@@ -92,7 +92,9 @@ production schema, so a reply valid under it is also valid under production.
 
 ## Comparison with the current candidate
 
-The comparison reuses the candidate gate's rules (`docs/candidate-gate.md`):
+The comparison reuses the candidate gate's rules (`docs/candidate-gate.md`).
+It is recomputed whenever a report is read back, so it always applies the
+current rule (three assessed runs for a stable class since gate v3, #168):
 - **Baseline classes** are the aggregate classes of every indexed run with the
   packet candidate's behaviour identity ([behaviour identity](behavior-identity.md))
   on the panel and route.

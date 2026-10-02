@@ -145,7 +145,7 @@ cannot be cherry-picked. Each included archive must exist at its slot, match
 its indexed `report_sha256`, and read back through its own reader
 (evaluation v1/v2 or the P3.5 formal reader), all with the same input order;
 otherwise the aggregate stops. An aggregate with no included run also stops.
-It prints canonical JSON (`evaluation-aggregate-v2`; its `candidate` object
+It prints canonical JSON (`evaluation-aggregate-v3`; its `candidate` object
 also carries `behavior_sha256`)
 with:
 
@@ -155,10 +155,11 @@ with:
 - per input: the number of observations, assessed observations, correct
   observations, outcome and action counts, the number of distinct action
   signatures and of distinct persisted validated actions, and a class:
-  - `stable_correct`: at least 2 assessed and all correct;
-  - `stable_wrong`: at least 2 assessed and none correct;
-  - `flaky`: at least one correct and at least one wrong;
-  - `insufficient`: fewer than 2 assessed.
+  - `stable_correct`: at least 3 assessed and all correct;
+  - `stable_wrong`: at least 3 assessed and none correct;
+  - `flaky`: at least one correct and at least one wrong, at any count;
+  - `insufficient`: otherwise, fewer than 3 assessed. The thresholds were
+    2 before v3 (#168).
 - class counts.
 
 Unassessed follows the comparison taxonomy: not completed, operational
