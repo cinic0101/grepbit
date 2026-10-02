@@ -14,7 +14,7 @@ Steps (2), (4) and (5) of the grant
     `dev-CF07`, `dev-CF18` and `dev-A2`, three languages each. These are the
     rows the policy A annexes made wrong under v21, as projected.
   - **2 are variance on the same model input, not v22:** `dev-BM2.en`, on
-  two panels. The variance may be sampling or a serving-side change. See
+    two panels. The variance may be sampling or a serving-side change. See
     Reading.
 - **0 broke, 0 excluded.**
 - **The `dev-A1` class** (`dev-A1`, `dev-CF16`, `dev-CF17`, ×3) is
@@ -166,8 +166,8 @@ Annex-aware index counts:
 
     So the three-run rule (#168) classed it `stable_wrong`. The gate pools by
     behaviour, so it cannot see v18's earlier answers on the same model input.
-    A time-clustered flaky input can still pass as stable. The owner's
-    decision on this is tracked in #177.
+    A time-clustered flaky input can still pass as stable. An owner decision
+    on this is pending in #177; none has been made.
 - **The `dev-A1` class stayed `unchanged_correct`.** v21 already stated the
   basis for its `unresolved` readings. The policy A expectation (#172), not v22,
   resolved it.
