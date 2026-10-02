@@ -10,9 +10,9 @@ from unittest.mock import patch
 
 import httpx
 
-from grepbit import model
+from grepbit import model, recipe_model
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL
-from tools import candidate_registry as registry, evaluate as runner, p3_assets
+from tools import candidate_registry as registry, evaluate as runner, p3_assets, p3_live_evidence
 from test_evaluate import BASE, GRANT, KEY, SERVER_ANSWERED, EvaluateHarness, envelope
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -220,6 +220,8 @@ class AnnexRunTests(EvaluateHarness):
                     if row["case_id"] in self.listed:
                         action = json.loads(row["validated_action"])
                         row["validated_action"] = model.canonical_json({**action, "assumption": ASSUMPTION})
+                        # The server's statement is recorded in the evidence from #169 A1, and is read first.
+                        row["evidence"]["count_assumption"] = dict(p3_live_evidence.ARCHIVED_COUNT_ASSUMPTION)
             return report
 
         return patch.object(runner, "_read_archived", side_effect=read)
@@ -307,6 +309,7 @@ class AnnexRunTests(EvaluateHarness):
                     if row["case_id"] in self.listed:
                         action = json.loads(row["validated_action"])
                         row["validated_action"] = model.canonical_json({**action, "assumption": ASSUMPTION})
+                        row["evidence"]["count_assumption"] = dict(p3_live_evidence.ARCHIVED_COUNT_ASSUMPTION)
             return report
 
         with patch.object(runner, "_read_archived", side_effect=unrecorded_sentinel):
@@ -324,16 +327,12 @@ class AnnexRunTests(EvaluateHarness):
             self.assertEqual({row["class"] for row in same["rows"]}, {"replayed_same"})
             self.assertEqual({(row["annex"]["archived"], row["annex"]["replayed"]) for row in listed_rows},
                              {("wrong", "wrong")})
-            original = runner._validated_action
+            # A runtime that states the assumption on every Overview; the replayed verdict reads the replayed
+            # run's own statement (#169 A1).
+            every_overview = property(lambda proposal: dict(recipe_model.ASSUMPTION)
+                                      if proposal.recipe_id == "overview" else None)
 
-            def stated(result):
-                text = original(result)
-                action = json.loads(text)
-                if action.get("recipe_id") == "overview":
-                    action["assumption"] = ASSUMPTION
-                return model.canonical_json(action)
-
-            with patch.object(runner, "_validated_action", side_effect=stated):
+            with patch.object(recipe_model.RecipeProposal, "assumption", every_overview):
                 changed = await runner._replay_execute(runner._replay_plan(
                     output / "report.json", self.database, self.root / "replay-changed.json"))
         rows = {row["case_id"]: row for row in changed["rows"]}

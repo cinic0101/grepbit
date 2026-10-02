@@ -45,6 +45,11 @@ The expected assumption is kept **outside** the oracle, in a closed annex file:
 
 ## The annex verdict
 
+> **Amended 2026-10-02 (#169 A1).** A row whose archived evidence records the
+> server's `count_assumption` states exactly that: `null` states none
+> ([recorded count assumption](recorded-count-assumption.md)). The derivation
+> below applies to rows without the record.
+
 > **Amended 2026-09-30 (v16, #146).** An action states the assumption through
 > v13's explicit `assumption` key or through v16's typed Overview
 > `count_request: "unresolved"`, from which the server states it

@@ -276,6 +276,19 @@ def _stated_assumption(action: object, actual_action: str | None = None) -> dict
     return dict(ASSUMPTION) if action.get("count_request") == "unresolved" else None
 
 
+_UNRECORDED = object()
+
+
+def _recorded_assumption(row: dict) -> object:
+    """The assumption the server recorded stating (#169 A1): null states none; a row without the key returns
+    _UNRECORDED, and its assumption is derived from the action."""
+    evidence = row.get("evidence")
+    if isinstance(evidence, dict) and "count_assumption" in evidence:
+        value = evidence["count_assumption"]
+        return {"count_basis": value["count_basis"]} if value else None
+    return _UNRECORDED
+
+
 def annexed(row: dict, frozen_correct: bool, expectations: dict | None) -> str | None:
     """The annex verdict on one graded row: None when no annex applies, else correct, wrong or unassessed.
 
@@ -293,7 +306,8 @@ def annexed(row: dict, frozen_correct: bool, expectations: dict | None) -> str |
         action = model.strict_json(text)
     except ModelError:
         raise assets.P3Error("invalid_asset") from None
-    stated = _stated_assumption(action, row.get("actual_action"))
+    recorded = _recorded_assumption(row)
+    stated = _stated_assumption(action, row.get("actual_action")) if recorded is _UNRECORDED else recorded
     return "correct" if stated == expectations.get(row["oracle_id"]) else "wrong"
 
 
@@ -1276,6 +1290,7 @@ async def _replay_execute(plan: _ReplayPlan) -> dict:
     checked, current, panel, entries = plan.checked, plan.current, plan.panel, plan.entries
     calls, classes, replayed = [], [], deepcopy(report["results"])
     actions = [None] * len(report["results"])
+    statements = [_UNRECORDED] * len(report["results"])
     for position, (row, item, target) in enumerate(zip(report["results"], entries, replayed)):
         if not _replayable(row):
             classes.append("not_replayable")
@@ -1284,6 +1299,9 @@ async def _replay_execute(plan: _ReplayPlan) -> dict:
             item.case.question, database, _replay_client(row["validated_action"], calls))
         graded = p3_grading.grade(result, item.oracle)
         actions[position] = _validated_action(result)
+        evidence = getattr(result, "evidence", None)
+        if isinstance(evidence, dict) and "count_assumption" in evidence:
+            statements[position] = evidence["count_assumption"]
         classes.append("replayed_same" if all(_same(graded[key], row[key]) for key in graded) else "replayed_changed")
         target.update(graded)
     scored = scoring.summarize(replayed, replayed, panel_kind="development", run_status=report["status"])
@@ -1297,9 +1315,11 @@ async def _replay_execute(plan: _ReplayPlan) -> dict:
             if classes[position] == "not_replayable":
                 continue
             # Each verdict reads its own row: the replayed one carries the replayed actual action (#161).
+            # The replayed verdict reads the replayed run's own statement, never the archived one (#169 A1).
+            replayed_row = {**target, "validated_action": actions[position], "evidence": None
+                            if statements[position] is _UNRECORDED else {"count_assumption": statements[position]}}
             verdicts[position] = (annexed(row, bool(old["correct"]), expectations),
-                                  annexed({**target, "validated_action": actions[position]}, bool(new["correct"]),
-                                          expectations))
+                                  annexed(replayed_row, bool(new["correct"]), expectations))
             if classes[position] == "replayed_same" and verdicts[position][0] != verdicts[position][1]:
                 classes[position] = "replayed_changed"
     rows = []

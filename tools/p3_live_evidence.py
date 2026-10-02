@@ -18,7 +18,7 @@ _CODES = assets.SAFE_CODES | set(_ERRORS)
 _EVIDENCE_FIELDS = {
     "client_http_attempts", "elapsed_seconds", "requested_model", "returned_model", "http_status",
     "transport_security", "usage", "stages", "error_code", "stop_reason", "invalid_request_reason",
-    "count_reading", "action_source", "count_policy_rule",
+    "count_reading", "action_source", "count_policy_rule", "count_assumption",
 }
 _COUNT_FIELDS = ("count_reading", "action_source", "count_policy_rule")
 # Archived evidence vocabulary, pinned rather than imported from the runtime so
@@ -31,6 +31,9 @@ ARCHIVED_COUNT_READINGS = ("absent", "none", "bound", "contrast", "generic")
 ARCHIVED_ACTION_SOURCES = ("model", "count_policy")
 ARCHIVED_COUNT_POLICY_RULES = ("other_unsupported", "bound_seats", "bound_unsupported", "contrast_unexecutable",
                                "contrast", "generic_booking", "generic_unframed")
+# The only count assumption a server may state (ADR #136); recorded per row from #169 step A1.
+ARCHIVED_COUNT_ASSUMPTION = {"count_basis": "booked_seats", "reported_as": "confirmed booked seats",
+                             "unavailable": ["known_booking_accounts", "attendance_visits", "distinct_people"]}
 
 
 def _same(left, right):
@@ -92,6 +95,9 @@ def _evidence(value: dict, *, expected_model=None, requested_profile=None) -> di
                 or (rule is None) != (source != "count_policy")
                 or source == "count_policy" and reading not in ("bound", "contrast", "generic")):
             raise assets.P3Error("invalid_asset")
+    # The recorded statement is null or exactly the archived one (docs/recorded-count-assumption.md).
+    if result.get("count_assumption") is not None and not _same(result["count_assumption"], ARCHIVED_COUNT_ASSUMPTION):
+        raise assets.P3Error("invalid_asset")
     if requested_profile is not None:
         if (expected_model is not None or type(requested_profile) is not str
                 or not requested_profile or "returned_model" not in result
