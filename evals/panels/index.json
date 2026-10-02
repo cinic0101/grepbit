@@ -273,6 +273,63 @@
         "path": "evals/dev/count-fresh-annex-v2.json",
         "sha256": "2856a9b9b0d8626f30bab1474380dc05111b7c52d0708802bb6c20dfc0b27d6d"
       }
+    },
+    {
+      "panel_id": "p3-dev-bound-meaning-v4",
+      "tier": "dev",
+      "path": "evals/dev/bound-meaning-panel-v4.json",
+      "assets": {
+        "panel": "b1c32f55b30507d6f151f53c815093e736ad5c71dea53ab82235c8541b3a5774",
+        "cases": "efc836f829dbeeff817dfee5b646193143c54d5bce69c012bed776946bb1c4ff",
+        "oracles": "188c2653b8ac4228269cae7e5213e210086a41c091025401a99e3602a3977f1d"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "bound-meaning-v3 with every Overview answer expecting the stated count basis (policy A, #169); cases and oracles unchanged.",
+      "annex": {
+        "path": "evals/dev/bound-meaning-annex-v4.json",
+        "sha256": "8c5a6a6c4547a50281f5742cebeed105d9ace47b6fb4ce3c58127b9dfb95a0ef"
+      }
+    },
+    {
+      "panel_id": "p3-dev-count-fresh-v3",
+      "tier": "dev",
+      "path": "evals/dev/count-fresh-panel-v3.json",
+      "assets": {
+        "panel": "3d46da2a2591dd2bff8b843e8d8c04f49479cfe4345b559f5ed7c0c43f7f2e3f",
+        "cases": "30954cab7a6d538e4617b68f5d1b85b58a5bdc7bf601311edd583c104c2b0855",
+        "oracles": "da639bc01f86682c4aba9e45da9706a8c759ed034310036e8aa7b5fa7e4ba1b5"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "count-fresh-v2 with every Overview answer expecting the stated count basis (policy A, #169); cases and oracles unchanged.",
+      "annex": {
+        "path": "evals/dev/count-fresh-annex-v3.json",
+        "sha256": "bab9e1cfa5437f6d22211a8f1f85bebe9d34703034952478972e1e666dc0d90e"
+      }
+    },
+    {
+      "panel_id": "p3-dev-matrix-compare-first-v4",
+      "tier": "dev",
+      "path": "evals/dev/dev-panel-compare-first-v4.json",
+      "assets": {
+        "panel": "0ba4c42995ce757605e77200cebeaf5d22994c8a781b211f7ad7ff99bf2e84e9",
+        "cases": "bc99535b0411672562b5dd9495d85a0b51688c52079191ea2155cfb1755e7051",
+        "oracles": "fbac9668d796b3cb687162b6c867e94a63f6da1c891e248805a00b4270e201cc"
+      },
+      "allocation_policy": null,
+      "intake": null,
+      "freeze": null,
+      "authoring": "development",
+      "note": "matrix-compare-first-v3 with every Overview answer expecting the stated count basis (policy A, #169); cases and oracles unchanged.",
+      "annex": {
+        "path": "evals/dev/compare-first-annex-v4.json",
+        "sha256": "53f1b92c66fe05f42a9ddaec58768a1e17ded221591a6a2ad01a39cc7cea620e"
+      }
     }
   ]
 }

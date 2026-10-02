@@ -1,0 +1,14 @@
+{
+  "version": "count-assumption-annex-v1",
+  "expectations": {
+    "dev-BM5.v1": {
+      "count_basis": "booked_seats"
+    },
+    "dev-BM6.v2": {
+      "count_basis": "booked_seats"
+    },
+    "dev-BM7.v2": {
+      "count_basis": "booked_seats"
+    }
+  }
+}
