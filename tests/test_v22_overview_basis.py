@@ -10,7 +10,7 @@ import httpx
 from grepbit import recipe_model
 from grepbit.gateway import GatewayClient, GatewayConfig
 from tools import candidate_registry as registry, fixture
-from test_recipe_model import envelope, period
+from test_recipe_model import envelope, period, proposal
 
 ROOT = Path(__file__).resolve().parents[1]
 V21, V22 = "p3-count-basis-answer-v21", "p3-overview-basis-v22"
@@ -61,9 +61,9 @@ class RuntimeFileTests(unittest.TestCase):
 
 
 class StatementTests(unittest.IsolatedAsyncioTestCase):
+    """Policy A's behaviour, not v22's identity: it stays checked after v22 is superseded."""
+
     def setUp(self):
-        if superseded():
-            self.skipTest("v22 superseded; the live runtime is no longer v22's")
         tmp = tempfile.TemporaryDirectory(prefix="v22-", dir=ROOT / ".artifacts")
         self.addCleanup(tmp.cleanup)
         self.database = Path(tmp.name) / "fixture.sqlite"
@@ -90,17 +90,23 @@ class StatementTests(unittest.IsolatedAsyncioTestCase):
                                  ["known_booking_accounts", "attendance_visits", "distinct_people"])
 
     async def test_a_named_unavailable_count_is_declined_with_no_statement(self):
+        request = recipe_model._proposal(overview("none")).request
         for reading in recipe_model.UNAVAILABLE_COUNTS:
             with self.subTest(reading=reading):
+                # The rule itself excludes it, not only the server's decline before execution.
+                self.assertIsNone(recipe_model.RecipeProposal("overview", request, count_request=reading).assumption)
                 result = await self.run_action(overview(reading))
-                self.assertIsNotNone(result.error)
+                self.assertEqual(result.error.code, "model_declined")
                 self.assertIsNone(result.evidence["count_assumption"])
 
-    def test_compare_and_breakdown_state_none(self):
-        compare = recipe_model.RecipeProposal("compare", recipe_model.CompareRequest.from_mapping({
-            "current": {"metrics": ["confirmed_booked_amount"], **period(3), "center_id": None},
-            "baseline": {"metrics": ["confirmed_booked_amount"], **period(2), "center_id": None}}))
-        self.assertIsNone(compare.assumption)
+    async def test_executed_compare_and_breakdown_state_none(self):
+        for recipe in ("compare", "breakdown"):
+            with self.subTest(recipe=recipe):
+                result = await self.run_action(proposal(recipe))
+                self.assertIsNone(result.error)
+                self.assertEqual(result.proposal.recipe_id, recipe)
+                self.assertIsNone(result.proposal.assumption)
+                self.assertIsNone(result.evidence["count_assumption"])
 
 
 class RegistrationTests(unittest.TestCase):

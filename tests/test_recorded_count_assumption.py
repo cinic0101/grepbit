@@ -84,18 +84,21 @@ class LiveAndReplayTests(EvaluateHarness):
         output = await self.run_once()
         report = evaluate.read_report(output / "report.json")
         self.assertEqual(report["status"], "complete")
-        # Through v21 the recorded statement equals the evaluator's derivation; from policy A (v22) every answered
-        # Overview records it, where the derivation would miss the none and booked_seats readings.
-        derive = evaluate._stated_assumption if narrow_assumption.live_rule_is_narrow() else policy_a
+        # Before policy A the recorded statement equals the evaluator's derivation; once v22 is registered every
+        # answered Overview records it, where the derivation would miss the none and booked_seats readings. The rule
+        # comes from the registry, never from the runtime under test.
+        derive = policy_a if narrow_assumption.policy_a_registered() else evaluate._stated_assumption
         stated = 0
         for row in report["results"]:
             self.assertIsNotNone(row["evidence"], row["case_id"])
             self.assertIn("count_assumption", row["evidence"], row["case_id"])
             if row["validated_action"] is None:
                 continue
-            # Every completed row, frozen-correct or not: the recorded statement equals the live rule's.
+            # Every completed row, frozen-correct or not: the recorded statement equals the rule's. A row that
+            # answered and then failed states none under either rule (the runtime records it only without an error).
             recorded = row["evidence"]["count_assumption"]
-            derived = derive(model.strict_json(row["validated_action"]), row["actual_action"])
+            derived = (None if row["evidence"].get("error_code") else
+                       derive(model.strict_json(row["validated_action"]), row["actual_action"]))
             self.assertEqual({"count_basis": recorded["count_basis"]} if recorded else None, derived, row["case_id"])
             stated += recorded is not None
         # The server answer to the scripted C01 count_basis clarification states the assumption.
@@ -107,8 +110,8 @@ class LiveAndReplayTests(EvaluateHarness):
         # A runtime that states the assumption on every Overview, as policy A does (#169, v22).
         every_overview = property(lambda proposal: dict(recipe_model.ASSUMPTION)
                                   if proposal.recipe_id == "overview" else None)
-        # Replay under the rule the live runtime does not use, so the statement flips under either runtime.
-        narrow = narrow_assumption.live_rule_is_narrow()
+        # Replay under the rule the registry says the live runtime does not use, so the statement flips under either.
+        narrow = not narrow_assumption.policy_a_registered()
         flipped = every_overview if narrow else property(narrow_assumption.narrow)
         with patch.object(recipe_model.RecipeProposal, "assumption", flipped):
             replayed = await evaluate.replay(output / "report.json", self.database, self.root / "replay.json",

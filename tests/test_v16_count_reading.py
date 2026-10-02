@@ -63,9 +63,9 @@ class ProposalTests(unittest.TestCase):
             parsed = recipe_model._proposal(_overview(value))
             self.assertEqual(parsed.count_request, value)
             self.assertEqual(parsed.to_dict(), _overview(value))
-            # v16's rule while the runtime keeps it; policy A (#169, v22) states it for every non-unavailable reading.
-            stated = (value == "unresolved") if narrow_assumption.live_rule_is_narrow() else (
-                value not in recipe_model.UNAVAILABLE_COUNTS)
+            # v16's rule until policy A (#169, v22) is registered; then every reading but an unavailable one states.
+            stated = (value not in recipe_model.UNAVAILABLE_COUNTS if narrow_assumption.policy_a_registered()
+                      else value == "unresolved")
             self.assertEqual(parsed.assumption, ASSUMPTION if stated else None)
         bad = [_overview(None), _overview(None, count_request=None), _overview("people"), _overview("NONE"),
                _overview(None, count_request=["none"]), _overview("unresolved", assumption=dict(ASSUMPTION)),
@@ -84,7 +84,7 @@ class ProposalTests(unittest.TestCase):
         request = recipe_model._proposal(_overview()).request
         legacy = recipe_model.RecipeProposal("overview", request)
         self.assertIsNone(legacy.count_request)
-        self.assertEqual(legacy.assumption, None if narrow_assumption.live_rule_is_narrow() else ASSUMPTION)
+        self.assertEqual(legacy.assumption, ASSUMPTION if narrow_assumption.policy_a_registered() else None)
         self.assertNotIn("count_request", legacy.to_dict())
         hash(legacy)
         compare = recipe_model._proposal({"outcome": "request", "recipe_id": "compare", "recipe_version": "0.1",
@@ -196,8 +196,8 @@ class RuntimeAndEvaluationTests(unittest.TestCase):
         self.assertEqual(row["validated_action"], model.canonical_json(_overview("unresolved")))
 
     def test_a_named_seats_count_is_answered_without_an_assumption(self):
-        if not narrow_assumption.live_rule_is_narrow():
-            self.skipTest("policy A (#169, v22) states the basis on every executed Overview; its ruler covers it")
+        if narrow_assumption.policy_a_registered():
+            self.skipTest("policy A (#169, v22) is registered: the next test checks these rows under it")
         for value in ("booked_seats", "none"):
             with self.subTest(value=value):
                 result, grade, _, annex = self.graded("dev-BM5.en", _overview(value))
@@ -207,6 +207,23 @@ class RuntimeAndEvaluationTests(unittest.TestCase):
         # The same reading on a generic-count question is the missing assumption the annex rejects.
         _, grade, _, annex = self.graded("dev-BM6.en", _overview("booked_seats"))
         self.assertEqual((grade["outcome"], annex), ("complete_correct", "wrong"))
+
+    def test_under_policy_a_a_named_seats_count_states_the_basis(self):
+        if not narrow_assumption.policy_a_registered():
+            self.skipTest("policy A (#169, v22) is not registered: the narrow rule applies")
+        # The policy A panel version (#172) lists every Overview answer; the row carries the recorded statement (A1).
+        panel, expectations = _panel("p3-dev-bound-meaning-v4")
+        for case_id, value in (("dev-BM5.en", "booked_seats"), ("dev-BM5.en", "none"), ("dev-BM6.en", "booked_seats")):
+            with self.subTest(case_id=case_id, value=value):
+                case, oracle = _case(panel, case_id)
+                result = _run(case.question, _overview(value), self.database)
+                self.assertIsNone(result.error)
+                self.assertEqual(result.evidence["count_assumption"], STATEMENT)
+                grade = p3_grading.grade(result, oracle)
+                row = {"oracle_id": oracle.oracle_id, "validated_action": evaluate._validated_action(result),
+                       "evidence": {"count_assumption": result.evidence["count_assumption"]}}
+                annex = evaluate.annexed(row, grade["outcome"] == "complete_correct", expectations)
+                self.assertEqual((grade["outcome"], annex), ("complete_correct", "correct"))
 
     def test_a_named_unavailable_count_is_a_server_decline_that_replays(self):
         for value in ("known_booking_accounts", "attendance_visits", "distinct_people"):

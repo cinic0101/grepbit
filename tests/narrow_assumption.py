@@ -4,6 +4,9 @@ policy; policy A (#169, v22) states it on every executed Overview, and its ruler
 from unittest.mock import patch
 
 from grepbit import recipe_model
+from tools import candidate_registry as registry
+
+POLICY_A = "p3-overview-basis-v22"
 
 
 def narrow(proposal):
@@ -17,10 +20,7 @@ def use(test):
     test.addCleanup(patcher.stop)
 
 
-def live_rule_is_narrow():
-    """True while the live runtime still states the assumption only for an unresolved reading."""
-    probe = recipe_model._proposal({"outcome": "request", "recipe_id": "overview", "recipe_version": "0.1",
-                                    "request": {"start": "2026-03-01T00:00:00+08:00",
-                                                "end": "2026-04-01T00:00:00+08:00", "timezone": "Asia/Taipei",
-                                                "center_code": "CTR-A01"}, "count_request": "none"})
-    return probe.assumption is None
+def policy_a_registered():
+    """True once candidate v22 is registered. From then on policy A is the owner's rule for every candidate, so a
+    ruler takes the expected rule from the registry, never from the runtime it tests."""
+    return POLICY_A in [entry["candidate_id"] for entry in registry.load_index()["entries"]]
