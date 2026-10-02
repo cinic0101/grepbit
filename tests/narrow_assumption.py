@@ -22,5 +22,7 @@ def use(test):
 
 def policy_a_registered():
     """True once candidate v22 is registered. From then on policy A is the owner's rule for every candidate, so a
-    ruler takes the expected rule from the registry, never from the runtime it tests."""
+    ruler takes the expected rule from the registry, never from the runtime it tests. A candidate that drops
+    policy A, a restoration included, needs the owner's recorded decision and amends this helper and its rulers
+    in that PR."""
     return POLICY_A in [entry["candidate_id"] for entry in registry.load_index()["entries"]]

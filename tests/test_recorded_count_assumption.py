@@ -78,7 +78,7 @@ class LiveAndReplayTests(EvaluateHarness):
                             client=self.litellm_client(scripted=True, cases=panel.cases))
         return output
 
-    async def test_the_live_path_records_the_statement_the_live_rule_makes(self):
+    async def test_the_live_path_records_the_statement_the_registered_rule_expects(self):
         # The archived pin equals the runtime's statement (the archived-vocabulary rule, docs/count-cue-policy.md).
         self.assertEqual(recipe_model.ASSUMPTION_STATEMENT, live.ARCHIVED_COUNT_ASSUMPTION)
         output = await self.run_once()

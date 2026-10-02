@@ -197,7 +197,8 @@ class RuntimeAndEvaluationTests(unittest.TestCase):
 
     def test_a_named_seats_count_is_answered_without_an_assumption(self):
         if narrow_assumption.policy_a_registered():
-            self.skipTest("policy A (#169, v22) is registered: the next test checks these rows under it")
+            self.skipTest("policy A (#169, v22) is registered: test_under_policy_a_a_named_seats_count_states_the_basis "
+                          "checks these rows under it")
         for value in ("booked_seats", "none"):
             with self.subTest(value=value):
                 result, grade, _, annex = self.graded("dev-BM5.en", _overview(value))

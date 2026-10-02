@@ -58,7 +58,8 @@ It is registrable as a runtime-only candidate under the behaviour identity
   - **Executed Compare and Breakdown** state none.
   - **Which checks stay after v22 is superseded.** These statement checks are
     policy A's behaviour, so they keep running after v22 is superseded. Only
-    the identity checks (the runtime file and the current registration) stop.
+    the identity checks (the runtime file, the model input and the current
+    registration) stop.
   - **v22 is the registered current candidate:** ancestor v21; the same
     `candidate_sha256`, a different behaviour identity; `check` reports no
     changed runtime file.
@@ -73,6 +74,11 @@ It is registrable as a runtime-only candidate under the behaviour identity
     restores v21's property.
   - **Before the merge,** each changed file also passes on v21's runtime, where
     v22 is not registered.
+  - **Dropping policy A on purpose** also fails these rulers. That includes a
+    restoration candidate after a `regression` verdict. Such a change needs:
+    - the owner's recorded decision;
+    - an explicit amendment, in that PR, to `policy_a_registered()`, the v22
+      statement checks and the v16 and A1 policy branches.
   - **The annex mechanics** (`test_count_assumption`, and
     `test_compare_first_v3`, which reuses its synthetic runs). These pin the
     narrow rule in `setUp`. They test how the annex is computed, not which
