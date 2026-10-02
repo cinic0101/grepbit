@@ -99,7 +99,8 @@ It is registrable as a runtime-only candidate under the behaviour identity
 **Result (2026-10-02, `docs/overview-basis-v22-result.md`).**
 `evaluation-gate-v3` gave `passed`:
 - **17 fixed:** the 15 projected policy rows, and `dev-BM2.en` on two panels.
-  The BM2.en fixes are model variance, not v22.
+  The BM2.en fixes are variance on the same model input (sampling or a
+  serving-side change), not v22.
 - **0 broke, 0 excluded.** The grant was spent at 594 of 594 calls.
 
 The plan as registered:

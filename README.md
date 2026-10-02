@@ -222,7 +222,7 @@ answer could be measured without a model-facing change. See the
 
 The owner chose option C of ADR #164: a behaviour identity covering both the
 model-facing bytes and the runtime files (#165), so a runtime-only rule can be
-registered and gated. The registered current candidate, v21, is v19's server
+registered and gated. The then-current candidate, v21, is v19's server
 answer on v20's model-facing bytes: the model sees exactly v18's input, and
 only the runtime's decision rule changes. Against v20 on the same four dev
 panels, the gate (`evaluation-gate-v2`) gave `passed`:
@@ -251,7 +251,8 @@ reports booked seats.
   - **15 of the fixes are the server's statement:** each model action is
     byte-identical to v21's.
   - **2 are `dev-BM2.en`.** It is flaky on this model input, so those 2 are
-    model variance, not v22.
+    variance (sampling or a serving-side change), not v22. The limit this
+    shows in the gate is tracked in #177.
   - **The gain is mostly an expectation change** (#172) that the runtime now
     meets. It is not evidence of better answers.
 

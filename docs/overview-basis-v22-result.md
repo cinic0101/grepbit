@@ -13,7 +13,8 @@ Steps (2), (4) and (5) of the grant
   - **15 come from the server's statement:** `dev-BM5`, `dev-CF06`,
     `dev-CF07`, `dev-CF18` and `dev-A2`, three languages each. These are the
     rows the policy A annexes made wrong under v21, as projected.
-  - **2 are model variance, not v22:** `dev-BM2.en`, on two panels. See
+  - **2 are variance on the same model input, not v22:** `dev-BM2.en`, on
+  two panels. The variance may be sampling or a serving-side change. See
     Reading.
 - **0 broke, 0 excluded.**
 - **The `dev-A1` class** (`dev-A1`, `dev-CF16`, `dev-CF17`, ×3) is
@@ -129,9 +130,9 @@ Annex-aware index counts:
 - **150 of 154 v22 actions equal all of v21's baseline actions.** The four
   that differ:
   - **`dev-BM7.ja` and `dev-CF15.ja`:** a model `count_basis` clarification
-    with the same choices under different local choice ids (`c1`/`c2` against
-    `basis_seats`/`basis_accounts`). The server answers both the same way, and
-    both stay `unchanged_correct`.
+    with the same choices under different local choice ids. v22 used
+    `basis_seats`/`basis_accounts`; v21 used `c1`/`c2` in all three runs. The
+    server answers both the same way, and both stay `unchanged_correct`.
   - **`dev-BM2.en` on two panels:** v21 declined it in every run; v22
     answered it, with a request that carries no count reading. See the next
     item.
@@ -165,7 +166,8 @@ Annex-aware index counts:
 
     So the three-run rule (#168) classed it `stable_wrong`. The gate pools by
     behaviour, so it cannot see v18's earlier answers on the same model input.
-    A time-clustered flaky input can still pass as stable.
+    A time-clustered flaky input can still pass as stable. The owner's
+    decision on this is tracked in #177.
 - **The `dev-A1` class stayed `unchanged_correct`.** v21 already stated the
   basis for its `unresolved` readings. The policy A expectation (#172), not v22,
   resolved it.
