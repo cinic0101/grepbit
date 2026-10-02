@@ -129,6 +129,13 @@ no verdict:
   `p3_grading.grade` against the case's oracle.
   - On an annex panel, the row's annex verdict is `evaluate.annexed` over the
     persisted validated action.
+    - **Note (2026-10-02, #169 A1, tracked in #174).** Ablation rows do not
+      record the
+      server's statement (`docs/recorded-count-assumption.md`), so this
+      verdict derives it from the action.
+    - **Exact through v21,** but not under policy A (v22).
+    - **Do not run the ablation under such a candidate** until its rows
+      record the statement.
   - Each row also records the reading: `count_request`, or the clarification
     kind and its choice count.
   - Each row records `mapped`: whether `map_back` changed the reply's bytes.
