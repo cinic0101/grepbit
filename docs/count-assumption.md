@@ -145,7 +145,9 @@ The four count families that the rule table changes get new oracle revisions:
 - **Why no other oracle changes.** Under the owner's rule table, none of the
   other 17 families expects an assumption:
   - `dev-A1` and `dev-A2` are Overview answers that name no generic people
-    count. `dev-A2` asks for bookings and seats.
+    count. `dev-A2` asks for bookings and seats. (Under policy A, #169,
+    `p3-dev-matrix-compare-first-v4` expects the stated basis for both; see
+    [policy A panel versions](policy-a-panels.md).)
   - `dev-D8` requires attendance visits, so it is a decline.
 - **The v2 panel, its identity and its archives are unchanged.**
 - **Why v3.** It widens the evaluation of the count reading (#146) to inputs

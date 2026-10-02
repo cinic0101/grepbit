@@ -30,13 +30,36 @@ and oracles files unchanged; only the panel id and the annex change:
 
 ## What it means for the runs
 
-- **Before v22.** Under every candidate through v21, these newly listed
-  oracles are annex-wrong: v21 states the basis only for an unresolved count
-  reading. Under policy A (v22) they become annex-correct.
-- **The baseline.** Under the three-run baseline rule (#168), the new panel
-  versions start with no runs. The planned grant (#169) adds three v21 runs to
-  each new version and two to `p3-dev-mechanism-probe-v2`, plus one v22 run per
-  panel.
+- **Under v21.** This is projected from v21's recorded readings on the
+  predecessors (#167); it has not been observed on the new versions. v21
+  states the basis only for an `unresolved` reading, so the eight added
+  families split:
+  - **Already satisfied:** `dev-A1`, `dev-CF16` and `dev-CF17` (9 rows).
+    v21 reads them as `unresolved` and states the basis. On the new versions
+    they become annex-correct with no runtime change.
+  - **Newly failed:** `dev-BM5`, `dev-CF06`, `dev-CF07` (`booked_seats`),
+    `dev-CF18` and `dev-A2` (`none`) (15 rows). v21 states no basis for them,
+    so they become annex-wrong on the new versions, although they are correct
+    on the predecessors.
+- **What a v22 gate can show.** With three v21 baseline runs on the new
+  versions, the `dev-A1` class shows as `unchanged_correct`, not `fixed`.
+  v22's fixes can only be the 15 rows this revision made wrong under v21.
+  - **The dev-A1 class is resolved by the policy,** an expectation change,
+    not by a runtime or model change.
+  - **v22 makes every Overview state the basis consistently.**
+  - **Report it that way:** improving the grader does not establish product
+    improvement (AGENTS.md).
+- **The dependency on A1.** A v22 row on a `none` or `booked_seats`
+  reading is annex-correct only if the evaluator reads the server's recorded
+  statement (#169 A1, `docs/recorded-count-assumption.md`). The derivation
+  from the action alone would leave it annex-wrong.
+- **The baseline.** Under the three-run baseline rule (#168, merged in #171),
+  the new versions start with no runs. The proposed grant adds three v21 runs
+  to each new version and two more to `p3-dev-mechanism-probe-v2`, which has
+  one, plus one v22 run per panel: 594 calls.
+  - **This revises the #169 plan,** which assumed a `p3-dev-mechanism-probe-v3`
+    and 616 calls.
+  - **The owner confirms the number** before any call.
 
 ## Ruler (`tests/test_policy_a_panels.py`)
 
