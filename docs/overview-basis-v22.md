@@ -58,11 +58,12 @@ It is registrable as a runtime-only candidate under the behaviour identity
   - **Executed Compare and Breakdown** state none.
   - **Which checks stay after v22 is superseded.** These statement checks are
     policy A's behaviour, so they keep running after v22 is superseded. Only
-    the identity checks (the runtime file, the model input and the current
-    registration) stop.
-  - **v22 is the registered current candidate:** ancestor v21; the same
-    `candidate_sha256`, a different behaviour identity; `check` reports no
-    changed runtime file.
+    the checks on the live runtime file, the live model input, and v22 being
+    current stop.
+  - **v22's registration:** ancestor v21; the same `candidate_sha256`; a
+    different behaviour identity. This comparison of registered entries keeps
+    running.
+  - **v22 is current:** `check` reports no changed runtime file.
 - **Earlier rulers** asserted v21's narrower rule against the live runtime.
   Each one now checks either the annex mechanics under a pinned rule, or the
   owner's rule as the registry gives it (`tests/narrow_assumption.py`):
@@ -94,6 +95,14 @@ It is registrable as a runtime-only candidate under the behaviour identity
     `docs/recorded-count-assumption.md`.
 
 ## Evaluation (grant #169 #issuecomment-5944677551)
+
+**Result (2026-10-02, `docs/overview-basis-v22-result.md`).**
+`evaluation-gate-v3` gave `passed`:
+- **17 fixed:** the 15 projected policy rows, and `dev-BM2.en` on two panels.
+  The BM2.en fixes are model variance, not v22.
+- **0 broke, 0 excluded.** The grant was spent at 594 of 594 calls.
+
+The plan as registered:
 
 **The grant is 594 calls,** which the owner confirmed. The steps run in this
 order:

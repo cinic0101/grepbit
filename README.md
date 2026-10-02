@@ -244,8 +244,19 @@ reports booked seats.
   resolves it by changing the expectation, not the runtime.
 - **The evaluator records** the server's stated assumption (#173).
 - **The registered current candidate, v22,** is v21 with the statement made on
-  every executed Overview. Its model input is unchanged. It has no live result
-  yet. See the [v22 contract](docs/overview-basis-v22.md).
+  every executed Overview. Its model input is unchanged (#175).
+- **The gate.** Against three v21 runs per panel, on the four dev panels,
+  `evaluation-gate-v3` gave `passed`:
+  - **17 fixed, 0 broke, 0 excluded.**
+  - **15 of the fixes are the server's statement:** each model action is
+    byte-identical to v21's.
+  - **2 are `dev-BM2.en`.** It is flaky on this model input, so those 2 are
+    model variance, not v22.
+  - **The gain is mostly an expectation change** (#172) that the runtime now
+    meets. It is not evidence of better answers.
+
+  See the [v22 contract](docs/overview-basis-v22.md) and the
+  [gate results](docs/overview-basis-v22-result.md).
 
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality

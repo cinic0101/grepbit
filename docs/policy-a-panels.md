@@ -55,7 +55,7 @@ and oracles files unchanged; only the panel id and the annex change:
   - **The dev-A1 class is resolved by the policy,** an expectation change,
     not by a runtime or model change.
   - **v22 is intended to make every Overview state the basis consistently**
-    (PR-A3, not yet written).
+    (#175; results in `docs/overview-basis-v22-result.md`).
   - **Report it that way:** improving the grader does not establish product
     improvement (AGENTS.md).
 - **The dependency on A1.** A v22 row on a `none` or `booked_seats`
