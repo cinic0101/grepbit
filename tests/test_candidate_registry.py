@@ -13,8 +13,8 @@ from tools.history import p3_candidate_model
 ROOT = Path(__file__).resolve().parents[1]
 BASELINE = json.loads((ROOT / "tests/fixtures/p310_identity_baseline.json").read_bytes())
 # Pinned registry expectations; a candidate registration PR updates both lines.
-EXPECTED_CURRENT = "p3-count-basis-answer-v21"
-EXPECTED_ENTRIES = 20
+EXPECTED_CURRENT = "p3-overview-basis-v22"
+EXPECTED_ENTRIES = 21
 
 
 class CandidateRegistryRulers(unittest.TestCase):

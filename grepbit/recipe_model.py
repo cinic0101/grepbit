@@ -366,8 +366,10 @@ class RecipeProposal:
 
     @property
     def assumption(self) -> dict[str, str] | None:
-        """The owner's count assumption, stated exactly when the count reading is unresolved."""
-        return dict(ASSUMPTION) if self.count_request == "unresolved" else None
+        """The owner's count assumption. Policy A (#169): every executed Overview states it; a named
+        unavailable count is declined by the server before execution, so it states none."""
+        return (dict(ASSUMPTION) if self.recipe_id == "overview" and self.count_request not in UNAVAILABLE_COUNTS
+                else None)
 
     def to_dict(self) -> dict[str, object]:
         result = {"outcome": "request", "recipe_id": self.recipe_id,

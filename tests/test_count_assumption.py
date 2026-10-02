@@ -14,6 +14,7 @@ from grepbit import model, recipe_model
 from grepbit.gateway import GatewayClient, GatewayConfig, MODEL
 from tools import candidate_registry as registry, evaluate as runner, p3_assets, p3_live_evidence
 from test_evaluate import BASE, GRANT, KEY, SERVER_ANSWERED, EvaluateHarness, envelope
+import narrow_assumption
 
 ROOT = Path(__file__).resolve().parents[1]
 DEV = ROOT / "evals/dev"
@@ -162,6 +163,8 @@ class AnnexRunTests(EvaluateHarness):
 
     def setUp(self):
         super().setUp()
+        # The annex mechanics under the pre-policy-A statement rule, whatever the current candidate (#169).
+        narrow_assumption.use(self)
         self.inputs = p3_assets.load_panel(self.root / "development-panel-v1.json").cases
         self.listed = [case.case_id for case in self.inputs if case.family_id == "E01_overview"]
         annex = self.root / "annex.json"
