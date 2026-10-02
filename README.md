@@ -236,6 +236,17 @@ panels, the gate (`evaluation-gate-v2`) gave `passed`:
 See the [v21 contract](docs/count-basis-answer-v21.md) and the
 [gate results](docs/count-basis-answer-v21-result.md).
 
+The owner then chose policy A for the remaining `dev-A1` class (#169): every
+executed Overview states its people-count basis, because every Overview
+reports booked seats.
+- **New panel versions** expect that statement on every Overview answer
+  (#172). The `dev-A1` class is then already correct under v21, so the policy
+  resolves it by changing the expectation, not the runtime.
+- **The evaluator records** the server's stated assumption (#173).
+- **The registered current candidate, v22,** is v21 with the statement made on
+  every executed Overview. Its model input is unchanged. It has no live result
+  yet. See the [v22 contract](docs/overview-basis-v22.md).
+
 The primary route is Gemma 4 31B through local LiteLLM. Bedrock Sonnet is a
 comparison/diagnostic control. P0/P1 and bounded P2 are accepted; P3 quality
 remains open. Grounding, clarification resume, synthesis, PostgreSQL parity
