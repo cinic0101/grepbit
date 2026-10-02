@@ -46,9 +46,12 @@ and oracles files unchanged; only the panel id and the annex change:
   versions, the `dev-A1` class shows as `unchanged_correct`, not `fixed`.
   The fixes attributable to the policy are the 15 rows this revision made
   wrong under v21.
-  - **Baseline variance.** Any other `fixed` (or `broke`) row reflects
-    baseline variance. `dev-BM2.en`, for example, is flaky on these model
-    bytes (#167).
+  - **Other `fixed` rows** may reflect baseline variance. For example,
+    `dev-BM2.en` is flaky on these model bytes (#167).
+  - **A `broke` row keeps the gate's `regression` verdict** and is
+    investigated, never explained away in advance. One way is to compare its
+    validated action with v21's: equal actions point to v22's runtime,
+    different ones to model variance.
   - **The dev-A1 class is resolved by the policy,** an expectation change,
     not by a runtime or model change.
   - **v22 is intended to make every Overview state the basis consistently**
