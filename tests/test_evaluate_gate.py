@@ -1,4 +1,4 @@
-"""Candidate gate rulers (evaluation-gate-v2, #79, #164): synthetic panels and mock transports only; no live call."""
+"""Candidate gate rulers (evaluation-gate-v3, #79, #164, #168): synthetic panels and mock transports only; no live call."""
 from contextlib import contextmanager, redirect_stdout
 import hashlib
 import io
@@ -110,13 +110,15 @@ class CandidateGateTests(EvaluateHarness):
         passed = await self.observe(903, candidate=OTHER, broken={y})
         no_fix = await self.observe(904, candidate=OTHER, broken={x})
         inconclusive = await self.observe(905, candidate=OTHER, failing={w})
-        second = [await self.observe(950, panel="synthetic-dev-b"), await self.observe(903, panel="synthetic-dev-b")]
+        # A stable baseline class needs three assessed runs (#168).
+        second = [await self.observe(950, panel="synthetic-dev-b"), await self.observe(951, panel="synthetic-dev-b"),
+                  await self.observe(903, panel="synthetic-dev-b")]
         other_panel = await self.observe(903, candidate=OTHER, panel="synthetic-dev-b", broken={z})
 
         result = self.gate(902)
         self.assertEqual(result, self.gate(902))
         self.assertEqual((result["version"], result["promotion_eligible"], result["claim"]),
-                         ("evaluation-gate-v2", False, "development_observation"))
+                         ("evaluation-gate-v3", False, "development_observation"))
         self.assertEqual((result["route_id"], result["owner_authorization_reference"]), ("litellm-31b", f"{GRANT}902"))
         for key, cid in (("candidate", OTHER), ("baseline", self.baseline)):
             entry = registry.load_entry(cid)
@@ -179,7 +181,7 @@ class CandidateGateTests(EvaluateHarness):
         first, last = result["panels"]
         self.assertEqual((first["panel_id"], first["verdict"]), ("synthetic-dev", "passed"))
         self.assertEqual((last["panel_id"], last["baseline_runs"], last["sentinel_runs"], last["candidate_run"]),
-                         ("synthetic-dev-b", [run["run_id"] for run in second], [second[1]["run_id"]],
+                         ("synthetic-dev-b", [run["run_id"] for run in second], [second[2]["run_id"]],
                           other_panel["run_id"]))
         self.assertEqual((last["broke"], last["verdict"]), ([z], "regression"))
         self.assertEqual(result["counts"], {kind: first["counts"][kind] + last["counts"][kind] for kind in _CLASSES})

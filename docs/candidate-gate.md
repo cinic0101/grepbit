@@ -1,6 +1,6 @@
 # Candidate gate (#79)
 
-Contract `evaluation-gate-v2`. It is the pre-registered acceptance rule the
+Contract `evaluation-gate-v3`. It is the pre-registered acceptance rule the
 owner chose as step A of "A+B"
 ([#79 #issuecomment-5900353252](https://github.com/cinic0101/grepbit/issues/79#issuecomment-5900353252)).
 The gate is an offline mode of the single runner, `tools/evaluate.py --gate`.
@@ -27,6 +27,15 @@ The arguments are closed: every one is required and no other is accepted.
 The run index and the archives it pins are the only inputs. Only `dev`-tier
 panels are accepted, and the output's claim is `development_observation`.
 Regression and holdout panels keep their own rules.
+
+**v3 (#168).** A stable baseline class needs at least three assessed runs.
+- **The rule.** Runs that disagree are `flaky` at any count. Fewer than three
+  that agree are `insufficient`. The gate excludes both.
+- **Why.** In v2, two agreeing runs made a class: `dev-BM2.en` was
+  `stable_correct` on two v18 runs, then declined on v18's own bytes (#162,
+  #167).
+- **Recorded results.** Gate results recorded under v1 or v2 keep their
+  verdicts. Re-running them under v3 is a counterfactual, not a re-gate.
 
 **v2 (#164).** v1 selected and compared by `candidate_sha256` alone. v2 uses
 the behaviour identity. For every candidate registered before #164 the two
@@ -74,8 +83,11 @@ candidate row and sentinel rows alike. A frozen-correct row with no persisted
 validated action cannot have its assumption checked, so it is unassessed.
 
 The baseline class of each input comes from `--aggregate` over all baseline
-runs, the sentinel included: `stable_correct`, `stable_wrong`, `flaky` or
-`insufficient`.
+runs, the sentinel included. The class is one of these:
+- `flaky`, when at least one assessed run is correct and one wrong;
+- `insufficient`, when fewer than three assessed runs agree;
+- `stable_correct` or `stable_wrong`, when at least three assessed runs agree
+  (v3, #168).
 
 The candidate row is `correct` or `wrong` as graded, or `unassessed`.
 Unassessed means that no model result was usable: the row did not complete,
@@ -138,7 +150,7 @@ The overall verdict applies the same rules to the union of the panels.
 
 The gate prints one canonical JSON object and exits 0 whatever the verdict:
 
-- `version` `evaluation-gate-v2`, `promotion_eligible` false, `claim`
+- `version` `evaluation-gate-v3`, `promotion_eligible` false, `claim`
   `development_observation`;
 - `route_id` and `owner_authorization_reference`;
 - `candidate` and `baseline`, each with `candidate_id`, `candidate_sha256`

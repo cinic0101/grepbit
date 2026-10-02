@@ -179,7 +179,7 @@ class GateSelectionTests(unittest.TestCase):
 
     def test_the_gate_and_aggregate_contracts_are_versioned(self):
         self.assertEqual((evaluate.GATE_VERSION, evaluate.AGGREGATE_VERSION),
-                         ("evaluation-gate-v2", "evaluation-aggregate-v2"))
+                         ("evaluation-gate-v3", "evaluation-aggregate-v3"))
 
 
 if __name__ == "__main__":

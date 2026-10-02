@@ -143,7 +143,8 @@ PR:
     - each aggregate selects only its own behaviour group.
   - The routing upper bound and the count ablation select their baselines by
     the current candidate's behaviour identity.
-  - The versions are `evaluation-gate-v2` and `evaluation-aggregate-v2`. That
+  - The versions were `evaluation-gate-v2` and `evaluation-aggregate-v2`, and
+    are v3 since #168 (three-run baselines). That
     the outputs carry `behavior_sha256` is asserted in
     `tests/test_evaluate_gate.py` and `tests/test_evaluate_replay.py`.
 - **Also checked:**
