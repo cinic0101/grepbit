@@ -26,6 +26,9 @@ class ProjectionTests(unittest.TestCase):
         self.assertEqual(live._evidence({"count_assumption": STATEMENT})["count_assumption"], STATEMENT)
         self.assertIsNone(live._evidence({"count_assumption": None})["count_assumption"])
         self.assertNotIn("count_assumption", live._evidence({}))
+        with self.assertRaises(p3_assets.P3Error):
+            live._evidence({"count_assumption": STATEMENT, "error_code": "kernel_failure"})
+        self.assertIsNone(live._evidence({"count_assumption": None, "error_code": "kernel_failure"})["count_assumption"])
         for bad in ({"count_basis": "distinct_people"}, dict(STATEMENT, reported_as="people"), "booked_seats", []):
             with self.subTest(bad=bad), self.assertRaises(p3_assets.P3Error):
                 live._evidence({"count_assumption": bad})
@@ -65,25 +68,31 @@ class LiveAndReplayTests(EvaluateHarness):
         return output
 
     async def test_the_live_path_records_the_statement_and_it_equals_the_derivation_through_v21(self):
+        # The archived pin equals the runtime's statement (the archived-vocabulary rule, docs/count-cue-policy.md).
+        self.assertEqual(recipe_model.ASSUMPTION_STATEMENT, live.ARCHIVED_COUNT_ASSUMPTION)
         output = await self.run_once()
         report = evaluate.read_report(output / "report.json")
-        checked = 0
-        for row, score in zip(report["results"], report["summary"]["per_input"]):
-            if row["evidence"] is None:
-                continue
+        self.assertEqual(report["status"], "complete")
+        stated = 0
+        for row in report["results"]:
+            self.assertIsNotNone(row["evidence"], row["case_id"])
             self.assertIn("count_assumption", row["evidence"], row["case_id"])
-            if score["correct"] and row["validated_action"] is not None:
-                recorded = row["evidence"]["count_assumption"]
-                derived = evaluate._stated_assumption(model.strict_json(row["validated_action"]), row["actual_action"])
-                self.assertEqual({"count_basis": recorded["count_basis"]} if recorded else None, derived, row["case_id"])
-                checked += 1
-        self.assertGreater(checked, 0)
+            if row["validated_action"] is None:
+                continue
+            # Every completed row, frozen-correct or not: the recorded statement equals the derivation.
+            recorded = row["evidence"]["count_assumption"]
+            derived = evaluate._stated_assumption(model.strict_json(row["validated_action"]), row["actual_action"])
+            self.assertEqual({"count_basis": recorded["count_basis"]} if recorded else None, derived, row["case_id"])
+            stated += recorded is not None
+        # The server answer to the scripted C01 count_basis clarification states the assumption.
+        self.assertGreater(stated, 0)
 
     async def test_replay_reads_the_replayed_runs_statement(self):
         self.annex()
         output = await self.run_once()
         # A runtime that states the assumption on every Overview, as policy A will (#169).
-        every_overview = property(lambda self: dict(recipe_model.ASSUMPTION) if self.recipe_id == "overview" else None)
+        every_overview = property(lambda proposal: dict(recipe_model.ASSUMPTION)
+                                  if proposal.recipe_id == "overview" else None)
         with patch.object(recipe_model.RecipeProposal, "assumption", every_overview):
             replayed = await evaluate.replay(output / "report.json", self.database, self.root / "replay.json",
                                              panels_path=self.panels)

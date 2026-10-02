@@ -18,8 +18,11 @@ assumption from the persisted model action:
 - v16's `count_request: "unresolved"`;
 - from v19 on, a `count_basis` clarification on a row recorded `answer`.
 
-**The derivation is exact today.** Through v21 the runtime states the
-assumption exactly when that derivation says so.
+**The derivation is exact today, on every frozen-correct row.** Through v21,
+every row that can be frozen-correct states the assumption exactly when that
+derivation says so. A kernel failure or a post-execution timeout records
+`null` where the derivation would say stated. Those rows carry an operational
+error and are never assessed.
 
 **Under policy A it would not be.** The runtime states it on every executed
 Overview, whatever the model's count reading (#169). An action with
@@ -52,10 +55,13 @@ the archived evidence projection drops it.
 - **Replay.** The replayed verdict reads the statement of the replayed run (the
   current runtime's evidence), never the archived one. This is the same rule as
   #161: each verdict reads its own row.
-- **Consistency through v21.** Every runtime through v21 states the assumption
-  exactly when the derivation says so. On a run made under v21, the recorded
-  statement equals the derivation on every frozen-correct row. The ruler checks
-  this on a synthetic run.
+- **Consistency through v21.** On a run made under v21, the recorded statement
+  equals the derivation on every completed row with a persisted action,
+  frozen-correct or not. Kernel-failure and post-execution-timeout rows, which
+  are never assessed, record `null`. The ruler checks this on a synthetic run.
+- **A statement implies no error.** A non-null recorded statement on a row
+  with an `error_code` fails readback. A replayed statement is validated
+  exactly like an archived one.
 
 ## Not covered
 
@@ -66,7 +72,9 @@ the archived evidence projection drops it.
     verdicts would be wrong.
   - **Before it is used under such a candidate,** its rows must record the
     statement too.
-- **Formal and holdout readers** are unchanged.
+- **Formal and holdout readers.** Their code is unchanged, but they share the
+  widened projection, so a new run through them records the field too. Old
+  archives are unaffected.
 
 ## Ruler (`tests/test_recorded_count_assumption.py`)
 

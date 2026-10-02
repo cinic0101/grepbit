@@ -292,9 +292,10 @@ def _recorded_assumption(row: dict) -> object:
 def annexed(row: dict, frozen_correct: bool, expectations: dict | None) -> str | None:
     """The annex verdict on one graded row: None when no annex applies, else correct, wrong or unassessed.
 
-    The frozen grade stays as recorded. A frozen-correct answer is correct only if its persisted validated action
-    carries exactly the expected assumption (none when the oracle is not listed); without a persisted action the
-    assumption cannot be checked."""
+    The frozen grade stays as recorded. A frozen-correct answer is correct only if the assumption it states equals
+    the expectation (none when the oracle is not listed): the server's recorded statement when the row has one
+    (#169 A1), else the one derived from the persisted validated action. Without a persisted action the row stays
+    unassessed."""
     if expectations is None:
         return None
     if not frozen_correct:
@@ -1301,7 +1302,8 @@ async def _replay_execute(plan: _ReplayPlan) -> dict:
         actions[position] = _validated_action(result)
         evidence = getattr(result, "evidence", None)
         if isinstance(evidence, dict) and "count_assumption" in evidence:
-            statements[position] = evidence["count_assumption"]
+            # Validated exactly like an archived statement (docs/recorded-count-assumption.md).
+            statements[position] = live._evidence({"count_assumption": evidence["count_assumption"]})["count_assumption"]
         classes.append("replayed_same" if all(_same(graded[key], row[key]) for key in graded) else "replayed_changed")
         target.update(graded)
     scored = scoring.summarize(replayed, replayed, panel_kind="development", run_status=report["status"])

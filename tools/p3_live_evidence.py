@@ -96,7 +96,9 @@ def _evidence(value: dict, *, expected_model=None, requested_profile=None) -> di
                 or source == "count_policy" and reading not in ("bound", "contrast", "generic")):
             raise assets.P3Error("invalid_asset")
     # The recorded statement is null or exactly the archived one (docs/recorded-count-assumption.md).
-    if result.get("count_assumption") is not None and not _same(result["count_assumption"], ARCHIVED_COUNT_ASSUMPTION):
+    # A statement is made only on a row without an error.
+    if result.get("count_assumption") is not None and (
+            not _same(result["count_assumption"], ARCHIVED_COUNT_ASSUMPTION) or result.get("error_code") is not None):
         raise assets.P3Error("invalid_asset")
     if requested_profile is not None:
         if (expected_model is not None or type(requested_profile) is not str
